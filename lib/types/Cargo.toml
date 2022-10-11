@@ -1,0 +1,18 @@
+[package]
+name = "tonevision-types"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+metasampler-macros = { path = "../../deps/metasampler-macros" }
+faust-types = { path = "../../deps/faust-rs/faust-types" }
+faust-state = { path = "../../deps/faust-rs/faust-state" }
+libc = "0.2.112"
+lazy_static = "1.4.0"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+hound = "3.4.0"
+samplerate = "0.2.4"
+dasp_signal = "0.11.0"
+dasp_interpolate = { version = "0.11.0", default-features = false, features = ["floor", "linear", "sinc"]}
+rand = "0.8.5"

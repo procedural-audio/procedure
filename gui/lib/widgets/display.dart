@@ -1,0 +1,47 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import 'widget.dart';
+import 'dart:io';
+import 'dart:ffi';
+import '../host.dart';
+
+import 'package:ffi/ffi.dart';
+
+import '../main.dart';
+
+Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetTrait)>>(
+        "ffi_display_get_text")
+    .asFunction();
+
+class DisplayWidget extends ModuleWidget {
+  DisplayWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+
+  String text = "";
+
+  @override
+  void tick() {
+    var temp = ffiDisplayGetText(widgetRaw.getTrait());
+
+    if (temp.address != 0) {
+      text = temp.toDartString();
+      calloc.free(temp);
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+            color: const Color.fromRGBO(20, 20, 20, 1.0),
+            borderRadius: BorderRadius.circular(5)),
+        child: Text(
+          text,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontSize: 16, color: Colors.red),
+        ));
+  }
+}
