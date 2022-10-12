@@ -11,6 +11,7 @@
 
 #import "FlutterViewController.h"
 
+#include <dlfcn.h>
 
 //==============================================================================
 Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
@@ -27,11 +28,43 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 {
 	puts("Created audio processor");
     flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
+    
+    /*#ifdef __APPLE__
+        auto libPath = "/Users/chasekanipe/Github/nodus/build/bin/lib/release/libtonevision_core.dylib";
+        handle = dlopen(libPath, RTLD_LAZY);
+    #endif
+
+    #ifdef __MINGW32__
+        EDITTHIS();
+    #endif
+
+    #ifdef __linux__
+        auto libPath = "./lib/libtonevision_core.so";
+        handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
+    #endif
+
+    if (handle) {
+        ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
+        ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
+        ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
+        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t)) dlsym(handle, "ffi_host_process");
+
+        host = ffiCreateHost();
+
+    } else {
+        fprintf(stderr, "Error loading library: %s\n", dlerror());
+        puts("Faild to open tonevision core");
+        exit(0);
+    }*/
+
+    events.reserve(64);
 }
 
 Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
 {
     [flutterViewController release];
+    // ffiDestroyHost(host);
+    // dlclose(handle);
 }
 
 //==============================================================================
@@ -99,8 +132,11 @@ void Flutter_juceAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    /*std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
+
+    if (ffiHostPrepare != nullptr && host != nullptr) {
+        ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
+    }*/
 }
 
 void Flutter_juceAudioProcessor::releaseResources()
@@ -137,7 +173,7 @@ bool Flutter_juceAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 
 void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
+    /*juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -159,9 +195,56 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
-
+        juce::ignoreUnused (channelData);
         // ..do something to the data...
     }
+
+    events.clear();
+
+    for (auto data : midiMessages) {
+        auto message = data.getMessage();
+
+        if (message.isNoteOn()) {
+            // std::cout << message.getDescription() << std::endl;
+
+            Event event;
+            event.tag = EventTag::NoteOn;
+
+            EventValue value;
+            value.noteOn = NoteOn {
+                note: Note {
+                    id: (unsigned short) message.getNoteNumber(),
+                    pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
+                    pressure: ((float) message.getVelocity()) / 127,
+                    timbre: 0
+                },
+                offset: (uint16_t) data.samplePosition,
+            };
+            event.value = value;
+
+            events.push_back(event);
+        } else if (message.isNoteOff()) {
+            // std::cout << message.getDescription() << std::endl;
+
+            auto event = Event {
+                tag: EventTag::NoteOff,
+            };
+
+            event.value.noteOff = NoteOff {
+                id: (unsigned short) message.getNoteNumber()
+            };
+
+            events.push_back(event);
+        }
+    }
+
+    if (ffiHostProcess != nullptr && host != nullptr) {
+        if (events.size() == 0) {
+            ffiHostProcess(host, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
+        } else {
+            ffiHostProcess(host, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
+        }
+    }*/
 }
 
 //==============================================================================

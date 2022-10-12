@@ -79,13 +79,20 @@ void main() {
 
   host.graph.refresh();
 
+  var json = jsonDecode(
+      File(contentPath + "/instruments/UntitledInstrument/info/info.json")
+          .readAsStringSync());
+
+  host.globals.instrument = InstrumentInfo.fromJson(
+      json, contentPath + "/instruments/UntitledInstrument");
+
   runApp(Window(host));
 
   // refreshInstruments();
   // refreshPresets();
 }
 
-class MainWidgetDebug extends StatelessWidget {
+/*class MainWidgetDebug extends StatelessWidget {
   MainWidgetDebug(this.host);
 
   Host host;
@@ -113,7 +120,7 @@ class MainWidgetDebug extends StatelessWidget {
   }
 }
 
-/*class MainWidgetRelease extends StatelessWidget {
+class MainWidgetRelease extends StatelessWidget {
   MainWidgetRelease(this.host);
 
   Host host;
@@ -152,7 +159,7 @@ class MainWindowState extends WindowState {
     return StatsFl(
         align: Alignment.bottomLeft,
         child: MaterialApp(
-          theme: ThemeData(
+          theme: ThemeData
             //splashColor: Colors.black.withAlpha(0),
             splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
           ),
@@ -186,33 +193,39 @@ class Window extends StatefulWidget {
 class _Window extends State<Window> {
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Stack(children: <Widget>[
-        Container(
-            color: const Color.fromRGBO(10, 10, 10, 1.0),
-            child: Stack(children: [
-              ValueListenableBuilder<bool>(
-                  valueListenable: widget.instViewVisible,
-                  builder: (context, visible, w) {
-                    return Visibility(
-                      child: widget.instrumentView,
-                      visible: visible,
-                      maintainState: true,
-                    );
-                  }),
-              ValueListenableBuilder<bool>(
-                  valueListenable: widget.instViewVisible,
-                  builder: (context, visible, w) {
-                    return Visibility(
-                      child: PatchingView(widget.host),
-                      visible: !visible,
-                      maintainState: true,
-                    );
-                  }),
-              Bar(widget, widget.host)
-            ]))
-      ])
-    ]);
+    return MaterialApp(
+        theme: ThemeData(
+          splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
+        ),
+        home: Scaffold(
+            backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+            body: Stack(children: [
+              Stack(children: <Widget>[
+                Container(
+                    color: const Color.fromRGBO(10, 10, 10, 1.0),
+                    child: Stack(children: [
+                      ValueListenableBuilder<bool>(
+                          valueListenable: widget.instViewVisible,
+                          builder: (context, visible, w) {
+                            return Visibility(
+                              child: widget.instrumentView,
+                              visible: visible,
+                              maintainState: true,
+                            );
+                          }),
+                      ValueListenableBuilder<bool>(
+                          valueListenable: widget.instViewVisible,
+                          builder: (context, visible, w) {
+                            return Visibility(
+                              child: PatchingView(widget.host),
+                              visible: !visible,
+                              maintainState: true,
+                            );
+                          }),
+                      Bar(widget, widget.host)
+                    ]))
+              ])
+            ])));
   }
 }
 

@@ -11,7 +11,9 @@
 #include "FlutterEngine.h"
 #include <JuceHeader.h>
 
+#include "nodus.h"
 
+struct FFIHost {};
 
 //==============================================================================
 /**
@@ -60,6 +62,17 @@ public:
     FlutterViewController* flutterViewController { nullptr };
 
 private:
+    FFIHost* host = nullptr;
+    
+    std::vector<Event> events;
+
+    void * handle = nullptr;
+
+    FFIHost* (*ffiCreateHost)() = nullptr;
+    void (*ffiDestroyHost)(FFIHost*) = nullptr;
+    void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
+    void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t) = nullptr;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessor)
 };

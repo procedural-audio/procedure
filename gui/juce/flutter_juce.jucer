@@ -5,6 +5,7 @@
               pluginCode="Flju">
   <MAINGROUP id="yEgtCq" name="flutter_juce">
     <GROUP id="{7182798D-AC8B-4366-DF30-65B33C163721}" name="Source">
+      <FILE id="kxNBwr" name="nodus.h" compile="0" resource="0" file="Source/nodus.h"/>
       <FILE id="EUAoX6" name="PluginProcessor.mm" compile="1" resource="0"
             file="Source/PluginProcessor.mm"/>
       <FILE id="yXgyzj" name="PluginProcessor.h" compile="0" resource="0"
