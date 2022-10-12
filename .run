@@ -1,0 +1,15 @@
+clear
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    cd build/package/linux
+    # pasuspender ./standalone
+    ./workstation
+    cd ../../../
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    cd build/package/macos
+    ./workstation
+    cd ../../../
+else
+    echo "Unknown platform"
+fi
+

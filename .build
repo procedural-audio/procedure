@@ -1,0 +1,46 @@
+#!/usr/bin/python3
+
+import os
+import platform
+
+platform = platform.system().lower()
+print("Platform is " + str(platform))
+
+if not os.system("cd core && cargo build --release && cd .."):
+    if "windows" in platform:
+        print("Found windows OS")
+        os.system("mkdir -p build/package/windows/lib")
+    if "linux" in platform:
+        print("Found linux OS")
+
+        # Create folder
+        os.system("mkdir -p build/package/linux/")
+        os.system("mkdir -p build/package/linux/plugins/")
+        os.system("mkdir -p build/package/linux/plugins_shadow/")
+
+        # Copy executables
+        # os.system("cp build/bin/standalone/debug/standalone build/package/linux/.")
+        #os.system("cp build/debug/plugin build/package/linux/.")
+        os.system("cp src/workstation/build/workstation_artefacts/Standalone/workstation build/package/linux/.")
+
+        # Copy libraries
+        os.system("cp -r build/bin/lib/release/lib/ build/package/linux/.")
+        os.system("cp build/bin/lib/release/libtonevision_core.so build/package/linux/lib/.")
+        os.system("mkdir build/package/linux/lib/lib")
+        os.system("mv build/package/linux/lib/libflutter_linux_gtk.so build/package/linux/lib/lib/.")
+
+        # Copy data
+        os.system("cp -r build/bin/lib/release/data/ build/package/linux/.")
+
+    if "darwin" in platform:
+        if not os.system("cd flutter && flutter build macos --debug && cd .."):
+            print("Found macos")
+
+            if not os.system("cd loader_cmake/build && cmake ../. && make"):
+                # Package
+                os.system("mkdir -p build/package/macos/standalone")
+
+                # Release
+                os.system("mkdir -p build/release/macos")
+
+                print("Done")
