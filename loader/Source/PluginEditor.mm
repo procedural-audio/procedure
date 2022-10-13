@@ -11,9 +11,11 @@
 
 #import "FlutterViewController.h"
 
+#include "plugin.h"
+
 //==============================================================================
 Flutter_juceAudioProcessorEditor::Flutter_juceAudioProcessorEditor (Flutter_juceAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p), pluginFormatManager()
 {
 	puts("Created editor");
     
@@ -24,6 +26,29 @@ Flutter_juceAudioProcessorEditor::Flutter_juceAudioProcessorEditor (Flutter_juce
     flutterView.setView(audioProcessor.flutterViewController.view);
 
     setSize (800, 600);
+    
+    puts("Adding default formats");
+    pluginFormatManager.addDefaultFormats();
+    
+    for (auto format : pluginFormatManager.getFormats()) {
+        puts("Found format");
+        if (format->canScanForPlugins()) {
+            auto locations = format->getDefaultLocationsToSearch();
+            auto paths = format->searchPathsForPlugins(locations, false);
+
+            for (auto path : paths) {
+                std::cout << path << std::endl;
+            }
+        }
+    }
+    
+    auto plugin = createAudioPlugin(&pluginFormatManager, "Diva");
+    
+    if (plugin != nullptr) {
+        plugin->createGui();
+    } else {
+        puts("Failed to load plugin");
+    }
 }
 
 Flutter_juceAudioProcessorEditor::~Flutter_juceAudioProcessorEditor()
