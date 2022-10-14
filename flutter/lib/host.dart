@@ -17,6 +17,13 @@ import 'views/info.dart';
 
 import 'module.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:metasampler/host.dart';
+import 'package:statsfl/statsfl.dart';
+
 var core = getCore();
 var api = FFIApi();
 
@@ -336,6 +343,19 @@ class FFIWidgetTrait extends Struct {
   external int metadata;
 }
 
+class AudioPlugins {
+  var channel = const BasicMessageChannel("AudioPlugins", StringCodec());
+
+  AudioPlugins() {
+    channel.setMessageHandler(messageHandler);
+  }
+
+  Future<String> messageHandler(String? message) async {
+    print("Recieved message: " + message.toString());
+    return "Reply message";
+  }
+}
+
 class Host extends ChangeNotifier {
   final FFIHost host;
   late Graph graph;
@@ -347,8 +367,11 @@ class Host extends ChangeNotifier {
   late Timer timer1;
   late Timer timer2;
 
+  late AudioPlugins audioPlugins;
+
   Host(this.host) {
     graph = Graph(host, this);
+    audioPlugins = AudioPlugins();
 
     timer1 = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       for (var module in graph.moduleWidgets) {

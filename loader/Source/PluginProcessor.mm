@@ -10,6 +10,7 @@
 #include "PluginEditor.h"
 
 #import "FlutterViewController.h"
+#import "FlutterChannels.h"
 
 #include <dlfcn.h>
 
@@ -26,11 +27,28 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
                        )
 #endif
 {
+    // FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil allowHeadlessExecution:YES];
+    // [engine runWithEntrypoint:nil];
+    // [flutterViewController setInitialRoute:@"myApp"];
+    // auto temp = [[FlutterViewController alloc] initWithProject:nil];
+    
 	puts("Created audio processor");
     flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
+    // flutterViewController = [[[FlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil] retain];
     
-    /*#ifdef __APPLE__
-        auto libPath = "/Users/chasekanipe/Github/nodus/build/bin/lib/release/libtonevision_core.dylib";
+    // [flutterViewController.engine runWithEntrypoint:@"main"];
+    
+    audioPluginsChannel = [
+        FlutterBasicMessageChannel
+        messageChannelWithName:@"AudioPlugins"
+        binaryMessenger:flutterViewController.engine.binaryMessenger
+    ];
+        
+    [audioPluginsChannel sendMessage:@"First message"];
+    [audioPluginsChannel sendMessage:@32];
+    
+    #ifdef __APPLE__
+        auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
         handle = dlopen(libPath, RTLD_LAZY);
     #endif
 
@@ -55,7 +73,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
         fprintf(stderr, "Error loading library: %s\n", dlerror());
         puts("Faild to open tonevision core");
         exit(0);
-    }*/
+    }
 
     events.reserve(64);
 }
@@ -137,6 +155,8 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     if (ffiHostPrepare != nullptr && host != nullptr) {
         ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
     }*/
+    
+    [audioPluginsChannel sendMessage:@"Prepare message"];
 }
 
 void Flutter_juceAudioProcessor::releaseResources()
@@ -173,7 +193,7 @@ bool Flutter_juceAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 
 void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    /*juce::ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -244,7 +264,11 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         } else {
             ffiHostProcess(host, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
         }
-    }*/
+    }
+    
+    for (auto& plugin : plugins) {
+        plugin->processBlock(buffer, midiMessages);
+    }
 }
 
 //==============================================================================
@@ -278,4 +302,3 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new Flutter_juceAudioProcessor();
 }
-

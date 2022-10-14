@@ -26,6 +26,10 @@ public:
     }
 
     void createGui() {
+        if (window != nullptr) {
+            puts("GUI already exists");
+        }
+        
         puts("Creating gui");
 
         auto w = std::unique_ptr<DocumentWindow>(new DocumentWindow("Audio plugin", Colours::grey, DocumentWindow::allButtons));
@@ -44,46 +48,16 @@ public:
 
         window.swap(w);
     }
+    
+    void hide() {
+        window.reset();
+    }
+    
+    void processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+        plugin->processBlock(buffer, midiMessages);
+    }
 
 private:
     std::unique_ptr<juce::AudioPluginInstance> plugin;
     std::unique_ptr<DocumentWindow> window;
 };
-
-MyAudioPlugin* createAudioPlugin(juce::AudioPluginFormatManager* manager, String name) {
-    for (auto format : manager->getFormats()) {
-        auto locations = format->getDefaultLocationsToSearch();
-        auto paths = format->searchPathsForPlugins(locations, false);
-
-        for (auto path : paths) {
-
-            if (path.contains("Diva")) {
-                puts("Found diva plugin");
-
-                OwnedArray<PluginDescription> descs;
-
-                format->findAllTypesForFile(descs, path);
-
-                for (auto desc : descs) {
-                    if (desc->name.contains(name)) {
-                        puts("Found instance to add");
-
-                        juce::String error = "";
-
-                        auto plugin = manager->createPluginInstance(*desc, 44100, 256, error);
-
-                        if (plugin != nullptr) {
-                            puts("Created diva plugin instance");
-                            return new MyAudioPlugin(std::move(plugin));
-                        } else {
-                            puts("Failed to create plugin");
-                            return nullptr;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return nullptr;
-}

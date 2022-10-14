@@ -71,6 +71,8 @@ void callTickRecursive(ModuleWidget widget) {
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     print("Set up window here");
   }

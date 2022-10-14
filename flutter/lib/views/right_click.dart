@@ -30,20 +30,20 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(
-            RightClickElement(widget.host, "Audio Track", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Sampler", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Multi-Sampler", AntDesign.sound, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Granular", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Slicer", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Sample Resynthesis", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Looper", Icons.loop, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Audio Track",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Sampler", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Multi-Sampler",
+            AntDesign.sound, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Granular", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Slicer", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Sample Resynthesis",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Looper", Icons.loop,
+            Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Sampling", 20, subCategory));
       }
@@ -51,32 +51,44 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Saw", MaterialCommunityIcons.wave, Colors.blue, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Square", MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Sine", MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Triangle", MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Pulse", MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Saw",
+            MaterialCommunityIcons.wave, Colors.blue, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Square",
+            MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Sine",
+            MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Triangle",
+            MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Pulse",
+            MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Analog Oscillator", MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Analog Oscillator",
+            MaterialCommunityIcons.wave, Colors.grey, 30, widget.addPosition));
         subCategory.add(RightClickElement(widget.host, "Wavetable Oscillator",
             MaterialCommunityIcons.waves, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Additive Oscillator",
-            MaterialCommunityIcons.vector_combine, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Additive Oscillator",
+            MaterialCommunityIcons.vector_combine,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
             "Harmonic Oscillator", // (Based of Pigments harmonic oscillator)
             MaterialCommunityIcons.vector_combine,
             Colors.grey,
-            30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Noise", MaterialCommunityIcons.wave, Colors.blue, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Pluck", MaterialCommunityIcons.guitar_pick, Colors.grey, 30, widget.addPosition));
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Noise",
+            MaterialCommunityIcons.wave, Colors.blue, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Pluck",
+            MaterialCommunityIcons.guitar_pick,
+            Colors.grey,
+            30,
+            widget.addPosition));
 
         /*subCategory.add(RightClickElement(widget.host, 
             "Polygon Oscillator", Icons.piano, Colors.grey, 30, widget.addPosition));
@@ -93,14 +105,29 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "String Model", MaterialCommunityIcons.violin, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Acoustic Guitar Model",
-            MaterialCommunityIcons.guitar_acoustic, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Electric Guitar Model",
-            MaterialCommunityIcons.guitar_electric, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Modal Oscillator", MaterialCommunityIcons.ring, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "String Model",
+            MaterialCommunityIcons.violin,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Acoustic Guitar Model",
+            MaterialCommunityIcons.guitar_acoustic,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Electric Guitar Model",
+            MaterialCommunityIcons.guitar_electric,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Modal Oscillator",
+            MaterialCommunityIcons.ring, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Physical Modeling", 20, subCategory));
       }
@@ -108,10 +135,15 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Tone Transfer", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Spectrogram Resynthesis", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Tone Transfer",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Spectrogram Resynthesis",
+            Icons.piano,
+            Colors.grey,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Machine Learning", 20, subCategory));
       }
@@ -125,22 +157,32 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Gain", MaterialCommunityIcons.volume_plus, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Panner", MaterialCommunityIcons.pan, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Mute", MaterialCommunityIcons.volume_plus, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Mixer", MaterialCommunityIcons.mixer, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Gate", MaterialCommunityIcons.gate, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Compressor", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Transient Shaper", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Transient Separator", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Gain",
+            MaterialCommunityIcons.volume_plus,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Panner",
+            MaterialCommunityIcons.pan, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Mute",
+            MaterialCommunityIcons.volume_plus,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Mixer",
+            MaterialCommunityIcons.mixer, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Gate",
+            MaterialCommunityIcons.gate, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Compressor",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Transient Shaper",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Transient Separator",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Dynamics", 20, subCategory));
       }
@@ -148,22 +190,32 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory
-            .add(RightClickElement(widget.host, "Amplifier", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Analog Saturator", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Analog Distortion", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Cassette", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Tape", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Tube", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Wavefolder", MaterialCommunityIcons.jabber, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Waveshaper", MaterialCommunityIcons.scan_helper, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Amplifier", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Analog Saturator",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Analog Distortion",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Cassette", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Tape", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Tube", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Wavefolder",
+            MaterialCommunityIcons.jabber,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Waveshaper",
+            MaterialCommunityIcons.scan_helper,
+            Colors.grey,
+            30,
+            widget.addPosition));
         //subCategory.add(RightClickElement(widget.host, "Pickup Model", Icons.piano, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Distortion", 20, subCategory));
@@ -172,12 +224,12 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Digital Filter", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Analog Filter", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Creative Filter", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Digital Filter",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Analog Filter",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Creative Filter",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Filter", 20, subCategory));
       }
@@ -185,18 +237,18 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory
-            .add(RightClickElement(widget.host, "Reverb", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Delay", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Shimmer", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Convolution", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Resonator", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Binaural Panner", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Reverb",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Delay", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Shimmer", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Convolution",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Resonator", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Binaural Panner",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Space", 20, subCategory));
       }
@@ -204,18 +256,18 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(
-            RightClickElement(widget.host, "Equalizer", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Exciter", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Pitch Shifter", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Pitch Corrector", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Vocoder", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Crossover", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Equalizer",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Exciter", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Pitch Shifter",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Pitch Corrector",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Vocoder", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Crossover", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Spectral", 20, subCategory));
       }
@@ -223,16 +275,16 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory
-            .add(RightClickElement(widget.host, "Chorus", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Flanger", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Phaser", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Stereoizer", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory
-            .add(RightClickElement(widget.host, "Vibrato", Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Chorus",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Flanger", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Phaser", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Stereoizer",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Vibrato", Icons.piano,
+            Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Modulation", 20, subCategory));
       }
@@ -246,12 +298,22 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(
-            RightClickElement(widget.host, "Notes Track", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Step Sequencer",
-            MaterialCommunityIcons.view_sequential, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Arpeggiator",
-            MaterialCommunityIcons.view_sequential, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Notes Track",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Step Sequencer",
+            MaterialCommunityIcons.view_sequential,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Arpeggiator",
+            MaterialCommunityIcons.view_sequential,
+            Colors.grey,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Sources", 20, subCategory));
       }
@@ -259,16 +321,41 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, "Transpose",
-            MaterialCommunityIcons.view_sequential, Colors.green, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Scale", MaterialCommunityIcons.view_sequential, Colors.green, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Pitch", MaterialCommunityIcons.view_sequential, Colors.green, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Pressure",
-            MaterialCommunityIcons.view_sequential, Colors.green, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Timbre",
-            MaterialCommunityIcons.view_sequential, Colors.green, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Transpose",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Scale",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Pitch",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Pressure",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Timbre",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Effects", 20, subCategory));
       }
@@ -282,18 +369,33 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Constant", MaterialCommunityIcons.numeric, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "LFO", MaterialCommunityIcons.sine_wave, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Envelope", MaterialCommunityIcons.sawtooth_wave, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Clock", MaterialCommunityIcons.clock, Colors.red, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Random", Icons.noise_aware, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Control Track", Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Constant",
+            MaterialCommunityIcons.numeric,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "LFO",
+            MaterialCommunityIcons.sine_wave,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Envelope",
+            MaterialCommunityIcons.sawtooth_wave,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Clock",
+            MaterialCommunityIcons.clock, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Random",
+            Icons.noise_aware, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Control Track",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Control Sources", 20, subCategory));
       }
@@ -301,20 +403,55 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Display", MaterialCommunityIcons.numeric, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Hold", MaterialCommunityIcons.car_brake_hold, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Toggle", MaterialCommunityIcons.car_brake_hold, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Scale", MaterialCommunityIcons.view_grid, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Bend", MaterialCommunityIcons.view_grid, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Slew", MaterialCommunityIcons.view_grid, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Knob", MaterialCommunityIcons.rotate_3d, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Display",
+            MaterialCommunityIcons.numeric,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Hold",
+            MaterialCommunityIcons.car_brake_hold,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Toggle",
+            MaterialCommunityIcons.car_brake_hold,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Scale",
+            MaterialCommunityIcons.view_grid,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Bend",
+            MaterialCommunityIcons.view_grid,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Slew",
+            MaterialCommunityIcons.view_grid,
+            Colors.grey,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Knob",
+            MaterialCommunityIcons.rotate_3d,
+            Colors.red,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Control Effects", 20, subCategory));
       }
@@ -322,14 +459,34 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "And", MaterialCommunityIcons.gate_and, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Or", MaterialCommunityIcons.gate_or, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Not", MaterialCommunityIcons.gate_not, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Xor", MaterialCommunityIcons.gate_xor, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "And",
+            MaterialCommunityIcons.gate_and,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Or",
+            MaterialCommunityIcons.gate_or,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Not",
+            MaterialCommunityIcons.gate_not,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Xor",
+            MaterialCommunityIcons.gate_xor,
+            Colors.red,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Logic", 20, subCategory));
       }
@@ -337,19 +494,35 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, "Add", Icons.add, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Subtract", MaterialCommunityIcons.minus, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Multiply", MaterialCommunityIcons.multiplication, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Divide", MaterialCommunityIcons.division, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Modulo", MaterialCommunityIcons.percent, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Negative", MaterialCommunityIcons.minus, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Clamp", MaterialCommunityIcons.stairs, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host, "Add", Icons.add, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Subtract",
+            MaterialCommunityIcons.minus, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Multiply",
+            MaterialCommunityIcons.multiplication,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Divide",
+            MaterialCommunityIcons.division,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Modulo",
+            MaterialCommunityIcons.percent,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Negative",
+            MaterialCommunityIcons.minus, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Clamp",
+            MaterialCommunityIcons.stairs, Colors.red, 30, widget.addPosition));
 
         category.add(RightClickCategory("Operations", 20, subCategory));
       }
@@ -357,18 +530,43 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Equal", MaterialCommunityIcons.equal, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Not Equal", MaterialCommunityIcons.not_equal, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Less than", MaterialCommunityIcons.less_than, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Less/equal to",
-            MaterialCommunityIcons.less_than_or_equal, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Greater than",
-            MaterialCommunityIcons.greater_than, Colors.red, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Greater/equal to",
-            MaterialCommunityIcons.greater_than_or_equal, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Equal",
+            MaterialCommunityIcons.equal, Colors.red, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Not Equal",
+            MaterialCommunityIcons.not_equal,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Less than",
+            MaterialCommunityIcons.less_than,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Less/equal to",
+            MaterialCommunityIcons.less_than_or_equal,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Greater than",
+            MaterialCommunityIcons.greater_than,
+            Colors.red,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Greater/equal to",
+            MaterialCommunityIcons.greater_than_or_equal,
+            Colors.red,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Comparisons", 20, subCategory));
       }
@@ -382,14 +580,14 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Midi to Control", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Gain to Control", Icons.piano, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Control To Notes", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Notes to Control", Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Midi to Control",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Gain to Control",
+            Icons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Control To Notes",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Notes to Control",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Conversions", 20, subCategory));
       }
@@ -397,16 +595,16 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(
-            RightClickElement(widget.host, "Audio Input", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Audio Output", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Midi Input", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "Midi Output", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(
-            RightClickElement(widget.host, "VST Host", Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Audio Input",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Audio Output",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Midi Input",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Midi Output",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "VST Host",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("IO", 20, subCategory));
       }
@@ -414,12 +612,12 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(
-            RightClickElement(widget.host, "LUA Script", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Faust Script", Icons.functions, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "DSP Designer", Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "LUA Script",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Faust Script",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "DSP Designer",
+            Icons.functions, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Scripting", 20, subCategory));
       }
@@ -427,19 +625,31 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Time", MaterialCommunityIcons.clock, Colors.deepPurpleAccent, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Time",
+            MaterialCommunityIcons.clock,
+            Colors.deepPurpleAccent,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
             "Rate",
             MaterialCommunityIcons.multiplication,
             Colors.deepPurpleAccent,
             30,
             widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Reverse",
-            MaterialCommunityIcons.minus, Colors.deepPurpleAccent, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, "Loop", Icons.loop, Colors.grey, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Seek/Shift/Offset", Icons.filter_tilt_shift, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Reverse",
+            MaterialCommunityIcons.minus,
+            Colors.deepPurpleAccent,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Loop", Icons.loop,
+            Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Seek/Shift/Offset",
+            Icons.filter_tilt_shift, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Time", 20, subCategory));
       }
@@ -447,10 +657,15 @@ class _RightClickView extends State<RightClickView> {
       {
         List<Widget> subCategory = [];
 
-        subCategory.add(RightClickElement(widget.host, 
-            "Control Variable", MaterialCommunityIcons.clock, Colors.deepPurpleAccent, 30, widget.addPosition));
-        subCategory.add(RightClickElement(widget.host, 
-            "Audio Plugin", MaterialCommunityIcons.power, Colors.blue, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Control Variable",
+            MaterialCommunityIcons.clock,
+            Colors.deepPurpleAccent,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Audio Plugin",
+            MaterialCommunityIcons.power, Colors.blue, 30, widget.addPosition));
 
         category.add(RightClickCategory("Variables", 20, subCategory));
       }
@@ -500,13 +715,9 @@ class _RightClickView extends State<RightClickView> {
     return MouseRegion(
         onEnter: (event) {
           widget.host.globals.patchingScaleEnabled = false;
-          // widget.host.globals.window.patchingView.setState(() {});
-          print("SHOULD DISABLE ZOOM HERE");
         },
         onExit: (event) {
           widget.host.globals.patchingScaleEnabled = true;
-          // widget.host.globals.window.patchingView.setState(() {});
-          print("SHOULD DISABLE ZOOM HERE");
         },
         child: Container(
           width: 300,
@@ -653,7 +864,8 @@ class RightClickElement extends StatefulWidget {
 
   Host host;
 
-  RightClickElement(this.host, this.name, this.icon, this.color, this.indent, this.addPosition);
+  RightClickElement(this.host, this.name, this.icon, this.color, this.indent,
+      this.addPosition);
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();
@@ -680,7 +892,8 @@ class _RightClickElementState extends State<RightClickElement> {
         },
         child: GestureDetector(
             onTap: () {
-              if (widget.host.graph.addModule(widget.name, widget.addPosition)) {
+              if (widget.host.graph
+                  .addModule(widget.name, widget.addPosition)) {
                 gGridState?.refresh();
               } else {
                 print("Couldn't add module");

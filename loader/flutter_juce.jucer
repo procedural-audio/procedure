@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="x10cup" name="flutter_juce" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginCode="Flju">
+              pluginCode="Flju" pluginFormats="buildAU,buildStandalone,buildVST3">
   <MAINGROUP id="yEgtCq" name="flutter_juce">
     <GROUP id="{7182798D-AC8B-4366-DF30-65B33C163721}" name="Source">
       <FILE id="mlxWkY" name="plugin.h" compile="0" resource="0" file="Source/plugin.h"/>

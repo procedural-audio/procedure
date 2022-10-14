@@ -12,6 +12,9 @@
 #include <JuceHeader.h>
 
 #include "nodus.h"
+#include "plugin.h"
+
+#import "FlutterChannels.h"
 
 struct FFIHost {};
 
@@ -60,7 +63,8 @@ public:
 
 public:
     FlutterViewController* flutterViewController { nullptr };
-
+    std::vector<std::unique_ptr<MyAudioPlugin>> plugins;
+    
 private:
     FFIHost* host = nullptr;
     
@@ -72,6 +76,8 @@ private:
     void (*ffiDestroyHost)(FFIHost*) = nullptr;
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
     void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t) = nullptr;
+    
+    FlutterBasicMessageChannel* audioPluginsChannel;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessor)
