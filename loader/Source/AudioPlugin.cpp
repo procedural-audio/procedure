@@ -7,7 +7,6 @@
 
   ==============================================================================
 */
-#pragma once
 
 #include <iostream>
 #include <JuceHeader.h>
@@ -23,6 +22,8 @@ AudioPlugin::AudioPlugin(int moduleId, juce::String name, std::unique_ptr<juce::
 void AudioPlugin::createGui() {
     if (window != nullptr) {
         puts("GUI already exists");
+        showGui();
+        return;
     }
     
     puts("Creating gui");
@@ -44,9 +45,12 @@ void AudioPlugin::createGui() {
     window.swap(w);
 }
 
-void AudioPlugin::destroyGui() {
+void AudioPlugin::showGui() {
+    window->setVisible(true);
+}
+
+void AudioPlugin::hideGui() {
     window->setVisible(false);
-    window.reset();
 }
 
 void AudioPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {

@@ -22,7 +22,8 @@ public:
     AudioPlugin(int moduleId, juce::String name, std::unique_ptr<juce::AudioPluginInstance> p);
 
     void createGui();
-    void destroyGui();
+    void showGui();
+    void hideGui();
     void processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages);
     int getModuleId() {
         return moduleId;
@@ -46,7 +47,7 @@ public:
     }
     
     void closeButtonPressed() override {
-        plugin->destroyGui();
+        plugin->hideGui();
     }
     
 private:
