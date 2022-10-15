@@ -11,49 +11,11 @@
 
 #import "FlutterViewController.h"
 
-#include "plugin.h"
-
-std::unique_ptr<MyAudioPlugin> createAudioPlugin(juce::AudioPluginFormatManager* manager, String name) {
-    for (auto format : manager->getFormats()) {
-        auto locations = format->getDefaultLocationsToSearch();
-        auto paths = format->searchPathsForPlugins(locations, false);
-
-        for (auto path : paths) {
-
-            if (path.contains("Diva")) {
-                puts("Found diva plugin");
-
-                OwnedArray<PluginDescription> descs;
-
-                format->findAllTypesForFile(descs, path);
-
-                for (auto desc : descs) {
-                    if (desc->name.contains(name)) {
-                        puts("Found instance to add");
-
-                        juce::String error = "";
-
-                        auto plugin = manager->createPluginInstance(*desc, 44100, 256, error);
-
-                        if (plugin != nullptr) {
-                            puts("Created diva plugin instance");
-                            return std::unique_ptr<MyAudioPlugin>(new MyAudioPlugin(std::move(plugin)));
-                        } else {
-                            puts("Failed to create plugin");
-                            return nullptr;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return nullptr;
-}
+#include "AudioPlugin.h"
 
 //==============================================================================
 Flutter_juceAudioProcessorEditor::Flutter_juceAudioProcessorEditor (Flutter_juceAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p), pluginFormatManager()
+    : AudioProcessorEditor (&p), audioProcessor (p)
 {
 	puts("Created editor");
     
@@ -64,30 +26,6 @@ Flutter_juceAudioProcessorEditor::Flutter_juceAudioProcessorEditor (Flutter_juce
     flutterView.setView(audioProcessor.flutterViewController.view);
 
     setSize (800, 600);
-    
-    puts("Adding default formats");
-    pluginFormatManager.addDefaultFormats();
-    
-    for (auto format : pluginFormatManager.getFormats()) {
-        puts("Found format");
-        if (format->canScanForPlugins()) {
-            auto locations = format->getDefaultLocationsToSearch();
-            auto paths = format->searchPathsForPlugins(locations, false);
-
-            for (auto path : paths) {
-                std::cout << path << std::endl;
-            }
-        }
-    }
-    
-    auto plugin = createAudioPlugin(&pluginFormatManager, "Diva");
-    
-    if (plugin != nullptr) {
-        //plugin->createGui();
-        audioProcessor.plugins.push_back(std::move(plugin));
-    } else {
-        puts("Failed to load plugin");
-    }
 }
 
 Flutter_juceAudioProcessorEditor::~Flutter_juceAudioProcessorEditor()

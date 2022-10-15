@@ -344,14 +344,29 @@ class FFIWidgetTrait extends Struct {
 }
 
 class AudioPlugins {
-  var channel = const BasicMessageChannel("AudioPlugins", StringCodec());
+  final _channel =
+      const BasicMessageChannel("AudioPlugins", JSONMessageCodec());
+
+  ValueNotifier<List<String>> plugins =
+      ValueNotifier(["Diva", "ValhallaRoom", "ValhallaDelay", "Kontakt"]);
 
   AudioPlugins() {
-    channel.setMessageHandler(messageHandler);
+    _channel.setMessageHandler(messageHandler);
+    _channel.send(jsonEncode({"message": "list plugins"}));
   }
 
-  Future<String> messageHandler(String? message) async {
-    print("Recieved message: " + message.toString());
+  void createPlugin(int id, String name) {
+    _channel
+        .send(jsonEncode({"message": "create", "name": name, "module_id": id}));
+  }
+
+  Future<String> messageHandler(dynamic message) async {
+    if (message != null) {
+      print("Recieved message: " + message.toString());
+    } else {
+      print("Recieved message: null");
+    }
+
     return "Reply message";
   }
 }

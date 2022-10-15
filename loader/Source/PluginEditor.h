@@ -27,7 +27,6 @@ public:
 private:
     Flutter_juceAudioProcessor& audioProcessor;
     juce::NSViewComponent flutterView;
-    juce::AudioPluginFormatManager pluginFormatManager;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessorEditor)
 };

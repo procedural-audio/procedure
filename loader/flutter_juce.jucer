@@ -5,7 +5,8 @@
               pluginCode="Flju" pluginFormats="buildAU,buildStandalone,buildVST3">
   <MAINGROUP id="yEgtCq" name="flutter_juce">
     <GROUP id="{7182798D-AC8B-4366-DF30-65B33C163721}" name="Source">
-      <FILE id="mlxWkY" name="plugin.h" compile="0" resource="0" file="Source/plugin.h"/>
+      <FILE id="YZiS76" name="AudioPlugin.cpp" compile="1" resource="0" file="Source/AudioPlugin.cpp"/>
+      <FILE id="mlxWkY" name="AudioPlugin.h" compile="0" resource="0" file="Source/AudioPlugin.h"/>
       <FILE id="kxNBwr" name="nodus.h" compile="0" resource="0" file="Source/nodus.h"/>
       <FILE id="EUAoX6" name="PluginProcessor.mm" compile="1" resource="0"
             file="Source/PluginProcessor.mm"/>

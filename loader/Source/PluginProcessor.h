@@ -12,7 +12,7 @@
 #include <JuceHeader.h>
 
 #include "nodus.h"
-#include "plugin.h"
+#include "AudioPlugin.h"
 
 #import "FlutterChannels.h"
 
@@ -60,10 +60,14 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    void pluginsMessage(juce::String message);
 
 public:
     FlutterViewController* flutterViewController { nullptr };
-    std::vector<std::unique_ptr<MyAudioPlugin>> plugins;
+    
+    std::vector<std::unique_ptr<AudioPlugin>> plugins;
+    FlutterBasicMessageChannel* audioPluginsChannel;
     
 private:
     FFIHost* host = nullptr;
@@ -77,8 +81,17 @@ private:
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
     void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t) = nullptr;
     
-    FlutterBasicMessageChannel* audioPluginsChannel;
-
+    void (^audioPluginsCallback)(id _Nullable, FlutterReply  _Nonnull) = ^(id _Nullable encoded, FlutterReply _Nonnull callback) {
+        if (encoded) {
+            NSString *message = encoded;
+            pluginsMessage(juce::String([message UTF8String]));
+        } else {
+            puts("Got null message");
+        }
+    };
+    
+    juce::AudioPluginFormatManager pluginFormatManager;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessor)
 };

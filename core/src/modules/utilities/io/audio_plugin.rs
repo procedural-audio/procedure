@@ -1,10 +1,8 @@
-use audio_plugin_loader::{AudioPluginManager, AudioPlugin};
-
 use crate::modules::*;
 
 pub struct AudioPluginModule {
-    manager: AudioPluginManager,
-    plugin: Option<AudioPlugin>
+    prepare: Option<fn (u32, usize)>,
+    process: Option<fn (&mut [f32])>
 }
 
 impl Module for AudioPluginModule {
@@ -14,7 +12,7 @@ impl Module for AudioPluginModule {
         name: "Audio Plugin",
         features: &[],
         color: Color::BLUE,
-        size: Size::Static(160, 100),
+        size: Size::Static(190, 85),
         voicing: Voicing::Monophonic,
         vars: &[],
         inputs: &[
@@ -28,16 +26,9 @@ impl Module for AudioPluginModule {
     };
 
     fn new() -> Self {
-        let manager = AudioPluginManager::new();
-        let plugin = manager.create_plugin("Diva");
-        
-        if let Some(plugin) = &plugin {
-            // plugin.show_gui();
-        }
-
         Self {
-            manager,
-            plugin,
+            prepare: None,
+            process: None
         }
     }
 
@@ -50,12 +41,12 @@ impl Module for AudioPluginModule {
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 30),
-            size: (40, 40),
+            position: (35, 35),
+            size: (120, 35),
             child: _AudioPlugin {
-                plugin: &self.plugin,
-                manager: &self.manager
-            },
+                prepare: &mut self.prepare,
+                process: &mut self.process
+            }
         })
     }
 
@@ -67,8 +58,8 @@ impl Module for AudioPluginModule {
 
 #[repr(C)]
 pub struct _AudioPlugin<'a> {
-    pub plugin: &'a Option<AudioPlugin>,
-    pub manager: &'a AudioPluginManager,
+    pub prepare: &'a mut Option<fn (u32, usize)>,
+    pub process: &'a mut Option<fn (&mut [f32])>,
 }
 
 impl<'a> WidgetNew for _AudioPlugin<'a> {
@@ -78,14 +69,5 @@ impl<'a> WidgetNew for _AudioPlugin<'a> {
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
-    }
-}
-
-/* ========== FFI ========== */
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_audio_plugin_show_gui(widget: &mut _AudioPlugin) {
-    if let Some(plugin) = widget.plugin {
-        plugin.show_gui();
     }
 }

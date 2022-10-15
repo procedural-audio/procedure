@@ -14,6 +14,44 @@
 
 #include <dlfcn.h>
 
+std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFormatManager* manager, String name) {
+    for (auto format : manager->getFormats()) {
+        auto locations = format->getDefaultLocationsToSearch();
+        auto paths = format->searchPathsForPlugins(locations, false);
+
+        for (auto path : paths) {
+
+            if (path.contains(name)) {
+                puts("Found plugin");
+
+                OwnedArray<PluginDescription> descs;
+
+                format->findAllTypesForFile(descs, path);
+
+                for (auto desc : descs) {
+                    if (desc->name.contains(name)) {
+                        puts("Found instance to add");
+
+                        juce::String error = "";
+
+                        auto plugin = manager->createPluginInstance(*desc, 44100, 256, error);
+
+                        if (plugin != nullptr) {
+                            puts("Created plugin instance");
+                            return std::unique_ptr<AudioPlugin>(new AudioPlugin(moduleId, name, std::move(plugin)));
+                        } else {
+                            puts("Failed to create plugin");
+                            return nullptr;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 //==============================================================================
 Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -24,7 +62,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), pluginFormatManager()
 #endif
 {
     // FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil allowHeadlessExecution:YES];
@@ -37,15 +75,46 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
     // flutterViewController = [[[FlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil] retain];
     
     // [flutterViewController.engine runWithEntrypoint:@"main"];
+        
+    auto codec = [FlutterJSONMessageCodec alloc];
     
     audioPluginsChannel = [
         FlutterBasicMessageChannel
         messageChannelWithName:@"AudioPlugins"
         binaryMessenger:flutterViewController.engine.binaryMessenger
+        codec:codec
     ];
-        
-    [audioPluginsChannel sendMessage:@"First message"];
-    [audioPluginsChannel sendMessage:@32];
+    
+    [audioPluginsChannel setMessageHandler:audioPluginsCallback];
+    
+    pluginFormatManager.addDefaultFormats();
+    
+    for (auto format : pluginFormatManager.getFormats()) {
+        if (format->canScanForPlugins()) {
+            auto locations = format->getDefaultLocationsToSearch();
+            auto paths = format->searchPathsForPlugins(locations, false);
+
+            for (auto path : paths) {
+                std::cout << path << std::endl;
+            }
+        }
+    }
+    
+    /*[audioPluginsChannel setMessageHandler:^(id  _Nullable message, FlutterReply  _Nonnull callback) {
+        puts("Recieved message in ObjC");
+    }];*/
+    
+    /*[nativeChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+          if ([@"helloFromNativeCode"  isEqualToString:call.method]) {
+          NSString *strNative = [weakSelf helloFromNativeCode];
+          result(strNative);
+        } else {
+        result(FlutterMethodNotImplemented);
+      }
+    }];*/
+    
+    // [audioPluginsChannel sendMessage:@"First message"];
+    // [audioPluginsChannel sendMessage:@32];
     
     #ifdef __APPLE__
         auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
@@ -83,6 +152,46 @@ Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
     [flutterViewController release];
     // ffiDestroyHost(host);
     // dlclose(handle);
+}
+
+void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
+    auto json = juce::JSON::parse(message);
+    
+    if (json["message"] == "create") {
+        juce::String name = json["name"];
+        int moduleId = json["module_id"];
+        
+        for (auto& plugin : plugins) {
+            if (plugin->getName() == name) {
+                puts("Plugin already exists, showing GUI");
+                plugin->createGui();
+                return;
+            }
+        }
+                
+        auto plugin = createAudioPlugin(moduleId, &pluginFormatManager, name);
+        
+        if (plugin != nullptr) {
+            std::cout << "Created plugin " << name << " for module id " << moduleId << std::endl;
+            
+            for (int i = 0; i < plugins.size(); i++) {
+                if (plugins[i]->getModuleId()) {
+                    plugins.erase(plugins.begin() + i);
+                    break;
+                }
+            }
+            
+            plugin->createGui();
+            
+            plugins.push_back(std::move(plugin));
+        } else {
+            std::cout << "Failed to create plugin " << name << std::endl;
+        }
+    } else if (json["message"] == "list plugins") {
+        puts("SHOULD SEND PLUGIN LIST HERE");
+    } else {
+        std::cout << "Recieved message: " << message << std::endl;
+    }
 }
 
 //==============================================================================
@@ -150,13 +259,13 @@ void Flutter_juceAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    /*std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
+    std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
     if (ffiHostPrepare != nullptr && host != nullptr) {
         ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
-    }*/
+    }
     
-    [audioPluginsChannel sendMessage:@"Prepare message"];
+    [audioPluginsChannel sendMessage:@32];
 }
 
 void Flutter_juceAudioProcessor::releaseResources()
