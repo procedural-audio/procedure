@@ -14,7 +14,24 @@
 
 #include <dlfcn.h>
 
-std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFormatManager* manager, String name) {
+std::vector<std::unique_ptr<AudioPlugin>> plugins;
+
+extern "C" void plugin_process_block(int moduleId, float** audio_buffers, int channels, int samples) {
+    for (auto& plugin : plugins) {
+        if (plugin->getModuleId() == moduleId) {
+            auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
+            auto midi = juce::MidiBuffer();
+            
+            plugin->processBlock(audio, midi);
+            
+            return;
+        }
+    }
+    
+    puts("Couldn't find loaded plugin to process");
+}
+
+std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFormatManager* manager, String name, double sampleRate, int blockSize) {
     for (auto format : manager->getFormats()) {
         auto locations = format->getDefaultLocationsToSearch();
         auto paths = format->searchPathsForPlugins(locations, false);
@@ -34,7 +51,7 @@ std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFo
 
                         juce::String error = "";
 
-                        auto plugin = manager->createPluginInstance(*desc, 44100, 256, error);
+                        auto plugin = manager->createPluginInstance(*desc, sampleRate, blockSize, error);
 
                         if (plugin != nullptr) {
                             puts("Created plugin instance");
@@ -100,20 +117,6 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
         }
     }
     
-    /*[audioPluginsChannel setMessageHandler:^(id  _Nullable message, FlutterReply  _Nonnull callback) {
-        puts("Recieved message in ObjC");
-    }];*/
-    
-    /*[nativeChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
-          if ([@"helloFromNativeCode"  isEqualToString:call.method]) {
-          NSString *strNative = [weakSelf helloFromNativeCode];
-          result(strNative);
-        } else {
-        result(FlutterMethodNotImplemented);
-      }
-    }];*/
-    
-    // [audioPluginsChannel sendMessage:@"First message"];
     // [audioPluginsChannel sendMessage:@32];
     
     #ifdef __APPLE__
@@ -150,6 +153,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
 {
     [flutterViewController release];
+    plugins.clear();
     // ffiDestroyHost(host);
     // dlclose(handle);
 }
@@ -162,20 +166,20 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
         int moduleId = json["module_id"];
         
         for (auto& plugin : plugins) {
-            if (plugin->getName() == name) {
-                puts("Plugin already exists, showing GUI");
-                plugin->createGui();
+            if (plugin->getName() == name && plugin->getModuleId() == moduleId) {
+                puts("Plugin already loaded");
                 return;
             }
         }
                 
-        auto plugin = createAudioPlugin(moduleId, &pluginFormatManager, name);
+        auto plugin = createAudioPlugin(moduleId, &pluginFormatManager, name, sampleRate, samplesPerBlock);
         
         if (plugin != nullptr) {
             std::cout << "Created plugin " << name << " for module id " << moduleId << std::endl;
             
             for (int i = 0; i < plugins.size(); i++) {
-                if (plugins[i]->getModuleId()) {
+                if (plugins[i]->getModuleId() == moduleId) {
+                    puts("Removing old plugin");
                     plugins.erase(plugins.begin() + i);
                     break;
                 }
@@ -187,6 +191,21 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
         } else {
             std::cout << "Failed to create plugin " << name << std::endl;
         }
+    } else if (json["message"] == "show") {
+        int moduleId = json["module_id"];
+        
+        puts("Showing gui");
+        
+        for (auto& plugin : plugins) {
+            if (plugin->getModuleId() == moduleId) {
+                puts("Found gui to show");
+                plugin->showGui();
+                return;
+            }
+        }
+        
+        puts("Couldn't find plugin for module id");
+        
     } else if (json["message"] == "list plugins") {
         puts("SHOULD SEND PLUGIN LIST HERE");
     } else {
@@ -259,13 +278,14 @@ void Flutter_juceAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    this->sampleRate = sampleRate;
+    this->samplesPerBlock = samplesPerBlock;
+    
     std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
     if (ffiHostPrepare != nullptr && host != nullptr) {
         ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
     }
-    
-    [audioPluginsChannel sendMessage:@32];
 }
 
 void Flutter_juceAudioProcessor::releaseResources()
@@ -375,9 +395,9 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
     
-    for (auto& plugin : plugins) {
+    /*for (auto& plugin : plugins) {
         plugin->processBlock(buffer, midiMessages);
-    }
+    }*/
 }
 
 //==============================================================================

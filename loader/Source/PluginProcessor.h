@@ -66,7 +66,6 @@ public:
 public:
     FlutterViewController* flutterViewController { nullptr };
     
-    std::vector<std::unique_ptr<AudioPlugin>> plugins;
     FlutterBasicMessageChannel* audioPluginsChannel;
     
 private:
@@ -89,6 +88,10 @@ private:
             puts("Got null message");
         }
     };
+    
+    double sampleRate = 0;
+    int samplesPerBlock = 0;
+    
     
     juce::AudioPluginFormatManager pluginFormatManager;
     

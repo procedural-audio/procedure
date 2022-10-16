@@ -360,6 +360,10 @@ class AudioPlugins {
         .send(jsonEncode({"message": "create", "name": name, "module_id": id}));
   }
 
+  void showPlugin(int id) {
+    _channel.send(jsonEncode({"message": "show", "module_id": id}));
+  }
+
   Future<String> messageHandler(dynamic message) async {
     if (message != null) {
       print("Recieved message: " + message.toString());
