@@ -77,34 +77,37 @@ void main(List<String> args) {
 
   print("Found " + args.length.toString() + " args in main()");
 
-  var addr = int.tryParse(args[0].split(": ").last);
-
-  if (addr == null) {
+  if (args.isEmpty) {
     print("Failed to get host pointer");
-    exit(0);
+
+    Host host = Host(api.ffiCreateHost());
+
+    host.graph.refresh();
+
+    var json = jsonDecode(
+        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
+            .readAsStringSync());
+
+    host.globals.instrument = InstrumentInfo.fromJson(
+        json, contentPath + "/instruments/UntitledInstrument");
+
+    runApp(Window(host));
+  } else {
+    var addr = int.parse(args[0].split(": ").last);
+
+    Host host = Host(api.ffiHackConvert(addr));
+
+    host.graph.refresh();
+
+    var json = jsonDecode(
+        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
+            .readAsStringSync());
+
+    host.globals.instrument = InstrumentInfo.fromJson(
+        json, contentPath + "/instruments/UntitledInstrument");
+
+    runApp(Window(host));
   }
-
-  var hostRaw = api.ffiHackConvert(addr);
-
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    print("Set up window here");
-  }
-
-  Host host = Host(hostRaw);
-
-  host.graph.refresh();
-
-  var json = jsonDecode(
-      File(contentPath + "/instruments/UntitledInstrument/info/info.json")
-          .readAsStringSync());
-
-  host.globals.instrument = InstrumentInfo.fromJson(
-      json, contentPath + "/instruments/UntitledInstrument");
-
-  runApp(Window(host));
-
-  // refreshInstruments();
-  // refreshPresets();
 }
 
 /*class MainWidgetDebug extends StatelessWidget {

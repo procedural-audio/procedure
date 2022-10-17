@@ -343,19 +343,23 @@ class FFIWidgetTrait extends Struct {
   external int metadata;
 }
 
+class AudioPluginsCategory {
+  AudioPluginsCategory(this.name, this.plugins);
+
+  String name;
+  List<String> plugins;
+}
+
 class AudioPlugins {
   final _channel =
       const BasicMessageChannel("AudioPlugins", JSONMessageCodec());
 
   ValueNotifier<int?> processAddress = ValueNotifier(null);
 
-  ValueNotifier<List<String>> plugins = ValueNotifier([
-    "Diva",
-    "ValhallaRoom",
-    "ValhallaDelay",
-    "Kontakt",
-    "Keyscape",
-    "Omnisphere"
+  ValueNotifier<List<AudioPluginsCategory>> plugins = ValueNotifier([
+    AudioPluginsCategory("Synths", ["Diva", "Omnisphere"]),
+    AudioPluginsCategory("Samplers", ["Kontakt", "Keyscape"]),
+    AudioPluginsCategory("Effects", ["ValhallaRoom", "ValhallaDelay"])
   ]);
 
   AudioPlugins() {

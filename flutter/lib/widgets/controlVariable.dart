@@ -19,7 +19,8 @@ void Function(FFIWidgetPointer, Pointer<Utf8>) ffiControlVariableSetName = core
     .asFunction();
 
 class ControlVariableWidget extends ModuleWidget {
-  ControlVariableWidget(this.host, Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  ControlVariableWidget(this.host, Host h, FFINode m, FFIWidget w)
+      : super(h, m, w);
 
   Host host;
 
@@ -48,7 +49,8 @@ class ControlVariableWidget extends ModuleWidget {
 }
 
 class VariableField extends StatefulWidget {
-  VariableField({required this.host, required this.varName, required this.onUpdate});
+  VariableField(
+      {required this.host, required this.varName, required this.onUpdate});
 
   Host host;
   String? varName;
@@ -58,8 +60,8 @@ class VariableField extends StatefulWidget {
   State<VariableField> createState() => _VariableField();
 }
 
-class _VariableField extends State<VariableField> with TickerProviderStateMixin {
-
+class _VariableField extends State<VariableField>
+    with TickerProviderStateMixin {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
@@ -75,7 +77,8 @@ class _VariableField extends State<VariableField> with TickerProviderStateMixin 
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
 
     _expandAnimation = CurvedAnimation(
       parent: _animationController!,
@@ -92,40 +95,31 @@ class _VariableField extends State<VariableField> with TickerProviderStateMixin 
   @override
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
-      link: _layerLink,
-      child: Container(
-        width: 100,
-        height: 16,
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(20, 20, 20, 1.0),
-          borderRadius: BorderRadius.circular(5)
-        ),
-        child: GestureDetector(
-          onTap: _toggleDropdown,
-          child: ValueListenableBuilder<List<Var>>(
-            valueListenable: widget.host.vars,
-            builder: (context, vars, w) {
-              bool found = false;
+        link: _layerLink,
+        child: Container(
+            width: 100,
+            height: 16,
+            decoration: BoxDecoration(
+                color: const Color.fromRGBO(20, 20, 20, 1.0),
+                borderRadius: BorderRadius.circular(5)),
+            child: GestureDetector(
+                onTap: _toggleDropdown,
+                child: ValueListenableBuilder<List<Var>>(
+                    valueListenable: widget.host.vars,
+                    builder: (context, vars, w) {
+                      bool found = false;
 
-              for (var v in vars) {
-                if (v.name == widget.varName) {
-                  found = true;
-                }
-              }
+                      for (var v in vars) {
+                        if (v.name == widget.varName) {
+                          found = true;
+                        }
+                      }
 
-              return Center(
-                child: Text(
-                  (found ? (widget.varName ?? "") : "(none)"),
-                  style: const TextStyle(
-                    color: Colors.red
-                  )
-                )
-              );
-            }
-          )
-        )
-      )
-    );
+                      return Center(
+                          child: Text(
+                              (found ? (widget.varName ?? "") : "(none)"),
+                              style: const TextStyle(color: Colors.red)));
+                    }))));
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -134,74 +128,65 @@ class _VariableField extends State<VariableField> with TickerProviderStateMixin 
     var size = renderBox.size;
     var offset = renderBox.localToGlobal(Offset.zero);
     var topOffset = offset.dy + size.height + 5;
-    
+
     print("Create overlay entry");
 
     return OverlayEntry(
-      maintainState: false,
-      opaque: false,
-      builder: (entryContext) {
-        return FocusScope(
-          autofocus: true,
-          node: _focusScopeNode,
-          child: GestureDetector(
-            onTap: () {
-              _toggleDropdown(close: true);
-            },
-            behavior: HitTestBehavior.opaque,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: offset.dx,
-                    top: topOffset,
-                    child: CompositedTransformFollower(
-                      offset: Offset(0, size.height + 5),
-                      link: _layerLink,
-                      showWhenUnlinked: false,
-                      child: Material(
-                        elevation: 0,
-                        borderRadius: BorderRadius.zero,
-                        color: Colors.transparent,
-                        child: SizeTransition(
-                          axisAlignment: 1,
-                          sizeFactor: _expandAnimation!,
-                          // child: widget.child,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color.fromRGBO(50, 50, 50, 1.0),
-                              borderRadius: BorderRadius.circular(5)
-                            ),
-                            child: ValueListenableBuilder<List<Var>>(
-                              valueListenable: widget.host.vars,
-                              builder: (context, vars, w) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: vars.map((e) {
-                                    if (e.notifier.value is double) {
-                                      return VariableFieldElement(
-                                        e.name,
-                                        (s) {
-                                          widget.onUpdate(s);
-                                        }
-                                      );
-                                    } else {
-                                      return const SizedBox();
-                                    }
-                                  }).toList()
-                                );
-                              },
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                ]
-              )
-          )
-        );
-      }
-    );
+        maintainState: false,
+        opaque: false,
+        builder: (entryContext) {
+          return FocusScope(
+              autofocus: true,
+              node: _focusScopeNode,
+              child: GestureDetector(
+                  onTap: () {
+                    _toggleDropdown(close: true);
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Stack(children: [
+                    Positioned(
+                        left: offset.dx,
+                        top: topOffset,
+                        child: CompositedTransformFollower(
+                            offset: Offset(0, size.height + 5),
+                            link: _layerLink,
+                            showWhenUnlinked: false,
+                            child: Material(
+                                elevation: 0,
+                                borderRadius: BorderRadius.zero,
+                                color: Colors.transparent,
+                                child: SizeTransition(
+                                    axisAlignment: 1,
+                                    sizeFactor: _expandAnimation!,
+                                    // child: widget.child,
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                            color: const Color.fromRGBO(
+                                                50, 50, 50, 1.0),
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        child:
+                                            ValueListenableBuilder<List<Var>>(
+                                          valueListenable: widget.host.vars,
+                                          builder: (context, vars, w) {
+                                            return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: vars.map((e) {
+                                                  if (e.notifier.value
+                                                      is double) {
+                                                    return VariableFieldElement(
+                                                        e.name, (s) {
+                                                      widget.onUpdate(s);
+                                                    });
+                                                  } else {
+                                                    return const SizedBox();
+                                                  }
+                                                }).toList());
+                                          },
+                                        ))))))
+                  ])));
+        });
   }
 
   void _toggleDropdown({bool close = false}) async {
@@ -236,49 +221,43 @@ class _VariableFieldElement extends State<VariableFieldElement> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (e) {
-        setState(() {
-          hovering = true;
-        });
-      },
-      onExit: (e) {
-        setState(() {
-          hovering = false;
-        });
-      },
-      child: GestureDetector(
-        onTap: () {
-          widget.onUpdate(widget.varName);
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
         },
-        child: Container(
-          height: 30,
-          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-          color: hovering ? const Color.fromRGBO(140, 140, 140, 1.0) : const Color.fromRGBO(120, 120, 120, 1.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Container(
-                width: 14,
-                height: 14,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.all(Radius.circular(5))
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                widget.varName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w300
-                )
-              )
-            ]
-          )
-        )
-      )
-    );
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: GestureDetector(
+            onTap: () {
+              widget.onUpdate(widget.varName);
+            },
+            child: Container(
+                height: 30,
+                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                color: hovering
+                    ? const Color.fromRGBO(140, 140, 140, 1.0)
+                    : const Color.fromRGBO(120, 120, 120, 1.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Container(
+                        width: 14,
+                        height: 14,
+                        decoration: const BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(widget.varName,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w300))
+                    ]))));
   }
 }

@@ -20,6 +20,8 @@ class AudioPluginWidget extends ModuleWidget {
     ffiAudioPluginSetModuleId(widgetRaw.pointer, api.ffiNodeGetId(moduleRaw));
   }
 
+  String? loadedPlugin;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -58,33 +60,298 @@ class AudioPluginWidget extends ModuleWidget {
                 );
               }),
           Expanded(
-              child: ValueListenableBuilder<List<String>>(
+              child: ValueListenableBuilder<List<AudioPluginsCategory>>(
             valueListenable: host.audioPlugins.plugins,
             builder: (context, plugins, v) {
-              return DropdownButton<String>(
-                value: null,
-                isExpanded: true,
-                items: plugins
-                    .map((String e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          e,
-                          style:
-                              const TextStyle(color: Colors.blue, fontSize: 14),
-                        )))
-                    .toList(),
-                onChanged: (v) {
-                  host.audioPlugins
-                      .createPlugin(api.ffiNodeGetId(moduleRaw), v.toString());
+              return SearchableDropdown(
+                value: loadedPlugin,
+                elements: plugins,
+                onSelect: (value) {
+                  print("Selected plugin " + value.toString());
                 },
-                isDense: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-                dropdownColor: const Color.fromRGBO(20, 20, 20, 1.0),
-                iconSize: 20,
-                underline: const SizedBox(),
               );
             },
           )),
         ]));
+  }
+}
+
+class SearchableDropdown extends StatefulWidget {
+  SearchableDropdown(
+      {required this.value, required this.elements, required this.onSelect});
+
+  String? value;
+  List<AudioPluginsCategory> elements;
+  void Function(String?) onSelect;
+
+  @override
+  State<SearchableDropdown> createState() => _SearchableDropdown();
+}
+
+class _SearchableDropdown extends State<SearchableDropdown>
+    with TickerProviderStateMixin {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+  AnimationController? _animationController;
+
+  FocusNode textFieldFocus = FocusNode();
+
+  TextEditingController controller = TextEditingController(text: "");
+
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+  final FocusNode focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 0));
+
+    textFieldFocus.addListener(onTextFieldFocus);
+  }
+
+  void onTextFieldFocus() async {
+    if (_isOpen) {
+      await _animationController?.reverse();
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    } else {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context)?.insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+      _animationController?.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusScopeNode.dispose();
+    textFieldFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+        link: _layerLink,
+        child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+                color: const Color.fromRGBO(20, 20, 20, 1.0),
+                borderRadius: BorderRadius.circular(5)),
+            child: Row(children: [
+              Expanded(
+                  child: TextField(
+                      focusNode: textFieldFocus,
+                      controller: controller,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: const InputDecoration(isDense: true),
+                      onChanged: (v) {
+                        print("Search updated");
+                      })),
+              Container(
+                width: 14,
+                child: Icon(Icons.search,
+                    color: Color.fromRGBO(60, 60, 60, 1.0), size: 16),
+              )
+            ])));
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+        maintainState: false,
+        opaque: false,
+        builder: (entryContext) {
+          return FocusScope(
+              autofocus: true,
+              node: _focusScopeNode,
+              child: GestureDetector(
+                  onTap: () {
+                    textFieldFocus.unfocus();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Stack(children: [
+                    Positioned(
+                        left: offset.dx - 50,
+                        top: offset.dy + size.height + 5,
+                        child: CompositedTransformFollower(
+                            offset: Offset(0, size.height),
+                            link: _layerLink,
+                            showWhenUnlinked: false,
+                            child: Material(
+                                elevation: 0,
+                                borderRadius: BorderRadius.zero,
+                                color: Colors.transparent,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color:
+                                          const Color.fromRGBO(20, 20, 20, 1.0),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                          color: const Color.fromRGBO(
+                                              40, 40, 40, 1.0),
+                                          width: 1.0)),
+                                  child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: widget.elements.map((e) {
+                                        return PluginListCategory(
+                                          name: e.name,
+                                          elements: e.plugins
+                                              .map((e) =>
+                                                  PluginListElement(e, (s) {
+                                                    print(
+                                                        "Some element selected");
+                                                  }))
+                                              .toList(),
+                                        );
+                                      }).toList()),
+                                ))))
+                  ])));
+        });
+  }
+}
+
+class PluginListCategory extends StatefulWidget {
+  final String name;
+  final List<Widget> elements;
+
+  PluginListCategory({required this.name, required this.elements});
+
+  @override
+  State<PluginListCategory> createState() => _PluginListCategory();
+}
+
+class _PluginListCategory extends State<PluginListCategory> {
+  bool hovering = false;
+  bool expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        width: 200,
+        child: Column(
+          children: <Widget>[
+                MouseRegion(
+                    onEnter: (event) {
+                      setState(() {
+                        hovering = true;
+                      });
+                    },
+                    onExit: (event) {
+                      setState(() {
+                        hovering = false;
+                      });
+                    },
+                    child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            expanded = !expanded;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                          height: 24,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Row(children: [
+                              Icon(
+                                expanded
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                //color: Colors.white,
+                                color: Color.fromRGBO(200, 200, 200, 1.0),
+                                size: 20,
+                              ),
+                              Text(
+                                widget.name,
+                                style: const TextStyle(
+                                    //color: Colors.white,
+                                    color: Color.fromRGBO(200, 200, 200, 1.0),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w300),
+                              )
+                            ]),
+                          ),
+                          decoration: BoxDecoration(
+                            color: !hovering
+                                ? const Color.fromRGBO(20, 20, 20, 1.0)
+                                : const Color.fromRGBO(40, 40, 40, 1.0),
+                          ),
+                        )))
+              ] +
+              (expanded ? widget.elements : []),
+        ));
+  }
+}
+
+class PluginListElement extends StatefulWidget {
+  final String name;
+  final void Function(String) onSelect;
+
+  const PluginListElement(this.name, this.onSelect);
+
+  @override
+  State<PluginListElement> createState() => _PluginListElement();
+}
+
+class _PluginListElement extends State<PluginListElement> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+        onEnter: (event) {
+          setState(() {
+            hovering = true;
+          });
+        },
+        onExit: (event) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: GestureDetector(
+            onTap: () {
+              print("ADD A THING");
+            },
+            child: Container(
+              height: 22,
+              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Row(children: [
+                    Icon(
+                      Icons.settings,
+                      color: Colors.blue,
+                      size: 16,
+                    ),
+                    Container(
+                      width: 5,
+                    ),
+                    Text(
+                      widget.name,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  ])),
+              decoration: BoxDecoration(
+                color: !hovering
+                    ? const Color.fromRGBO(20, 20, 20, 1.0)
+                    : const Color.fromRGBO(40, 40, 40, 1.0),
+              ),
+            )));
   }
 }

@@ -12,7 +12,7 @@ impl Module for AudioPluginModule {
         name: "Audio Plugin",
         features: &[],
         color: Color::BLUE,
-        size: Size::Static(220, 90),
+        size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
         vars: &[],
         inputs: &[
@@ -42,7 +42,7 @@ impl Module for AudioPluginModule {
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (35, 40),
-            size: (150, 35),
+            size: (200, 35),
             child: _AudioPlugin {
                 process: &mut self.process,
                 id: &mut self.id
