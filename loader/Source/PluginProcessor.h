@@ -19,8 +19,7 @@
 struct FFIHost {};
 
 //==============================================================================
-/**
-*/
+
 class Flutter_juceAudioProcessor  : public juce::AudioProcessor
 {
 public:

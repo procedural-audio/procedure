@@ -347,12 +347,21 @@ class AudioPlugins {
   final _channel =
       const BasicMessageChannel("AudioPlugins", JSONMessageCodec());
 
-  ValueNotifier<List<String>> plugins =
-      ValueNotifier(["Diva", "ValhallaRoom", "ValhallaDelay", "Kontakt"]);
+  ValueNotifier<int?> processAddress = ValueNotifier(null);
+
+  ValueNotifier<List<String>> plugins = ValueNotifier([
+    "Diva",
+    "ValhallaRoom",
+    "ValhallaDelay",
+    "Kontakt",
+    "Keyscape",
+    "Omnisphere"
+  ]);
 
   AudioPlugins() {
     _channel.setMessageHandler(messageHandler);
     _channel.send(jsonEncode({"message": "list plugins"}));
+    _channel.send(jsonEncode({"message": "get process"}));
   }
 
   void createPlugin(int id, String name) {
@@ -366,9 +375,25 @@ class AudioPlugins {
 
   Future<String> messageHandler(dynamic message) async {
     if (message != null) {
-      print("Recieved message: " + message.toString());
+      if (message is String) {
+        if (message.contains("process addr")) {
+          var num = message.split(" ").last;
+          var addr = int.tryParse(num);
+
+          if (addr != null) {
+            print("Setting plugin process addr " + addr.toString());
+            processAddress.value = addr;
+          } else {
+            print("Failed to parse plugin process addr");
+          }
+        } else {
+          print("Recieved string message: " + message);
+        }
+      } else {
+        print("Recieved other typed message: " + message.toString());
+      }
     } else {
-      print("Recieved message: null");
+      print("Recieved null message");
     }
 
     return "Reply message";

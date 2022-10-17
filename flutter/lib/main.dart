@@ -25,6 +25,8 @@ import 'module.dart';
 
 import 'config.dart';
 
+import 'dart:ffi' as ffi;
+
 import 'ui/layout.dart';
 
 class Globals {
@@ -70,14 +72,25 @@ void callTickRecursive(ModuleWidget widget) {
   }
 }
 
-void main() {
+void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
+
+  print("Found " + args.length.toString() + " args in main()");
+
+  var addr = int.tryParse(args[0].split(": ").last);
+
+  if (addr == null) {
+    print("Failed to get host pointer");
+    exit(0);
+  }
+
+  var hostRaw = api.ffiHackConvert(addr);
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     print("Set up window here");
   }
 
-  Host host = Host(api.ffiCreateHost());
+  Host host = Host(hostRaw);
 
   host.graph.refresh();
 

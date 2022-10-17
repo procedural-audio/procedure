@@ -25,6 +25,7 @@ public:
     void showGui();
     void hideGui();
     void processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages);
+    void prepareToPlay (double sampleRate, int samplesPerBlock);
     int getModuleId() {
         return moduleId;
     }

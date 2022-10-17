@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 
+import 'dart:ffi';
+
 import 'widget.dart';
 import '../host.dart';
 
+void Function(FFIWidgetPointer, int) ffiAudioPluginSetProcessAddr = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
+        "ffi_audio_plugin_set_process_addr")
+    .asFunction();
+
+void Function(FFIWidgetPointer, int) ffiAudioPluginSetModuleId = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int32)>>(
+        "ffi_audio_plugin_set_module_id")
+    .asFunction();
+
 class AudioPluginWidget extends ModuleWidget {
-  AudioPluginWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  AudioPluginWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+    ffiAudioPluginSetModuleId(widgetRaw.pointer, api.ffiNodeGetId(moduleRaw));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +43,20 @@ class AudioPluginWidget extends ModuleWidget {
                     color: Colors.blue,
                     size: 14,
                   ))),
-          Container(
-            width: 1,
-            color: Colors.blue,
-          ),
+          ValueListenableBuilder<int?>(
+              valueListenable: host.audioPlugins.processAddress,
+              builder: (context, value, child) {
+                if (value == null) {
+                  ffiAudioPluginSetProcessAddr(widgetRaw.pointer, 0);
+                } else {
+                  ffiAudioPluginSetProcessAddr(widgetRaw.pointer, value);
+                }
+
+                return Container(
+                  width: 1,
+                  color: Colors.blue,
+                );
+              }),
           Expanded(
               child: ValueListenableBuilder<List<String>>(
             valueListenable: host.audioPlugins.plugins,

@@ -22,13 +22,13 @@ extern "C" void plugin_process_block(int moduleId, float** audio_buffers, int ch
             auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
             auto midi = juce::MidiBuffer();
             
+            std::cout << "Calling process() for plugin" << channels << " " << samples << std::endl;
+            
             plugin->processBlock(audio, midi);
             
             return;
         }
     }
-    
-    puts("Couldn't find loaded plugin to process");
 }
 
 std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFormatManager* manager, String name, double sampleRate, int blockSize) {
@@ -82,16 +82,52 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
                        ), pluginFormatManager()
 #endif
 {
+    #ifdef __APPLE__
+        auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
+        handle = dlopen(libPath, RTLD_LAZY);
+    #endif
+
+    #ifdef __MINGW32__
+        EDITTHIS();
+    #endif
+
+    #ifdef __linux__
+        auto libPath = "./lib/libtonevision_core.so";
+        handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
+    #endif
+
+    if (handle) {
+        ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
+        ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
+        ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
+        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t)) dlsym(handle, "ffi_host_process");
+
+        host = ffiCreateHost();
+    } else {
+        fprintf(stderr, "Error loading library: %s\n", dlerror());
+        puts("Faild to open tonevision core");
+        exit(0);
+    }
+
+    events.reserve(64);
+    
     // FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil allowHeadlessExecution:YES];
     // [engine runWithEntrypoint:nil];
     // [flutterViewController setInitialRoute:@"myApp"];
     // auto temp = [[FlutterViewController alloc] initWithProject:nil];
     
-	puts("Created audio processor");
-    flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
-    // flutterViewController = [[[FlutterViewController alloc] initWithProject:nil nibName:nil bundle:nil] retain];
+    // Old initializer
+    // flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
     
-    // [flutterViewController.engine runWithEntrypoint:@"main"];
+    // Build arguments
+    std::string s1 = "host: ";
+    std::string s2 = s1.append(std::to_string((long) host));
+    NSString *s3 = [NSString stringWithCString:s2.c_str() encoding:[NSString defaultCStringEncoding]];
+    
+    NSArray<NSString*>* args = @[s3];
+    FlutterDartProject* project = [[[FlutterDartProject alloc] initWithPrecompiledDartBundle:nil] retain];
+    project.dartEntrypointArguments = args;
+    flutterViewController = [[[FlutterViewController alloc] initWithProject:project] retain];
         
     auto codec = [FlutterJSONMessageCodec alloc];
     
@@ -116,38 +152,6 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
             }
         }
     }
-    
-    // [audioPluginsChannel sendMessage:@32];
-    
-    #ifdef __APPLE__
-        auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
-        handle = dlopen(libPath, RTLD_LAZY);
-    #endif
-
-    #ifdef __MINGW32__
-        EDITTHIS();
-    #endif
-
-    #ifdef __linux__
-        auto libPath = "./lib/libtonevision_core.so";
-        handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
-    #endif
-
-    if (handle) {
-        ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
-        ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
-        ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
-        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t)) dlsym(handle, "ffi_host_process");
-
-        host = ffiCreateHost();
-
-    } else {
-        fprintf(stderr, "Error loading library: %s\n", dlerror());
-        puts("Faild to open tonevision core");
-        exit(0);
-    }
-
-    events.reserve(64);
 }
 
 Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
@@ -171,11 +175,14 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
                 return;
             }
         }
-                
+        
         auto plugin = createAudioPlugin(moduleId, &pluginFormatManager, name, sampleRate, samplesPerBlock);
         
         if (plugin != nullptr) {
             std::cout << "Created plugin " << name << " for module id " << moduleId << std::endl;
+            
+            std::cout << sampleRate << samplesPerBlock << std::endl;
+            plugin->prepareToPlay(sampleRate, samplesPerBlock);
             
             for (int i = 0; i < plugins.size(); i++) {
                 if (plugins[i]->getModuleId() == moduleId) {
@@ -205,9 +212,13 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
         }
         
         puts("Couldn't find plugin for module id");
-        
     } else if (json["message"] == "list plugins") {
         puts("SHOULD SEND PLUGIN LIST HERE");
+    } else if (json["message"] == "get process") {
+        std::string s1 = "process addr ";
+        std::string s2 = s1.append(std::to_string((long) &plugin_process_block));
+        NSString *s3 = [NSString stringWithCString:s2.c_str() encoding:[NSString defaultCStringEncoding]];
+        [audioPluginsChannel sendMessage:s3];
     } else {
         std::cout << "Recieved message: " << message << std::endl;
     }
@@ -285,6 +296,10 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 
     if (ffiHostPrepare != nullptr && host != nullptr) {
         ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
+    }
+    
+    for (auto& plugin : plugins) {
+        plugin->prepareToPlay(sampleRate, samplesPerBlock);
     }
 }
 

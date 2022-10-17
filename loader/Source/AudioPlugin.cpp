@@ -56,3 +56,7 @@ void AudioPlugin::hideGui() {
 void AudioPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     plugin->processBlock(buffer, midiMessages);
 }
+
+void AudioPlugin::prepareToPlay (double sampleRate, int samplesPerBlock) {
+    plugin->prepareToPlay(sampleRate, samplesPerBlock);
+}
