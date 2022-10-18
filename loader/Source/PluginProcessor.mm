@@ -186,6 +186,9 @@ void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name)
                     if (desc->name.contains(name)) {
                         juce::String error = "";
                         
+                        desc->numInputChannels = 2;
+                        desc->numOutputChannels = 2;
+                        
                         pluginFormatManager.createPluginInstanceAsync(
                             *desc,
                             getSampleRate(),
@@ -198,8 +201,8 @@ void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name)
                                 
                                 std::unique_ptr<AudioPlugin> plugin = std::unique_ptr<AudioPlugin>(new AudioPlugin(moduleId, name, std::move(instance)));
                                 
-                                plugin->prepareToPlay(getSampleRate(), getBlockSize());
                                 plugin->createGui();
+                                plugin->prepareToPlay(getSampleRate(), getBlockSize());
                                 
                                 for (int i = 0; i < plugins.size(); i++) {
                                     if (plugins[i]->getModuleId() == moduleId) {
