@@ -6,7 +6,7 @@ pub struct AudioPluginModule {
 }
 
 impl Module for AudioPluginModule {
-    type Voice = usize;
+    type Voice = ();
 
     const INFO: Info = Info {
         name: "Audio Plugin",
@@ -33,7 +33,7 @@ impl Module for AudioPluginModule {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        256
+        ()
     }
 
     fn load(&mut self, _json: &JSON) {}
@@ -51,7 +51,6 @@ impl Module for AudioPluginModule {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
-        *voice = block_size;
     }
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -64,7 +63,7 @@ impl Module for AudioPluginModule {
                         (f)(id, &mut [
                             outputs.audio[0].left.as_mut_ptr(),
                             outputs.audio[0].right.as_mut_ptr(),
-                        ] as *mut *mut f32, 2, *voice as u32);
+                        ] as *mut *mut f32, 2, outputs.audio[0].left.len() as u32);
                     },
                     None => ()
                 }

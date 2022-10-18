@@ -61,7 +61,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     void pluginsMessage(juce::String message);
-
+    void addAudioPlugin(int moduleId, juce::String name);
+    
 public:
     FlutterViewController* flutterViewController { nullptr };
     
@@ -87,10 +88,6 @@ private:
             puts("Got null message");
         }
     };
-    
-    double sampleRate = 0;
-    int samplesPerBlock = 0;
-    
     
     juce::AudioPluginFormatManager pluginFormatManager;
     

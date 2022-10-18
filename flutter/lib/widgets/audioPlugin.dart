@@ -66,8 +66,15 @@ class AudioPluginWidget extends ModuleWidget {
               return SearchableDropdown(
                 value: loadedPlugin,
                 elements: plugins,
-                onSelect: (value) {
-                  print("Selected plugin " + value.toString());
+                onSelect: (name) {
+                  // print("Selected plugin " + value.toString());
+
+                  if (name != null) {
+                    host.audioPlugins
+                        .createPlugin(api.ffiNodeGetId(moduleRaw), name);
+                  } else {
+                    print("Couldn't call createPlugin() for null name");
+                  }
                 },
               );
             },
@@ -153,7 +160,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
                       onChanged: (v) {
                         print("Search updated");
                       })),
-              Container(
+              const SizedBox(
                 width: 14,
                 child: Icon(Icons.search,
                     color: Color.fromRGBO(60, 60, 60, 1.0), size: 16),
@@ -208,11 +215,8 @@ class _SearchableDropdown extends State<SearchableDropdown>
                                         return PluginListCategory(
                                           name: e.name,
                                           elements: e.plugins
-                                              .map((e) =>
-                                                  PluginListElement(e, (s) {
-                                                    print(
-                                                        "Some element selected");
-                                                  }))
+                                              .map((e) => PluginListElement(
+                                                  e, widget.onSelect))
                                               .toList(),
                                         );
                                       }).toList()),
@@ -323,15 +327,15 @@ class _PluginListElement extends State<PluginListElement> {
         },
         child: GestureDetector(
             onTap: () {
-              print("ADD A THING");
+              widget.onSelect(widget.name);
             },
             child: Container(
               height: 22,
-              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
               child: Align(
                   alignment: Alignment.centerLeft,
                   child: Row(children: [
-                    Icon(
+                    const Icon(
                       Icons.settings,
                       color: Colors.blue,
                       size: 16,

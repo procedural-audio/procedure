@@ -16,57 +16,23 @@
 
 std::vector<std::unique_ptr<AudioPlugin>> plugins;
 
-extern "C" void plugin_process_block(int moduleId, float** audio_buffers, int channels, int samples) {
+extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, uint32_t channels, uint32_t samples) {
     for (auto& plugin : plugins) {
         if (plugin->getModuleId() == moduleId) {
             auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
             auto midi = juce::MidiBuffer();
             
-            std::cout << "Calling process() for plugin" << channels << " " << samples << std::endl;
+            float input = audio.getArrayOfReadPointers()[0][0];
             
             plugin->processBlock(audio, midi);
+            
+            float output = audio.getArrayOfReadPointers()[0][0];
+            
+            std::cout << "Processed " << samples << " samples over " << channels << " channels. " << input << " -> " << output << std::endl;
             
             return;
         }
     }
-}
-
-std::unique_ptr<AudioPlugin> createAudioPlugin(int moduleId, juce::AudioPluginFormatManager* manager, String name, double sampleRate, int blockSize) {
-    for (auto format : manager->getFormats()) {
-        auto locations = format->getDefaultLocationsToSearch();
-        auto paths = format->searchPathsForPlugins(locations, false);
-
-        for (auto path : paths) {
-
-            if (path.contains(name)) {
-                puts("Found plugin");
-
-                OwnedArray<PluginDescription> descs;
-
-                format->findAllTypesForFile(descs, path);
-
-                for (auto desc : descs) {
-                    if (desc->name.contains(name)) {
-                        puts("Found instance to add");
-
-                        juce::String error = "";
-
-                        auto plugin = manager->createPluginInstance(*desc, sampleRate, blockSize, error);
-
-                        if (plugin != nullptr) {
-                            puts("Created plugin instance");
-                            return std::unique_ptr<AudioPlugin>(new AudioPlugin(moduleId, name, std::move(plugin)));
-                        } else {
-                            puts("Failed to create plugin");
-                            return nullptr;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return nullptr;
 }
 
 //==============================================================================
@@ -176,28 +142,8 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
             }
         }
         
-        auto plugin = createAudioPlugin(moduleId, &pluginFormatManager, name, sampleRate, samplesPerBlock);
+        addAudioPlugin(moduleId, name);
         
-        if (plugin != nullptr) {
-            std::cout << "Created plugin " << name << " for module id " << moduleId << std::endl;
-            
-            std::cout << sampleRate << samplesPerBlock << std::endl;
-            plugin->prepareToPlay(sampleRate, samplesPerBlock);
-            
-            for (int i = 0; i < plugins.size(); i++) {
-                if (plugins[i]->getModuleId() == moduleId) {
-                    puts("Removing old plugin");
-                    plugins.erase(plugins.begin() + i);
-                    break;
-                }
-            }
-            
-            plugin->createGui();
-            
-            plugins.push_back(std::move(plugin));
-        } else {
-            std::cout << "Failed to create plugin " << name << std::endl;
-        }
     } else if (json["message"] == "show") {
         int moduleId = json["module_id"];
         
@@ -221,6 +167,54 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
         [audioPluginsChannel sendMessage:s3];
     } else {
         std::cout << "Recieved message: " << message << std::endl;
+    }
+}
+
+void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name) {
+    for (auto format : pluginFormatManager.getFormats()) {
+        auto locations = format->getDefaultLocationsToSearch();
+        auto paths = format->searchPathsForPlugins(locations, false);
+
+        for (auto path : paths) {
+
+            if (path.contains(name)) {
+                OwnedArray<PluginDescription> descs;
+
+                format->findAllTypesForFile(descs, path);
+
+                for (auto desc : descs) {
+                    if (desc->name.contains(name)) {
+                        juce::String error = "";
+                        
+                        pluginFormatManager.createPluginInstanceAsync(
+                            *desc,
+                            getSampleRate(),
+                            getBlockSize(),
+                            [this, moduleId, name] (std::unique_ptr<AudioPluginInstance> instance, const juce::String& error) {
+                                std::cout << "Created plugin " << instance->getName() << " for module id " << moduleId << std::endl;
+                                
+                                std::cout << "Bus count is " << instance->getBusCount(true) << std::endl;
+                                std::cout << "Bus 0 channel count is " << instance->getChannelCountOfBus(true, 0) << std::endl;
+                                
+                                std::unique_ptr<AudioPlugin> plugin = std::unique_ptr<AudioPlugin>(new AudioPlugin(moduleId, name, std::move(instance)));
+                                
+                                plugin->prepareToPlay(getSampleRate(), getBlockSize());
+                                plugin->createGui();
+                                
+                                for (int i = 0; i < plugins.size(); i++) {
+                                    if (plugins[i]->getModuleId() == moduleId) {
+                                        puts("Swapping old plugin");
+                                        plugins[i] = std::move(plugin);
+                                        return;
+                                    }
+                                }
+                                
+                                plugins.push_back(std::move(plugin));
+                        });
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -289,9 +283,6 @@ void Flutter_juceAudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    this->sampleRate = sampleRate;
-    this->samplesPerBlock = samplesPerBlock;
-    
     std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
     if (ffiHostPrepare != nullptr && host != nullptr) {
@@ -299,6 +290,7 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     }
     
     for (auto& plugin : plugins) {
+        std::cout << "Preparing plugin " << plugin->getName() << std::endl;
         plugin->prepareToPlay(sampleRate, samplesPerBlock);
     }
 }
