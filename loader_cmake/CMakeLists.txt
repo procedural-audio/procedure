@@ -14,6 +14,8 @@ add_subdirectory(juce)
 # the formats specified by the FORMATS arguments. This function accepts many optional arguments.
 # Check the readme at `docs/CMake API.md` in the JUCE repo for the full list.
 
+# set(CMAKE_SKIP_BUILD_RPATH TRUE) # MAYBE SHOULD DELTE THIS
+
 juce_add_plugin(Nodus
     # VERSION ...                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
@@ -28,7 +30,7 @@ juce_add_plugin(Nodus
     PLUGIN_MANUFACTURER_CODE Juce               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE Dem0                            # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case
-    FORMATS VST3 Standalone AUv3                # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
+    FORMATS Standalone # VST3 AUv3              # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "Nodus")                       # The name of the final executable, which can differ from the target name
 
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
@@ -57,13 +59,13 @@ target_include_directories(Nodus
         /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/Pods_Runner.framework/Headers
 )
 
-set(CMAKE_XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS
-    /Users/chasekanipe/Github/nodus/build/macos/Build/Products/Debug/
-)
+#set(CMAKE_XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS
+#    /Users/chasekanipe/Github/nodus/build/macos/Build/Products/Debug/
+#)
 
-set(LD_RUNPATH_SEARCH_PATHS
-    "@loader_path/Frameworks @loader_path/../Frameworks"
-)
+#set(LD_RUNPATH_SEARCH_PATHS
+#    "@loader_path/Frameworks @loader_path/../Frameworks"
+#)
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -102,3 +104,54 @@ target_link_libraries(Nodus
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+#set(APP_BUNDLE_CONTENTS_DIR "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.app/Contents")
+#set(APP_BUNDLE_FRAMEWORKS_DIR "${APP_BUNDLE_CONTENTS_DIR}/Frameworks")
+
+#add_custom_command(Nodus AUDIO_PLUGIN_EXAMPLE
+#    POST_BUILD COMMAND 
+#    install_name_tool -add_rpath "@executable_path/../Frameworks/"
+#    "${APP_BUNDLE_CONTENTS_DIR}/MacOS/${PROJECT_NAME}")
+
+# set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks")
+
+target_link_directories(Nodus
+    PUBLIC
+        /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/
+        /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/App.framework
+        /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/FlutterMacOS.framework/
+        /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/FlutterMacOS.framework/Versions/A/
+)
+
+set_target_properties(Nodus PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+target_link_libraries(Nodus PUBLIC "-framework FlutterMacOS")
+# target_link_libraries(Nodus PRIVATE "-framework App")
+
+#if(APPLE)
+#    target_link_libraries(Nodus
+#        PRIVATE 
+#            "-framework FlutterMacOS")
+#endif()
+
+#find_library(FLUTTERMACOS FlutterMacOS)
+#if (NOT FLUTTERMACOS)
+#    message(FATAL_ERROR "FlutterMacOS library path: ${FLUTTERMACOS}")
+#endif()
+
+# target_link_libraries(Nodus PRIVATE "-framework /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/App.framework/App")
+# target_link_libraries(Nodus PRIVATE "-framework /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/FlutterMacOS.framework/FlutterMacOS")
+
+# target_link_libraries(Nodus PRIVATE "-framework FlutterMacOS")
+# target_link_libraries(Nodus PRIVATE "-framework App")
+
+# target_link_libraries(Nodus PRIVATE FlutterMacOS)
+# target_link_libraries(Nodus PRIVATE App)
+
+if(WIN32)
+    #Windows specific code
+elseif(APPLE)
+    find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+    find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+    target_link_libraries(Nodus PRIVATE ${FLUTTER_LIB})
+    target_link_libraries(Nodus PRIVATE ${APP_LIB})
+endif()
