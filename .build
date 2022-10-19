@@ -36,7 +36,11 @@ if not os.system("cd core && cargo build --release && cd .."):
         if not os.system("cd flutter && flutter build macos --debug && cd .."):
             print("Found macos")
 
-            if not os.system("cd loader_cmake/build && cmake ../. && make"):
+            os.system("mkdir -p build/out/host")
+
+            if not os.system("cd build/out/host && cmake ../../../host/. && make"):
+                print("Host build suceeded")
+
                 # Package
                 os.system("mkdir -p build/package/macos/standalone")
 
@@ -44,3 +48,6 @@ if not os.system("cd core && cargo build --release && cd .."):
                 os.system("mkdir -p build/release/macos")
 
                 print("Done")
+            else:
+                print("Host build failed")
+            
