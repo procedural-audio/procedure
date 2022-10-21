@@ -21,13 +21,20 @@ extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, u
         if (plugin->getModuleId() == moduleId) {
             auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
             auto midi = juce::MidiBuffer();
+            auto audio2 = juce::AudioBuffer<float>(channels, samples);
+
+            audio2.copyFrom(0, 0, audio_buffers[0], samples);
+            audio2.copyFrom(1, 0, audio_buffers[1], samples);
             
             float input = audio.getArrayOfReadPointers()[0][0];
             
-            plugin->processBlock(audio, midi);
+            plugin->processBlock(audio2, midi);
             
             float output = audio.getArrayOfReadPointers()[0][0];
-            
+
+            audio.copyFrom(0, 0, audio2, 0, 0, samples);
+            audio.copyFrom(1, 0, audio2, 1, 0, samples);
+
             std::cout << "Processed " << samples << " samples over " << channels << " channels. " << input << " -> " << output << std::endl;
             
             return;

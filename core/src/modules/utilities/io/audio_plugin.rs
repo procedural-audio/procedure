@@ -1,7 +1,7 @@
 use crate::modules::*;
 
 pub struct AudioPluginModule {
-    process: Option<fn (u32, *mut *mut f32, u32, u32)>,
+    process: Option<fn (u32, *const *mut f32, u32, u32)>,
     id: Option<u32>,
 }
 
@@ -60,10 +60,9 @@ impl Module for AudioPluginModule {
             Some(f) => {
                 match self.id {
                     Some(id) => {
-                        (f)(id, &mut [
-                            outputs.audio[0].left.as_mut_ptr(),
-                            outputs.audio[0].right.as_mut_ptr(),
-                        ] as *mut *mut f32, 2, outputs.audio[0].left.len() as u32);
+                        let arr = [outputs.audio[0].left.as_mut_ptr(), outputs.audio[0].right.as_mut_ptr()];
+                        let ptr = unsafe { arr.as_ptr() };
+                        (f)(id, ptr, 2, outputs.audio[0].left.len() as u32);
                     },
                     None => ()
                 }
@@ -75,7 +74,7 @@ impl Module for AudioPluginModule {
 
 #[repr(C)]
 pub struct _AudioPlugin<'a> {
-    pub process: &'a mut Option<fn (u32, *mut *mut f32, u32, u32)>,
+    pub process: &'a mut Option<fn (u32, *const *mut f32, u32, u32)>,
     id: &'a mut Option<u32>
 }
 
