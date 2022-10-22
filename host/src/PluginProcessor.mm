@@ -204,18 +204,11 @@ void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name)
                             [this, moduleId, name] (std::unique_ptr<AudioPluginInstance> instance, const juce::String& error) {
                                 std::cout << "Created plugin " << instance->getName() << " for module id " << moduleId << std::endl;
 
+                                instance->enableAllBuses();
                                 instance->prepareToPlay(getSampleRate(), getBlockSize());
 
-                                instance->enableAllBuses();
+                                // instance->processBlock(juce::AudioBuffer<float>(2, getBlockSize()), juce::MidiBuffer());
 
-                                std::cout << instance->getSampleRate() << " aaaannnd " << instance->getBlockSize() << std::endl;
-
-                                if (instance->isSuspended()) {
-                                    puts("Plugin is suspended");
-                                } else {
-                                    puts("Plugin is not suspended");
-                                }
-                                
                                 std::cout << "Bus count is " << instance->getBusCount(true) << std::endl;
                                 std::cout << "Bus 0 channel count is " << instance->getChannelCountOfBus(true, 0) << std::endl;
                                 
@@ -223,7 +216,6 @@ void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name)
                                 
                                 plugin->createGui();
 
-                                
                                 for (int i = 0; i < plugins.size(); i++) {
                                     if (plugins[i]->getModuleId() == moduleId) {
                                         puts("Swapping old plugin");
