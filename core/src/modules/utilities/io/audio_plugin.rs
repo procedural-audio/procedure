@@ -1,7 +1,7 @@
 use crate::modules::*;
 
 pub struct AudioPluginModule {
-    process: Option<fn (u32, *const *mut f32, u32, u32)>,
+    process: Option<extern "C" fn (u32, *const *mut f32, u32, u32)>,
     id: Option<u32>,
 }
 
@@ -56,25 +56,22 @@ impl Module for AudioPluginModule {
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         outputs.audio[0].copy_from(&inputs.audio[0]);
 
-        match self.process {
-            Some(f) => {
-                match self.id {
-                    Some(id) => {
-                        let arr = [outputs.audio[0].left.as_mut_ptr(), outputs.audio[0].right.as_mut_ptr()];
-                        let ptr = unsafe { arr.as_ptr() };
-                        (f)(id, ptr, 2, outputs.audio[0].left.len() as u32);
-                    },
-                    None => ()
-                }
+        if let Some(f) = self.process {
+            if let Some(id) = self.id {
+                let arr = [
+                    outputs.audio[0].left.as_mut_ptr(),
+                    outputs.audio[0].right.as_mut_ptr()
+                ];
+
+                (f)(id, arr.as_ptr(), 2, outputs.audio[0].left.len() as u32);
             }
-            None => ()
         }
     }
 }
 
 #[repr(C)]
 pub struct _AudioPlugin<'a> {
-    pub process: &'a mut Option<fn (u32, *const *mut f32, u32, u32)>,
+    pub process: &'a mut Option<extern "C" fn (u32, *const *mut f32, u32, u32)>,
     id: &'a mut Option<u32>
 }
 
@@ -89,14 +86,8 @@ impl<'a> WidgetNew for _AudioPlugin<'a> {
 }
 
 #[no_mangle]
-extern "C" fn ffi_audio_plugin_set_process_addr(plugin: &mut _AudioPlugin, addr: u64) {
-    if addr == 0 {
-        *plugin.process = None;
-    } else {
-        unsafe {
-            *plugin.process = Some(std::mem::transmute(addr));
-        }
-    }
+extern "C" fn ffi_audio_plugin_set_process_addr(plugin: &mut _AudioPlugin, f: Option<extern "C" fn(u32, *const *mut f32, u32, u32)>) {
+    *plugin.process = f;
 }
 
 #[no_mangle]

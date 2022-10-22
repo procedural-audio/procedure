@@ -26,21 +26,15 @@ void AudioPlugin::createGui() {
         return;
     }
     
-    puts("Creating gui");
+    puts("Creating plugin gui");
 
     auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow("Audio plugin", this));
 
-    puts("Created plugin");
-
     w->setUsingNativeTitleBar(true);
-    puts("created title bar");
     w->setContentOwned(plugin->createEditor(), true);
-    puts("created content owned");
 
     w->centreWithSize(w->getWidth(), w->getHeight());
-    puts("center with size");
     w->setVisible(true);
-    puts("set visible");
 
     window.swap(w);
 }
