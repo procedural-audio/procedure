@@ -73,9 +73,14 @@ class Module {
         pin.type = IO.control;
       } else if (kind == 4) {
         pin.type = IO.time;
+      } else if (kind == 5) {
+        pin.type = IO.external;
       }
 
-      pin.offset = Offset(10, 0.0 + api.ffiNodeGetInputPinY(module, i));
+      if (pin.type != IO.external) {
+        pin.offset = Offset(10, 0.0 + api.ffiNodeGetInputPinY(module, i));
+      }
+
       pin.isInput = true;
       pins.add(pin);
     }
@@ -100,10 +105,15 @@ class Module {
         pin.type = IO.control;
       } else if (kind == 4) {
         pin.type = IO.time;
+      } else {
+        pin.type = IO.external;
       }
 
-      pin.offset =
-          Offset(size.dx - 25, 0.0 + api.ffiNodeGetOutputPinY(module, i));
+      if (pin.type != IO.external) {
+        pin.offset =
+            Offset(size.dx - 25, 0.0 + api.ffiNodeGetOutputPinY(module, i));
+      }
+
       pin.isInput = false;
       pins.add(pin);
     }
@@ -139,7 +149,7 @@ class Connector {
   }
 }
 
-enum IO { audio, midi, control, time }
+enum IO { audio, midi, control, time, external }
 
 class Pin {
   var moduleId = 1;
@@ -208,12 +218,17 @@ class _ModuleContainerState extends State<ModuleContainerWidget> {
 
     for (var pin in module.pins) {
       if (pin.isInput) {
-        widgets.add(PinWidget(module.id, pin.index, pin.type, 10, pin.offset.dy,
-            pin.name, pin.isInput, widget.host));
+        if (pin.type != IO.external) {
+          widgets.add(PinWidget(module.id, pin.index, pin.type, 10,
+              pin.offset.dy, pin.name, pin.isInput, widget.host));
+        }
       } else {
         pin.offset = Offset(width - 25, pin.offset.dy);
-        widgets.add(PinWidget(module.id, pin.index, pin.type, width - 25,
-            pin.offset.dy, pin.name, pin.isInput, widget.host));
+
+        if (pin.type != IO.external) {
+          widgets.add(PinWidget(module.id, pin.index, pin.type, width - 25,
+              pin.offset.dy, pin.name, pin.isInput, widget.host));
+        }
       }
     }
 

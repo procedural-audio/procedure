@@ -6,7 +6,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./workstation
     cd ../../../
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    ./build/out/host/Nodus_artefacts/Release/Standalone/Nodus.app/Contents/MacOS/Nodus
+    ./build/out/host/Nodus_artefacts/Debug/Standalone/Nodus.app/Contents/MacOS/Nodus
 else
     echo "Unknown platform"
 fi

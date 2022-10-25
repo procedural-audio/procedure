@@ -47,6 +47,10 @@ pub enum Pin {
     Notes(&'static str, i32),
     Control(&'static str, i32),
     Time(&'static str, i32),
+    AudioInput(u32),
+    AudioOutput(u32),
+    NotesInput(u32),
+    NotesOutput(u32),
 }
 
 pub struct UI {
@@ -140,12 +144,8 @@ pub trait Module {
     fn load(&mut self, state: &JSON);
     fn save(&self, state2: &mut JSON);
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize)
-    where
-        Self: Sized;
-    fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO)
-    where
-        Self: Sized;
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) where Self: Sized;
+    fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
 }
 
 pub type Vars = Vec<Var>;
@@ -160,6 +160,22 @@ pub struct Var {
 pub enum VarValue {
     Float(f32),
     Bool(bool),
+}
+
+pub enum Size {
+    Static(u32, u32),
+    Reisizable {
+        default: (u32, u32),
+        min: (u32, u32),
+        max: (u32, u32),
+    },
+}
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum Voicing {
+    Monophonic,
+    Polyphonic,
+    Dynamic,
 }
 
 pub struct Lock<T: Copy> {
@@ -203,20 +219,4 @@ impl<T: Copy> Lock<T> {
     pub fn store(&self, value: T) {
         *self.data.write().unwrap() = value;
     }
-}
-
-pub enum Size {
-    Static(u32, u32),
-    Reisizable {
-        default: (u32, u32),
-        min: (u32, u32),
-        max: (u32, u32),
-    },
-}
-
-#[derive(Copy, Clone, PartialEq)]
-pub enum Voicing {
-    Monophonic,
-    Polyphonic,
-    Dynamic,
 }

@@ -161,8 +161,12 @@ impl Module for MidiInput {
         voicing: Voicing::Polyphonic,
         features: &[Feature::MidiInput],
         vars: &[],
-inputs: &[Pin::Notes("Midi Input", 22)],
-        outputs: &[Pin::Notes("Midi Output", 22)],
+        inputs: &[
+            Pin::NotesInput(0)
+        ],
+        outputs: &[
+            Pin::Notes("External Midi 1", 22)
+        ],
     };
 
     fn new() -> Self {

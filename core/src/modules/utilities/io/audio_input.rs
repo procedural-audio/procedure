@@ -12,8 +12,12 @@ impl Module for AudioInput {
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
         vars: &[],
-inputs: &[],
-        outputs: &[Pin::Audio("Audio Input", 20)],
+        inputs: &[
+            Pin::AudioInput(0)
+        ],
+        outputs: &[
+            Pin::Audio("External Audio 1", 20)
+        ],
     };
 
     fn new() -> Self {
@@ -38,5 +42,8 @@ inputs: &[],
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {}
+    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        outputs.audio[0].copy_from(&inputs.audio[0]);
+
+    }
 }

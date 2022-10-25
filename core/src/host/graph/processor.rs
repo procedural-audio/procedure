@@ -206,6 +206,10 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => events_input_channels_count += 1,
                     Pin::Control(_, _) => control_input_channels_count += 1,
                     Pin::Time(_, _) => time_input_channels_count += 1,
+                    Pin::AudioInput(_) => audio_input_channels_count += 1,
+                    Pin::AudioOutput(_) => panic!("Audio output on input pins"),
+                    Pin::NotesInput(_) => events_input_channels_count += 1,
+                    Pin::NotesOutput(_) => panic!("Notes output on input pins"),
                 }
             }
 
@@ -220,6 +224,10 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => events_output_channels_count += 1,
                     Pin::Control(_, _) => control_output_channels_count += 1,
                     Pin::Time(_, _) => time_output_channels_count += 1,
+                    Pin::AudioInput(_) => panic!("Audio input on output pins"),
+                    Pin::AudioOutput(_) => audio_output_channels_count += 1,
+                    Pin::NotesInput(_) => panic!("Notes input on output pins"),
+                    Pin::NotesOutput(_) => events_output_channels_count += 1,
                 }
             }
 
@@ -569,113 +577,14 @@ impl GraphProcessor {
                                     }
                                 }
                             }
-                        }
+                        },
+                        _ => ()
                     }
                 }
             }
 
             process_actions_final.push(new_action.clone());
         }
-
-        /* Figure out which actions can be parallel */
-
-        /*let mut actions = Vec::new();
-        let mut i = 0;
-
-        while i < process_actions_final.len() {
-            let mut par_actions: Vec<ProcessAction> = Vec::new();
-            let mut seq_actions: Vec<ProcessAction> = Vec::new();
-
-            while i < process_actions_final.len() && process_actions_final[i].node.module.voicing() == Voicing::Polyphonic {
-                par_actions.push(process_actions_final[i].clone());
-                i += 1;
-            }
-
-            while i < process_actions_final.len() && process_actions_final[i].node.module.voicing() != Voicing::Polyphonic {
-                seq_actions.push(process_actions_final[i].clone());
-                i += 1;
-            }
-
-            if par_actions.len() > 0 {
-                actions.push(Action::Parallel(par_actions));
-            }
-
-            if seq_actions.len() > 0 {
-                actions.push(Action::Sequential(seq_actions));
-            }
-        }
-
-        println!("Actions are:");
-
-        for action in actions {
-            match action {
-                Action::Parallel(par_actions) => {
-                    println!(" > Parallel:");
-                    for par_action in par_actions {
-                        println!("   Process node {} voice {}", par_action.id, par_action.voice_index);
-                        for copy_action in par_action.audio_copy_actions {
-                            match copy_action {
-                                CopyAction::AudioCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy audio buffer {:p} to {:p}", src.left.as_ptr(), dest.left.as_ptr());
-                                    } else {
-                                        println!("      Add audio buffer {:p} to {:p}", src.left.as_ptr(), dest.left.as_ptr());
-                                    }
-                                },
-                                CopyAction::NotesCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy events buffer {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    } else {
-                                        println!("      Add events buffer {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    }
-                                },
-                                CopyAction::ControlCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy control {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    } else {
-                                        println!("      Add control {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    }
-                                },
-                            }
-                        }
-                    }
-                },
-                Action::Sequential(seq_actions) => {
-                    println!(" > Sequential:");
-                    for seq_action in seq_actions {
-                        println!("   Process node {} voice {}", seq_action.id, seq_action.voice_index);
-                        for copy_action in seq_action.audio_copy_actions {
-                            match copy_action {
-                                CopyAction::AudioCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy audio buffer {:p} to {:p}", src.left.as_ptr(), dest.left.as_ptr());
-                                    } else {
-                                        println!("      Add audio buffer {:p} to {:p}", src.left.as_ptr(), dest.left.as_ptr());
-                                    }
-                                },
-                                CopyAction::NotesCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy events buffer {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    } else {
-                                        println!("      Add events buffer {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    }
-                                },
-                                CopyAction::ControlCopy { src, dest, should_copy} => {
-                                    if should_copy {
-                                        println!("      Copy control {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    } else {
-                                        println!("      Add control {:p} to {:p}", src.as_ptr(), dest.as_ptr());
-                                    }
-                                },
-                            }
-                        }
-                    }
-                },
-            }
-
-            println!("");
-        }
-        */
 
         // TODO: Use actions variable to make multithreaded
 
@@ -862,6 +771,10 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => return events_channel,
                     Pin::Control(_, _) => return control_channel,
                     Pin::Time(_, _) => return time_channel,
+                    Pin::AudioInput(_) => return audio_channel,
+                    Pin::AudioOutput(_) => return audio_channel,
+                    Pin::NotesInput(_) => return events_channel,
+                    Pin::NotesOutput(_) => return events_channel,
                 }
             }
 
@@ -870,6 +783,10 @@ impl GraphProcessor {
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
+                Pin::AudioInput(_) => audio_channel += 2,
+                Pin::AudioOutput(_) => audio_channel += 2,
+                Pin::NotesInput(_) => events_channel += 1,
+                Pin::NotesOutput(_) => events_channel += 1,
             }
 
             curr_index += 1;
@@ -887,6 +804,10 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => return events_channel,
                     Pin::Control(_, _) => return control_channel,
                     Pin::Time(_, _) => return time_channel,
+                    Pin::AudioInput(_) => return audio_channel,
+                    Pin::AudioOutput(_) => return audio_channel,
+                    Pin::NotesInput(_) => return events_channel,
+                    Pin::NotesOutput(_) => return events_channel,
                 }
             }
 
@@ -895,6 +816,10 @@ impl GraphProcessor {
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
+                Pin::AudioInput(_) => return audio_channel,
+                Pin::AudioOutput(_) => return audio_channel,
+                Pin::NotesInput(_) => return events_channel,
+                Pin::NotesOutput(_) => return events_channel,
             }
 
             curr_index += 1;

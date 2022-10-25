@@ -2,9 +2,15 @@
 
 import os
 import platform
+import sys
 
 platform = platform.system().lower()
 print("Platform is " + str(platform))
+
+debug = False
+
+if len(sys.argv) > 1 and (sys.argv[1] == "-d" or sys.argv[1] == "--debug"):
+	debug = True
 
 if not os.system("cd core && cargo build --release && cd .."):
     if "windows" in platform:
@@ -33,21 +39,32 @@ if not os.system("cd core && cargo build --release && cd .."):
         os.system("cp -r build/bin/lib/release/data/ build/package/linux/.")
 
     if "darwin" in platform:
-        if not os.system("cd flutter && flutter build macos --debug && cd .."):
-            print("Found macos")
+        os.system("mkdir -p build/out/host")
 
-            os.system("mkdir -p build/out/host")
+        if debug:
+            if not os.system("cd flutter && flutter build macos --debug && cd .."):
+                print("Building MacOS in debug mode")
 
-            if not os.system("cd build/out/host && cmake ../../../host/. && make"):
-                print("Host build suceeded")
+                if not os.system("cd build/out/host && cmake ../../../host/. -DCMAKE_BUILD_TYPE=Debug && make"):
+                    print("Host build suceeded")
+                    # Package
+                    os.system("mkdir -p build/package/macos/standalone")
+                    # Release
+                    os.system("mkdir -p build/release/macos")
+                    print("Done")
+                else:
+                    print("Host build failed")
+        else:
+            if not os.system("cd flutter && flutter build macos --release && cd .."):
+                print("Building MacOS in release mode")
 
-                # Package
-                os.system("mkdir -p build/package/macos/standalone")
-
-                # Release
-                os.system("mkdir -p build/release/macos")
-
-                print("Done")
-            else:
-                print("Host build failed")
+                if not os.system("cd build/out/host && cmake ../../../host/. -DCMAKE_BUILD_TYPE=Release && make"):
+                    print("Host build suceeded")
+                    # Package
+                    os.system("mkdir -p build/package/macos/standalone")
+                    # Release
+                    os.system("mkdir -p build/release/macos")
+                    print("Done")
+                else:
+                    print("Host build failed")
             
