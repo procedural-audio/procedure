@@ -13,7 +13,7 @@ impl Module for AudioInput {
         voicing: Voicing::Monophonic,
         vars: &[],
         inputs: &[
-            Pin::AudioInput(0)
+            Pin::ExternalAudio(0)
         ],
         outputs: &[
             Pin::Audio("External Audio 1", 20)

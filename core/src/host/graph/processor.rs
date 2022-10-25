@@ -206,10 +206,8 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => events_input_channels_count += 1,
                     Pin::Control(_, _) => control_input_channels_count += 1,
                     Pin::Time(_, _) => time_input_channels_count += 1,
-                    Pin::AudioInput(_) => audio_input_channels_count += 1,
-                    Pin::AudioOutput(_) => panic!("Audio output on input pins"),
-                    Pin::NotesInput(_) => events_input_channels_count += 1,
-                    Pin::NotesOutput(_) => panic!("Notes output on input pins"),
+                    Pin::ExternalAudio(_) => audio_input_channels_count += 1,
+                    Pin::ExternalNotes(_) => events_input_channels_count += 1,
                 }
             }
 
@@ -224,10 +222,8 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => events_output_channels_count += 1,
                     Pin::Control(_, _) => control_output_channels_count += 1,
                     Pin::Time(_, _) => time_output_channels_count += 1,
-                    Pin::AudioInput(_) => panic!("Audio input on output pins"),
-                    Pin::AudioOutput(_) => audio_output_channels_count += 1,
-                    Pin::NotesInput(_) => panic!("Notes input on output pins"),
-                    Pin::NotesOutput(_) => events_output_channels_count += 1,
+                    Pin::ExternalAudio(_) => audio_output_channels_count += 1,
+                    Pin::ExternalNotes(_) => events_output_channels_count += 1,
                 }
             }
 
@@ -771,10 +767,8 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => return events_channel,
                     Pin::Control(_, _) => return control_channel,
                     Pin::Time(_, _) => return time_channel,
-                    Pin::AudioInput(_) => return audio_channel,
-                    Pin::AudioOutput(_) => return audio_channel,
-                    Pin::NotesInput(_) => return events_channel,
-                    Pin::NotesOutput(_) => return events_channel,
+                    Pin::ExternalAudio(_) => return audio_channel,
+                    Pin::ExternalNotes(_) => return events_channel,
                 }
             }
 
@@ -783,10 +777,8 @@ impl GraphProcessor {
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
-                Pin::AudioInput(_) => audio_channel += 2,
-                Pin::AudioOutput(_) => audio_channel += 2,
-                Pin::NotesInput(_) => events_channel += 1,
-                Pin::NotesOutput(_) => events_channel += 1,
+                Pin::ExternalAudio(_) => audio_channel += 2,
+                Pin::ExternalNotes(_) => events_channel += 1,
             }
 
             curr_index += 1;
@@ -804,10 +796,8 @@ impl GraphProcessor {
                     Pin::Notes(_, _) => return events_channel,
                     Pin::Control(_, _) => return control_channel,
                     Pin::Time(_, _) => return time_channel,
-                    Pin::AudioInput(_) => return audio_channel,
-                    Pin::AudioOutput(_) => return audio_channel,
-                    Pin::NotesInput(_) => return events_channel,
-                    Pin::NotesOutput(_) => return events_channel,
+                    Pin::ExternalAudio(_) => return audio_channel,
+                    Pin::ExternalNotes(_) => return events_channel,
                 }
             }
 
@@ -816,10 +806,8 @@ impl GraphProcessor {
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
-                Pin::AudioInput(_) => return audio_channel,
-                Pin::AudioOutput(_) => return audio_channel,
-                Pin::NotesInput(_) => return events_channel,
-                Pin::NotesOutput(_) => return events_channel,
+                Pin::ExternalAudio(_) => return audio_channel,
+                Pin::ExternalNotes(_) => return events_channel,
             }
 
             curr_index += 1;

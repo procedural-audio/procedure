@@ -487,10 +487,8 @@ pub unsafe extern "C" fn ffi_node_get_input_pin_type(node: &mut Node, pin_index:
         Pin::Notes(_x, _y) => 2,
         Pin::Control(_x, _y) => 3,
         Pin::Time(_x, _y) => 4,
-        Pin::AudioInput(_) => 5,
-        Pin::AudioOutput(_) => 5,
-        Pin::NotesInput(_) => 5,
-        Pin::NotesOutput(_) => 5
+        Pin::ExternalAudio(_) => 5,
+        Pin::ExternalNotes(_) => 5,
     }
 }
 
@@ -501,10 +499,8 @@ pub unsafe extern "C" fn ffi_node_get_output_pin_type(node: &mut Node, pin_index
         Pin::Notes(_x, _y) => 2,
         Pin::Control(_x, _y) => 3,
         Pin::Time(_x, _y) => 4,
-        Pin::AudioInput(_) => 5,
-        Pin::AudioOutput(_) => 5,
-        Pin::NotesInput(_) => 5,
-        Pin::NotesOutput(_) => 5
+        Pin::ExternalAudio(_) => 5,
+        Pin::ExternalNotes(_) => 5,
     }
 }
 
@@ -520,10 +516,8 @@ pub unsafe extern "C" fn ffi_node_get_input_pin_name(
         Pin::Notes(x, _y) => name = x,
         Pin::Control(x, _y) => name = x,
         Pin::Time(x, _y) => name = x,
-        Pin::AudioInput(_) => name = "External Audio Input",
-        Pin::AudioOutput(_) => name = "External Audio Outpu",
-        Pin::NotesInput(_) => name = "External Midi Input",
-        Pin::NotesOutput(_) => name = "External Midi Output"
+        Pin::ExternalAudio(_) => name = "External Audio Input",
+        Pin::ExternalNotes(_) => name = "External Midi Input",
     };
 
     let s = CString::new(name).unwrap();
@@ -544,10 +538,8 @@ pub unsafe extern "C" fn ffi_node_get_output_pin_name(
         Pin::Notes(x, _y) => name = x,
         Pin::Control(x, _y) => name = x,
         Pin::Time(x, _y) => name = x,
-        Pin::AudioInput(_) => name = "External Audio Input",
-        Pin::AudioOutput(_) => name = "External Audio Outpu",
-        Pin::NotesInput(_) => name = "External Midi Input",
-        Pin::NotesOutput(_) => name = "External Midi Output"
+        Pin::ExternalAudio(_) => name = "External Audio Input",
+        Pin::ExternalNotes(_) => name = "External Midi Input",
     };
 
     let s = CString::new(name).unwrap();
@@ -563,10 +555,8 @@ pub unsafe extern "C" fn ffi_node_get_input_pin_y(node: &mut Node, pin_index: us
         Pin::Notes(_x, y) => y,
         Pin::Control(_x, y) => y,
         Pin::Time(_x, y) => y,
-        Pin::AudioInput(_) => panic!("Getting y for IO node"),
-        Pin::AudioOutput(_) => panic!("Getting y for IO node"),
-        Pin::NotesInput(_) => panic!("Getting y for IO node"),
-        Pin::NotesOutput(_) => panic!("Getting y for IO node")
+        Pin::ExternalAudio(_) => panic!("Getting y for IO node"),
+        Pin::ExternalNotes(_) => panic!("Getting y for IO node"),
     }
 }
 
@@ -577,10 +567,8 @@ pub unsafe extern "C" fn ffi_node_get_output_pin_y(node: &mut Node, pin_index: u
         Pin::Notes(_x, y) => y,
         Pin::Control(_x, y) => y,
         Pin::Time(_x, y) => y,
-        Pin::AudioInput(_) => panic!("Getting y for IO node"),
-        Pin::AudioOutput(_) => panic!("Getting y for IO node"),
-        Pin::NotesInput(_) => panic!("Getting y for IO node"),
-        Pin::NotesOutput(_) => panic!("Getting y for IO node")
+        Pin::ExternalAudio(_) => panic!("Getting y for IO node"),
+        Pin::ExternalNotes(_) => panic!("Getting y for IO node"),
     }
 }
 

@@ -47,10 +47,8 @@ pub enum Pin {
     Notes(&'static str, i32),
     Control(&'static str, i32),
     Time(&'static str, i32),
-    AudioInput(u32),
-    AudioOutput(u32),
-    NotesInput(u32),
-    NotesOutput(u32),
+    ExternalAudio(u32),
+    ExternalNotes(u32),
 }
 
 pub struct UI {

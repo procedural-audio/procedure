@@ -162,7 +162,7 @@ impl Module for MidiInput {
         features: &[Feature::MidiInput],
         vars: &[],
         inputs: &[
-            Pin::NotesInput(0)
+            Pin::ExternalNotes(0)
         ],
         outputs: &[
             Pin::Notes("External Midi 1", 22)
