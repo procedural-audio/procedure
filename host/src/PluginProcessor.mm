@@ -16,14 +16,59 @@
 
 std::vector<std::unique_ptr<AudioPlugin>> plugins;
 
-extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, uint32_t channels, uint32_t samples) {
+extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, uint32_t channels, uint32_t samples, Event* events, uint32_t events_count) {
+    auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
+    auto midi = juce::MidiBuffer();
+
+    for (int i = 0; i < events_count; i++) {
+        Event event = events[i];
+        puts("Added event to plugin process");
+
+        if (event.tag == EventTag::NoteOn) {
+            auto message = juce::MidiMessage::noteOn(0, event.value.noteOn.note.id, (uint8_t) 127 * event.value.noteOn.note.pressure);
+            midi.addEvent(message, 0);
+        } else if (event.tag == EventTag::NoteOff) {
+            auto message = juce::MidiMessage::noteOff(0, event.value.noteOff.id);
+            midi.addEvent(message, 0);
+        }
+    }
+
+    /*auto message = data.getMessage();
+
+    if (message.isNoteOn()) {
+        Event event;
+        event.tag = EventTag::NoteOn;
+
+        EventValue value;
+        value.noteOn = NoteOn {
+            note: Note {
+                id: (unsigned short) message.getNoteNumber(),
+                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
+                pressure: ((float) message.getVelocity()) / 127,
+                timbre: 0
+            },
+            offset: (uint16_t) data.samplePosition,
+        };
+        event.value = value;
+
+        events.push_back(event);
+    } else if (message.isNoteOff()) {
+        auto event = Event {
+            tag: EventTag::NoteOff,
+        };
+
+        event.value.noteOff = NoteOff {
+            id: (unsigned short) message.getNoteNumber()
+        };
+
+        events.push_back(event);
+    }*/
+
+
+
     for (auto& plugin : plugins) {
         if (plugin->getModuleId() == moduleId) {
-            auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
-
-            auto midi = juce::MidiBuffer();
             // auto audio2 = juce::AudioBuffer<float>(channels, samples);
-
             // audio2.copyFrom(0, 0, audio_buffers[0], samples);
             // audio2.copyFrom(1, 0, audio_buffers[1], samples);
 
@@ -36,7 +81,7 @@ extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, u
 
             float output = audio.getArrayOfReadPointers()[0][0];
 
-            std::cout << "Processed " << channels << " channels with " << samples << " samples. " << input << " -> " << output << std::endl;
+            // std::cout << "Processed " << channels << " channels with " << samples << " samples. " << input << " -> " << output << std::endl;
 
             return;
         }

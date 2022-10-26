@@ -109,6 +109,18 @@ impl NoteBuffer {
             }
         }
     }
+
+    pub fn len(&self) -> usize {
+        let mut i = 0;
+        for event in self {
+            match event {
+                Event::None => (),
+                _ => i += 1
+            }
+        }
+
+        return i;
+    }
 }
 
 impl Drop for NoteBuffer {

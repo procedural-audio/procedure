@@ -39,16 +39,16 @@ if not os.system("cd core && cargo build --release && cd .."):
         os.system("cp -r build/bin/lib/release/data/ build/package/linux/.")
 
     if "darwin" in platform:
-        os.system("mkdir -p build/out/host")
-
         if debug:
             if not os.system("cd flutter && flutter build macos --debug && cd .."):
                 print("Building MacOS in debug mode")
 
-                if not os.system("cd build/out/host && cmake ../../../host/. -DCMAKE_BUILD_TYPE=Debug && make"):
+                os.system("mkdir -p build/out/host/debug")
+
+                if not os.system("cd build/out/host/debug && cmake ../../../../host/. -DCMAKE_BUILD_TYPE=Debug && make"):
                     print("Host build suceeded")
                     # Package
-                    os.system("mkdir -p build/package/macos/standalone")
+                    os.system("mkdir -p build/package/macos/standalone/")
                     # Release
                     os.system("mkdir -p build/release/macos")
                     print("Done")
@@ -58,7 +58,9 @@ if not os.system("cd core && cargo build --release && cd .."):
             if not os.system("cd flutter && flutter build macos --release && cd .."):
                 print("Building MacOS in release mode")
 
-                if not os.system("cd build/out/host && cmake ../../../host/. -DCMAKE_BUILD_TYPE=Release && make"):
+                os.system("mkdir -p build/out/host/release")
+
+                if not os.system("cd build/out/host/release && cmake ../../../../host/. -DCMAKE_BUILD_TYPE=Release && make"):
                     print("Host build suceeded")
                     # Package
                     os.system("mkdir -p build/package/macos/standalone")

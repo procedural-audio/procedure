@@ -69,6 +69,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     set_target_properties(Nodus PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
     target_link_libraries(Nodus PUBLIC "-framework FlutterMacOS")
+
+    find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+    find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+
+    target_link_libraries(Nodus PRIVATE ${FLUTTER_LIB})
+    target_link_libraries(Nodus PRIVATE ${APP_LIB})
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_include_directories(Nodus
         PRIVATE
@@ -87,13 +93,15 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 
     set_target_properties(Nodus PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
     target_link_libraries(Nodus PUBLIC "-framework FlutterMacOS")
+
+    find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
+    find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
+
+    target_link_libraries(Nodus PRIVATE ${FLUTTER_LIB})
+    target_link_libraries(Nodus PRIVATE ${APP_LIB})
 endif()
 
 if(WIN32)
     #Windows specific code
 elseif(APPLE)
-    find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
-    find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
-    target_link_libraries(Nodus PRIVATE ${FLUTTER_LIB})
-    target_link_libraries(Nodus PRIVATE ${APP_LIB})
 endif()
