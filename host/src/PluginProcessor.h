@@ -69,7 +69,7 @@ public:
     FlutterBasicMessageChannel* audioPluginsChannel;
     
 private:
-    FFIHost* host = nullptr;
+    FFIHost* core = nullptr;
     
     std::vector<Event> events;
 

@@ -1,8 +1,11 @@
+use audio_plugin_loader::{AudioPlugin, AudioPluginManager};
+
 use crate::modules::*;
 
 pub struct AudioPluginModule {
     process: Option<extern "C" fn (u32, *const *mut f32, u32, u32, *mut Event, u32)>,
     id: Option<u32>,
+    // plugin: Option<AudioPlugin>
 }
 
 impl Module for AudioPluginModule {
@@ -26,9 +29,13 @@ impl Module for AudioPluginModule {
     };
 
     fn new() -> Self {
+        // let manager = AudioPluginManager::new();
+        // let plugin = manager.create_plugin("ValhallaRoom").unwrap();
+
         Self {
             process: None,
             id: None,
+            // plugin: Some(plugin),
         }
     }
 
@@ -45,7 +52,8 @@ impl Module for AudioPluginModule {
             size: (200, 35),
             child: _AudioPlugin {
                 process: &mut self.process,
-                id: &mut self.id
+                id: &mut self.id,
+                // plugin: &mut self.plugin
             }
         })
     }
@@ -73,7 +81,8 @@ impl Module for AudioPluginModule {
 #[repr(C)]
 pub struct _AudioPlugin<'a> {
     pub process: &'a mut Option<extern "C" fn (u32, *const *mut f32, u32, u32, *mut Event, u32)>,
-    id: &'a mut Option<u32>
+    id: &'a mut Option<u32>,
+    // plugin: &'a mut Option<AudioPlugin>
 }
 
 impl<'a> WidgetNew for _AudioPlugin<'a> {
@@ -95,3 +104,10 @@ extern "C" fn ffi_audio_plugin_set_process_addr(plugin: &mut _AudioPlugin, f: Op
 extern "C" fn ffi_audio_plugin_set_module_id(plugin: &mut _AudioPlugin, id: u32) {
     *plugin.id = Some(id);
 }
+
+/*#[no_mangle]
+extern "C" fn ffi_audio_plugin_show_gui(plugin: &mut _AudioPlugin) {
+    if let Some(plugin) = plugin.plugin {
+        plugin.show_gui();
+    }
+}*/

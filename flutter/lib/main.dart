@@ -80,117 +80,35 @@ void main(List<String> args) {
   if (args.isEmpty) {
     print("Failed to get host pointer");
 
-    Host host = Host(api.ffiCreateHost());
+    Host core = Host(api.ffiCreateHost());
 
-    host.graph.refresh();
+    core.graph.refresh();
 
     var json = jsonDecode(
         File(contentPath + "/instruments/UntitledInstrument/info/info.json")
             .readAsStringSync());
 
-    host.globals.instrument = InstrumentInfo.fromJson(
+    core.globals.instrument = InstrumentInfo.fromJson(
         json, contentPath + "/instruments/UntitledInstrument");
 
-    runApp(Window(host));
+    runApp(Window(core));
   } else {
-    var addr = int.parse(args[0].split(": ").last);
+    var hostAddr = int.parse(args[0].split(": ").last);
 
-    Host host = Host(api.ffiHackConvert(addr));
+    Host core = Host(api.ffiHackConvert(hostAddr));
 
-    host.graph.refresh();
+    core.graph.refresh();
 
     var json = jsonDecode(
         File(contentPath + "/instruments/UntitledInstrument/info/info.json")
             .readAsStringSync());
 
-    host.globals.instrument = InstrumentInfo.fromJson(
+    core.globals.instrument = InstrumentInfo.fromJson(
         json, contentPath + "/instruments/UntitledInstrument");
 
-    runApp(Window(host));
+    runApp(Window(core));
   }
 }
-
-/*class MainWidgetDebug extends StatelessWidget {
-  MainWidgetDebug(this.host);
-
-  Host host;
-
-  @override
-  Widget build(BuildContext context) {
-    var json = jsonDecode(
-        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
-            .readAsStringSync());
-
-    host.globals.instrument = InstrumentInfo.fromJson(
-        json, contentPath + "/instruments/UntitledInstrument");
-
-    return MaterialApp(
-      theme: ThemeData(
-        //splashColor: Colors.black.withAlpha(0),
-        splashColor: const Color.fromRGBO(30, 30, 30, 1.0),
-      ),
-      home: Scaffold(
-        body: Window(host),
-        backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-      ),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class MainWidgetRelease extends StatelessWidget {
-  MainWidgetRelease(this.host);
-
-  Host host;
-
-  @override
-  Widget build(BuildContext context) {
-    var json = jsonDecode(
-        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
-            .readAsStringSync());
-
-    host.globals.instrument = InstrumentInfo.fromJson(
-        json, contentPath + "/instruments/UntitledInstrument");
-
-    return Container(
-      color: Colors.black,
-      child: WindowWidget(
-        onCreateState: (initData) {
-          return MainWindowState();
-        },
-      ),
-    );
-  }
-}
-
-class MainWindowState extends WindowState {
-  @override
-  WindowSizingMode get windowSizingMode =>
-      WindowSizingMode.atLeastIntrinsicSize;
-
-  @override
-  Widget build(BuildContext context) {
-    var host = Host(api.ffiHackConvert(window.initData));
-
-    host.graph.refresh();
-
-    return StatsFl(
-        align: Alignment.bottomLeft,
-        child: MaterialApp(
-          theme: ThemeData
-            //splashColor: Colors.black.withAlpha(0),
-            splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
-          ),
-          home: WindowLayoutProbe(
-            child: Scaffold(
-              body: Window(host),
-              backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
-            ),
-          ),
-          debugShowCheckedModeBanner: false,
-        ));
-  }
-}*/
 
 /* ========== Main Code ========== */
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'dart:ffi';
 
@@ -15,12 +16,34 @@ void Function(FFIWidgetPointer, int) ffiAudioPluginSetModuleId = core
         "ffi_audio_plugin_set_module_id")
     .asFunction();
 
+void Function(FFIWidgetPointer) ffiAudioPluginShowGui = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer)>>(
+        "ffi_audio_plugin_show_gui")
+    .asFunction();
+
 class AudioPluginWidget extends ModuleWidget {
   AudioPluginWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
     ffiAudioPluginSetModuleId(widgetRaw.pointer, api.ffiNodeGetId(moduleRaw));
+
+    channel =
+        const BasicMessageChannel("AudioPluginWidget", JSONMessageCodec());
+    channel.setMessageHandler(handleMessages);
   }
 
   String? loadedPlugin;
+
+  late BasicMessageChannel channel;
+
+  Future<dynamic> handleMessages(dynamic message) async {
+    if (message is String) {
+      if (message == "show gui") {
+        print("Showing GUI");
+        ffiAudioPluginShowGui(widgetRaw.pointer);
+      }
+    }
+
+    return "";
+  }
 
   @override
   Widget build(BuildContext context) {

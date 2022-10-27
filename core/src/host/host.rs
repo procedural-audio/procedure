@@ -2,6 +2,8 @@ use crate::graph::*;
 
 use tonevision_types::*;
 
+use crate::host::plugin::{AudioPluginManager, AudioPlugin};
+
 pub struct Host {
     pub graph: Graph,
     pub sample_rate: u32,
@@ -9,14 +11,16 @@ pub struct Host {
     pub time: Time,
     pub bpm: f64,
     pub vars: Vars,
+    pub plugin_manager: Option<AudioPluginManager>,
+    pub plugins: Vec<AudioPlugin>
 }
 
 impl Host {
     pub fn new() -> Self {
         Host {
+            graph: Graph::new(),
             block_size: 128,
             sample_rate: 44100,
-            graph: Graph::new(),
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
             vars: vec![
@@ -36,6 +40,8 @@ impl Host {
                     value: VarValue::Float(0.7),
                 },
             ],
+            plugin_manager: None,
+            plugins: Vec::new()
         }
     }
 
@@ -83,4 +89,9 @@ impl Host {
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);
     }
+}
+
+#[no_mangle]
+extern "C" fn ffi_core_set_plugin_manager(host: &mut Host, manager: AudioPluginManager) {
+    host.plugin_manager = Some(manager);
 }

@@ -3,6 +3,13 @@
 version = 3
 
 [[package]]
+name = "audio-plugin-loader"
+version = "0.1.0"
+dependencies = [
+ "cmake",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -661,6 +668,7 @@ dependencies = [
 name = "tonevision-core"
 version = "0.1.0"
 dependencies = [
+ "audio-plugin-loader",
  "dynamic_reload",
  "faust-state",
  "faust-types",

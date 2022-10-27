@@ -64,8 +64,6 @@ extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, u
         events.push_back(event);
     }*/
 
-
-
     for (auto& plugin : plugins) {
         if (plugin->getModuleId() == moduleId) {
             // auto audio2 = juce::AudioBuffer<float>(channels, samples);
@@ -121,7 +119,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
         ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
         ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t)) dlsym(handle, "ffi_host_process");
 
-        host = ffiCreateHost();
+        core = ffiCreateHost();
     } else {
         fprintf(stderr, "Error loading library: %s\n", dlerror());
         puts("Faild to open tonevision core");
@@ -139,11 +137,15 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
     // flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
     
     // Build arguments
-    std::string s1 = "host: ";
-    std::string s2 = s1.append(std::to_string((long) host));
+    std::string s1 = "core: ";
+    std::string s2 = s1.append(std::to_string((long) core));
     NSString *s3 = [NSString stringWithCString:s2.c_str() encoding:[NSString defaultCStringEncoding]];
-    
-    NSArray<NSString*>* args = @[s3];
+
+    std::string s4 = "host: ";
+    std::string s5 = s1.append(std::to_string((long) this));
+    NSString *s6 = [NSString stringWithCString:s2.c_str() encoding:[NSString defaultCStringEncoding]];
+
+    NSArray<NSString*>* args = @[s3, s6];
     FlutterDartProject* project = [[[FlutterDartProject alloc] initWithPrecompiledDartBundle:nil] retain];
     project.dartEntrypointArguments = args;
     flutterViewController = [[[FlutterViewController alloc] initWithProject:project] retain];
@@ -345,8 +347,8 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 {
     std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
-    if (ffiHostPrepare != nullptr && host != nullptr) {
-        ffiHostPrepare(host, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
+    if (ffiHostPrepare != nullptr && core != nullptr) {
+        ffiHostPrepare(core, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
     }
     
     for (auto& plugin : plugins) {
@@ -454,11 +456,11 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
 
-    if (ffiHostProcess != nullptr && host != nullptr) {
+    if (ffiHostProcess != nullptr && core != nullptr) {
         if (events.size() == 0) {
-            ffiHostProcess(host, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
+            ffiHostProcess(core, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
         } else {
-            ffiHostProcess(host, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
+            ffiHostProcess(core, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
         }
     }
     
