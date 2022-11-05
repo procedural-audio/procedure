@@ -140,9 +140,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 }
 
 pub trait PolyphonicModule {
-    fn new() -> Self
-    where
-        Self: Sized;
+    fn new() -> Self where Self: Sized;
     fn info(&self) -> Info;
     fn load(&mut self, state: &JSON);
     fn save(&self, state: &mut JSON);
@@ -207,7 +205,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         let mut vec = Vec::with_capacity(count);
 
         for _ in 0..count {
-            vec.push(false);
+            vec.push(false)
         }
 
         let module_size = match module.info().size {
@@ -232,7 +230,6 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
                 connected: vec,
                 voicing: voicing,
                 widgets: w,
-                // ui_widgets: w_main,
                 module_size,
                 // ui_position: (100.0, 100.0),
                 // ui_size: (100.0, 100.0),
@@ -255,19 +252,6 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
     fn set_module_size(&mut self, pair: (f32, f32)) {
         self.module_size = pair;
     }
-
-    /*fn get_ui_position(&self) -> (f32, f32) {
-        self.ui_position
-    }
-    fn set_ui_position(&mut self, pair: (f32, f32)) {
-        self.ui_position = pair;
-    }
-    fn get_ui_size(&self) -> (f32, f32) {
-        self.ui_size
-    }
-    fn set_ui_size(&mut self, pair: (f32, f32)) {
-        self.ui_size = pair;
-    }*/
 
     fn info(&self) -> Info {
         self.module.info()
