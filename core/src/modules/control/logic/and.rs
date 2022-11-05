@@ -7,11 +7,10 @@ impl Module for And {
 
     const INFO: Info = Info {
         name: "And",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Control Input 1", 15),
             Pin::Control("Control Input 2", 45),

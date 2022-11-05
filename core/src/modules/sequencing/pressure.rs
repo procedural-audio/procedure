@@ -7,11 +7,10 @@ impl Module for Pressure {
 
     const INFO: Info = Info {
         name: "Pressure",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Notes("Notes Input", 15),
             Pin::Control("Pressure (0-1)", 45),

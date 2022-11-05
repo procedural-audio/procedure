@@ -23,11 +23,10 @@ impl Module for SquareModule {
 
     const INFO: Info = Info {
         name: "Square",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
     };

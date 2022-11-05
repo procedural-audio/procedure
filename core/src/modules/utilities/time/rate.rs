@@ -7,11 +7,10 @@ impl Module for Rate {
 
     const INFO: Info = Info {
         name: "Rate",
-        features: &[],
-        color: Color::PURPLE,
+                color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Time("Time Input", 15), Pin::Control("Rate", 45)],
         outputs: &[Pin::Time("Time Output", 30)],
     };

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::ffi::CString;
 
 #[repr(C)]
@@ -8,14 +10,14 @@ struct JuceAudioPlugin;
 
 #[link(name="JucePluginLoader", kind="static")]
 extern "C" {
-    fn create_audio_plugin_manager() -> *mut JuceAudioPluginManager;
-    fn destroy_audio_plugin_manager(manager: *mut JuceAudioPluginManager);
+    fn create_manager() -> *mut JuceAudioPluginManager;
+    fn delete_manager(manager: *mut JuceAudioPluginManager);
 
     fn create_audio_plugin(manager: *mut JuceAudioPluginManager, name: *const i8) -> *mut JuceAudioPlugin;
     fn audio_plugin_show_gui(plugin: *mut JuceAudioPlugin);
 }
 
-pub struct AudioPluginManager {
+/*pub struct AudioPluginManager {
     manager: *mut JuceAudioPluginManager
 }
 
@@ -58,4 +60,4 @@ impl AudioPlugin {
     pub fn show_gui(&self) {
         unsafe { audio_plugin_show_gui(self.plugin); }
     }
-}
+}*/

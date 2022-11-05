@@ -9,11 +9,10 @@ impl Module for SimpleButtonModule {
 
     const INFO: Info = Info {
         name: "Simple Button",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[],
         outputs: &[Pin::Control("Control Output", 30)],
     };
@@ -37,15 +36,6 @@ inputs: &[],
                 path: "operations/add.svg",
                 color: Color::RED,
             },
-        })
-    }
-
-    fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
-        Box::new(SimpleButton {
-            text: "Gain",
-            toggle: false,
-            color: Color::BLUE,
-            pressed: &mut self.value,
         })
     }
 

@@ -421,7 +421,7 @@ impl PolyphonicModule for ModuleDynamic {
         }
     }
 
-    fn get_ui_root(&self) -> Option<&dyn WidgetNew> {
+    /*fn get_ui_root(&self) -> Option<&dyn WidgetNew> {
         None
     }
 
@@ -429,7 +429,7 @@ impl PolyphonicModule for ModuleDynamic {
         (0.0, 0.0)
     }
 
-    fn set_ui_position(&mut self, pair: (f32, f32)) {}
+    fn set_ui_position(&mut self, pair: (f32, f32)) {}*/
 
     fn get_module_size(&self) -> (f32, f32) {
         panic!("Not implemented");
@@ -439,13 +439,13 @@ impl PolyphonicModule for ModuleDynamic {
         panic!("Not implemented");
     }
 
-    fn get_ui_size(&self) -> (f32, f32) {
+    /*fn get_ui_size(&self) -> (f32, f32) {
         panic!("Not implemented");
     }
 
     fn set_ui_size(&mut self, pair: (f32, f32)) {
         panic!("Not implemented");
-    }
+    }*/
 
     fn info(&self) -> Info {
         println!("ModuleDynamic::info()");

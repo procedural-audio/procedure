@@ -9,15 +9,14 @@ impl Module for Keyboard {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Reisizable {
             default: (400, 200),
             min: (400, 200),
             max: (400, 200),
         },
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[],
         outputs: &[Pin::Control("Control Output", 30)],
     };

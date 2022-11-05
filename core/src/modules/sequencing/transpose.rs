@@ -9,11 +9,10 @@ impl Module for Transpose {
 
     const INFO: Info = Info {
         name: "Transpose",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Notes("Notes Input", 25),
             Pin::Control("Transpose Amount", 55),

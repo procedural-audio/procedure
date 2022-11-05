@@ -7,11 +7,10 @@ impl Module for Or {
 
     const INFO: Info = Info {
         name: "Or",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Control Input", 15),
             Pin::Control("Control Input", 45),

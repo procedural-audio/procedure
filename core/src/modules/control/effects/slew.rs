@@ -9,11 +9,10 @@ impl Module for Slew {
 
     const INFO: Info = Info {
         name: "Slew",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Input", 25),
             Pin::Control("Rate (0-1)", 55)

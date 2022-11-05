@@ -10,4 +10,4 @@ edition = "2021"
 cmake = "0.1"
 
 [lib]
-crate-type = ["rlib", "staticlib"]
+crate-type = ["cdylib"]

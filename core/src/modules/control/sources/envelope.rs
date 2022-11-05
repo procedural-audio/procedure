@@ -13,11 +13,10 @@ impl Module for EnvelopeModule {
 
     const INFO: Info = Info {
         name: "Envelope",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(300, 150),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Attack", 20),
             Pin::Control("Decay", 50),

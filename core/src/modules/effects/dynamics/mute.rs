@@ -9,11 +9,10 @@ impl Module for Mute {
 
     const INFO: Info = Info {
         name: "Mute",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(100, 80),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Audio("Audio Input", 25)],
         outputs: &[Pin::Audio("Audio Output", 25)],
     };

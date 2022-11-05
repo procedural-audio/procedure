@@ -9,13 +9,10 @@ impl Module for Constant {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
         color: Color::RED,
         size: Size::Static(115, 50),
         voicing: Voicing::Monophonic,
-        vars: &[
-            ("value", Value::Float(0.5))
-        ],
+        params: &[],
         inputs: &[],
         outputs: &[
             Pin::Control("Control Output", 17)

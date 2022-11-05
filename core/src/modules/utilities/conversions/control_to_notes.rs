@@ -11,11 +11,10 @@ impl Module for ControlToNotes {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Control("Note Gate", 15),
             Pin::Control("Note Pitch", 45),

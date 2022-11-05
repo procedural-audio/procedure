@@ -14,6 +14,26 @@
 
 #include <dlfcn.h>
 
+/*#[no_mangle]
+extern "C" fn ffi_host_create_audio_plugin_manager(
+        ptr: *const c_void, 
+        create_plugin_callback: extern "C" fn (*const u8) -> *const c_void,
+        manager_delete_callback: extern "C" fn (*const c_void),
+        plugin_prepare: extern "C" fn (*const c_void, u32, usize),
+        plugin_process: extern "C" fn (*const c_void, *const *mut f32),
+        plugin_delete_callback: extern "C" fn (*const c_void),
+    ) -> AudioPluginManager {
+
+    AudioPluginManager {
+        ptr,
+        create_plugin_callback,
+        manager_delete_callback,
+        plugin_prepare,
+        plugin_process,
+        plugin_delete_callback
+    }
+}*/
+
 std::vector<std::unique_ptr<AudioPlugin>> plugins;
 
 extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, uint32_t channels, uint32_t samples, Event* events, uint32_t events_count) {

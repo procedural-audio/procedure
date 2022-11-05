@@ -13,11 +13,10 @@ impl Module for Flanger {
 
     const INFO: Info = Info {
         name: "Flanger",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };

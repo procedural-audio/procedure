@@ -20,11 +20,10 @@ impl Module for StepSequencer {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(20 + 80 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Time("Time", 10)],
         outputs: &[Pin::Notes("Midi Output", 10)],
     };

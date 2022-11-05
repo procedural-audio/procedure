@@ -7,11 +7,10 @@ impl Module for AudioOutput {
 
     const INFO: Info = Info {
         name: "Audio Output",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(130, 80),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Audio("Audio Output", 30)],
         outputs: &[],
     };

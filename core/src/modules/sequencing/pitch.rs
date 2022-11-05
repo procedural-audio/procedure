@@ -7,11 +7,10 @@ impl Module for Pitch {
 
     const INFO: Info = Info {
         name: "Pitch",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Notes("Notes Input", 15),
             Pin::Control("Pitch (hz)", 45),

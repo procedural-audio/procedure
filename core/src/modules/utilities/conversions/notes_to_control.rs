@@ -7,11 +7,10 @@ impl Module for NotesToControl {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(120, 135),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Notes Input", 15)],
         outputs: &[
             Pin::Control("Gate", 15),

@@ -11,11 +11,10 @@ impl Module for MultiSampler {
 
     const INFO: Info = Info {
         name: "Multi-Sampler",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(600, 400),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Midi Input", 20)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };

@@ -7,11 +7,10 @@ impl Module for MidiOutput {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Midi Output", 30)],
         outputs: &[],
     };

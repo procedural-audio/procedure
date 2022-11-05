@@ -32,11 +32,10 @@ impl Module for WavetableOscillator {
 
     const INFO: Info = Info {
         name: "Wavetable Oscillator",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(500, 300),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Midi Input", 20), Pin::Control("Pitch", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };

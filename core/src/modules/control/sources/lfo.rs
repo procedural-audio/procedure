@@ -19,11 +19,10 @@ impl Module for LfoModule {
 
     const INFO: Info = Info {
         name: "LFO",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(250, 140),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("LFO Rate (hz)", 15),
             Pin::Control("Reset (trigger)", 45),

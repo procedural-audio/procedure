@@ -9,11 +9,10 @@ impl Module for Image {
 
     const INFO: Info = Info {
         name: "Image",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[],
         outputs: &[Pin::Control("Control Output", 30)],
     };

@@ -20,11 +20,10 @@ impl Module for Arpeggiator {
 
     const INFO: Info = Info {
         name: "Arpeggiator",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Static(640, 290),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Notes("Midi Input", 20), Pin::Time("Time", 50)],
         outputs: &[Pin::Notes("Midi Output", 20)],
     };

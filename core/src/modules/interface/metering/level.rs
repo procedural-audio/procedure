@@ -10,11 +10,10 @@ impl Module for LevelMeter {
 
     const INFO: Info = Info {
         name: "Level",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Audio("Audio Input", 25)],
         outputs: &[Pin::Control("RMS", 25)],
     };

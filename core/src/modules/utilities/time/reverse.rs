@@ -7,11 +7,10 @@ impl Module for Reverse {
 
     const INFO: Info = Info {
         name: "Rev",
-        features: &[],
-        color: Color::PURPLE,
+                color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Time("Time Input", 15),
             Pin::Control("Reverse (bool)", 45),

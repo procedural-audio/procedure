@@ -10,11 +10,10 @@ impl Module for Gain {
 
     const INFO: Info = Info {
         name: "Gain",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Gain", 55),

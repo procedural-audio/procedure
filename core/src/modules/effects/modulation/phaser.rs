@@ -15,11 +15,10 @@ impl Module for Phaser {
 
     const INFO: Info = Info {
         name: "Phaser",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(310 - 40, 200),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };

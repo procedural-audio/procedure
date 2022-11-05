@@ -10,11 +10,10 @@ impl Module for Hold {
 
     const INFO: Info = Info {
         name: "Hold",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Control Input", 15),
             Pin::Control("Hold (boolean)", 45),

@@ -22,11 +22,10 @@ impl Module for Scale {
 
     const INFO: Info = Info {
         name: "Scale",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(300 - 35, 100),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Control Input", 20)
         ],

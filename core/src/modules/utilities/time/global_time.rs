@@ -7,11 +7,10 @@ impl Module for GlobalTime {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::PURPLE,
+                color: Color::PURPLE,
         size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
     };

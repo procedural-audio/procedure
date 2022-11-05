@@ -302,7 +302,7 @@ impl GraphProcessor {
                     // events_output_channels_buffers.push(events_inputs_buffer.unowned());
                 }
 
-                if voice_index == 0 {
+                /*if voice_index == 0 {
                     for feature in node.info().features {
                         match feature {
                             Feature::MidiInput => {
@@ -313,7 +313,7 @@ impl GraphProcessor {
                             Feature::AudioOutput => {}
                         }
                     }
-                }
+                }*/
 
                 unsafe {
                     let node_ptr = Rc::as_ptr(node) as *mut Node;

@@ -1,12 +1,12 @@
 pub mod control;
 pub mod effects;
-pub mod interface;
+// pub mod interface;
 pub mod sequencing;
 pub mod sources;
 pub mod utilities;
 
 
-use interface::*;
+// use interface::*;
 
 pub use control::*;
 pub use effects::*;
@@ -27,7 +27,6 @@ pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
 pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     let mut modules: Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> = Vec::new();
 
-    /* Sources */
     modules.push(("Analog Oscillator", create_module::<AnalogOscillator>));
     modules.push(("Wavetable Oscillator", create_module::<WavetableOscillator>));
     modules.push(("Noise", create_module::<crate::modules::sources::Noise>));
@@ -37,7 +36,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Triangle", create_module::<TriangleModule>));
     modules.push(("Pulse", create_module::<PulseModule>));
 
-    /* Sampling */
     modules.push(("Audio Track", create_module::<AudioTrack>));
     modules.push(("Multi-Sampler", create_module::<MultiSampler>));
     modules.push(("Sampler", create_module::<Sampler>));
@@ -46,7 +44,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     // modules.push(("Sample Resynthesis", create_module::<SampleResynthesis>));
     modules.push(("Looper", create_module::<Looper>));
 
-    /* Effects */
     modules.push(("Waveshaper", create_module::<Waveshaper>));
     modules.push(("Gain", create_module::<effects::Gain>));
     modules.push(("Mute", create_module::<Mute>));
@@ -56,15 +53,12 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Compressor", create_module::<Compressor>));
     modules.push(("Crossover", create_module::<Crossover>));
 
-    /* Modulation */
     modules.push(("Chorus", create_module::<Chorus>));
     modules.push(("Flanger", create_module::<Flanger>));
     modules.push(("Phaser", create_module::<Phaser>));
 
-    /* Distortion */
     modules.push(("Tube", create_module::<Tube>));
 
-    /* Operations */
     modules.push(("Add", create_module::<Add>));
     modules.push(("Subtract", create_module::<Subtract>));
     modules.push(("Multiply", create_module::<Multiply>));
@@ -73,13 +67,11 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Modulo", create_module::<Modulo>));
     modules.push(("Clamp", create_module::<Clamp>));
 
-    /* Logic */
     modules.push(("And", create_module::<And>));
     modules.push(("Or", create_module::<Or>));
     modules.push(("Not", create_module::<Not>));
     modules.push(("Xor", create_module::<Xor>));
 
-    /* Comparisons */
     modules.push(("Equal", create_module::<Equal>));
     modules.push(("Not equal", create_module::<NotEqual>));
     modules.push(("Greater than", create_module::<Greater>));
@@ -95,52 +87,45 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Random", create_module::<Random>));
     modules.push(("Knob", create_module::<KnobModule>));
 
-    /* Effects */
     modules.push(("Display", create_module::<crate::modules::control::Display>));
     modules.push(("Bend", create_module::<Bend>));
     modules.push(("Scale", create_module::<Scale>));
     modules.push(("Hold", create_module::<Hold>));
     modules.push(("Slew", create_module::<Slew>));
 
-    /* Effects */
     modules.push(("Pitch", create_module::<crate::modules::sequencing::Pitch>));
     modules.push(("Pressure", create_module::<Pressure>));
     modules.push(("Timbre", create_module::<Timbre>));
 
-    /* Metering */
-    modules.push(("Level Meter", create_module::<LevelMeter>));
+    // modules.push(("Level Meter", create_module::<LevelMeter>));
 
-    /* IO */
     modules.push(("Audio Input", create_module::<AudioInput>));
     modules.push(("Audio Output", create_module::<AudioOutput>));
     modules.push(("Midi Input", create_module::<MidiInput>));
     modules.push(("Midi Output", create_module::<MidiOutput>));
 
-    /* User Interface */
-    modules.push(("Simple Fader", create_module::<SimpleFaderModule>));
-    modules.push(("Simple Button", create_module::<SimpleButtonModule>));
-    modules.push(("Simple Switch", create_module::<SimpleSwitch>));
-    modules.push(("Simple Pad", create_module::<SimplePad>));
+    // modules.push(("Simple Fader", create_module::<SimpleFaderModule>));
+    // modules.push(("Simple Button", create_module::<SimpleButtonModule>));
+    // modules.push(("Simple Switch", create_module::<SimpleSwitch>));
+    // modules.push(("Simple Pad", create_module::<SimplePad>));
 
-    modules.push(("Image Fader", create_module::<ImageFader>));
-    modules.push(("Image Knob", create_module::<ImageKnob>));
+    // modules.push(("Image Fader", create_module::<ImageFader>));
+    // modules.push(("Image Knob", create_module::<ImageKnob>));
 
-    modules.push(("Solid Color", create_module::<SolidColor>));
-    modules.push(("Image", create_module::<Image>));
+    // modules.push(("Solid Color", create_module::<SolidColor>));
+    // modules.push(("Image", create_module::<Image>));
+    // modules.push(("Keyboard", create_module::<Keyboard>));
 
     modules.push(("Notes Track", create_module::<NotesTrack>));
     modules.push(("Step Sequencer", create_module::<crate::modules::sequencing::StepSequencer>));
 
-    modules.push(("Keyboard", create_module::<Keyboard>));
     modules.push(("Transpose", create_module::<Transpose>));
 
     modules.push(("Arpeggiator", create_module::<Arpeggiator>));
 
-    /* Conversions */
     modules.push(("Control To Notes", create_module::<ControlToNotes>));
     modules.push(("Notes to Control", create_module::<NotesToControl>));
 
-    /* Time */
     modules.push(("Time", create_module::<GlobalTime>));
     // modules.push(("Time", create_module::<LocalTime>));
     modules.push(("Reverse", create_module::<Reverse>));
@@ -171,12 +156,6 @@ pub trait PolyphonicModule {
     fn get_module_size(&self) -> (f32, f32);
     fn set_module_size(&mut self, pair: (f32, f32));
 
-    fn get_ui_root(&self) -> Option<&dyn WidgetNew>;
-    fn get_ui_position(&self) -> (f32, f32);
-    fn set_ui_position(&mut self, pair: (f32, f32));
-    fn get_ui_size(&self) -> (f32, f32);
-    fn set_ui_size(&mut self, pair: (f32, f32));
-
     fn get_connected(&mut self) -> &mut Vec<bool>;
 }
 
@@ -193,10 +172,10 @@ pub struct ModuleManager<T: Module> {
     module_size: (f32, f32),
 
     /* UI  */
-    ui_widgets: Option<Box<dyn WidgetNew>>,
+    /*ui_widgets: T::Widgets<'w>,
     ui_position: (f32, f32),
     ui_size: (f32, f32),
-    ui: UI,
+    ui: UI,*/
 }
 
 impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
@@ -245,7 +224,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
 
         unsafe {
             let w = (&mut *module_ptr).build(&*ui_ptr);
-            let w_main = (&mut *module_ptr).build_ui(&*ui_ptr);
+            // let w_main = (&mut *module_ptr).build_ui(&*ui_ptr);
 
             ModuleManager {
                 module,
@@ -253,11 +232,11 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
                 connected: vec,
                 voicing: voicing,
                 widgets: w,
+                // ui_widgets: w_main,
                 module_size,
-                ui_widgets: Some(w_main),
-                ui_position: (100.0, 100.0),
-                ui_size: (100.0, 100.0),
-                ui,
+                // ui_position: (100.0, 100.0),
+                // ui_size: (100.0, 100.0),
+                // ui,
             }
         }
     }
@@ -277,14 +256,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         self.module_size = pair;
     }
 
-    fn get_ui_root(&self) -> Option<&dyn WidgetNew> {
-        match &self.ui_widgets {
-            Some(widgets) => Some(&**widgets),
-            None => None,
-        }
-    }
-
-    fn get_ui_position(&self) -> (f32, f32) {
+    /*fn get_ui_position(&self) -> (f32, f32) {
         self.ui_position
     }
     fn set_ui_position(&mut self, pair: (f32, f32)) {
@@ -295,7 +267,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
     }
     fn set_ui_size(&mut self, pair: (f32, f32)) {
         self.ui_size = pair;
-    }
+    }*/
 
     fn info(&self) -> Info {
         self.module.info()
@@ -306,7 +278,8 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
     }
 
     fn should_refresh(&self) -> bool {
-        self.ui.should_refresh()
+        // self.ui.should_refresh()
+        false
     }
 
     fn should_rebuild(&self) -> bool {

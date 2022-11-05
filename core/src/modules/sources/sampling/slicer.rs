@@ -51,11 +51,10 @@ impl Module for Slicer {
 
     const INFO: Info = Info {
         name: "Slicer",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(305, 195),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Control("Splice Select", 15 + 30 * 0),
             Pin::Control("Playback speed", 15 + 30 * 1),

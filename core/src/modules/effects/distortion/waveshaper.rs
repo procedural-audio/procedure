@@ -24,11 +24,10 @@ impl Module for Waveshaper {
 
     const INFO: Info = Info {
         name: "Waveshaper",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 20),
             Pin::Control("Knob 1", 50),

@@ -29,11 +29,10 @@ impl Module for AnalogOscillator {
 
     const INFO: Info = Info {
         name: "Analog Oscillator",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(310, 200),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Notes("Midi Input", 20),
             Pin::Control("Control 1", 50),

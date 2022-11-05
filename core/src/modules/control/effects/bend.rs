@@ -12,11 +12,10 @@ impl Module for Bend {
 
     const INFO: Info = Info {
         name: "Bend",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Control Input", 20),
             Pin::Control("Bend Amount", 50),

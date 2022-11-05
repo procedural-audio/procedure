@@ -1,5 +1,3 @@
-use audio_plugin_loader::{AudioPlugin, AudioPluginManager};
-
 use crate::modules::*;
 
 pub struct AudioPluginModule {
@@ -13,11 +11,10 @@ impl Module for AudioPluginModule {
 
     const INFO: Info = Info {
         name: "Audio Plugin",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Audio("Audio Input", 15),
             Pin::Notes("Notes Input", 45),

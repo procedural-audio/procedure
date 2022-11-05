@@ -20,15 +20,14 @@ impl Module for NotesTrack {
 
     const INFO: Info = Info {
         name: "Notes Track",
-        features: &[],
-        color: Color::GREEN,
+                color: Color::GREEN,
         size: Size::Reisizable {
             default: (800, 500),
             min: (300, 200),
             max: (8000, 1200),
         },
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[Pin::Time("Time", 10)],
         outputs: &[Pin::Notes("Notes Output", 10)],
     };

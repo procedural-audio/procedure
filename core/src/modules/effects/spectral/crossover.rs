@@ -10,11 +10,10 @@ impl Module for Crossover {
 
     const INFO: Info = Info {
         name: "Crossover",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Crossover", 55),

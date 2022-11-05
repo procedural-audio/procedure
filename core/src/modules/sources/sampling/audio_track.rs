@@ -41,11 +41,10 @@ impl Module for AudioTrack {
 
     const INFO: Info = Info {
         name: "Audio Track",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 15 + 30 * 0),
             Pin::Time("Time Input", 15 + 30 * 2),

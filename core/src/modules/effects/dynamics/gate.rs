@@ -13,11 +13,10 @@ impl Module for Gate {
 
     const INFO: Info = Info {
         name: "Gate",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(350, 220),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Gate", 55),

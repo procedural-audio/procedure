@@ -11,7 +11,6 @@ pub struct Host {
     pub time: Time,
     pub bpm: f64,
     pub vars: Vars,
-    pub plugin_manager: Option<AudioPluginManager>,
     pub plugins: Vec<AudioPlugin>
 }
 
@@ -40,7 +39,6 @@ impl Host {
                     value: VarValue::Float(0.7),
                 },
             ],
-            plugin_manager: None,
             plugins: Vec::new()
         }
     }
@@ -91,7 +89,7 @@ impl Host {
     }
 }
 
-#[no_mangle]
+/*#[no_mangle]
 extern "C" fn ffi_core_set_plugin_manager(host: &mut Host, manager: AudioPluginManager) {
     host.plugin_manager = Some(manager);
-}
+}*/

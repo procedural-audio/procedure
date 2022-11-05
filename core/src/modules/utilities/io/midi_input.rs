@@ -159,8 +159,7 @@ impl Module for MidiInput {
         color: Color::GREEN,
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
-        features: &[Feature::MidiInput],
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::ExternalNotes(0)
         ],

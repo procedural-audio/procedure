@@ -124,14 +124,14 @@ class Module {
       widgets.add(widget);
     }
 
-    var widgetMainRaw = api.ffiNodeGetWidgetMainRoot(module);
+    /*var widgetMainRaw = api.ffiNodeGetWidgetMainRoot(module);
     if (widgetMainRaw.metadata != 0) {
       print("Adding widget to main view");
       var widget = createWidget(host, module, widgetMainRaw);
       if (widget != null) {
         widgetsMain.add(widget);
       }
-    }
+    }*/
   }
 }
 

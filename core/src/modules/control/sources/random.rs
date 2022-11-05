@@ -11,11 +11,10 @@ impl Module for Random {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
         inputs: &[],
         outputs: &[
             Pin::Control("Output (0-1)", 22)

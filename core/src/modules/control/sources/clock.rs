@@ -10,11 +10,10 @@ impl Module for Clock {
 
     const INFO: Info = Info {
         name: "Clock",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
         inputs: &[
             Pin::Control("Clock Rate (0-1)", 25),
             Pin::Time("Time", 55)

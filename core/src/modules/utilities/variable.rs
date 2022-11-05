@@ -11,11 +11,10 @@ impl Module for ControlVariable {
 
     const INFO: Info = Info {
         name: "",
-        features: &[],
-        color: Color::RED,
+                color: Color::RED,
         size: Size::Static(180, 50),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Control("Input", 17)
         ],

@@ -243,7 +243,7 @@ class FFIApi {
 
   /* Main widget stuff */
 
-  double Function(FFINode) ffiNodeGetWidgetMainX = core
+  /*double Function(FFINode) ffiNodeGetWidgetMainX = core
       .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_ui_x")
       .asFunction();
   double Function(FFINode) ffiNodeGetWidgetMainY = core
@@ -276,7 +276,7 @@ class FFIApi {
   FFIWidget Function(FFINode) ffiNodeGetWidgetMainRoot = core
       .lookup<NativeFunction<FFIWidget Function(FFINode)>>(
           "ffi_node_get_ui_root")
-      .asFunction();
+      .asFunction();*/
 
   /* Widget */
 

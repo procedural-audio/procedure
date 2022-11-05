@@ -24,11 +24,10 @@ impl Module for AnalogFilter {
 
     const INFO: Info = Info {
         name: "Analog Filter",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(200, 170),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 20),
             Pin::Control("Control Input", 50),

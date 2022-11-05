@@ -1,3 +1,5 @@
+use std::io::Empty;
+
 use serde::{Deserialize, Serialize};
 
 use crate::buffers::*;
@@ -87,12 +89,17 @@ impl JSON {
     }
 }
 
-pub enum Feature {
-    MidiInput,
-    MidiOutput,
-    AudioInput,
-    AudioOutput,
+pub struct Info {
+    pub name: &'static str,
+    pub color: Color,
+    pub size: Size,
+    pub voicing: Voicing,
+    pub params: &'static [(&'static str, Value)],
+    pub inputs: &'static [Pin],
+    pub outputs: &'static [Pin],
 }
+
+pub type Params = &'static [(&'static str, Value)];
 
 #[derive(Copy, Clone)]
 pub enum Value {
@@ -104,21 +111,9 @@ pub enum Value {
     None,
 }
 
-pub struct Info {
-    pub name: &'static str,
-    pub color: Color,
-    pub size: Size,
-    pub voicing: Voicing,
-    pub features: &'static [Feature],
-    pub vars: &'static [(&'static str, Value)],
-    pub inputs: &'static [Pin],
-    pub outputs: &'static [Pin],
-}
-
-pub type ModuleVars = &'static [(&'static str, f32)];
-
 pub trait Module {
     type Voice;
+    // type Widgets<'w> where Self: 'w;
 
     const INFO: Info;
 
@@ -131,9 +126,9 @@ pub trait Module {
 
     fn build<'w>(&'w mut self, ui: &'w UI) -> Box<dyn WidgetNew + 'w>;
 
-    fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
-        Box::new(EmptyWidget)
-    }
+    /*fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Self::Widgets<'w> {
+        panic!("Not implemented");
+    }*/
 
     fn is_active(_voice: &Self::Voice) -> bool {
         true
@@ -144,6 +139,61 @@ pub trait Module {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) where Self: Sized;
     fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
+}
+
+pub struct TestModule;
+
+impl Module for TestModule {
+    type Voice = ();
+
+    const INFO: Info = Info {
+        name: "Test Module",
+        color: Color::RED,
+        size: Size::Static(100, 75),
+        voicing: Voicing::Polyphonic,
+        params: &[
+            ("First Parameter", Value::Bool(false))
+        ],
+        inputs: &[
+            Pin::Control("Control Input 1", 15),
+            Pin::Control("Control Input 2", 45),
+        ],
+        outputs: &[
+            Pin::Control("Control Output", 30)
+        ],
+    };
+
+    fn new() -> Self {
+        Self
+    }
+
+    fn new_voice(_index: u32) -> Self::Voice {
+        ()
+    }
+
+    fn load(&mut self, _json: &JSON) {}
+    fn save(&self, _json: &mut JSON) {}
+
+    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+        Box::new(Transform {
+            position: (30, 25),
+            size: (40, 40),
+            child: Svg {
+                path: "logic/and.svg",
+                color: Color::RED,
+            },
+        })
+    }
+
+    fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
+
+    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        if inputs.control[0].get() == 0.0 || inputs.control[1].get() == 0.0 {
+            outputs.control[0].set(0.0);
+        } else {
+            outputs.control[0].set(1.0);
+        }
+    }
 }
 
 pub type Vars = Vec<Var>;

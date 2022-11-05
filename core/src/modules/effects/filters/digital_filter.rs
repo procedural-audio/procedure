@@ -25,11 +25,10 @@ impl Module for DigitalFilter {
 
     const INFO: ModuleInfo = ModuleInfo {
         name: "Digital Filter",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(315-60, 200-70),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             IO::Audio(10, 20),
             IO::Control(10, 50),

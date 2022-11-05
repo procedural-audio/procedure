@@ -49,7 +49,7 @@ private:
     std::unique_ptr<DocumentWindow> window;
 };
 
-extern "C" juce::AudioPluginFormatManager* create_audio_plugin_manager() {
+extern "C" juce::AudioPluginFormatManager* create_manager() {
     puts("Creating plugin format manager");
 
     auto manager = new juce::AudioPluginFormatManager();
@@ -71,7 +71,7 @@ extern "C" juce::AudioPluginFormatManager* create_audio_plugin_manager() {
     return manager;
 }
 
-extern "C" void destroy_audio_plugin_manager(juce::AudioPluginFormatManager* manager) {
+extern "C" void delete_manager(juce::AudioPluginFormatManager* manager) {
     delete manager;
 }
 

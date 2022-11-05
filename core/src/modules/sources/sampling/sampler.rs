@@ -41,11 +41,10 @@ impl Module for Sampler {
 
     const INFO: Info = Info {
         name: "Sampler",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Notes("Notes Input", 15 + 30 * 0),
             Pin::Control("Gate Input", 15 + 30 * 1),

@@ -594,7 +594,7 @@ pub unsafe extern "C" fn ffi_node_get_widget_root(node: &mut Node) -> &dyn Widge
     node.module.get_module_root()
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_ui_root(node: &mut Node) -> &dyn WidgetNew {
     match node.module.get_ui_root() {
         Some(widgets) => widgets,
@@ -644,7 +644,7 @@ pub unsafe extern "C" fn ffi_node_set_ui_width(node: &mut Node, x: f32) {
 pub unsafe extern "C" fn ffi_node_set_ui_height(node: &mut Node, y: f32) {
     let x = node.module.get_ui_size().0;
     node.module.set_ui_size((x, y));
-}
+}*/
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_should_refresh(node: &mut Node) -> bool {

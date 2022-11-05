@@ -16,11 +16,10 @@ impl Module for Compressor {
 
     const INFO: Info = Info {
         name: "Compressor",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(410, 220),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Threshold", 55),

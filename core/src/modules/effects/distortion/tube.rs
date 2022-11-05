@@ -27,11 +27,10 @@ impl Module for Tube {
 
     const INFO: Info = Info {
         name: "Tube",
-        features: &[],
-        color: Color::BLUE,
+                color: Color::BLUE,
         size: Size::Static(200, 170),
         voicing: Voicing::Monophonic,
-        vars: &[],
+        params: &[],
 inputs: &[
             Pin::Audio("Audio Input", 20),
             Pin::Control("Knob 1", 50),
