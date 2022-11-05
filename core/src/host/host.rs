@@ -81,7 +81,7 @@ impl Host {
         self.time = Time::from(0.0, delta_beats);
     }
 
-    pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut [NoteBuffer]) {
+    pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
         self.graph.process(&self.time, &self.vars, audio, midi);
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;

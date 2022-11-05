@@ -101,19 +101,6 @@ pub unsafe extern "C" fn ffi_host_prepare(host: &mut Host, sample_rate: u32, blo
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn api_host_process(
-    host: &mut Host,
-    audio: *mut [AudioBuffer],
-    events: *mut [NoteBuffer],
-) {
-    for buffer in &mut *audio {
-        buffer.zero();
-    }
-
-    host.process(&mut *audio, &mut *events);
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn ffi_host_process(
     host: &mut Host,
     buffer: *mut *mut f32,
@@ -122,8 +109,7 @@ pub unsafe extern "C" fn ffi_host_process(
     events: *mut Event,
     events_count: u32,
 ) {
-    let mut events = NoteBuffer::from_raw(events, events_count as usize);
-    events.forget();
+    let mut events = NoteBuffer::from_raw_parts(events, events_count as usize, events_count as usize);
 
     if num_channels == 0 {
         println!("No IO channels available");
@@ -132,7 +118,7 @@ pub unsafe extern "C" fn ffi_host_process(
 
         let mut audio = [buffer_center];
 
-        api_host_process(host, &mut audio, &mut [events]);
+        api_host_process(host, &mut audio, &mut events);
 
         std::mem::forget(audio);
     } else if num_channels == 2 {
@@ -141,12 +127,27 @@ pub unsafe extern "C" fn ffi_host_process(
 
         let mut audio = [buffer_left, buffer_right];
 
-        api_host_process(host, &mut audio, &mut [events]);
+        api_host_process(host, &mut audio, &mut events);
 
         std::mem::forget(audio);
     } else {
         println!("Unsupported channel number");
     }
+
+    std::mem::forget(events);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn api_host_process(
+    host: &mut Host,
+    audio: &mut [AudioBuffer],
+    events: &mut NoteBuffer,
+) {
+    for buffer in audio.iter_mut() {
+        buffer.zero();
+    }
+
+    host.process(audio, events);
 }
 
 /* Host Graph */

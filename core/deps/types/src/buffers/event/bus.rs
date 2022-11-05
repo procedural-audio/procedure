@@ -1,6 +1,6 @@
 use crate::buffers::event::buffer::*;
 
-pub struct NotesBus {
+/*pub struct NotesBus {
     pub buffers: *mut NoteBuffer,
     pub channels: usize,
     owned: bool,
@@ -161,3 +161,4 @@ impl std::ops::IndexMut<usize> for NotesBus {
         }
     }
 }
+*/

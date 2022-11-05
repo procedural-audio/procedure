@@ -6,7 +6,7 @@ pub use crate::buffers::event::buffer::*;
 pub use crate::buffers::event::bus::*;
 pub use crate::buffers::event::event::*;
 
-pub struct Notes {
+/*pub struct Notes {
     pub inputs: NotesBus,
     pub outputs: NotesBus,
 }
@@ -18,4 +18,4 @@ impl Notes {
             outputs: self.outputs.unowned(),
         }
     }
-}
+}*/

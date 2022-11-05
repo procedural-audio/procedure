@@ -69,7 +69,7 @@ impl Module for AudioPluginModule {
                     outputs.audio[0].right.as_mut_ptr()
                 ];
 
-                (f)(id, arr.as_ptr(), 2, outputs.audio[0].left.len() as u32, outputs.events[0].as_ptr(), outputs.events[0].len() as u32);
+                (f)(id, arr.as_ptr(), 2, outputs.audio[0].left.len() as u32, outputs.events[0].as_mut_ptr(), outputs.events[0].len() as u32);
             }
         }
     }

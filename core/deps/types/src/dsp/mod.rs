@@ -29,7 +29,7 @@ Processor
 
 /* ========== Test Function ========== */
 
-fn test() {
+/*fn test() {
     let mut buffer = Buffer::<f32>::new(512);
 
     let mut stack: Amplifier<Clipper<Noise>> = Amplifier::default();
@@ -62,7 +62,7 @@ fn test() {
     let stack = wavetable.gain(10.0).clip(1.0);*/
 
     //buffer.copy_from(stack.take(512));
-}
+}*/
 
 /*
 use std::ops::Add;

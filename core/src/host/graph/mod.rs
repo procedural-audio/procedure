@@ -436,7 +436,7 @@ impl Graph {
         time: &Time,
         vars: &Vars,
         audio: &mut [AudioBuffer],
-        midi: &mut [NoteBuffer],
+        midi: &mut NoteBuffer,
     ) {
         self.preprocess();
 

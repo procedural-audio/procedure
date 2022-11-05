@@ -17,12 +17,12 @@ use std::ops::{Index, IndexMut};
 
 pub struct IO {
     pub audio: AudioBus<Stereo>,
-    pub events: NotesBus,
+    pub events: Bus<NoteBuffer>,
     pub control: Bus<ControlBuffer>,
     pub time: Bus<TimeBuffer>,
 }
 
-pub struct Buffer<T: Copy + Clone> {
+/*pub struct Buffer<T: Copy + Clone> {
     items: Vec<T>,
 }
 
@@ -70,9 +70,9 @@ impl<T: Copy + Clone> Buffer<T> {
             *d = *s;
         }
     }
-}
+}*/
 
-type AudioBufferNew = Buffer<f32>;
+// type AudioBufferNew = Buffer<f32>;
 
 pub struct Bus<T> {
     channels: Vec<Channel<T>>,

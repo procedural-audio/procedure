@@ -15,8 +15,8 @@ enum CopyAction<T: AudioChannels> {
         should_copy: bool,
     },
     NotesCopy {
-        src: NoteBuffer,
-        dest: NoteBuffer,
+        src: ManuallyDrop<NoteBuffer>,
+        dest: ManuallyDrop<NoteBuffer>,
         should_copy: bool,
     },
     ControlCopy {
@@ -49,8 +49,8 @@ impl<T: AudioChannels> Clone for CopyAction<T> {
                     dest,
                     should_copy,
                 } => Self::NotesCopy {
-                    src: src.unowned(),
-                    dest: dest.unowned(),
+                    src: transmute_copy(src),
+                    dest: transmute_copy(dest),
                     should_copy: should_copy.clone(),
                 },
                 Self::ControlCopy {
@@ -82,7 +82,8 @@ pub struct ProcessAction {
     voice_index: usize,
     node: Rc<Node>,
     audio: Audio<Stereo>,
-    events: Notes,
+    events_inputs: ManuallyDrop<Bus<NoteBuffer>>,
+    events_outputs: ManuallyDrop<Bus<NoteBuffer>>,
     control_inputs: ManuallyDrop<Bus<ControlBuffer>>,
     control_outputs: ManuallyDrop<Bus<ControlBuffer>>,
     time_inputs: ManuallyDrop<Bus<TimeBuffer>>,
@@ -99,7 +100,8 @@ impl Clone for ProcessAction {
                 voice_index: self.voice_index.clone(),
                 node: self.node.clone(),
                 audio: self.audio.unowned(),
-                events: self.events.unowned(),
+                events_inputs: transmute_copy(&self.events_inputs),
+                events_outputs: transmute_copy(&self.events_outputs),
                 control_inputs: transmute_copy(&self.control_inputs),
                 control_outputs: transmute_copy(&self.control_outputs),
                 time_inputs: transmute_copy(&self.time_inputs),
@@ -117,9 +119,9 @@ pub struct GraphProcessor {
     pub audio_input_buffers: Vec<AudioBus<Stereo>>,
     pub audio_output_buffers: Vec<AudioBus<Stereo>>,
 
-    pub events_buffers: Vec<NotesBus>,
-    pub events_input_buffers: Vec<NotesBus>,
-    pub events_output_buffers: Vec<NotesBus>,
+    pub events_buffers: Vec<Bus<NoteBuffer>>,
+    pub events_input_buffers: Vec<Bus<NoteBuffer>>,
+    pub events_output_buffers: Vec<Bus<NoteBuffer>>,
 
     pub control_buffers: Vec<Bus<ControlBuffer>>,
     pub time_buffers: Vec<Bus<TimeBuffer>>,
@@ -180,9 +182,9 @@ impl GraphProcessor {
         let mut audio_input_channels_buffers: Vec<AudioBus<Stereo>> = Vec::new();
         let mut audio_output_channels_buffers: Vec<AudioBus<Stereo>> = Vec::new();
 
-        let mut events_channels_buffers: Vec<NotesBus> = Vec::new();
-        let mut events_input_channels_buffers: Vec<NotesBus> = Vec::new();
-        let events_output_channels_buffers: Vec<NotesBus> = Vec::new();
+        let mut events_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
+        let mut events_input_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
+        let events_output_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
 
         let mut control_channels_buffers: Vec<Bus<ControlBuffer>> = Vec::new();
 
@@ -237,8 +239,34 @@ impl GraphProcessor {
                 let audio_inputs_buffer = AudioBus::new(audio_input_channels_count, block_size);
                 let audio_outputs_buffer = AudioBus::new(audio_output_channels_count, block_size);
 
-                let events_inputs_buffer = NotesBus::new(events_input_channels_count, block_size);
-                let events_outputs_buffer = NotesBus::new(events_output_channels_count, block_size);
+                // let events_inputs_buffer = NotesBus::new(events_input_channels_count, block_size);
+                // let events_outputs_buffer = NotesBus::new(events_output_channels_count, block_size);
+
+                let mut events_input_bus = Bus::new();
+                for i in 0..events_input_channels_count {
+                    let mut connected = false;
+
+                    connectors.iter().for_each(|conn| {
+                        if conn.end.module_id == node.id && conn.end.pin_index == i {
+                            connected = true;
+                        }
+                    });
+
+                    events_input_bus.add_channel(Channel::new(NoteBuffer::with_capacity(32), connected));
+                }
+
+                let mut events_output_bus = Bus::new();
+                for i in 0..events_output_channels_count {
+                    let mut connected = false;
+
+                    connectors.iter().for_each(|conn| {
+                        if conn.start.module_id == node.id && conn.start.pin_index == i {
+                            connected = true;
+                        }
+                    });
+
+                    events_output_bus.add_channel(Channel::new(NoteBuffer::with_capacity(32), connected));
+                }
 
                 let mut control_input_bus = Bus::new();
                 for i in 0..control_input_channels_count {
@@ -328,10 +356,8 @@ impl GraphProcessor {
                             inputs: audio_inputs_buffer.unowned(),
                             outputs: audio_outputs_buffer.unowned(),
                         },
-                        events: Notes {
-                            inputs: events_inputs_buffer.unowned(),
-                            outputs: events_outputs_buffer.unowned(),
-                        },
+                        events_inputs: transmute_copy(&events_input_bus),
+                        events_outputs: transmute_copy(&events_output_bus),
                         control_inputs: transmute_copy(&control_input_bus),
                         control_outputs: transmute_copy(&control_output_bus),
                         time_inputs: transmute_copy(&time_input_bus),
@@ -342,8 +368,8 @@ impl GraphProcessor {
                     audio_channels_buffers.push(audio_inputs_buffer);
                     audio_channels_buffers.push(audio_outputs_buffer);
 
-                    events_channels_buffers.push(events_inputs_buffer);
-                    events_channels_buffers.push(events_outputs_buffer);
+                    events_channels_buffers.push(events_input_bus);
+                    events_channels_buffers.push(events_output_bus);
 
                     control_channels_buffers.push(control_input_bus);
                     control_channels_buffers.push(control_output_bus);
@@ -431,7 +457,7 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.events.outputs.get_channel(index1).unwrap();
+                            let source1 = action1.events_outputs.channel(index1);
 
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
@@ -444,7 +470,7 @@ impl GraphProcessor {
                                         connector.end.pin_index,
                                     ) as usize;
 
-                                    let dest1 = action2.events.inputs.get_channel(index2).unwrap();
+                                    let dest1 = action2.events_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -464,11 +490,13 @@ impl GraphProcessor {
                                         ));
                                     }
 
-                                    new_action.copy_actions.push(CopyAction::NotesCopy {
-                                        src: source1.unowned(),
-                                        dest: dest1.unowned(),
-                                        should_copy: !dest_used1,
-                                    });
+                                    unsafe {
+                                        new_action.copy_actions.push(CopyAction::NotesCopy {
+                                            src: transmute_copy(source1),
+                                            dest: transmute_copy(dest1),
+                                            should_copy: !dest_used1,
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -610,7 +638,7 @@ impl GraphProcessor {
         time: &Time,
         vars: &Vars,
         audio: &mut [AudioBuffer],
-        events: &mut [NoteBuffer],
+        events: &mut NoteBuffer,
     ) {
         /* Zero all audio buffers */
         for bus in &mut self.audio_buffers {
@@ -620,8 +648,8 @@ impl GraphProcessor {
         }
 
         for bus in &mut self.events_buffers {
-            for channel in bus {
-                channel.clear();
+            for i in 0..bus.num_channels() {
+                bus.channel_mut(i).clear();
             }
         }
 
@@ -641,11 +669,9 @@ impl GraphProcessor {
         }
 
         /* Copy all input channels */
-        for event in &events[0] {
+        for event in events {
             for bus in &mut self.events_input_buffers {
-                for buffer in bus.as_mut() {
-                    buffer.push(*event);
-                }
+                /* COPY INPUT EVENTS TO CORRECT BUFFER HERE */
             }
         }
 
@@ -654,18 +680,17 @@ impl GraphProcessor {
             unsafe {
                 let module = action.module;
                 let audio = action.audio.unowned();
-                let events = action.events.unowned();
 
                 let inputs = IO {
                     audio: audio.inputs,
-                    events: events.inputs,
+                    events: transmute_copy(&action.events_inputs),
                     control: transmute_copy(&action.control_inputs),
                     time: transmute_copy(&action.time_inputs),
                 };
 
                 let mut outputs = IO {
                     audio: audio.outputs,
-                    events: events.outputs,
+                    events: transmute_copy(&action.events_outputs),
                     control: transmute_copy(&action.control_outputs),
                     time: transmute_copy(&action.time_outputs),
                 };
