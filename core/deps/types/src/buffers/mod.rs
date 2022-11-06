@@ -1,4 +1,5 @@
 use std::ops::{Deref, DerefMut};
+use std::slice;
 
 pub mod audio;
 pub mod control;
@@ -10,7 +11,7 @@ pub use crate::buffers::control::*;
 pub use crate::buffers::event::*;
 pub use crate::buffers::time::*;
 
-use crate::dsp::Generator;
+use crate::dsp::{Generator, Processor};
 
 use std::borrow::BorrowMut;
 use std::ops::{Index, IndexMut};
@@ -22,31 +23,53 @@ pub struct IO {
     pub time: Bus<TimeBuffer>,
 }
 
-/*pub struct Buffer<T: Copy + Clone> {
+/* Individual Buffer Types */
+
+pub type NoteBuffer = Buffer<Event>;
+
+/* Buffer Type */
+
+pub struct Buffer<T: Copy + Clone> {
     items: Vec<T>,
 }
 
-impl<T: Default + Copy + Clone> Buffer<T> {
-    pub fn new(capacity: usize) -> Self {
+impl<T: Copy + Clone> Buffer<T> {
+    pub fn new() -> Self {
         Self {
-            items: vec![T::default(); capacity],
+            items: Vec::new()
         }
     }
-}
 
-impl<T: Copy + Clone> Buffer<T> {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            items: Vec::with_capacity(capacity)
+        }
+    }
+
     pub fn from(items: Vec<T>) -> Self {
         Self { items }
     }
 
-    pub unsafe fn from_raw(ptr: *mut T, capacity: usize) -> Self {
+    pub unsafe fn from_raw_parts(ptr: *mut T, length: usize, capacity: usize) -> Self {
         Self {
-            items: Vec::from_raw_parts(ptr, capacity, capacity),
+            items: Vec::from_raw_parts(ptr, length, capacity),
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.items.len()
     }
 
     pub fn capacity(&self) -> usize {
         self.items.capacity()
+    }
+
+    pub fn as_ref(&self) -> &[T] {
+        self.items.as_ref()
+    }
+
+    pub fn as_mut(&mut self) -> &mut [T] {
+        self.items.as_mut()
     }
 
     pub fn as_slice<'a>(&'a self) -> &'a [T] {
@@ -57,22 +80,92 @@ impl<T: Copy + Clone> Buffer<T> {
         self.items.as_mut_slice()
     }
 
+    pub fn as_ptr(&self) -> *const T {
+        self.items.as_ptr()
+    }
+
+    pub fn as_mut_ptr(&mut self) -> *mut T {
+        self.items.as_mut_ptr()
+    }
+
     /* Operations */
 
-    pub fn fill<G: Generator<Item = T>>(&mut self, mut src: G) {
+    pub fn push(&mut self, item: T) {
+        self.items.push(item);
+    }
+
+    pub fn clear(&mut self) {
+        self.items.clear();
+    }
+
+    pub fn fill<G: Generator<Item = T>>(&mut self, src: &mut G) {
         for d in &mut self.items {
-            *d = src.borrow_mut().gen();
+            *d = src.gen();
         }
     }
 
     pub fn copy_from(&mut self, src: &Buffer<T>) {
-        for (d, s) in self.items.iter_mut().zip(src.as_slice()) {
-            *d = *s;
+        // self.items.as_mut_slice().copy_from_slice(src.as_slice())
+
+        self.items.clear();
+        
+        for item in src {
+            self.items.push(*item);
         }
     }
-}*/
 
-// type AudioBufferNew = Buffer<f32>;
+    pub fn append_from(&mut self, src: &Buffer<T>) {
+        for s in src.as_slice() {
+            self.items.push(*s);
+        }
+    }
+
+    pub fn process<P: Processor<Item = T>>(&mut self, src: &mut P) {
+        for d in &mut self.items {
+            *d = src.process(*d);
+        }
+    }
+}
+
+impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
+    pub fn add_from(&mut self, src: &Buffer<T>) {
+        for (d, s) in self.items.iter_mut().zip(src.as_slice()) {
+            *d = *d + *s;
+        }
+    }
+}
+
+impl<T: Copy + Clone> Index<usize> for Buffer<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.items[index]
+    }
+}
+
+impl<T: Copy + Clone> IndexMut<usize> for Buffer<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.items[index]
+    }
+}
+
+impl<'a, T: Copy + Clone> IntoIterator for &'a Buffer<T> {
+    type Item = &'a T;
+    type IntoIter = slice::Iter<'a, T>;
+
+    fn into_iter(self) -> slice::Iter<'a, T> {
+        self.as_ref().into_iter()
+    }
+}
+
+impl<'a, T: Copy + Clone> IntoIterator for &'a mut Buffer<T> {
+    type Item = &'a mut T;
+    type IntoIter = slice::IterMut<'a, T>;
+
+    fn into_iter(mut self) -> slice::IterMut<'a, T> {
+        self.as_mut().into_iter()
+    }
+}
 
 pub struct Bus<T> {
     channels: Vec<Channel<T>>,

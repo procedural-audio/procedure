@@ -722,7 +722,7 @@ impl GraphProcessor {
                         if should_copy {
                             dest.copy_from(src);
                         } else {
-                            dest.add_from(src);
+                            dest.append_from(src);
                         }
                     }
                     CopyAction::ControlCopy {
