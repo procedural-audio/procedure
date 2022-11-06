@@ -2,12 +2,10 @@ use std::ops::{Deref, DerefMut};
 use std::slice;
 
 // pub mod audio;
-pub mod control;
 pub mod event;
 pub mod time;
 
 // pub use crate::buffers::audio::*;
-pub use crate::buffers::control::*;
 pub use crate::buffers::event::*;
 pub use crate::buffers::time::*;
 
