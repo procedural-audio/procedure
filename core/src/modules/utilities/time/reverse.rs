@@ -41,7 +41,7 @@ inputs: &[
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
-        /*if inputs.control[0].get() < 0.5 {
+        /*if inputs.control[0] < 0.5 {
             outputs.time[0].set(inputs.time[0].get());
         } else {
             outputs.time[0].set(-inputs.time[0].get());

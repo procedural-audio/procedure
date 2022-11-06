@@ -53,9 +53,9 @@ inputs: &[],
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         if self.value {
-            outputs.control[0].set(1.0);
+            outputs.control[0] = 1.0;
         } else {
-            outputs.control[0].set(0.0);
+            outputs.control[0] = 0.0;
         }
     }
 }

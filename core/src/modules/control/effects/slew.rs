@@ -50,8 +50,6 @@ impl Module for Slew {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let input = inputs.control[0].get();
-
-        outputs.control[0].set(input);
+        outputs.control[0] = inputs.control[0];
     }
 }

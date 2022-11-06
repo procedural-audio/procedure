@@ -42,10 +42,10 @@ impl Module for Clamp {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.control[0].set(f32::clamp(
-            inputs.control[0].get(),
-            inputs.control[1].get(),
-            inputs.control[2].get(),
-        ));
+        outputs.control[0] = f32::clamp(
+            inputs.control[0],
+            inputs.control[1],
+            inputs.control[2],
+        );
     }
 }

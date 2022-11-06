@@ -7,12 +7,17 @@ impl Module for Rate {
 
     const INFO: Info = Info {
         name: "Rate",
-                color: Color::PURPLE,
+        color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         params: &[],
-inputs: &[Pin::Time("Time Input", 15), Pin::Control("Rate", 45)],
-        outputs: &[Pin::Time("Time Output", 30)],
+        inputs: &[
+            Pin::Time("Time Input", 15),
+            Pin::Control("Rate", 45)
+        ],
+        outputs: &[
+            Pin::Time("Time Output", 30)
+        ],
     };
 
     fn new() -> Self {
@@ -38,8 +43,8 @@ inputs: &[Pin::Time("Time Input", 15), Pin::Control("Rate", 45)],
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let rate = inputs.control[0].get() as f64;
+        let rate = inputs.control[0] as f64;
         let new_time = inputs.time[0].rate(rate);
-        outputs.time[0].set(new_time);
+        outputs.time[0] = new_time;
     }
 }

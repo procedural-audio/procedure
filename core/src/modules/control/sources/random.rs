@@ -47,6 +47,6 @@ impl Module for Random {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
-        outputs.control[0].set(self.rng.gen_range(0.0..=1.0));
+        outputs.control[0] = self.rng.gen_range(0.0..=1.0);
     }
 }

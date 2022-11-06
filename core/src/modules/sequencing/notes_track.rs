@@ -65,7 +65,7 @@ inputs: &[Pin::Time("Time", 10)],
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if *voice == 0 {
-            let time = inputs.time[0].get();
+            let time = inputs.time[0];
             self.beat = time.cycle(self.beats as f64).start();
 
             self.queue.clear();

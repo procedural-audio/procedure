@@ -41,6 +41,6 @@ impl Module for Divide {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.control[0].set(inputs.control[0].get() / inputs.control[1].get());
+        outputs.control[0] = inputs.control[0] / inputs.control[1];
     }
 }

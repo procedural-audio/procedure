@@ -47,12 +47,12 @@ inputs: &[
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0].get() > 0.5 {
+        if inputs.control[0] > 0.5 {
             if !voice.note_on {
-                println!("Sending note with pitch {}", inputs.control[1].get());
+                println!("Sending note with pitch {}", inputs.control[1]);
 
                 outputs.events[0][0] = Event::NoteOn {
-                    note: Note::from_pitch(inputs.control[1].get()),
+                    note: Note::from_pitch(inputs.control[1]),
                     offset: 0,
                 };
 

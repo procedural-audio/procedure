@@ -52,13 +52,13 @@ inputs: &[
                     if var.name == *name {
                         match var.value {
                             VarValue::Float(v) => {
-                                outputs.control[0].set(v);
+                                outputs.control[0] = v;
                             },
                             VarValue::Bool(v) => {
                                 if v {
-                                    outputs.control[0].set(1.0);
+                                    outputs.control[0] = 1.0;
                                 } else {
-                                    outputs.control[0].set(0.0);
+                                    outputs.control[0] = 0.0;
                                 }
                             }
                         }
@@ -72,7 +72,7 @@ inputs: &[
             }
         }
 
-        // println!("{}", outputs.control[0].get());
+        // println!("{}", outputs.control[0]);
     }
 }
 

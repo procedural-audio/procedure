@@ -55,7 +55,7 @@ impl Module for Display {
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
         if *voice == 0 {
-            let input = inputs.control[0].get();
+            let input = inputs.control[0];
 
             if self.rate != input {
                 self.rate = input;

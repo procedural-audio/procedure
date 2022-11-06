@@ -49,23 +49,23 @@ impl Module for Hold {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let value = inputs.control[0].get();
+        let value = inputs.control[0];
 
         if self.hold {
-            if inputs.control[1].get() < 0.5 {
-                outputs.control[0].set(value);
+            if inputs.control[1] < 0.5 {
+                outputs.control[0] = value;
                 self.hold = false;
                 println!("Stop hold");
             } else {
-                outputs.control[0].set(value);
+                outputs.control[0] = value;
             }
         } else {
-            if inputs.control[1].get() < 0.5 {
-                outputs.control[0].set(value);
+            if inputs.control[1] < 0.5 {
+                outputs.control[0] = value;
             } else {
                 self.hold = true;
                 self.value = value;
-                outputs.control[0].set(value);
+                outputs.control[0] = value;
                 println!("Hold");
             }
         }

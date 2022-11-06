@@ -19,8 +19,8 @@ use std::ops::{Index, IndexMut};
 pub struct IO {
     pub audio: Bus<Stereo>,
     pub events: Bus<NoteBuffer>,
-    pub control: Bus<ControlBuffer>,
-    pub time: Bus<TimeBuffer>,
+    pub control: Bus<Box<f32>>,
+    pub time: Bus<Box<Time>>,
 }
 
 /* Individual Buffer Types */
@@ -322,7 +322,35 @@ impl<T> Bus<T> {
     }
 }
 
-impl<T> Index<usize> for Bus<T> {
+impl Index<usize> for Bus<Stereo> {
+    type Output = Stereo;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.channel(index).deref()
+    }
+}
+
+impl IndexMut<usize> for Bus<Stereo> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.channel_mut(index).deref_mut()
+    }
+}
+
+impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
+    type Output = Buffer<T>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.channel(index).deref()
+    }
+}
+
+impl<T: Copy + Clone> IndexMut<usize> for Bus<Buffer<T>> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.channel_mut(index).deref_mut()
+    }
+}
+
+impl<T: Copy + Clone> Index<usize> for Bus<Box<T>> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -330,7 +358,7 @@ impl<T> Index<usize> for Bus<T> {
     }
 }
 
-impl<T> IndexMut<usize> for Bus<T> {
+impl<T: Copy + Clone> IndexMut<usize> for Bus<Box<T>> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.channel_mut(index).deref_mut()
     }

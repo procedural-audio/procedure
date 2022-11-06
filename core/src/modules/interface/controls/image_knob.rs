@@ -60,7 +60,7 @@ inputs: &[],
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
-        outputs.control[0].set(self.value);
+        outputs.control[0] = self.value;
     }
 }
 

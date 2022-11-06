@@ -41,12 +41,12 @@ impl Module for Xor {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if (inputs.control[0].get() == 0.0 && inputs.control[1].get() != 0.0)
-            || (inputs.control[0].get() != 0.0 && inputs.control[1].get() == 0.0)
+        if (inputs.control[0] == 0.0 && inputs.control[1] != 0.0)
+            || (inputs.control[0] != 0.0 && inputs.control[1] == 0.0)
         {
-            outputs.control[0].set(1.0);
+            outputs.control[0] = 1.0;
         } else {
-            outputs.control[0].set(0.0);
+            outputs.control[0] = 0.0;
         }
     }
 }

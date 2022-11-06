@@ -52,10 +52,10 @@ impl Module for Clock {
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let rate = linear_to_rate_quantized(self.value) as f64;
 
-        outputs.control[0].set(0.0);
+        outputs.control[0] = 0.0;
 
         inputs.time[0].on_each(rate, | _ | {
-            outputs.control[0].set(1.0);
+            outputs.control[0] = 1.0;
         });
     }
 }

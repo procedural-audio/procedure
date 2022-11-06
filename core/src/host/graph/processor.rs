@@ -20,13 +20,13 @@ enum CopyAction<T> {
         should_copy: bool,
     },
     ControlCopy {
-        src: ManuallyDrop<ControlBuffer>,
-        dest: ManuallyDrop<ControlBuffer>,
+        src: ManuallyDrop<Box<f32>>,
+        dest: ManuallyDrop<Box<f32>>,
         should_copy: bool,
     },
     TimeCopy {
-        src: ManuallyDrop<TimeBuffer>,
-        dest: ManuallyDrop<TimeBuffer>,
+        src: ManuallyDrop<Box<Time>>,
+        dest: ManuallyDrop<Box<Time>>,
         should_copy: bool,
     },
 }
@@ -86,10 +86,10 @@ pub struct ProcessAction {
     audio_outputs: ManuallyDrop<Bus<Stereo>>,
     events_inputs: ManuallyDrop<Bus<NoteBuffer>>,
     events_outputs: ManuallyDrop<Bus<NoteBuffer>>,
-    control_inputs: ManuallyDrop<Bus<ControlBuffer>>,
-    control_outputs: ManuallyDrop<Bus<ControlBuffer>>,
-    time_inputs: ManuallyDrop<Bus<TimeBuffer>>,
-    time_outputs: ManuallyDrop<Bus<TimeBuffer>>,
+    control_inputs: ManuallyDrop<Bus<Box<f32>>>,
+    control_outputs: ManuallyDrop<Bus<Box<f32>>>,
+    time_inputs: ManuallyDrop<Bus<Box<Time>>>,
+    time_outputs: ManuallyDrop<Bus<Box<Time>>>,
     copy_actions: Vec<CopyAction<Stereo>>,
 }
 
@@ -126,8 +126,8 @@ pub struct GraphProcessor {
     pub events_input_buffers: Vec<Bus<NoteBuffer>>,
     pub events_output_buffers: Vec<Bus<NoteBuffer>>,
 
-    pub control_buffers: Vec<Bus<ControlBuffer>>,
-    pub time_buffers: Vec<Bus<TimeBuffer>>,
+    pub control_buffers: Vec<Bus<Box<f32>>>,
+    pub time_buffers: Vec<Bus<Box<Time>>>,
 
     pub nodes: Vec<Rc<Node>>,
     pub block_size: usize,
@@ -189,9 +189,9 @@ impl GraphProcessor {
         let mut events_input_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
         let mut events_output_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
 
-        let mut control_channels_buffers: Vec<Bus<ControlBuffer>> = Vec::new();
+        let mut control_channels_buffers: Vec<Bus<Box<f32>>> = Vec::new();
 
-        let mut time_channels_buffers: Vec<Bus<TimeBuffer>> = Vec::new();
+        let mut time_channels_buffers: Vec<Bus<Box<Time>>> = Vec::new();
 
         let mut process_actions: Vec<ProcessAction> = Vec::new();
 
@@ -307,7 +307,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    control_input_bus.add_channel(Channel::new(ControlBuffer::new(), connected));
+                    control_input_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
                 let mut control_output_bus = Bus::new();
@@ -320,7 +320,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    control_output_bus.add_channel(Channel::new(ControlBuffer::new(), connected));
+                    control_output_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
                 let mut time_input_bus = Bus::new();
@@ -333,7 +333,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_input_bus.add_channel(Channel::new(TimeBuffer::new(), connected));
+                    time_input_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
                 }
 
                 let mut time_output_bus = Bus::new();
@@ -346,7 +346,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_output_bus.add_channel(Channel::new(TimeBuffer::new(), connected));
+                    time_output_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
                 }
 
                 if node.info().name == "Audio Input" {
@@ -686,7 +686,7 @@ impl GraphProcessor {
         /* Initialize all time buffers */
         for time_bus in &mut self.time_buffers {
             for i in 0..time_bus.num_channels() {
-                *time_bus[i] = *time;
+                time_bus[i] = *time;
             }
         }
 
@@ -757,10 +757,9 @@ impl GraphProcessor {
                         should_copy,
                     } => {
                         if should_copy {
-                            dest.set(src.get());
+                            ***dest = ***src;
                         } else {
-                            let value = dest.get();
-                            dest.set(value + src.get());
+                            ***dest = ***dest + ***src;
                         }
                     }
                     CopyAction::TimeCopy {
@@ -769,9 +768,9 @@ impl GraphProcessor {
                         should_copy,
                     } => {
                         if should_copy {
-                            dest.set(src.get());
+                            ***dest = ***src;
                         } else {
-                            dest.set(src.get());
+                            ***dest = ***src;
                         }
                     }
                 }

@@ -200,8 +200,8 @@ impl Module for Scale {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let value = inputs.control[0].get();
-        outputs.control[0].set(value);
+        let value = inputs.control[0];
+        outputs.control[0] = value;
 
         for i in 0..120 {
             match i % 12 {
@@ -277,9 +277,9 @@ impl Module for Scale {
                 let delta_2 = next.pitch() - value;
 
                 if delta_1 < delta_2 {
-                    outputs.control[0].set(prev.pitch());
+                    outputs.control[0] = prev.pitch();
                 } else {
-                    outputs.control[0].set(next.pitch());
+                    outputs.control[0] = next.pitch();
                 }
 
                 break;
@@ -288,8 +288,8 @@ impl Module for Scale {
 
         println!(
             "{} -> {}",
-            inputs.control[0].get(),
-            outputs.control[0].get()
+            inputs.control[0],
+            outputs.control[0]
         );
     }
 }

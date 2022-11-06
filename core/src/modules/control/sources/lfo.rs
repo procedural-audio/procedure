@@ -175,7 +175,7 @@ impl Module for LfoModule {
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let hz = self.value * 20.0;
-        let reset = inputs.control[0].get();
+        let reset = inputs.control[0];
 
         if voice.last_reset < 0.5 {
             if reset >= 0.5 {
@@ -190,18 +190,18 @@ impl Module for LfoModule {
 
         if self.wave == 0 {
             voice.saw.set_pitch(hz);
-            outputs.control[0].set(voice.saw.gen());
+            outputs.control[0] = voice.saw.gen();
         } else if self.wave == 1 {
             voice.square.set_pitch(hz);
-            outputs.control[0].set(voice.square.gen());
+            outputs.control[0] = voice.square.gen();
         } else if self.wave == 2 {
             voice.sine.set_pitch(hz);
-            outputs.control[0].set(voice.sine.gen());
+            outputs.control[0] = voice.sine.gen();
         } else if self.wave == 3 {
             voice.triangle.set_pitch(hz);
-            outputs.control[0].set(voice.triangle.gen());
+            outputs.control[0] = voice.triangle.gen();
         }
 
-        println!("{}", outputs.control[0].get());
+        println!("{}", outputs.control[0]);
     }
 }

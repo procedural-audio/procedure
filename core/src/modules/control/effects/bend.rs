@@ -83,7 +83,7 @@ impl Module for Bend {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let x = inputs.control[0].get();
+        let x = inputs.control[0];
 
         if self.value > 0.5 {
             self.exp = self.value * 10.0 - 5.0;
@@ -93,6 +93,6 @@ impl Module for Bend {
 
         let y = f32::powf(x, self.exp);
 
-        outputs.control[0].set(y);
+        outputs.control[0] = y;
     }
 }
