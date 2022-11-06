@@ -8,10 +8,10 @@ use crate::graph::*;
 
 /* Actions */
 
-enum CopyAction<T: AudioChannels> {
+enum CopyAction<T> {
     AudioCopy {
-        src: T,
-        dest: T,
+        src: ManuallyDrop<T>,
+        dest: ManuallyDrop<T>,
         should_copy: bool,
     },
     NotesCopy {
@@ -31,8 +31,9 @@ enum CopyAction<T: AudioChannels> {
     },
 }
 
-impl<T: AudioChannels> Clone for CopyAction<T> {
+impl<T> Clone for CopyAction<T> {
     fn clone(&self) -> Self {
+        // SIMPLIFY THIS TO A SINGLE transmute_copy
         unsafe {
             match self {
                 Self::AudioCopy {
@@ -40,8 +41,8 @@ impl<T: AudioChannels> Clone for CopyAction<T> {
                     dest,
                     should_copy,
                 } => Self::AudioCopy {
-                    src: src.unowned(),
-                    dest: dest.unowned(),
+                    src: transmute_copy(src),
+                    dest: transmute_copy(dest),
                     should_copy: should_copy.clone(),
                 },
                 Self::NotesCopy {
@@ -81,7 +82,8 @@ pub struct ProcessAction {
     module: *mut dyn PolyphonicModule,
     voice_index: usize,
     node: Rc<Node>,
-    audio: Audio<Stereo>,
+    audio_inputs: ManuallyDrop<Bus<Stereo>>,
+    audio_outputs: ManuallyDrop<Bus<Stereo>>,
     events_inputs: ManuallyDrop<Bus<NoteBuffer>>,
     events_outputs: ManuallyDrop<Bus<NoteBuffer>>,
     control_inputs: ManuallyDrop<Bus<ControlBuffer>>,
@@ -99,7 +101,8 @@ impl Clone for ProcessAction {
                 module: self.module.clone(),
                 voice_index: self.voice_index.clone(),
                 node: self.node.clone(),
-                audio: self.audio.unowned(),
+                audio_inputs: transmute_copy(&self.audio_inputs),
+                audio_outputs: transmute_copy(&self.audio_outputs),
                 events_inputs: transmute_copy(&self.events_inputs),
                 events_outputs: transmute_copy(&self.events_outputs),
                 control_inputs: transmute_copy(&self.control_inputs),
@@ -115,9 +118,9 @@ impl Clone for ProcessAction {
 pub struct GraphProcessor {
     pub actions: Vec<ProcessAction>,
 
-    pub audio_buffers: Vec<AudioBus<Stereo>>,
-    pub audio_input_buffers: Vec<AudioBus<Stereo>>,
-    pub audio_output_buffers: Vec<AudioBus<Stereo>>,
+    pub audio_buffers: Vec<Bus<Stereo>>,
+    pub audio_input_buffers: Vec<Bus<Stereo>>,
+    pub audio_output_buffers: Vec<Bus<Stereo>>,
 
     pub events_buffers: Vec<Bus<NoteBuffer>>,
     pub events_input_buffers: Vec<Bus<NoteBuffer>>,
@@ -178,13 +181,13 @@ impl GraphProcessor {
             );
         }
 
-        let mut audio_channels_buffers: Vec<AudioBus<Stereo>> = Vec::new();
-        let mut audio_input_channels_buffers: Vec<AudioBus<Stereo>> = Vec::new();
-        let mut audio_output_channels_buffers: Vec<AudioBus<Stereo>> = Vec::new();
+        let mut audio_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
+        let mut audio_input_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
+        let mut audio_output_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
 
         let mut events_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
         let mut events_input_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
-        let events_output_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
+        let mut events_output_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
 
         let mut control_channels_buffers: Vec<Bus<ControlBuffer>> = Vec::new();
 
@@ -236,8 +239,34 @@ impl GraphProcessor {
             };
 
             for voice_index in 0..node_voice_count {
-                let audio_inputs_buffer = AudioBus::new(audio_input_channels_count, block_size);
-                let audio_outputs_buffer = AudioBus::new(audio_output_channels_count, block_size);
+                // let audio_inputs_buffer = AudioBus::new(audio_input_channels_count, block_size);
+                // let audio_outputs_buffer = AudioBus::new(audio_output_channels_count, block_size);
+
+                let mut audio_input_bus = Bus::new();
+                for i in 0..audio_input_channels_count {
+                    let mut connected = false;
+
+                    connectors.iter().for_each(|conn| {
+                        if conn.end.module_id == node.id && conn.end.pin_index == i {
+                            connected = true;
+                        }
+                    });
+
+                    audio_input_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
+                }
+
+                let mut audio_output_bus = Bus::new();
+                for i in 0..audio_output_channels_count {
+                    let mut connected = false;
+
+                    connectors.iter().for_each(|conn| {
+                        if conn.start.module_id == node.id && conn.start.pin_index == i {
+                            connected = true;
+                        }
+                    });
+
+                    audio_output_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
+                }
 
                 // let events_inputs_buffer = NotesBus::new(events_input_channels_count, block_size);
                 // let events_outputs_buffer = NotesBus::new(events_output_channels_count, block_size);
@@ -321,12 +350,12 @@ impl GraphProcessor {
                 }
 
                 if node.info().name == "Audio Input" {
-                    audio_input_channels_buffers.push(audio_outputs_buffer.unowned());
+                    // audio_input_channels_buffers.push(audio_outputs_buffer.unowned());
                     // events_input_channels_buffers.push(events_outputs_buffer.unowned());
                 }
 
                 if node.info().name == "Audio Output" {
-                    audio_output_channels_buffers.push(audio_inputs_buffer.unowned());
+                    // audio_output_channels_buffers.push(audio_inputs_buffer.unowned());
                     // events_output_channels_buffers.push(events_inputs_buffer.unowned());
                 }
 
@@ -352,10 +381,8 @@ impl GraphProcessor {
                         module: module_ptr,
                         voice_index,
                         node: node.clone(),
-                        audio: Audio {
-                            inputs: audio_inputs_buffer.unowned(),
-                            outputs: audio_outputs_buffer.unowned(),
-                        },
+                        audio_inputs: transmute_copy(&audio_input_bus),
+                        audio_outputs: transmute_copy(&audio_output_bus),
                         events_inputs: transmute_copy(&events_input_bus),
                         events_outputs: transmute_copy(&events_output_bus),
                         control_inputs: transmute_copy(&control_input_bus),
@@ -365,8 +392,8 @@ impl GraphProcessor {
                         copy_actions: Vec::new(),
                     };
 
-                    audio_channels_buffers.push(audio_inputs_buffer);
-                    audio_channels_buffers.push(audio_outputs_buffer);
+                    audio_channels_buffers.push(audio_input_bus);
+                    audio_channels_buffers.push(audio_output_bus);
 
                     events_channels_buffers.push(events_input_bus);
                     events_channels_buffers.push(events_output_bus);
@@ -407,7 +434,7 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.audio.outputs.get_channel(index1).unwrap();
+                            let source1 = action1.audio_outputs.channel(index1);
 
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
@@ -420,7 +447,7 @@ impl GraphProcessor {
                                         connector.end.pin_index,
                                     ) as usize;
 
-                                    let dest1 = action2.audio.inputs.get_channel(index2).unwrap();
+                                    let dest1 = action2.audio_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -440,11 +467,13 @@ impl GraphProcessor {
                                         ));
                                     }
 
-                                    new_action.copy_actions.push(CopyAction::AudioCopy {
-                                        src: source1.unowned(),
-                                        dest: dest1.unowned(),
-                                        should_copy: !dest_used1,
-                                    });
+                                    unsafe {
+                                        new_action.copy_actions.push(CopyAction::AudioCopy {
+                                            src: transmute_copy(source1),
+                                            dest: transmute_copy(dest1),
+                                            should_copy: !dest_used1,
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -642,8 +671,9 @@ impl GraphProcessor {
     ) {
         /* Zero all audio buffers */
         for bus in &mut self.audio_buffers {
-            for channel in bus {
-                channel.zero();
+            for i in 0..bus.num_channels() {
+                bus.channel_mut(i).left.zero();
+                bus.channel_mut(i).right.zero();
             }
         }
 
@@ -662,10 +692,7 @@ impl GraphProcessor {
 
         /* Copy all input channels */
         for channels in &mut self.audio_input_buffers {
-            for (src_channel, dest_channel) in audio.iter_mut().zip(channels) {
-                dest_channel.left.copy_from(src_channel);
-                dest_channel.right.copy_from(src_channel);
-            }
+            /* SHOULD DO INPUT CHANNEL COPYING HERE */
         }
 
         /* Copy all input channels */
@@ -679,17 +706,16 @@ impl GraphProcessor {
         for action in &mut self.actions {
             unsafe {
                 let module = action.module;
-                let audio = action.audio.unowned();
 
                 let inputs = IO {
-                    audio: audio.inputs,
+                    audio: transmute_copy(&action.audio_inputs),
                     events: transmute_copy(&action.events_inputs),
                     control: transmute_copy(&action.control_inputs),
                     time: transmute_copy(&action.time_inputs),
                 };
 
                 let mut outputs = IO {
-                    audio: audio.outputs,
+                    audio: transmute_copy(&action.audio_outputs),
                     events: transmute_copy(&action.events_outputs),
                     control: transmute_copy(&action.control_outputs),
                     time: transmute_copy(&action.time_outputs),
@@ -754,7 +780,10 @@ impl GraphProcessor {
 
         /* Copy all output channels */
         for channels in &mut self.audio_output_buffers {
-            for bus in channels {
+
+            /* SHOULD TO OUTPUT CHANNEL COPYING HERE */
+
+            /*for bus in channels {
                 if audio.len() == 1 {
                     audio[0].add_from(&mut bus.left);
                 } else if audio.len() == 2 {
@@ -763,7 +792,7 @@ impl GraphProcessor {
                 } else {
                     panic!("Unsupported input count");
                 }
-            }
+            }*/
         }
     }
 

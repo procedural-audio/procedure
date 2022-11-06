@@ -114,7 +114,7 @@ pub unsafe extern "C" fn ffi_host_process(
     if num_channels == 0 {
         println!("No IO channels available");
     } else if num_channels == 1 {
-        let buffer_center = AudioBuffer::from_raw(*buffer.offset(0), num_samples as usize);
+        let buffer_center = AudioBuffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
 
         let mut audio = [buffer_center];
 
@@ -122,8 +122,8 @@ pub unsafe extern "C" fn ffi_host_process(
 
         std::mem::forget(audio);
     } else if num_channels == 2 {
-        let buffer_left = AudioBuffer::from_raw(*buffer.offset(0), num_samples as usize);
-        let buffer_right = AudioBuffer::from_raw(*buffer.offset(1), num_samples as usize);
+        let buffer_left = AudioBuffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
+        let buffer_right = AudioBuffer::from_raw_parts(*buffer.offset(1), num_samples as usize, num_samples as usize);
 
         let mut audio = [buffer_left, buffer_right];
 

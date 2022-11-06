@@ -46,7 +46,7 @@ impl Sample<2> {
     }
 
     pub fn duration(&self) -> Duration {
-        Duration::from_millis(self.buffer.len() as u64 / self.sample_rate as u64 * 1000)
+        Duration::from_millis(self.buffer.left.len() as u64 / self.sample_rate as u64 * 1000)
     }
 }
 
@@ -165,7 +165,11 @@ impl Source for SamplePlayer {
         self.sample_rate = sample_rate;
     }
 
-    fn process(&mut self, buffer: &mut Stereo) {
+    fn process(&mut self, output: &mut Self::Output) {
+        panic!("Process implementation commented out below");
+    }
+
+    /*fn process(&mut self, buffer: &mut Stereo) {
         let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
 
         if let Some(sample) = &self.sample {
@@ -318,7 +322,7 @@ impl Source for SamplePlayer {
                 }
             }
         }
-    }
+    }*/
 }
 
 impl Voice for SamplePlayer {

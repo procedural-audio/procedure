@@ -60,7 +60,7 @@ inputs: &[
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            buffer: Stereo::new(256),
+            buffer: Stereo::init(0.0, 256),
         }
     }
 
@@ -158,7 +158,7 @@ inputs: &[
     }
 
     fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
-        voice.buffer = Stereo::new(block_size);
+        voice.buffer = Stereo::init(0.0, block_size);
     }
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {

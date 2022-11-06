@@ -1,6 +1,6 @@
 use crate::buffers::*;
 
-pub trait Voice<T: AudioChannels> {
+pub trait Voice<T> {
     fn new() -> Self;
     fn get_current_note() -> u32;
     fn start_note(midi: u32, velocity: f32);

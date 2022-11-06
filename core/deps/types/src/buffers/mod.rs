@@ -1,12 +1,12 @@
 use std::ops::{Deref, DerefMut};
 use std::slice;
 
-pub mod audio;
+// pub mod audio;
 pub mod control;
 pub mod event;
 pub mod time;
 
-pub use crate::buffers::audio::*;
+// pub use crate::buffers::audio::*;
 pub use crate::buffers::control::*;
 pub use crate::buffers::event::*;
 pub use crate::buffers::time::*;
@@ -17,7 +17,7 @@ use std::borrow::BorrowMut;
 use std::ops::{Index, IndexMut};
 
 pub struct IO {
-    pub audio: AudioBus<Stereo>,
+    pub audio: Bus<Stereo>,
     pub events: Bus<NoteBuffer>,
     pub control: Bus<ControlBuffer>,
     pub time: Bus<TimeBuffer>,
@@ -25,7 +25,98 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
+pub struct Stereo {
+    pub left: AudioBuffer,
+    pub right: AudioBuffer,
+}
+
+impl Stereo {
+    pub fn new() -> Self {
+        Self {
+            left: AudioBuffer::new(),
+            right: AudioBuffer::new()
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            left: AudioBuffer::with_capacity(capacity),
+            right: AudioBuffer::with_capacity(capacity),
+        }
+    }
+
+    pub fn init(value: f32, size: usize) -> Self {
+        Self {
+            left: AudioBuffer::init(value, size),
+            right: AudioBuffer::init(value, size)
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.left.len()
+    }
+
+    pub fn as_array<'a>(&'a self) -> [&'a [f32]; 2] {
+        [self.left.as_slice(), self.right.as_slice()]
+    }
+
+    pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [f32]; 2] {
+        [self.left.as_slice_mut(), self.right.as_slice_mut()]
+    }
+
+    pub fn copy_from(&mut self, src: &Stereo) {
+        self.left.copy_from(&src.left);
+        self.right.copy_from(&src.right);
+    }
+
+    pub fn add_from(&mut self, src: &Stereo) {
+        self.left.add_from(&src.left);
+        self.right.add_from(&src.right);
+    }
+
+    pub fn gain(&mut self, db: f32) {
+        self.left.gain(db);
+        self.right.gain(db);
+    }
+}
+
+impl<'a> IntoIterator for &'a Stereo {
+    type Item = (&'a f32, &'a f32);
+    type IntoIter = std::iter::Zip<std::slice::Iter<'a, f32>, std::slice::Iter<'a, f32>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.left.as_slice().iter().zip(self.right.as_slice())
+    }
+}
+
+impl<'a> IntoIterator for &'a mut Stereo {
+    type Item = (&'a mut f32, &'a mut f32);
+    type IntoIter = std::iter::Zip<std::slice::IterMut<'a, f32>, std::slice::IterMut<'a, f32>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.left
+            .as_slice_mut()
+            .iter_mut()
+            .zip(self.right.as_slice_mut())
+    }
+}
+
+pub type AudioBuffer = Buffer<f32>;
 pub type NoteBuffer = Buffer<Event>;
+
+pub struct Channels<T: Copy + Clone, const C: usize> {
+    buffers: [Buffer<T>; C]
+}
+
+impl<T: Copy + Clone, const C: usize> Channels<T, C> {
+    pub fn as_array(&self) -> &[Buffer<T>; C] {
+        &self.buffers
+    }
+
+    pub fn as_array_mut(&mut self) -> &mut [Buffer<T>; C] {
+        &mut self.buffers
+    }
+}
 
 /* Buffer Type */
 
@@ -38,6 +129,16 @@ impl<T: Copy + Clone> Buffer<T> {
         Self {
             items: Vec::new()
         }
+    }
+
+    pub fn init(value: T, size: usize) -> Self {
+        let mut items = Vec::with_capacity(size);
+
+        for _ in 0..size {
+            items.push(value);
+        }
+
+        Self { items }
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
@@ -125,6 +226,28 @@ impl<T: Copy + Clone> Buffer<T> {
             *d = src.process(*d);
         }
     }
+
+    // REMOVE THIS METHOD
+    pub fn as_array<'a>(&'a self) -> [&'a [T]; 1] {
+        [self.as_slice()]
+    }
+
+    // REMOVE THIS METHOD
+    pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [T]; 1] {
+        [self.as_slice_mut()]
+    }
+}
+
+impl Buffer<f32> {
+    pub fn zero(&mut self) {
+        self.fill(&mut 0.0);
+    }
+
+    pub fn gain(&mut self, db: f32) {
+        for v in &mut self.items {
+            *v = *v * db;
+        }
+    }
 }
 
 impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
@@ -192,6 +315,10 @@ impl<T> Bus<T> {
 
     pub fn num_channels(&self) -> usize {
         self.channels.len()
+    }
+
+    pub fn is_connected(&self, index: usize) -> bool {
+        self.channels[index].connected
     }
 }
 

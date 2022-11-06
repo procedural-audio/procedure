@@ -65,8 +65,8 @@ inputs: &[
             squares: vec![Square::new(); 8],
             sines: vec![Sine::new(); 8],
             triangles: vec![Triangle::new(); 8],
-            buffer1: AudioBuffer::new(512),
-            buffer2: AudioBuffer::new(512),
+            buffer1: AudioBuffer::init(0.0, 512),
+            buffer2: AudioBuffer::init(0.0, 512),
             freq: 100.0,
         }
     }
@@ -228,10 +228,10 @@ inputs: &[
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
         println!("Preparing oscillator with rate {}", sample_rate);
 
-        voice.buffer1 = AudioBuffer::new(block_size);
+        voice.buffer1 = AudioBuffer::init(0.0, block_size);
         voice.buffer1.zero();
 
-        voice.buffer2 = AudioBuffer::new(block_size);
+        voice.buffer2 = AudioBuffer::init(0.0, block_size);
         voice.buffer2.zero();
 
         for osc in &mut voice.saws {

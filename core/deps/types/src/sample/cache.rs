@@ -2,8 +2,8 @@ use std::sync::RwLock;
 
 use crate::sample::sample::*;
 
-use crate::AudioChannel;
-use crate::AudioChannels;
+//use crate::AudioChannel;
+//use crate::AudioChannels;
 use crate::Stereo;
 
 use lazy_static::*;
@@ -28,7 +28,9 @@ Sample Cache
 pub fn load_sample(path: &str) -> Sample<2> {
     /* Load sample from cache */
 
-    for (p, buffer) in &*SAMPLE_CACHE.read().unwrap() {
+    panic!("Load sample not implemented");
+
+    /*for (p, buffer) in &*SAMPLE_CACHE.read().unwrap() {
         if p.as_str() == path {
             return Sample::from(buffer.clone(), 440.0, 44100, path.to_string());
         }
@@ -68,7 +70,7 @@ pub fn load_sample(path: &str) -> Sample<2> {
 
     let spec = reader.spec();
     let size = reader.samples::<i16>().len();
-    let mut buffer_new = Stereo::new(size / spec.channels as usize);
+    let mut buffer_new = Stereo::with_capacity(size / spec.channels as usize);
     // ^^^ SIZE OF SINGLE CHANNEL
 
     println!("{:?}", spec);
@@ -134,4 +136,5 @@ pub fn load_sample(path: &str) -> Sample<2> {
     // let buffer_new = AudioBuffer::from(buffer_new);
 
     return Sample::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());
+    */
 }
