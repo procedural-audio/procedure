@@ -119,13 +119,7 @@ pub struct GraphProcessor {
     pub actions: Vec<ProcessAction>,
 
     pub audio_buffers: Vec<Bus<Stereo>>,
-    pub audio_input_buffers: Vec<Bus<Stereo>>,
-    pub audio_output_buffers: Vec<Bus<Stereo>>,
-
     pub events_buffers: Vec<Bus<NoteBuffer>>,
-    pub events_input_buffers: Vec<Bus<NoteBuffer>>,
-    pub events_output_buffers: Vec<Bus<NoteBuffer>>,
-
     pub control_buffers: Vec<Bus<Box<f32>>>,
     pub time_buffers: Vec<Bus<Box<Time>>>,
 
@@ -140,11 +134,7 @@ impl Default for GraphProcessor {
         GraphProcessor {
             actions: Vec::new(),
             audio_buffers: Vec::new(),
-            audio_input_buffers: Vec::new(),
-            audio_output_buffers: Vec::new(),
             events_buffers: Vec::new(),
-            events_input_buffers: Vec::new(),
-            events_output_buffers: Vec::new(),
             control_buffers: Vec::new(),
             time_buffers: Vec::new(),
             nodes: Vec::new(),
@@ -182,12 +172,8 @@ impl GraphProcessor {
         }
 
         let mut audio_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
-        let mut audio_input_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
-        let mut audio_output_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
 
         let mut events_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
-        let mut events_input_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
-        let mut events_output_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
 
         let mut control_channels_buffers: Vec<Bus<Box<f32>>> = Vec::new();
 
@@ -348,29 +334,6 @@ impl GraphProcessor {
 
                     time_output_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
                 }
-
-                if node.info().name == "Audio Input" {
-                    // audio_input_channels_buffers.push(audio_outputs_buffer.unowned());
-                    // events_input_channels_buffers.push(events_outputs_buffer.unowned());
-                }
-
-                if node.info().name == "Audio Output" {
-                    // audio_output_channels_buffers.push(audio_inputs_buffer.unowned());
-                    // events_output_channels_buffers.push(events_inputs_buffer.unowned());
-                }
-
-                /*if voice_index == 0 {
-                    for feature in node.info().features {
-                        match feature {
-                            Feature::MidiInput => {
-                                events_input_channels_buffers.push(events_inputs_buffer.unowned());
-                            }
-                            Feature::MidiOutput => {}
-                            Feature::AudioInput => {}
-                            Feature::AudioOutput => {}
-                        }
-                    }
-                }*/
 
                 unsafe {
                     let node_ptr = Rc::as_ptr(node) as *mut Node;
@@ -645,13 +608,7 @@ impl GraphProcessor {
             actions: process_actions_final,
 
             audio_buffers: audio_channels_buffers,
-            audio_input_buffers: audio_input_channels_buffers,
-            audio_output_buffers: audio_output_channels_buffers,
-
             events_buffers: events_channels_buffers,
-            events_input_buffers: events_input_channels_buffers,
-            events_output_buffers: events_output_channels_buffers,
-
             control_buffers: control_channels_buffers,
             time_buffers: time_channels_buffers,
 
@@ -677,6 +634,7 @@ impl GraphProcessor {
             }
         }
 
+        /* Clear the events buffers */
         for bus in &mut self.events_buffers {
             for i in 0..bus.num_channels() {
                 bus.channel_mut(i).clear();
@@ -690,24 +648,12 @@ impl GraphProcessor {
             }
         }
 
-        /* Copy all input channels */
-        for channels in &mut self.audio_input_buffers {
-            /* SHOULD DO INPUT CHANNEL COPYING HERE */
-        }
-
-        /* Copy all input channels */
-        for event in events {
-            for bus in &mut self.events_input_buffers {
-                /* COPY INPUT EVENTS TO CORRECT BUFFER HERE */
-            }
-        }
-
         /* Process modules */
         for action in &mut self.actions {
             unsafe {
                 let module = action.module;
 
-                let inputs = IO {
+                let mut inputs = IO {
                     audio: transmute_copy(&action.audio_inputs),
                     events: transmute_copy(&action.events_inputs),
                     control: transmute_copy(&action.control_inputs),
@@ -721,7 +667,58 @@ impl GraphProcessor {
                     time: transmute_copy(&action.time_outputs),
                 };
 
+                /* Copy IO Inputs */
+
+                let mut audio_index = 0;
+                let mut events_index = 0;
+
+                for pin in (*module).info().inputs {
+                    match pin {
+                        Pin::Audio(_, _) => audio_index += 1,
+                        Pin::Notes(_, _) => events_index += 1,
+                        Pin::Control(_, _) => (),
+                        Pin::Time(_, _) => (),
+                        Pin::ExternalAudio(i) => {
+                            inputs.audio[audio_index].left.copy_from(&audio[*i * 2]);
+                            inputs.audio[audio_index].right.copy_from(&audio[*i * 2 + 1]);
+                            audio_index += 1;
+                        },
+                        Pin::ExternalNotes(_) => {
+                            if action.voice_index == 0 {
+                                inputs.events[events_index].copy_from(events);
+                            }
+
+                            events_index += 1;
+                        },
+                    }
+                }
+
+                /* Process Voice */
+
                 (*module).process_voice(vars, action.voice_index, &inputs, &mut outputs);
+
+                /* Copy IO Outputs */
+
+                let mut audio_index = 0;
+                let mut events_index = 0;
+                
+                for pin in (*module).info().outputs {
+                    match pin {
+                        Pin::Audio(_, _) => audio_index += 1,
+                        Pin::Notes(_, _) => events_index += 1,
+                        Pin::Control(_, _) => (),
+                        Pin::Time(_, _) => (),
+                        Pin::ExternalAudio(i) => {
+                            audio[*i * 2].copy_from(&outputs.audio[audio_index].left);
+                            audio[*i * 2 + 1].copy_from(&outputs.audio[audio_index].right);
+                            audio_index += 1;
+                        },
+                        Pin::ExternalNotes(_) => {
+                            events.copy_from(&outputs.events[events_index]);
+                            events_index += 1;
+                        },
+                    }
+                }
 
                 std::mem::forget(inputs);
                 std::mem::forget(outputs);
@@ -747,8 +744,16 @@ impl GraphProcessor {
                     } => {
                         if should_copy {
                             dest.copy_from(src);
+
+                            if src.len() > 0 {
+                                println!("Copied some notes");
+                            }
                         } else {
                             dest.append_from(src);
+
+                            if src.len() > 0 {
+                                println!("Copied some notes");
+                            }
                         }
                     }
                     CopyAction::ControlCopy {
@@ -775,23 +780,6 @@ impl GraphProcessor {
                     }
                 }
             }
-        }
-
-        /* Copy all output channels */
-        for channels in &mut self.audio_output_buffers {
-
-            /* SHOULD TO OUTPUT CHANNEL COPYING HERE */
-
-            /*for bus in channels {
-                if audio.len() == 1 {
-                    audio[0].add_from(&mut bus.left);
-                } else if audio.len() == 2 {
-                    audio[0].add_from(&mut bus.left);
-                    audio[1].add_from(&mut bus.right);
-                } else {
-                    panic!("Unsupported input count");
-                }
-            }*/
         }
     }
 

@@ -197,12 +197,18 @@ impl Module for MidiInput {
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         self.listener.set_voice(voice.index as usize);
 
-        for (src, dest) in inputs.events[0]
-            .as_ref()
-            .iter()
-            .zip(outputs.events[0].as_mut().iter_mut())
-        {
-            *dest = self.listener.process(*src);
+        for i in 0..16 {
+            if i < inputs.events[0].len() {
+                match self.listener.process(inputs.events[0][i]) {
+                    Event::None => (),
+                    e => outputs.events[0].push(e)
+                }
+            } else {
+                match self.listener.process(Event::None) {
+                    Event::None => (),
+                    e => outputs.events[0].push(e)
+                }
+            }
         }
 
         for event in &outputs.events[0] {

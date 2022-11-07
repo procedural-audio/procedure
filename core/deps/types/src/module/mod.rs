@@ -49,8 +49,8 @@ pub enum Pin {
     Notes(&'static str, i32),
     Control(&'static str, i32),
     Time(&'static str, i32),
-    ExternalAudio(u32),
-    ExternalNotes(u32),
+    ExternalAudio(usize),
+    ExternalNotes(usize),
 }
 
 pub struct UI {
@@ -144,6 +144,8 @@ pub struct Var {
     pub name: String,
     pub value: VarValue,
 }
+
+pub struct Var2(String, Value); // REPLACE VAR WITH THIS FORMAT
 
 #[derive(Copy, Clone)]
 pub enum VarValue {

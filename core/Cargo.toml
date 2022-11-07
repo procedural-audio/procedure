@@ -5,7 +5,7 @@ authors = ["Chase Kanipe"]
 edition = "2021"
 
 [dependencies]
-audio-plugin-loader = { path = "deps/loader" }
+# audio-plugin-loader = { path = "deps/loader" }
 faust-types = { path = "deps/faust-rs/faust-types" }
 faust-state = { path = "deps/faust-rs/faust-state" }
 metasampler-macros = { path = "deps/metasampler-macros" }

@@ -1,9 +1,4 @@
-
-
 use crate::modules::*;
-
-
-// use tonevision_types::buffers::*;
 
 pub struct SawModule {
     wave_index: u32,
@@ -23,12 +18,16 @@ impl Module for SawModule {
 
     const INFO: Info = Info {
         name: "Saw",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         params: &[],
-inputs: &[Pin::Notes("Notes", 15)],
-        outputs: &[Pin::Audio("Audio Output", 15)],
+        inputs: &[
+            Pin::Notes("Notes", 15)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 15)
+        ],
     };
 
     fn new() -> Self {
@@ -70,10 +69,13 @@ inputs: &[Pin::Notes("Notes", 15)],
 
     fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for note in &inputs.events[0] {
+            println!("Found input event");
             match note {
                 Event::NoteOn { note, offset: _ } => {
                     voice.active = true;
                     voice.id = note.id;
+
+                    println!("Setting pitch to {}", note.pitch);
 
                     voice.saw.set_freq(note.pitch);
                 }

@@ -7,7 +7,7 @@ impl Module for AudioInput {
 
     const INFO: Info = Info {
         name: "Audio Input",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
         params: &[],
