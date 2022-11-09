@@ -407,8 +407,7 @@ class AudioPlugins {
 class Host extends ChangeNotifier {
   final FFIHost host;
   late Graph graph;
-
-  ValueNotifier<List<Var>> vars = ValueNotifier([]);
+  late Vars vars;
 
   Globals globals = Globals();
 
@@ -419,6 +418,7 @@ class Host extends ChangeNotifier {
 
   Host(this.host) {
     graph = Graph(host, this);
+    vars = Vars(this);
     audioPlugins = AudioPlugins();
 
     timer1 = Timer.periodic(const Duration(milliseconds: 30), (timer) {
@@ -449,7 +449,7 @@ class Host extends ChangeNotifier {
       }
     });
 
-    refreshVariables();
+    vars.refresh();
   }
 
   @override
@@ -458,48 +458,6 @@ class Host extends ChangeNotifier {
     timer2.cancel();
 
     super.dispose();
-  }
-
-  void refreshVariables() {
-    vars.value.clear();
-
-    int count = ffiHostGetVarsCount(host);
-
-    for (int i = 0; i < count; i++) {
-      var nameRaw = ffiHostGetVarName(host, i);
-      var name = nameRaw.toDartString();
-      calloc.free(nameRaw);
-
-      var groupRaw = ffiHostGetVarGroup(host, i);
-
-      var type = ffiHostGetVarValueType(host, i);
-
-      dynamic value;
-
-      if (type == 0) {
-        value = ffiHostGetVarValueFloat(host, i);
-      } else if (type == 1) {
-        value = ffiHostGetVarValueBool(host, i);
-      } else {
-        print("ERROR: Unsupported variable type");
-      }
-
-      if (groupRaw == nullptr) {
-        vars.value.add(Var(this,
-            index: i, name: name, group: "", notifier: ValueNotifier(value)));
-      } else {
-        var groupName = groupRaw.toDartString();
-        calloc.free(groupRaw);
-
-        vars.value.add(Var(this,
-            index: i,
-            name: name,
-            group: groupName,
-            notifier: ValueNotifier(value)));
-      }
-    }
-
-    vars.notifyListeners();
   }
 
   bool load(String path) {

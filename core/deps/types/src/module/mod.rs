@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::buffers::*;
 use crate::widget::*;
 
-pub struct State<T: Module> {
+/*pub struct State<T: Module> {
     voice_updates: [Option<Box<dyn FnMut(&mut <T as Module>::Voice)>>; 16],
     module_updates: [Option<Box<dyn FnMut(&mut T)>>; 16],
 }
@@ -23,7 +23,7 @@ impl<T: Module> State<T> {
             ],
         }
     }
-}
+}*/
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -89,12 +89,14 @@ impl JSON {
     }
 }
 
+pub struct Param(&'static str, Value);
+
 pub struct Info {
     pub name: &'static str,
     pub color: Color,
     pub size: Size,
     pub voicing: Voicing,
-    pub params: &'static [(&'static str, Value)],
+    pub params: &'static [Param],
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
 }
@@ -113,7 +115,6 @@ pub enum Value {
 
 pub trait Module {
     type Voice;
-    // type Widgets<'w> where Self: 'w;
 
     const INFO: Info;
 
@@ -137,20 +138,108 @@ pub trait Module {
     fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
 }
 
-pub type Vars = Vec<Var>;
-
-pub struct Var {
-    pub group: Option<String>,
-    pub name: String,
-    pub value: VarValue,
+pub struct Vars {
+    pub tabs: Vec<VarTab<VarEntry<Var>>>
 }
 
-pub struct Var2(String, Value); // REPLACE VAR WITH THIS FORMAT
+impl Vars {
+    pub fn new() -> Self {
+        Self {
+            tabs: vec![
+                VarTab {
+                    name: String::from("Tab 1"),
+                    entries: vec![
+                        VarEntry::Variable(Var {
+                            id: Id(0),
+                            name: String::from("Variable 1"),
+                            value: Value::Float(0.0)
+                        }),
+                        VarEntry::Variable(Var {
+                            id: Id(1),
+                            name: String::from("Variable 2"),
+                            value: Value::Float(0.0)
+                        }),
+                        VarEntry::Variable(Var {
+                            id: Id(2),
+                            name: String::from("Variable 3"),
+                            value: Value::Float(0.0)
+                        }),
+                        VarEntry::Variable(Var {
+                            id: Id(3),
+                            name: String::from("Variable 4"),
+                            value: Value::Float(0.0)
+                        }),
+                    ]
+                },
+                VarTab {
+                    name: String::from("Tab 2"),
+                    entries: vec![
+                        VarEntry::Group(
+                            String::from("Group 1"),
+                            vec![
+                                Var {
+                                    id: Id(4),
+                                    name: String::from("Variable 3"),
+                                    value: Value::Bool(true),
+                                },
+                                Var {
+                                    id: Id(5),
+                                    name: String::from("Variable 4"),
+                                    value: Value::Bool(true),
+                                },
+                            ]
+                        ),
+                        VarEntry::Variable(Var {
+                            id: Id(6),
+                            name: String::from("Variable 2"),
+                            value: Value::Float(0.0)
+                        }),
+                    ]
+                }
+            ]
+        }
+    }
 
-#[derive(Copy, Clone)]
-pub enum VarValue {
-    Float(f32),
-    Bool(bool),
+    pub fn find_id(&mut self, id: Id) -> Option<&mut Var> {
+        for column in &mut self.tabs {
+            for entry in &mut column.entries {
+                match entry {
+                    VarEntry::Variable(var) => {
+                        if var.id.0 == id.0 {
+                            return Some(var);
+                        }
+                    },
+                    VarEntry::Group(name, group) => {
+                        for var in group {
+                            if var.id.0 == id.0 {
+                                return Some(var);
+                            }
+                        }
+                    },
+                }
+            }
+        }
+
+        return None;
+    }
+}
+
+pub struct VarTab<T> {
+    pub name: String,
+    pub entries: Vec<T>
+}
+
+pub enum VarEntry<T> {
+    Variable(T),
+    Group(String, Vec<T>)
+}
+
+pub struct Id(pub usize);
+
+pub struct Var {
+    pub id: Id,
+    pub name: String,
+    pub value: Value,
 }
 
 pub enum Size {
@@ -169,7 +258,7 @@ pub enum Voicing {
     Dynamic,
 }
 
-pub struct Lock<T: Copy> {
+/*pub struct Lock<T: Copy> {
     data: std::sync::RwLock<T>,
     data_backup: T,
 }
@@ -211,3 +300,4 @@ impl<T: Copy> Lock<T> {
         *self.data.write().unwrap() = value;
     }
 }
+*/

@@ -22,23 +22,7 @@ impl Host {
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            vars: vec![
-                Var {
-                    group: Some(String::from("Folder 1")),
-                    name: String::from("Variable 1"),
-                    value: VarValue::Float(0.2),
-                },
-                Var {
-                    group: Some(String::from("Folder 1")),
-                    name: String::from("Variable 2"),
-                    value: VarValue::Bool(false),
-                },
-                Var {
-                    group: Some(String::from("Folder 2")),
-                    name: String::from("Variable 3"),
-                    value: VarValue::Float(0.7),
-                },
-            ],
+            vars: Vars::new(),
             plugins: Vec::new()
         }
     }

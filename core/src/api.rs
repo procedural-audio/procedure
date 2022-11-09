@@ -177,135 +177,233 @@ pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &No
     host.graph.nodes[index].as_ref()
 }
 
+/* Variable Functions */
+
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_vars_count(host: &mut Host) -> usize {
-    host.vars.len()
+pub unsafe extern "C" fn ffi_host_vars_get_tab_count(host: &mut Host) -> usize {
+    host.vars.tabs.len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_var_name(host: &mut Host, index: usize) -> *const i8 {
-    let s = CString::new(host.vars[index].name.clone()).unwrap();
+pub unsafe extern "C" fn ffi_host_vars_tab_get_name(host: &mut Host, index: usize) -> *const i8 {
+    let name = &host.vars.tabs[index].name;
+    let s = CString::new(name.as_bytes()).unwrap();
     let p = s.as_ptr();
     std::mem::forget(s);
     p
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_var_group(host: &mut Host, index: usize) -> *const i8 {
-    match &host.vars[index].group {
-        Some(group) => {
-            let s = CString::new(group.clone()).unwrap();
+pub unsafe extern "C" fn ffi_host_vars_tab_get_entry_count(host: &mut Host, index: usize) -> usize {
+    host.vars.tabs[index].entries.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_tab_entry_get_type(host: &mut Host, index1: usize, index2: usize) -> u32 {
+    match &host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(_) => 0,
+        VarEntry::Group(_, _) => 1
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_tab_entry_get_id(host: &mut Host, index1: usize, index2: usize) -> usize {
+    match &host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(var) => var.id.0,
+        VarEntry::Group(_, _) => panic!("Expected var")
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_tab_group_get_name(host: &mut Host, index1: usize, index2: usize) -> *const i8 {
+    match &host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(var) => panic!("Expected group"),
+        VarEntry::Group(name, group) => {
+            let s = CString::new(name.as_bytes()).unwrap();
             let p = s.as_ptr();
             std::mem::forget(s);
             p
         }
-        None => std::ptr::null(),
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_add_var(host: &mut Host, kind: u32, group: *const i8) {
-    let mut name = String::from("New Variable");
-    let mut i = 2;
-    let mut found = true;
+pub unsafe extern "C" fn ffi_host_vars_tab_group_get_var_count(host: &mut Host, index1: usize, index2: usize) -> usize {
+    match &host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(_) => panic!("Expected group"),
+        VarEntry::Group(name, group) => group.len(),
+    }
+}
 
-    while found {
-        found = false;
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_tab_group_var_get_id(host: &mut Host, index1: usize, index2: usize, index3: usize) -> usize {
+    match &host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(var) => panic!("Expected group"),
+        VarEntry::Group(name, group) => {
+            return group[index3].id.0;
+        }
+    }
+}
 
-        for var in &host.vars {
-            if var.name == name {
-                found = true;
-                name = format!("New Variable {}", i);
-                i += 1;
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_get_type(host: &mut Host, id: usize) -> u32 {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        match var.value {
+            Value::Float(_) => 0,
+            Value::Bool(_) => 1,
+            _ => panic!("Unsupported type")
+        }
+    } else {
+        panic!("Couldn't find var");
+    }
+}
+
+/* Get and set values */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_get_float(host: &mut Host, id: usize) -> f32 {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        if let Value::Float(v) = var.value {
+            return v;
+        }
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_set_float(host: &mut Host, id: usize, value: f32) {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        var.value = Value::Float(value);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_get_bool(host: &mut Host, id: usize) -> bool {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        if let Value::Bool(v) = var.value {
+            return v;
+        }
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_set_bool(host: &mut Host, id: usize, value: bool) {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        var.value = Value::Bool(value);
+    }
+}
+
+/* Var adding, typing, and deleting */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_get_name(host: &mut Host, id: usize) -> *const i8 {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        let s = CString::new(var.name.as_bytes()).unwrap();
+        let p = s.as_ptr();
+        std::mem::forget(s);
+        return p;
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_tab_add_var(host: &mut Host, index1: usize) {
+    let mut max_id = 0;
+
+    for tab in &host.vars.tabs {
+        for entry in &tab.entries {
+            match entry {
+                VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
+                VarEntry::Group(name, vars) => {
+                    for var in vars {
+                        max_id = usize::max(max_id, var.id.0)
+                    }
+                },
             }
         }
     }
 
-    host.vars.push(
-        Var {
-            name,
-            group: if group == std::ptr::null() {
-                None
-            } else {
-                let cstr = CStr::from_ptr(group);
-                let s = cstr.to_str().unwrap().to_string();
-                Some(s)
-            },
-            value: match kind {
-                0 => VarValue::Float(0.0),
-                1 => VarValue::Bool(false),
-                _ => panic!("Unsupported var type")
+    host.vars.tabs[index1].entries.push(
+        VarEntry::Variable(
+            Var {
+                name: String::from("New Variable"),
+                value: Value::Float(0.0),
+                id: Id(max_id + 1)
             }
-        }
+        )
     );
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_var_value_type(host: &mut Host, index: usize) -> u32 {
-    match host.vars[index].value {
-        VarValue::Float(_) => 0,
-        VarValue::Bool(_) => 1,
-    }
-}
+pub unsafe extern "C" fn ffi_host_vars_tab_group_add_var(host: &mut Host, index1: usize, index2: usize) {
+    let mut max_id = 0;
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_var_value_float(host: &mut Host, index: usize) -> f32 {
-    match host.vars[index].value {
-        VarValue::Float(v) => v,
-        VarValue::Bool(_) => panic!("Got variable wrong type"),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_set_var_value_float(host: &mut Host, index: usize, value: f32) {
-    match &mut host.vars[index].value {
-        VarValue::Float(v) => *v = value,
-        VarValue::Bool(_) => panic!("Set variable wrong type"),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_var_value_bool(host: &mut Host, index: usize) -> bool {
-    match host.vars[index].value {
-        VarValue::Float(_) => panic!("Got variable wrong type"),
-        VarValue::Bool(v) => v,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_set_var_value_bool(host: &mut Host, index: usize, value: bool) {
-    match &mut host.vars[index].value {
-        VarValue::Float(_) => panic!("Set variable wrong type"),
-        VarValue::Bool(v) => *v = value,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_delete_var(host: &mut Host, n: *const i8) {
-    let cstr = CStr::from_ptr(n);
-    let name = cstr.to_str().unwrap().to_string();
-
-    host.vars.retain(| var | {
-        var.name != name
-    });
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_var_set_type(host: &mut Host, n: *const i8, kind: u32) {
-    let cstr = CStr::from_ptr(n);
-    let name = cstr.to_str().unwrap().to_string();
-
-    for var in &mut host.vars {
-        if var.name == name {
-            println!("Updating type");
-            var.value = match kind {
-                0 => VarValue::Float(0.0),
-                1 => VarValue::Bool(false),
-                _ => panic!("Unsupported var type")
+    for tab in &host.vars.tabs {
+        for entry in &tab.entries {
+            match entry {
+                VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
+                VarEntry::Group(name, vars) => {
+                    for var in vars {
+                        max_id = usize::max(max_id, var.id.0)
+                    }
+                },
             }
         }
     }
+
+    match &mut host.vars.tabs[index1].entries[index2] {
+        VarEntry::Variable(_) => panic!("Expected group"),
+        VarEntry::Group(name, vars) => vars.push(
+            Var {
+                name: String::from("New Variable"),
+                value: Value::Float(0.0),
+                id: Id(max_id + 1)
+            }
+        ),
+    }
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_rename(host: &mut Host, id: usize, name: *const i8) {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        var.name = str_from_char(&*name).to_string();
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_set_type(host: &mut Host, id: usize, kind: u32) {
+    if let Some(var) = host.vars.find_id(Id(id)) {
+        var.value = match kind {
+            0 => Value::Float(0.0),
+            1 => Value::Bool(false),
+            _ => panic!("Unsupported var type")
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_var_delete(host: &mut Host, id: usize) {
+    for tab in &mut host.vars.tabs {
+        tab.entries.retain_mut(| entry | {
+            match entry {
+                VarEntry::Variable(var) => var.id.0 != id,
+                VarEntry::Group(name, group) => {
+                    group.retain(| var | {
+                        var.id.0 != id
+                    });
+
+                    true
+                }
+            }
+        });
+    }
+}
+
+/* Some other stuff */
 
 #[repr(C)]
 pub struct m_Connector {

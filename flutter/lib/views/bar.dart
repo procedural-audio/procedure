@@ -35,206 +35,189 @@ class _Bar extends State<Bar> {
     const double barExpandedWidth = 700.0;
     const double expandedHeight = 500;
     const double radius = 10.0;
-    
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: SizedBox(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+        child: Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  BarButton(
-                    borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(radius)
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    BarButton(
+                        borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(radius)),
+                        iconData: widget.window.instViewVisible.value
+                            ? Icons.cable
+                            : Icons.piano,
+                        onTap: () {
+                          widget.window.instViewVisible.value =
+                              !widget.window.instViewVisible.value;
+                        }),
+                    Container(
+                      width: 1,
+                      height: 35,
+                      color: const Color.fromRGBO(50, 50, 50, 1.0),
                     ),
-                    iconData: widget.window.instViewVisible.value ? Icons.cable : Icons.piano,
-                    onTap: () {
-                      widget.window.instViewVisible.value = !widget.window.instViewVisible.value;
-                    }
-                  ),
-                  Container(
-                    width: 1,
-                    height: 35,
-                    color: const Color.fromRGBO(50, 50, 50, 1.0),
-                  ),
-                  BarDropdown(
-                    text: widget.host.globals.instrument.name,
-                    onTap: () {
-                      setState(() {
-                        instrumentBrowserExpanded = !instrumentBrowserExpanded;
-                        presetBrowserExpanded = false;
-                        variableViewVisible = false;
-                      });
-                    }
-                  ),
-                  /*Container(
+                    BarDropdown(
+                        text: widget.host.globals.instrument.name,
+                        onTap: () {
+                          setState(() {
+                            instrumentBrowserExpanded =
+                                !instrumentBrowserExpanded;
+                            presetBrowserExpanded = false;
+                            variableViewVisible = false;
+                          });
+                        }),
+                    /*Container(
                     width: 1,
                     height: barHeight-10,
                     color: const Color.fromRGBO(80, 80, 80, 1.0),
                   ),*/
-                  BarDropdown(
-                    text: widget.host.globals.preset.name,
-                    onTap: () {
-                      setState(() {
-                        presetBrowserExpanded = !presetBrowserExpanded;
-                        instrumentBrowserExpanded = false;
-                        variableViewVisible = false;
-                      });
-                    }
-                  ),
-                  Container(
-                    width: 1,
-                    height: 35,
-                    color: const Color.fromRGBO(50, 50, 50, 1.0),
-                  ),
-                  BarButton(
-                    iconData: Icons.save,
-                    onTap: () {
-                      widget.host.saveInstrument();
-                    }
-                  ),
-                  BarButton(
-                    iconData: Icons.edit,
-                    onTap: () {
-                      setState(() {
-                        widget.window.instrumentView.tree.editing.value = !widget.window.instrumentView.tree.editing.value;
-                      });
-                    }
-                  ),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.fastLinearToSlowEaseIn,
-                    width: barExpanded ? 4 * 45 + 10 : 0,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: barExpanded ? [
-                        Expanded(
-                          child: Container(
-                            color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            height: 35,
-                          )
-                        ),
-                        BarButton(
-                          iconData: Icons.functions,
-                          onTap: () {
-                            setState(() {
-                              variableViewVisible = !variableViewVisible;
-                              instrumentBrowserExpanded = false;
-                              presetBrowserExpanded = false;
-                            });
-                          }
-                        ),
-                        BarButton(
-                          iconData: Icons.graphic_eq,
-                          onTap: () {
-                            setState(() {
-                              barExpanded = !barExpanded;
-                            });
-                          }
-                        ),
-                        BarButton(
-                          iconData: Icons.plumbing,
-                          onTap: () {
-                            setState(() {
-                              barExpanded = !barExpanded;
-                            });
-                          }
-                        ),
-                        BarButton(
-                          iconData: Icons.settings,
-                          onTap: () {
-                            setState(() {
-                              barExpanded = !barExpanded;
-                            });
-                          }
-                        ),
-                        Expanded(
-                          child: Container(
-                            color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            height: 35,
-                          )
-                        )
-                      ] : [
-                        Expanded(
-                          child: Container(
-                            color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            height: 35,
-                          ),
-                        )
-                      ],
-                    )
-                  ),
-                  BarButton(
-                    iconData: Icons.arrow_downward,
-                    borderRadius: const BorderRadius.horizontal(
-                      right: Radius.circular(radius)
+                    BarDropdown(
+                        text: widget.host.globals.preset.name,
+                        onTap: () {
+                          setState(() {
+                            presetBrowserExpanded = !presetBrowserExpanded;
+                            instrumentBrowserExpanded = false;
+                            variableViewVisible = false;
+                          });
+                        }),
+                    Container(
+                      width: 1,
+                      height: 35,
+                      color: const Color.fromRGBO(50, 50, 50, 1.0),
                     ),
-                    onTap: () {
-                      setState(() {
-                        barExpanded = !barExpanded;
-                      });
-                    }
-                  ),
-                ]
-              ),
-              Builder(
-                builder: (context) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (instrumentBrowserExpanded) {
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: Container(
-                            height: 600,
-                            width: barExpanded ? 600 : 500,
-                            child: BrowserView(widget.host),
-                          )
-                        );
-                      } else if (presetBrowserExpanded) {
-                        return Container(
+                    BarButton(
+                        iconData: Icons.save,
+                        onTap: () {
+                          widget.host.saveInstrument();
+                        }),
+                    BarButton(
+                        iconData: Icons.edit,
+                        onTap: () {
+                          setState(() {
+                            widget.window.instrumentView.tree.editing.value =
+                                !widget
+                                    .window.instrumentView.tree.editing.value;
+                          });
+                        }),
+                    AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastLinearToSlowEaseIn,
+                        width: barExpanded ? 4 * 45 + 10 : 0,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: barExpanded
+                              ? [
+                                  Expanded(
+                                      child: Container(
+                                    color:
+                                        const Color.fromRGBO(40, 40, 40, 1.0),
+                                    height: 35,
+                                  )),
+                                  BarButton(
+                                      iconData: Icons.functions,
+                                      onTap: () {
+                                        setState(() {
+                                          variableViewVisible =
+                                              !variableViewVisible;
+                                          instrumentBrowserExpanded = false;
+                                          presetBrowserExpanded = false;
+                                        });
+                                      }),
+                                  BarButton(
+                                      iconData: Icons.graphic_eq,
+                                      onTap: () {
+                                        setState(() {
+                                          barExpanded = !barExpanded;
+                                        });
+                                      }),
+                                  BarButton(
+                                      iconData: Icons.plumbing,
+                                      onTap: () {
+                                        setState(() {
+                                          barExpanded = !barExpanded;
+                                        });
+                                      }),
+                                  BarButton(
+                                      iconData: Icons.settings,
+                                      onTap: () {
+                                        setState(() {
+                                          barExpanded = !barExpanded;
+                                        });
+                                      }),
+                                  Expanded(
+                                      child: Container(
+                                    color:
+                                        const Color.fromRGBO(40, 40, 40, 1.0),
+                                    height: 35,
+                                  ))
+                                ]
+                              : [
+                                  Expanded(
+                                    child: Container(
+                                      color:
+                                          const Color.fromRGBO(40, 40, 40, 1.0),
+                                      height: 35,
+                                    ),
+                                  )
+                                ],
+                        )),
+                    BarButton(
+                        iconData: Icons.arrow_downward,
+                        borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(radius)),
+                        onTap: () {
+                          setState(() {
+                            barExpanded = !barExpanded;
+                          });
+                        }),
+                  ]),
+              Builder(builder: (context) {
+                return LayoutBuilder(builder: (context, constraints) {
+                  if (instrumentBrowserExpanded) {
+                    return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                        child: Container(
+                          height: 600,
+                          width: barExpanded ? 600 : 500,
+                          child: BrowserView(widget.host),
+                        ));
+                  } else if (presetBrowserExpanded) {
+                    return Container(
+                        height: 400,
+                        width: barExpanded ? 600 : 500,
+                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+                        child: PresetsView(widget.host));
+                  } else if (variableViewVisible) {
+                    return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                        child: Container(
                           height: 400,
                           width: barExpanded ? 600 : 500,
-                          padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                          child: PresetsView(widget.host)
-                        );
-                      } else if (variableViewVisible) {
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                          child: Container(
-                            height: 400,
-                            width: barExpanded ? 300 : 300,
-                            decoration: BoxDecoration(
+                          decoration: BoxDecoration(
                               color: const Color.fromRGBO(40, 40, 40, 1.0),
-                              borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: VariablesWidget(widget.host),
-                          )
-                        );
-                      } else {
-                        return const SizedBox(
-                          width: 0,
-                          height: 0
-                        );
-                      }
-                    }
-                  );
-                }
-              )
-            ]
-          )
-        )
-      )
-    );
+                              borderRadius: BorderRadius.circular(10)),
+                          child: VariablesWidget(widget.host),
+                        ));
+                  } else {
+                    return const SizedBox(width: 0, height: 0);
+                  }
+                });
+              })
+            ]))));
   }
 }
 
 class BarButton extends StatefulWidget {
-  BarButton({required this.iconData, required this.onTap, this.borderRadius, this.iconColor});
+  BarButton(
+      {required this.iconData,
+      required this.onTap,
+      this.borderRadius,
+      this.iconColor});
 
   IconData iconData;
   void Function() onTap;
@@ -258,28 +241,32 @@ class _BarButton extends State<BarButton> {
         hovering = false;
       }),
       child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.fastLinearToSlowEaseIn,
-          width: hovering ? 50 : 45,
-          height: hovering ? 40 : 35,
-          decoration: BoxDecoration(
-            color: hovering ? const Color.fromRGBO(50, 50, 50, 1.0) : const Color.fromRGBO(40, 40, 40, 1.0),
-            borderRadius: hovering ? BorderRadius.only(
-              topLeft: widget.borderRadius != null ? widget.borderRadius!.topLeft : Radius.zero,
-              topRight: widget.borderRadius != null ? widget.borderRadius!.topRight : Radius.zero,
-              bottomLeft: const Radius.circular(5),
-              bottomRight: const Radius.circular(5)
-            ) : widget.borderRadius
-          ),
-          child: Icon(
-            widget.iconData,
-            color: hovering ? Colors.white : Colors.grey,
-            size: 18,
-          )
-        )
-      ),
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.fastLinearToSlowEaseIn,
+              width: hovering ? 50 : 45,
+              height: hovering ? 40 : 35,
+              decoration: BoxDecoration(
+                  color: hovering
+                      ? const Color.fromRGBO(50, 50, 50, 1.0)
+                      : const Color.fromRGBO(40, 40, 40, 1.0),
+                  borderRadius: hovering
+                      ? BorderRadius.only(
+                          topLeft: widget.borderRadius != null
+                              ? widget.borderRadius!.topLeft
+                              : Radius.zero,
+                          topRight: widget.borderRadius != null
+                              ? widget.borderRadius!.topRight
+                              : Radius.zero,
+                          bottomLeft: const Radius.circular(5),
+                          bottomRight: const Radius.circular(5))
+                      : widget.borderRadius),
+              child: Icon(
+                widget.iconData,
+                color: hovering ? Colors.white : Colors.grey,
+                size: 18,
+              ))),
     );
   }
 }
@@ -300,30 +287,28 @@ class _BarDropdown extends State<BarDropdown> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (e) => setState(() {
-        hovering = true;
-      }),
-      onExit: (e) => setState(() {
-        hovering = false;
-      }),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: Container(
-          height: 35,
-          alignment: Alignment.center,
-          color: hovering ? const Color.fromRGBO(50, 50, 50, 1.0) : const Color.fromRGBO(40, 40, 40, 1.0),
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          child: Text(
-            widget.text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w300
-            ),
-          )
-        )
-      )
-    );
+        onEnter: (e) => setState(() {
+              hovering = true;
+            }),
+        onExit: (e) => setState(() {
+              hovering = false;
+            }),
+        child: GestureDetector(
+            onTap: widget.onTap,
+            child: Container(
+                height: 35,
+                alignment: Alignment.center,
+                color: hovering
+                    ? const Color.fromRGBO(50, 50, 50, 1.0)
+                    : const Color.fromRGBO(40, 40, 40, 1.0),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                child: Text(
+                  widget.text,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w300),
+                ))));
   }
 }
 

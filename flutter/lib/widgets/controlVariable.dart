@@ -103,23 +103,24 @@ class _VariableField extends State<VariableField>
                 color: const Color.fromRGBO(20, 20, 20, 1.0),
                 borderRadius: BorderRadius.circular(5)),
             child: GestureDetector(
-                onTap: _toggleDropdown,
-                child: ValueListenableBuilder<List<Var>>(
+              onTap: _toggleDropdown,
+              /*child: ValueListenableBuilder<List<Var>>(
                     valueListenable: widget.host.vars,
                     builder: (context, vars, w) {
                       bool found = false;
 
-                      for (var v in vars) {
+                      /*for (var v in vars) {
                         if (v.name == widget.varName) {
                           found = true;
                         }
-                      }
+                      }*/
 
                       return Center(
                           child: Text(
                               (found ? (widget.varName ?? "") : "(none)"),
                               style: const TextStyle(color: Colors.red)));
-                    }))));
+                    })*/
+            )));
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -160,12 +161,12 @@ class _VariableField extends State<VariableField>
                                     sizeFactor: _expandAnimation!,
                                     // child: widget.child,
                                     child: Container(
-                                        decoration: BoxDecoration(
-                                            color: const Color.fromRGBO(
-                                                50, 50, 50, 1.0),
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
-                                        child:
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                              50, 50, 50, 1.0),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      /*child:
                                             ValueListenableBuilder<List<Var>>(
                                           valueListenable: widget.host.vars,
                                           builder: (context, vars, w) {
@@ -176,7 +177,7 @@ class _VariableField extends State<VariableField>
                                                   if (e.notifier.value
                                                       is double) {
                                                     return VariableFieldElement(
-                                                        e.name, (s) {
+                                                        "SOME NAME HERE", (s) {
                                                       widget.onUpdate(s);
                                                     });
                                                   } else {
@@ -184,7 +185,8 @@ class _VariableField extends State<VariableField>
                                                   }
                                                 }).toList());
                                           },
-                                        ))))))
+                                        )*/
+                                    )))))
                   ])));
         });
   }

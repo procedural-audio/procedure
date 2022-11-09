@@ -49,40 +49,39 @@ class KnobUIWidget extends UIWidget {
 
   // Vital Knob
   var style = KnobStyle(
-    borderColor: Colors.grey.withOpacity(0.0),
-    borderThickness: 6,
-    borderSpacing: 0,
-    backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-    trackColor: const Color.fromRGBO(60, 60, 60, 1.0),
-    trackThickness: 4,
-    tickStart: 0.3,
-    tickEnd: 0.78,
-    tickThickness: 3.0,
-    trackSpacing: 0.0,
-    tickColor: Colors.white,
-    knobColor: const Color.fromRGBO(30, 30, 30, 1.0),
-    ringColor: const Color.fromRGBO(180, 180, 180, 0.0),
-    ringThickness: 0.0,
-    ringEdgeColor: const Color.fromRGBO(80, 80, 80, 1.0),
-    ringEdgeThickness: 0.0,
-    knobEdgeColor: const Color.fromRGBO(20, 20, 20, 1.0),
-    knobEdgeThickness: 0.0,
-    iconColor: const Color.fromRGBO(180, 180, 180, 0.0),
-    iconPadding: 30,
-    iconPath: "/home/chase/github/metasampler/content/assets/icons/speaker.svg",
-    shadowBlurRadius: 0,
-    shadowOffset: const Offset(0, 0),
-    shadowColor: const Color.fromRGBO(0, 0, 0, 0.0)
-  );
+      borderColor: Colors.grey.withOpacity(0.0),
+      borderThickness: 6,
+      borderSpacing: 0,
+      backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+      trackColor: const Color.fromRGBO(60, 60, 60, 1.0),
+      trackThickness: 4,
+      tickStart: 0.3,
+      tickEnd: 0.78,
+      tickThickness: 3.0,
+      trackSpacing: 0.0,
+      tickColor: Colors.white,
+      knobColor: const Color.fromRGBO(30, 30, 30, 1.0),
+      ringColor: const Color.fromRGBO(180, 180, 180, 0.0),
+      ringThickness: 0.0,
+      ringEdgeColor: const Color.fromRGBO(80, 80, 80, 1.0),
+      ringEdgeThickness: 0.0,
+      knobEdgeColor: const Color.fromRGBO(20, 20, 20, 1.0),
+      knobEdgeThickness: 0.0,
+      iconColor: const Color.fromRGBO(180, 180, 180, 0.0),
+      iconPadding: 30,
+      iconPath:
+          "/home/chase/github/metasampler/content/assets/icons/speaker.svg",
+      shadowBlurRadius: 0,
+      shadowOffset: const Offset(0, 0),
+      shadowColor: const Color.fromRGBO(0, 0, 0, 0.0));
 
   TransformData data = TransformData(
-    width: 70,
-    height: 70,
-    left: 0,
-    top: 0,
-    alignment: Alignment.center,
-    padding: EdgeInsets.zero
-  );
+      width: 70,
+      height: 70,
+      left: 0,
+      top: 0,
+      alignment: Alignment.center,
+      padding: EdgeInsets.zero);
 
   @override
   String getName() {
@@ -116,9 +115,7 @@ class KnobUIWidget extends UIWidget {
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {
-
-  }
+  void deleteChildRecursive(UIWidget widget) {}
 
   @override
   _KnobUIWidget createState() => _KnobUIWidget();
@@ -147,14 +144,12 @@ class _KnobUIWidget extends UIWidgetState<KnobUIWidget> {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-      data: widget.data,
-      child: Knob(
-        varName: widget.varName,
-        style: widget.style,
-        image: image,
-        host: widget.host
-      )
-    );
+        data: widget.data,
+        child: Knob(
+            varName: widget.varName,
+            style: widget.style,
+            image: image,
+            host: widget.host));
   }
 
   @override
@@ -180,210 +175,172 @@ class _KnobUIWidget extends UIWidgetState<KnobUIWidget> {
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Knob"),
-        TransformWidgetEditor(
+    return Column(children: [
+      EditorTitle("Knob"),
+      TransformWidgetEditor(
           data: widget.data,
           onUpdate: (t) {
             widget.data = t;
             refreshWidget();
           },
-          tree: widget.tree
-        ),
-        Section(
+          tree: widget.tree),
+      Section(
           title: "Variable",
           child: FieldLabel(
             text: "Value",
-            child: VarField(
-              varName: widget.varName,
-              host: widget.host
-            ),
-          )
-        ),
-        Section(
+            child: VarField(varName: widget.varName, host: widget.host),
+          )),
+      Section(
           title: "Track",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Primary",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.valueColor,
-                  onChanged: (c) {
-                    widget.style.trackColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.valueColor,
+                    onChanged: (c) {
+                      widget.style.trackColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Secondary",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.trackColor,
-                  onChanged: (c) {
-                    widget.style.trackColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.trackColor,
+                    onChanged: (c) {
+                      widget.style.trackColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Background",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.backgroundColor,
-                  onChanged: (c) {
-                    widget.style.backgroundColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.backgroundColor,
+                    onChanged: (c) {
+                      widget.style.backgroundColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Thickness",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.trackThickness.toString(),
-                  onChanged: (v) {
-                    widget.style.trackThickness = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.trackThickness.toString(),
+                    onChanged: (v) {
+                      widget.style.trackThickness = double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Spacing",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.trackSpacing.toString(),
-                  onChanged: (v) {
-                    widget.style.trackSpacing = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              SubSection(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.trackSpacing.toString(),
+                    onChanged: (v) {
+                      widget.style.trackSpacing = double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            SubSection(
                 title: "Border",
-                child: Column(
-                  children: [
-                    FieldLabel(
+                child: Column(children: [
+                  FieldLabel(
                       text: "Color",
                       child: ColorField(
-                        width: 150,
-                        color: widget.style.borderColor,
-                        onChanged: (c) {
-                          widget.style.borderColor = c;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          width: 150,
+                          color: widget.style.borderColor,
+                          onChanged: (c) {
+                            widget.style.borderColor = c;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Thickness",
                       child: Field(
-                        label: "",
-                        width: 60,
-                        initialValue: widget.style.borderThickness.toString(),
-                        onChanged: (v) {
-                          widget.style.borderThickness = double.tryParse(v) ?? 0;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          label: "",
+                          width: 60,
+                          initialValue: widget.style.borderThickness.toString(),
+                          onChanged: (v) {
+                            widget.style.borderThickness =
+                                double.tryParse(v) ?? 0;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Spacing",
                       child: Field(
-                        label: "",
-                        width: 60,
-                        initialValue: widget.style.borderSpacing.toString(),
-                        onChanged: (v) {
-                          widget.style.borderSpacing = double.tryParse(v) ?? 0;
-                          refreshWidget();
-                        }
-                      )
-                    )
-                  ]
-                )
-              )
-            ]
-          )
-        )
-      ]
-    );
+                          label: "",
+                          width: 60,
+                          initialValue: widget.style.borderSpacing.toString(),
+                          onChanged: (v) {
+                            widget.style.borderSpacing =
+                                double.tryParse(v) ?? 0;
+                            refreshWidget();
+                          }))
+                ]))
+          ]))
+    ]);
   }
 }
 
 class KnobStyle {
-  KnobStyle({
-    this.start = 0.1,
-    this.end = 0.9,
-
-    this.backgroundColor = const Color.fromRGBO(0, 0, 0, 0),
-
-    this.borderColor = Colors.grey,
-    this.borderThickness = 2.0,
-    this.borderSpacing = 4.0,
-
-    this.trackThickness = 4.0,
-    this.trackSpacing = 4.0,
-    this.trackColor = const Color.fromRGBO(0, 0, 0, 0),
-    this.valueColor = Colors.blue,
-
-    this.tickColor = Colors.white,
-    this.tickThickness = 3.0,
-    this.tickStart = 0.3,
-    this.tickEnd = 0.9,
-
-    this.knobColor = const Color.fromRGBO(40, 40, 40, 1.0),
-    this.knobEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
-    this.knobEdgeThickness = 0.0,
-
-    this.ringThickness = 2.0,
-    this.ringColor = const Color.fromRGBO(30, 30, 30, 1.0),
-    this.ringEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
-    this.ringEdgeThickness = 0.0,
-
-    this.shadowColor = const Color.fromRGBO(0, 0, 0, 0.5),
-    this.shadowOffset = const Offset(0, 10),
-    this.shadowBlurRadius = 10,
-
-    this.iconPath,
-    this.iconColor = Colors.grey,
-    this.iconPadding = 10,
-
-    this.imagePath
-  });
+  KnobStyle(
+      {this.start = 0.1,
+      this.end = 0.9,
+      this.backgroundColor = const Color.fromRGBO(0, 0, 0, 0),
+      this.borderColor = Colors.grey,
+      this.borderThickness = 2.0,
+      this.borderSpacing = 4.0,
+      this.trackThickness = 4.0,
+      this.trackSpacing = 4.0,
+      this.trackColor = const Color.fromRGBO(0, 0, 0, 0),
+      this.valueColor = Colors.blue,
+      this.tickColor = Colors.white,
+      this.tickThickness = 3.0,
+      this.tickStart = 0.3,
+      this.tickEnd = 0.9,
+      this.knobColor = const Color.fromRGBO(40, 40, 40, 1.0),
+      this.knobEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
+      this.knobEdgeThickness = 0.0,
+      this.ringThickness = 2.0,
+      this.ringColor = const Color.fromRGBO(30, 30, 30, 1.0),
+      this.ringEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
+      this.ringEdgeThickness = 0.0,
+      this.shadowColor = const Color.fromRGBO(0, 0, 0, 0.5),
+      this.shadowOffset = const Offset(0, 10),
+      this.shadowBlurRadius = 10,
+      this.iconPath,
+      this.iconColor = Colors.grey,
+      this.iconPadding = 10,
+      this.imagePath});
 
   static KnobStyle fromJson(Map<String, dynamic> json) {
     return KnobStyle(
-      start: json["start"],
-      end: json["end"],
-      backgroundColor: colorFromHex(json["backgroundColor"])!,
-      borderColor: colorFromHex(json["borderColor"])!,
-      borderThickness: json["borderThickness"],
-      borderSpacing: json["borderSpacing"],
-      valueColor: colorFromHex(json["valueColor"])!,
-      trackThickness: json["trackThickness"],
-      trackSpacing: json["trackSpacing"],
-      tickColor: colorFromHex(json["tickColor"])!,
-      tickThickness: json["tickThickness"],
-      tickStart: json["tickStart"],
-      tickEnd: json["tickEnd"],
-      trackColor: colorFromHex(json["trackColor"])!,
-      knobColor: colorFromHex(json["knobColor"])!,
-      ringThickness: json["ringThickness"],
-      ringColor: colorFromHex(json["ringColor"])!,
-      shadowColor: colorFromHex(json["shadowColor"])!,
-      shadowOffset: Offset(json["shadowOffsetX"], json["shadowOffsetY"]),
-      shadowBlurRadius: json["shadowBlurRadius"],
-      ringEdgeColor: colorFromHex(json["ringEdgeColor"])!,
-      ringEdgeThickness: json["ringEdgeThickness"],
-      knobEdgeColor: colorFromHex(json["knobEdgeColor"])!,
-      knobEdgeThickness: json["knobEdgeThickness"],
-      iconPath: json["iconPath"],
-      iconColor: colorFromHex(json["iconColor"])!,
-      iconPadding: json["iconPadding"],
-      imagePath: json["imagePath"]
-    );
+        start: json["start"],
+        end: json["end"],
+        backgroundColor: colorFromHex(json["backgroundColor"])!,
+        borderColor: colorFromHex(json["borderColor"])!,
+        borderThickness: json["borderThickness"],
+        borderSpacing: json["borderSpacing"],
+        valueColor: colorFromHex(json["valueColor"])!,
+        trackThickness: json["trackThickness"],
+        trackSpacing: json["trackSpacing"],
+        tickColor: colorFromHex(json["tickColor"])!,
+        tickThickness: json["tickThickness"],
+        tickStart: json["tickStart"],
+        tickEnd: json["tickEnd"],
+        trackColor: colorFromHex(json["trackColor"])!,
+        knobColor: colorFromHex(json["knobColor"])!,
+        ringThickness: json["ringThickness"],
+        ringColor: colorFromHex(json["ringColor"])!,
+        shadowColor: colorFromHex(json["shadowColor"])!,
+        shadowOffset: Offset(json["shadowOffsetX"], json["shadowOffsetY"]),
+        shadowBlurRadius: json["shadowBlurRadius"],
+        ringEdgeColor: colorFromHex(json["ringEdgeColor"])!,
+        ringEdgeThickness: json["ringEdgeThickness"],
+        knobEdgeColor: colorFromHex(json["knobEdgeColor"])!,
+        knobEdgeThickness: json["knobEdgeThickness"],
+        iconPath: json["iconPath"],
+        iconColor: colorFromHex(json["iconColor"])!,
+        iconPadding: json["iconPadding"],
+        imagePath: json["imagePath"]);
   }
 
   Map<String, dynamic> toJson() {
@@ -463,12 +420,11 @@ class KnobStyle {
 }
 
 class Knob extends StatefulWidget {
-  Knob({
-    required this.varName,
-    required this.style,
-    required this.image,
-    required this.host
-  });
+  Knob(
+      {required this.varName,
+      required this.style,
+      required this.image,
+      required this.host});
 
   final ValueListenable<String?> varName;
   final KnobStyle style;
@@ -509,15 +465,17 @@ class _Knob extends State<Knob> {
 
     // ^^^ SPRITE KNOB IMPLEMENTATION
 
-    return ValueListenableBuilder<List<Var>>(
-      valueListenable: widget.host.vars,
-      builder: (context, vars, w) {
-        return ValueListenableBuilder<String?>(
-          valueListenable: widget.varName,
-          builder: (context, name, w) {
-            int? index;
+    return Container(color: Colors.red);
 
-            for (var v in vars) {
+    /*return ValueListenableBuilder<List<Var>>(
+        valueListenable: widget.host.vars,
+        builder: (context, vars, w) {
+          return ValueListenableBuilder<String?>(
+              valueListenable: widget.varName,
+              builder: (context, name, w) {
+                int? index;
+
+                /*for (var v in vars) {
               if (v.name == name) {
                 if (v.notifier.value is double) {
                   valueNotifier = v.notifier;
@@ -527,51 +485,55 @@ class _Knob extends State<Knob> {
                   valueNotifier = ValueNotifier(valueNotifier.value);
                 }
               }
-            }
+            }*/
 
-            return ValueListenableBuilder<dynamic>(
-              valueListenable: valueNotifier,
-              builder: (context, value, w) {
-                return GestureDetector(
-                  onVerticalDragUpdate: (e) {
-                    if (value is double) {
-                      valueNotifier.value = (valueNotifier.value - e.delta.dy / 300).clamp(0.0, 1.0);
-                      if (index != null) {
-                        ffiHostSetVarValueFloat(widget.host.host, index, valueNotifier.value);
-                      }
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: widget.style.backgroundColor,
-                      shape: BoxShape.circle
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Arc( // Outer border
-                          start: widget.style.start,
-                          end: widget.style.end,
-                          thickness: widget.style.borderThickness,
-                          spacing: widget.style.borderSpacing,
-                          color: widget.style.borderColor,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Arc( // Track
-                                start: widget.style.start,
-                                end: widget.style.end,
-                                thickness: widget.style.trackThickness,
-                                spacing: widget.style.trackSpacing,
-                                color: widget.style.trackColor,
-                              ),
-                              Arc( // Value
-                                start: widget.style.start,
-                                end: widget.style.start + (widget.style.end - widget.style.start) * value,
-                                thickness: widget.style.trackThickness,
-                                spacing: widget.style.trackSpacing,
-                                color: widget.style.valueColor,
-                                /*child: Container(
+                return ValueListenableBuilder<dynamic>(
+                    valueListenable: valueNotifier,
+                    builder: (context, value, w) {
+                      return GestureDetector(
+                          onVerticalDragUpdate: (e) {
+                            if (value is double) {
+                              valueNotifier.value =
+                                  (valueNotifier.value - e.delta.dy / 300)
+                                      .clamp(0.0, 1.0);
+                              if (index != null) {
+                                // ffiHostSetVarValueFloat(widget.host.host, index, valueNotifier.value);
+                              }
+                            }
+                          },
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  color: widget.style.backgroundColor,
+                                  shape: BoxShape.circle),
+                              child: Stack(fit: StackFit.expand, children: [
+                                Arc(
+                                    // Outer border
+                                    start: widget.style.start,
+                                    end: widget.style.end,
+                                    thickness: widget.style.borderThickness,
+                                    spacing: widget.style.borderSpacing,
+                                    color: widget.style.borderColor,
+                                    child:
+                                        Stack(fit: StackFit.expand, children: [
+                                      Arc(
+                                        // Track
+                                        start: widget.style.start,
+                                        end: widget.style.end,
+                                        thickness: widget.style.trackThickness,
+                                        spacing: widget.style.trackSpacing,
+                                        color: widget.style.trackColor,
+                                      ),
+                                      Arc(
+                                        // Value
+                                        start: widget.style.start,
+                                        end: widget.style.start +
+                                            (widget.style.end -
+                                                    widget.style.start) *
+                                                value,
+                                        thickness: widget.style.trackThickness,
+                                        spacing: widget.style.trackSpacing,
+                                        color: widget.style.valueColor,
+                                        /*child: Container(
                                   padding: EdgeInsets.all(widget.style.ringThickness),
                                   decoration: BoxDecoration(
                                     color: widget.style.ringColor,
@@ -607,43 +569,35 @@ class _Knob extends State<Knob> {
                                     )
                                   )
                                 )*/
-                              )
-                            ]
-                          )
-                        ),
-                        CustomPaint(
-                          painter: TickPainter(
-                            value: value is double ? value : 0.0,
-                            start: widget.style.start,
-                            end: widget.style.end,
-                            thickness: widget.style.tickThickness,
-                            tickStart: widget.style.tickStart,
-                            tickEnd: widget.style.tickEnd,
-                            color: widget.style.tickColor,
-                          ),
-                        )
-                      ]
-                    )
-                  )
-                );
-              }
-            );
-          }
-        );
-      }
-    );
+                                      )
+                                    ])),
+                                CustomPaint(
+                                  painter: TickPainter(
+                                    value: value is double ? value : 0.0,
+                                    start: widget.style.start,
+                                    end: widget.style.end,
+                                    thickness: widget.style.tickThickness,
+                                    tickStart: widget.style.tickStart,
+                                    tickEnd: widget.style.tickEnd,
+                                    color: widget.style.tickColor,
+                                  ),
+                                )
+                              ])));
+                    });
+              });
+        });*/
   }
 }
 
 class Arc extends StatelessWidget {
-  Arc({
-    required this.start,
-    required this.end,
-    required this.color,
-    required this.thickness,
-    required this.spacing,
-    this.child
-  }) : super(key: UniqueKey());
+  Arc(
+      {required this.start,
+      required this.end,
+      required this.color,
+      required this.thickness,
+      required this.spacing,
+      this.child})
+      : super(key: UniqueKey());
 
   final double start;
   final double end;
@@ -703,7 +657,6 @@ class ImageKnobPainter extends CustomPainter {
   }
 }
 
-
 /* Slider Widget */
 
 class SliderUIWidget extends UIWidget {
@@ -713,30 +666,28 @@ class SliderUIWidget extends UIWidget {
 
   // Vital Knob
   var style = SliderStyle(
-    trackBorderColor: Colors.grey.withOpacity(0.0),
-    trackBorderThickness: 0,
-    trackColor: const Color.fromRGBO(60, 60, 60, 1.0),
-    trackSpacing: 0.0,
-    knobColor: const Color.fromRGBO(30, 30, 30, 1.0),
-    ringColor: const Color.fromRGBO(180, 180, 180, 0.0),
-    ringThickness: 0.0,
-    ringEdgeColor: const Color.fromRGBO(80, 80, 80, 1.0),
-    ringEdgeThickness: 0.0,
-    sliderEdgeColor: const Color.fromRGBO(20, 20, 20, 1.0),
-    sliderEdgeThickness: 0.0,
-    shadowBlurRadius: 0,
-    shadowOffset: const Offset(0, 0),
-    shadowColor: const Color.fromRGBO(0, 0, 0, 0.0)
-  );
+      trackBorderColor: Colors.grey.withOpacity(0.0),
+      trackBorderThickness: 0,
+      trackColor: const Color.fromRGBO(60, 60, 60, 1.0),
+      trackSpacing: 0.0,
+      knobColor: const Color.fromRGBO(30, 30, 30, 1.0),
+      ringColor: const Color.fromRGBO(180, 180, 180, 0.0),
+      ringThickness: 0.0,
+      ringEdgeColor: const Color.fromRGBO(80, 80, 80, 1.0),
+      ringEdgeThickness: 0.0,
+      sliderEdgeColor: const Color.fromRGBO(20, 20, 20, 1.0),
+      sliderEdgeThickness: 0.0,
+      shadowBlurRadius: 0,
+      shadowOffset: const Offset(0, 0),
+      shadowColor: const Color.fromRGBO(0, 0, 0, 0.0));
 
   TransformData data = TransformData(
-    width: 70,
-    height: 70,
-    left: 0,
-    top: 0,
-    alignment: Alignment.center,
-    padding: EdgeInsets.zero
-  );
+      width: 70,
+      height: 70,
+      left: 0,
+      top: 0,
+      alignment: Alignment.center,
+      padding: EdgeInsets.zero);
 
   @override
   String getName() {
@@ -745,10 +696,7 @@ class SliderUIWidget extends UIWidget {
 
   @override
   Map<String, dynamic> getJson() {
-    return {
-      "transform": data.toJson(),
-      "style": style.toJson()
-    };
+    return {"transform": data.toJson(), "style": style.toJson()};
   }
 
   @override
@@ -768,9 +716,7 @@ class SliderUIWidget extends UIWidget {
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {
-
-  }
+  void deleteChildRecursive(UIWidget widget) {}
 
   @override
   _SliderUIWidget createState() => _SliderUIWidget();
@@ -780,12 +726,11 @@ class _SliderUIWidget extends UIWidgetState<SliderUIWidget> {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-      data: widget.data,
-      child: Slider(
-        value: 0.6,
-        style: widget.style,
-      )
-    );
+        data: widget.data,
+        child: Slider(
+          value: 0.6,
+          style: widget.style,
+        ));
   }
 
   @override
@@ -809,285 +754,231 @@ class _SliderUIWidget extends UIWidgetState<SliderUIWidget> {
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Slider"),
-        TransformWidgetEditor(
+    return Column(children: [
+      EditorTitle("Slider"),
+      TransformWidgetEditor(
           data: widget.data,
           onUpdate: (t) {
             widget.data = t;
             refreshWidget();
           },
-          tree: widget.tree
-        ),
-        Section(
+          tree: widget.tree),
+      Section(
           title: "Slider",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Color",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.knobColor,
-                  onChanged: (c) {
-                    widget.style.knobColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.knobColor,
+                    onChanged: (c) {
+                      widget.style.knobColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Edge Color",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.sliderEdgeColor,
-                  onChanged: (c) {
-                    widget.style.sliderEdgeColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.sliderEdgeColor,
+                    onChanged: (c) {
+                      widget.style.sliderEdgeColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Edge Thickness",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.sliderEdgeThickness.toString(),
-                  onChanged: (v) {
-                    widget.style.sliderEdgeThickness = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              SubSection(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.sliderEdgeThickness.toString(),
+                    onChanged: (v) {
+                      widget.style.sliderEdgeThickness =
+                          double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            SubSection(
                 title: "Ring",
-                child: Column(
-                  children: [
-                    FieldLabel(
+                child: Column(children: [
+                  FieldLabel(
                       text: "Color",
                       child: ColorField(
-                        width: 150,
-                        color: widget.style.ringColor,
-                        onChanged: (c) {
-                          widget.style.ringColor = c;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          width: 150,
+                          color: widget.style.ringColor,
+                          onChanged: (c) {
+                            widget.style.ringColor = c;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Thickness",
                       child: Field(
-                        label: "",
-                        width: 60,
-                        initialValue: widget.style.ringThickness.toString(),
-                        onChanged: (v) {
-                          widget.style.ringThickness = double.tryParse(v) ?? 0;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          label: "",
+                          width: 60,
+                          initialValue: widget.style.ringThickness.toString(),
+                          onChanged: (v) {
+                            widget.style.ringThickness =
+                                double.tryParse(v) ?? 0;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Edge Color",
                       child: ColorField(
-                        width: 150,
-                        color: widget.style.ringEdgeColor,
-                        onChanged: (c) {
-                          widget.style.ringEdgeColor = c;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          width: 150,
+                          color: widget.style.ringEdgeColor,
+                          onChanged: (c) {
+                            widget.style.ringEdgeColor = c;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Edge Thickness",
                       child: Field(
-                        label: "",
-                        width: 60,
-                        initialValue: widget.style.ringEdgeThickness.toString(),
-                        onChanged: (v) {
-                          widget.style.ringEdgeThickness = double.tryParse(v) ?? 0;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                  ]
-                )
-              )
-            ]
-          )
-        ),
-        Section(
+                          label: "",
+                          width: 60,
+                          initialValue:
+                              widget.style.ringEdgeThickness.toString(),
+                          onChanged: (v) {
+                            widget.style.ringEdgeThickness =
+                                double.tryParse(v) ?? 0;
+                            refreshWidget();
+                          })),
+                ]))
+          ])),
+      Section(
           title: "Track",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Primary",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.valueColor,
-                  onChanged: (c) {
-                    widget.style.valueColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.valueColor,
+                    onChanged: (c) {
+                      widget.style.valueColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Secondary",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.trackColor,
-                  onChanged: (c) {
-                    widget.style.trackColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.trackColor,
+                    onChanged: (c) {
+                      widget.style.trackColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Spacing",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.trackSpacing.toString(),
-                  onChanged: (v) {
-                    widget.style.trackSpacing = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.trackSpacing.toString(),
+                    onChanged: (v) {
+                      widget.style.trackSpacing = double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Corner Radius",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.trackBorderRadius.toString(),
-                  onChanged: (v) {
-                    widget.style.trackBorderRadius = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              SubSection(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.trackBorderRadius.toString(),
+                    onChanged: (v) {
+                      widget.style.trackBorderRadius = double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            SubSection(
                 title: "Border",
-                child: Column(
-                  children: [
-                    FieldLabel(
+                child: Column(children: [
+                  FieldLabel(
                       text: "Color",
                       child: ColorField(
-                        width: 150,
-                        color: widget.style.trackBorderColor,
-                        onChanged: (c) {
-                          widget.style.trackBorderColor = c;
-                          refreshWidget();
-                        }
-                      )
-                    ),
-                    FieldLabel(
+                          width: 150,
+                          color: widget.style.trackBorderColor,
+                          onChanged: (c) {
+                            widget.style.trackBorderColor = c;
+                            refreshWidget();
+                          })),
+                  FieldLabel(
                       text: "Thickness",
                       child: Field(
-                        label: "",
-                        width: 60,
-                        initialValue: widget.style.trackBorderThickness.toString(),
-                        onChanged: (v) {
-                          widget.style.trackBorderThickness = double.tryParse(v) ?? 0;
-                          refreshWidget();
-                        }
-                      )
-                    )
-                  ]
-                )
-              )
-            ]
-          )
-        ),
-        Section(
+                          label: "",
+                          width: 60,
+                          initialValue:
+                              widget.style.trackBorderThickness.toString(),
+                          onChanged: (v) {
+                            widget.style.trackBorderThickness =
+                                double.tryParse(v) ?? 0;
+                            refreshWidget();
+                          }))
+                ]))
+          ])),
+      Section(
           title: "Shadow",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Color",
                 child: ColorField(
-                  width: 150,
-                  color: widget.style.shadowColor,
-                  onChanged: (c) {
-                    widget.style.shadowColor = c;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    width: 150,
+                    color: widget.style.shadowColor,
+                    onChanged: (c) {
+                      widget.style.shadowColor = c;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Blur Radius",
                 child: Field(
-                  label: "",
-                  width: 60,
-                  initialValue: widget.style.shadowBlurRadius.toString(),
-                  onChanged: (v) {
-                    widget.style.shadowBlurRadius = double.tryParse(v) ?? 0;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    label: "",
+                    width: 60,
+                    initialValue: widget.style.shadowBlurRadius.toString(),
+                    onChanged: (v) {
+                      widget.style.shadowBlurRadius = double.tryParse(v) ?? 0;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Offset",
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(),
-                    ),
-                    Field(
+                child: Row(children: [
+                  Expanded(
+                    child: Container(),
+                  ),
+                  Field(
                       label: "X",
                       width: 70,
                       initialValue: widget.style.shadowOffset.dx.toString(),
                       onChanged: (v) {
                         widget.style.shadowOffset = Offset(
-                          widget.style.shadowOffset.dx,
-                          double.tryParse(v) ?? 0
-                        );
+                            widget.style.shadowOffset.dx,
+                            double.tryParse(v) ?? 0);
 
                         refreshWidget();
-                      }
-                    ),
-                    Field(
+                      }),
+                  Field(
                       label: "Y",
                       width: 70,
                       initialValue: widget.style.shadowOffset.dy.toString(),
                       onChanged: (v) {
                         widget.style.shadowOffset = Offset(
-                          widget.style.shadowOffset.dx,
-                          double.tryParse(v) ?? 0
-                        );
+                            widget.style.shadowOffset.dx,
+                            double.tryParse(v) ?? 0);
 
                         refreshWidget();
-                      }
-                    )
-                  ]
-                )
-              )
-            ]
-          )
-        )
-      ]
-    );
+                      })
+                ]))
+          ]))
+    ]);
   }
 }
 
 class SliderStyle {
   SliderStyle({
     this.trackBorderColor = const Color.fromRGBO(0, 0, 0, 0),
-
     this.trackBorderThickness = 4.0,
     this.trackBorderRadius = 4.0,
-
     this.trackSpacing = 4.0,
     this.trackColor = const Color.fromRGBO(0, 0, 0, 0),
     this.valueColor = Colors.blue,
-
     this.knobColor = const Color.fromRGBO(40, 40, 40, 1.0),
     this.sliderEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
     this.sliderEdgeThickness = 0.0,
-
     this.ringThickness = 2.0,
     this.ringColor = const Color.fromRGBO(30, 30, 30, 1.0),
     this.ringEdgeColor = const Color.fromRGBO(20, 20, 20, 1.0),
     this.ringEdgeThickness = 0.0,
-
     this.shadowColor = const Color.fromRGBO(0, 0, 0, 0.5),
     this.shadowOffset = const Offset(0, 10),
     this.shadowBlurRadius = 10,
@@ -1163,10 +1054,7 @@ class SliderStyle {
 }
 
 class Slider extends StatefulWidget {
-  Slider({
-    required this.value,
-    required this.style
-  });
+  Slider({required this.value, required this.style});
 
   final double value;
   final SliderStyle style;
@@ -1176,7 +1064,6 @@ class Slider extends StatefulWidget {
 }
 
 class _Slider extends State<Slider> {
-
   late double value;
 
   @override
@@ -1187,77 +1074,69 @@ class _Slider extends State<Slider> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onVerticalDragUpdate: (e) {
-            setState(() {
-              value = (constraints.maxHeight - e.localPosition.dy.clamp(0, constraints.maxHeight)) / constraints.maxHeight;
-            });
-          },
-          /*onTapDown: (e) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onVerticalDragUpdate: (e) {
+          setState(() {
+            value = (constraints.maxHeight -
+                    e.localPosition.dy.clamp(0, constraints.maxHeight)) /
+                constraints.maxHeight;
+          });
+        },
+        /*onTapDown: (e) {
             setState(() {
               value = (constraints.maxHeight - e.localPosition.dy.clamp(0, constraints.maxHeight)) / constraints.maxHeight;
             });
           },*/
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Container(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight,
-                color: widget.style.trackColor,
-              ),
-              Align(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              color: widget.style.trackColor,
+            ),
+            Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   width: constraints.maxWidth,
                   height: constraints.maxHeight * value,
                   color: widget.style.valueColor,
-                )
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 0, 0, constraints.maxHeight * value),
-                child: Align(
+                )),
+            Padding(
+              padding:
+                  EdgeInsets.fromLTRB(0, 0, 0, constraints.maxHeight * value),
+              child: Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
-                    width: 40,
-                    height: 40,
-                    padding: EdgeInsets.all(widget.style.ringThickness),
-                    decoration: BoxDecoration(
-                      color: widget.style.ringColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: widget.style.ringEdgeColor,
-                        width: widget.style.ringEdgeThickness
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: widget.style.shadowColor,
-                          offset: widget.style.shadowOffset,
-                          blurRadius: widget.style.shadowBlurRadius
-                        )
-                      ]
-                    ),
-                    child: Container(
+                      width: 40,
+                      height: 40,
+                      padding: EdgeInsets.all(widget.style.ringThickness),
                       decoration: BoxDecoration(
-                        color: widget.style.knobColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: widget.style.sliderEdgeColor,
-                          width: widget.style.sliderEdgeThickness
-                        )
-                      )
-                    )
-                  )
-                ),
-              )
-            ],
-          ),
-        );
-      }
-    );
+                          color: widget.style.ringColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: widget.style.ringEdgeColor,
+                              width: widget.style.ringEdgeThickness),
+                          boxShadow: [
+                            BoxShadow(
+                                color: widget.style.shadowColor,
+                                offset: widget.style.shadowOffset,
+                                blurRadius: widget.style.shadowBlurRadius)
+                          ]),
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: widget.style.knobColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: widget.style.sliderEdgeColor,
+                                  width: widget.style.sliderEdgeThickness))))),
+            )
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -1282,16 +1161,14 @@ class ArcPainter extends CustomPainter {
       ..strokeWidth = thickness;
 
     canvas.drawArc(
-      Rect.fromCenter(
-        center: Offset(size.width / 2, size.height / 2),
-        width: size.width - thickness,
-        height: size.height - thickness
-      ),
-      (pi / 2 + start * 2 * pi),
-      (end * 2 * pi) - (start * 2 * pi),
-      false,
-      paint
-    );
+        Rect.fromCenter(
+            center: Offset(size.width / 2, size.height / 2),
+            width: size.width - thickness,
+            height: size.height - thickness),
+        (pi / 2 + start * 2 * pi),
+        (end * 2 * pi) - (start * 2 * pi),
+        false,
+        paint);
   }
 
   @override
@@ -1323,23 +1200,30 @@ class TickPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = thickness;
-    
+
     var startOffset = Offset(
-      size.width / 2 
-      + cos(
-        pi / 2
-        + 2 * pi * start
-        + 2 * pi * value * (end - start)) * size.width / 2 * tickStart,
-      size.height / 2 
-      + sin(
-        pi / 2 + 2 * pi * start 
-        + 2 * pi * value * (end - start)) * size.height / 2 * tickStart
-    );
+        size.width / 2 +
+            cos(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) *
+                size.width /
+                2 *
+                tickStart,
+        size.height / 2 +
+            sin(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) *
+                size.height /
+                2 *
+                tickStart);
 
     var endOffset = Offset(
-      size.width / 2 + cos(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) * size.width / 2 * tickEnd,
-      size.height / 2 + sin(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) * size.height / 2 * tickEnd
-    );
+        size.width / 2 +
+            cos(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) *
+                size.width /
+                2 *
+                tickEnd,
+        size.height / 2 +
+            sin(pi / 2 + 2 * pi * start + 2 * pi * value * (end - start)) *
+                size.height /
+                2 *
+                tickEnd);
 
     canvas.drawLine(startOffset, endOffset, paint);
   }
@@ -1356,19 +1240,15 @@ class ButtonUIWidget extends UIWidget {
   bool down = false;
 
   // Vital Knob
-  var style = ButtonStyle(
-    down: null,
-    up: null
-  );
+  var style = ButtonStyle(down: null, up: null);
 
   TransformData data = TransformData(
-    width: 70,
-    height: 70,
-    left: 0,
-    top: 0,
-    alignment: Alignment.center,
-    padding: EdgeInsets.zero
-  );
+      width: 70,
+      height: 70,
+      left: 0,
+      top: 0,
+      alignment: Alignment.center,
+      padding: EdgeInsets.zero);
 
   @override
   String getName() {
@@ -1377,10 +1257,7 @@ class ButtonUIWidget extends UIWidget {
 
   @override
   Map<String, dynamic> getJson() {
-    return {
-      "transform": data.toJson(),
-      "style": style.toJson()
-    };
+    return {"transform": data.toJson(), "style": style.toJson()};
   }
 
   @override
@@ -1400,9 +1277,7 @@ class ButtonUIWidget extends UIWidget {
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {
-
-  }
+  void deleteChildRecursive(UIWidget widget) {}
 
   @override
   _ButtonUIWidget createState() => _ButtonUIWidget();
@@ -1412,16 +1287,15 @@ class _ButtonUIWidget extends UIWidgetState<ButtonUIWidget> {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-      data: widget.data,
-      child: Button(
-        down: widget.down,
-        style: widget.style,
-        onUpdate: (v) {
-          widget.down = v;
-          refreshWidget();
-        },
-      )
-    );
+        data: widget.data,
+        child: Button(
+          down: widget.down,
+          style: widget.style,
+          onUpdate: (v) {
+            widget.down = v;
+            refreshWidget();
+          },
+        ));
   }
 
   @override
@@ -1449,82 +1323,58 @@ class _ButtonUIWidget extends UIWidgetState<ButtonUIWidget> {
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Button"),
-        TransformWidgetEditor(
+    return Column(children: [
+      EditorTitle("Button"),
+      TransformWidgetEditor(
           data: widget.data,
           onUpdate: (t) {
             widget.data = t;
             refreshWidget();
           },
-          tree: widget.tree
-        ),
-        Section(
+          tree: widget.tree),
+      Section(
           title: "Style",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Down",
                 child: FileField(
-                  path: widget.style.down,
-                  extensions: const ["jpg", "jpeg", "png"],
-                  onChanged: (s) {
-                    widget.style.down = s;
-                    refreshWidget();
-                  }
-                )
-              ),
-              FieldLabel(
+                    path: widget.style.down,
+                    extensions: const ["jpg", "jpeg", "png"],
+                    onChanged: (s) {
+                      widget.style.down = s;
+                      refreshWidget();
+                    })),
+            FieldLabel(
                 text: "Up",
                 child: FileField(
-                  path: widget.style.up,
-                  extensions: const ["jpg", "jpeg", "png"],
-                  onChanged: (s) {
-                    widget.style.up = s;
-                    refreshWidget();
-                  }
-                )
-              )
-            ]
-          )
-        ),
-      ]
-    );
+                    path: widget.style.up,
+                    extensions: const ["jpg", "jpeg", "png"],
+                    onChanged: (s) {
+                      widget.style.up = s;
+                      refreshWidget();
+                    }))
+          ])),
+    ]);
   }
 }
 
 class ButtonStyle {
-  ButtonStyle({
-    required this.down,
-    required this.up
-  });
+  ButtonStyle({required this.down, required this.up});
 
   static ButtonStyle fromJson(Map<String, dynamic> json) {
-    return ButtonStyle(
-      down: json["down"],
-      up: json["up"]
-    );
+    return ButtonStyle(down: json["down"], up: json["up"]);
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      "up": up,
-      "down": down
-    };
+    return {"up": up, "down": down};
   }
 
   String? down;
   String? up;
-
 }
 
 class Button extends StatefulWidget {
-  Button({
-    required this.down,
-    required this.onUpdate,
-    required this.style
-  });
+  Button({required this.down, required this.onUpdate, required this.style});
 
   final bool down;
   final void Function(bool) onUpdate;
@@ -1535,7 +1385,6 @@ class Button extends StatefulWidget {
 }
 
 class _Button extends State<Button> {
-
   late bool down;
 
   @override
@@ -1546,40 +1395,29 @@ class _Button extends State<Button> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (e) {
-        setState(() {
-          widget.onUpdate(!down);
-          down = !down;
-        });
-      },
-      child: Builder(
-        builder: (context) {
-          if (down) {
-            if (widget.style.down != null) {
-              return Image.file(
-                File(widget.style.down!),
-                fit: BoxFit.fill
-              );
-            } else {
-              return Container(
-                color: Colors.blue,
-              );
-            }
-          } else {
-            if (widget.style.up != null) {
-              return Image.file(
-                File(widget.style.up!),
-                fit: BoxFit.fill
-              );
-            } else {
-              return Container(
-                color: Colors.grey,
-              );
-            }
-          }
+    return Listener(onPointerDown: (e) {
+      setState(() {
+        widget.onUpdate(!down);
+        down = !down;
+      });
+    }, child: Builder(builder: (context) {
+      if (down) {
+        if (widget.style.down != null) {
+          return Image.file(File(widget.style.down!), fit: BoxFit.fill);
+        } else {
+          return Container(
+            color: Colors.blue,
+          );
         }
-      )
-    );
+      } else {
+        if (widget.style.up != null) {
+          return Image.file(File(widget.style.up!), fit: BoxFit.fill);
+        } else {
+          return Container(
+            color: Colors.grey,
+          );
+        }
+      }
+    }));
   }
 }

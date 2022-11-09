@@ -48,24 +48,25 @@ inputs: &[
     fn process(&mut self, vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         match self.name.try_lock() {
             Ok(name) => {
-                for var in vars {
+                /*for var in vars {
                     if var.name == *name {
                         match var.value {
-                            VarValue::Float(v) => {
+                            Value::Float(v) => {
                                 outputs.control[0] = v;
                             },
-                            VarValue::Bool(v) => {
+                            Value::Bool(v) => {
                                 if v {
                                     outputs.control[0] = 1.0;
                                 } else {
                                     outputs.control[0] = 0.0;
                                 }
                             }
+                            _ => panic!("Note implemented")
                         }
 
                         break;
                     }
-                }
+                }*/
             },
             Err(_e) => {
                 println!("Couldn't lock control variable");
