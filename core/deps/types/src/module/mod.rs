@@ -162,12 +162,12 @@ impl Vars {
                         VarEntry::Variable(Var {
                             id: Id(2),
                             name: String::from("Variable 3"),
-                            value: Value::Float(0.0)
+                            value: Value::Bool(false)
                         }),
                         VarEntry::Variable(Var {
                             id: Id(3),
                             name: String::from("Variable 4"),
-                            value: Value::Float(0.0)
+                            value: Value::Bool(true)
                         }),
                     ]
                 },

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+// import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
@@ -126,24 +127,27 @@ class Vars {
       int entryCount = ffiHostVarsTabGetEntryCount(host.host, i);
 
       for (int j = 0; j < entryCount; j++) {
-        int type = ffiHostVarsTabEntryGetType(host.host, i, j);
+        int entryType = ffiHostVarsTabEntryGetType(host.host, i, j);
 
-        if (type == 0) {
+        if (entryType == 0) {
           int id = ffiHostVarsTabEntryGetId(host.host, i, j);
+          int varType = ffiHostVarGetType(host.host, id);
 
           dynamic value;
 
-          if (type == 0) {
+          if (varType == 0) {
             value = ffiHostVarGetFloat(host.host, id);
-          } else if (type == 1) {
+          } else if (varType == 1) {
             value = ffiHostVarGetBool(host.host, id);
           } else {
             print("TYPE NOT SUPPORTED IN VAR GETTER");
           }
 
-          var rawName = ffiHostVarGetName(host.host, i);
+          var rawName = ffiHostVarGetName(host.host, id);
           String name = rawName.toDartString();
           calloc.free(rawName);
+
+          print(name + ": " + id.toString());
 
           entries.add(VarEntry(
               variable: Var(
@@ -153,7 +157,7 @@ class Vars {
                 notifier: ValueNotifier(value),
               ),
               group: null));
-        } else if (type == 1) {
+        } else if (entryType == 1) {
           var rawName = ffiHostVarsTabGroupGetName(host.host, i, j);
           String name = rawName.toDartString();
           calloc.free(rawName);
@@ -163,18 +167,19 @@ class Vars {
 
           for (int k = 0; k < varCount; k++) {
             int id = ffiHostVarsTabGroupVarGetId(host.host, i, j, k);
+            int varType = ffiHostVarGetType(host.host, id);
 
             dynamic value;
 
-            if (type == 0) {
+            if (varType == 0) {
               value = ffiHostVarGetFloat(host.host, id);
-            } else if (type == 1) {
+            } else if (varType == 1) {
               value = ffiHostVarGetBool(host.host, id);
             } else {
               print("TYPE NOT SUPPORTED IN VAR GETTER");
             }
 
-            var rawName = ffiHostVarGetName(host.host, i);
+            var rawName = ffiHostVarGetName(host.host, id);
             String name = rawName.toDartString();
             calloc.free(rawName);
 
@@ -227,8 +232,9 @@ class _VariablesWidget extends State<VariablesWidget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
-                          height: 35,
+                          height: 30,
                           width: 300,
+                          color: const Color.fromRGBO(50, 50, 50, 1.0),
                           child: TabBar(
                             tabs:
                                 tabs.map((tab) => Tab(text: tab.name)).toList(),
@@ -254,12 +260,17 @@ class VarTab extends StatefulWidget {
 class _VarTab extends State<VarTab> {
   @override
   Widget build(BuildContext context) {
-    return Column(children: widget.entries);
+    return ReorderableListView(
+        children: widget.entries,
+        onReorder: (int oldIndex, int newIndex) {
+          print("Move item");
+        });
   }
 }
 
 class VarEntry extends StatefulWidget {
-  VarEntry({required this.variable, required this.group});
+  VarEntry({required this.variable, required this.group})
+      : super(key: UniqueKey());
   Var? variable;
   VarGroup? group;
 
@@ -397,24 +408,32 @@ class _Var extends State<Var> {
                                   BorderRadius.all(Radius.circular(5))),
                         ),
                         const SizedBox(width: 10),
-                        Text(typeName)
+                        Text(typeName,
+                            style: const TextStyle(
+                                fontSize: 13, color: Colors.grey)),
                       ],
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     width: width,
-                    child: Text(widget.name),
+                    child: Text(widget.name,
+                        style:
+                            const TextStyle(fontSize: 13, color: Colors.white)),
                   ),
                   Container(
                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     width: width,
-                    child: Text("Description goes here"),
+                    child: Text("Assignments here",
+                        style:
+                            const TextStyle(fontSize: 13, color: Colors.white)),
                   ),
                   Container(
                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     width: width,
-                    child: Text("Value Stuff"),
+                    child: Text("Value Stuff",
+                        style:
+                            const TextStyle(fontSize: 13, color: Colors.white)),
                   ),
                 ],
               ),
