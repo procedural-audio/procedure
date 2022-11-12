@@ -89,7 +89,7 @@ impl JSON {
     }
 }
 
-pub struct Param(&'static str, Value);
+pub struct Param(pub &'static str, pub Value);
 
 pub struct Info {
     pub name: &'static str,
@@ -139,94 +139,72 @@ pub trait Module {
 }
 
 pub struct Vars {
-    pub tabs: Vec<VarTab<VarEntry<Var>>>
+    pub entries: Vec<VarEntry<Var>>
 }
 
 impl Vars {
     pub fn new() -> Self {
         Self {
-            tabs: vec![
-                VarTab {
-                    name: String::from("Tab 1"),
-                    entries: vec![
-                        VarEntry::Variable(Var {
-                            id: Id(0),
-                            name: String::from("Variable 1"),
-                            value: Value::Float(0.0)
-                        }),
-                        VarEntry::Variable(Var {
-                            id: Id(1),
-                            name: String::from("Variable 2"),
-                            value: Value::Float(0.0)
-                        }),
-                        VarEntry::Variable(Var {
+            entries: vec![
+                VarEntry::Variable(Var {
+                    id: Id(0),
+                    name: String::from("Variable 1"),
+                    value: Value::Float(0.0)
+                }),
+                VarEntry::Variable(Var {
+                    id: Id(1),
+                    name: String::from("Variable 2"),
+                    value: Value::Float(0.0)
+                }),
+                VarEntry::Group(
+                    String::from("Group 1"),
+                    vec![
+                        Var {
                             id: Id(2),
                             name: String::from("Variable 3"),
                             value: Value::Bool(false)
-                        }),
-                        VarEntry::Variable(Var {
+                        },
+                        Var {
                             id: Id(3),
                             name: String::from("Variable 4"),
+                            value: Value::Bool(false)
+                        },
+                        Var {
+                            id: Id(4),
+                            name: String::from("Variable 5"),
                             value: Value::Bool(true)
-                        }),
+                        },
                     ]
-                },
-                VarTab {
-                    name: String::from("Tab 2"),
-                    entries: vec![
-                        VarEntry::Group(
-                            String::from("Group 1"),
-                            vec![
-                                Var {
-                                    id: Id(4),
-                                    name: String::from("Variable 3"),
-                                    value: Value::Bool(true),
-                                },
-                                Var {
-                                    id: Id(5),
-                                    name: String::from("Variable 4"),
-                                    value: Value::Bool(true),
-                                },
-                            ]
-                        ),
-                        VarEntry::Variable(Var {
-                            id: Id(6),
-                            name: String::from("Variable 2"),
-                            value: Value::Float(0.0)
-                        }),
-                    ]
-                }
+                ),
+                VarEntry::Variable(Var {
+                    id: Id(5),
+                    name: String::from("Variable 6"),
+                    value: Value::Bool(true)
+                }),
             ]
         }
     }
 
     pub fn find_id(&mut self, id: Id) -> Option<&mut Var> {
-        for column in &mut self.tabs {
-            for entry in &mut column.entries {
-                match entry {
-                    VarEntry::Variable(var) => {
+        for entry in &mut self.entries {
+            match entry {
+                VarEntry::Variable(var) => {
+                    if var.id.0 == id.0 {
+                        return Some(var);
+                    }
+                },
+                VarEntry::Group(name, group) => {
+                    for var in group {
                         if var.id.0 == id.0 {
                             return Some(var);
                         }
-                    },
-                    VarEntry::Group(name, group) => {
-                        for var in group {
-                            if var.id.0 == id.0 {
-                                return Some(var);
-                            }
-                        }
-                    },
-                }
+                    }
+                },
             }
         }
 
         return None;
     }
-}
-
-pub struct VarTab<T> {
-    pub name: String,
-    pub entries: Vec<T>
 }
 
 pub enum VarEntry<T> {

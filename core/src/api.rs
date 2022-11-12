@@ -180,43 +180,29 @@ pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &No
 /* Variable Functions */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_get_tab_count(host: &mut Host) -> usize {
-    host.vars.tabs.len()
+pub unsafe extern "C" fn ffi_host_vars_get_entry_count(host: &mut Host) -> usize {
+    host.vars.entries.len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_get_name(host: &mut Host, index: usize) -> *const i8 {
-    let name = &host.vars.tabs[index].name;
-    let s = CString::new(name.as_bytes()).unwrap();
-    let p = s.as_ptr();
-    std::mem::forget(s);
-    p
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_get_entry_count(host: &mut Host, index: usize) -> usize {
-    host.vars.tabs[index].entries.len()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_entry_get_type(host: &mut Host, index1: usize, index2: usize) -> u32 {
-    match &host.vars.tabs[index1].entries[index2] {
+pub unsafe extern "C" fn ffi_host_vars_entry_get_type(host: &mut Host, index: usize) -> u32 {
+    match &host.vars.entries[index] {
         VarEntry::Variable(_) => 0,
         VarEntry::Group(_, _) => 1
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_entry_get_id(host: &mut Host, index1: usize, index2: usize) -> usize {
-    match &host.vars.tabs[index1].entries[index2] {
+pub unsafe extern "C" fn ffi_host_vars_entry_get_id(host: &mut Host, index: usize) -> usize {
+    match &host.vars.entries[index] {
         VarEntry::Variable(var) => var.id.0,
         VarEntry::Group(_, _) => panic!("Expected var")
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_group_get_name(host: &mut Host, index1: usize, index2: usize) -> *const i8 {
-    match &host.vars.tabs[index1].entries[index2] {
+pub unsafe extern "C" fn ffi_host_vars_group_get_name(host: &mut Host, index: usize) -> *const i8 {
+    match &host.vars.entries[index] {
         VarEntry::Variable(var) => panic!("Expected group"),
         VarEntry::Group(name, group) => {
             let s = CString::new(name.as_bytes()).unwrap();
@@ -228,19 +214,19 @@ pub unsafe extern "C" fn ffi_host_vars_tab_group_get_name(host: &mut Host, index
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_group_get_var_count(host: &mut Host, index1: usize, index2: usize) -> usize {
-    match &host.vars.tabs[index1].entries[index2] {
+pub unsafe extern "C" fn ffi_host_vars_group_get_var_count(host: &mut Host, index: usize) -> usize {
+    match &host.vars.entries[index] {
         VarEntry::Variable(_) => panic!("Expected group"),
         VarEntry::Group(name, group) => group.len(),
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_group_var_get_id(host: &mut Host, index1: usize, index2: usize, index3: usize) -> usize {
-    match &host.vars.tabs[index1].entries[index2] {
+pub unsafe extern "C" fn ffi_host_vars_group_var_get_id(host: &mut Host, index1: usize, index2: usize) -> usize {
+    match &host.vars.entries[index1] {
         VarEntry::Variable(var) => panic!("Expected group"),
         VarEntry::Group(name, group) => {
-            return group[index3].id.0;
+            return group[index2].id.0;
         }
     }
 }
@@ -311,23 +297,21 @@ pub unsafe extern "C" fn ffi_host_var_get_name(host: &mut Host, id: usize) -> *c
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_add_var(host: &mut Host, index1: usize) {
+pub unsafe extern "C" fn ffi_host_vars_add_var(host: &mut Host) {
     let mut max_id = 0;
 
-    for tab in &host.vars.tabs {
-        for entry in &tab.entries {
-            match entry {
-                VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
-                VarEntry::Group(name, vars) => {
-                    for var in vars {
-                        max_id = usize::max(max_id, var.id.0)
-                    }
-                },
-            }
+    for entry in &host.vars.entries {
+        match entry {
+            VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
+            VarEntry::Group(name, vars) => {
+                for var in vars {
+                    max_id = usize::max(max_id, var.id.0)
+                }
+            },
         }
     }
 
-    host.vars.tabs[index1].entries.push(
+    host.vars.entries.push(
         VarEntry::Variable(
             Var {
                 name: String::from("New Variable"),
@@ -339,31 +323,60 @@ pub unsafe extern "C" fn ffi_host_vars_tab_add_var(host: &mut Host, index1: usiz
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_host_vars_tab_group_add_var(host: &mut Host, index1: usize, index2: usize) {
+pub unsafe extern "C" fn ffi_host_vars_add_group(host: &mut Host) {
     let mut max_id = 0;
 
-    for tab in &host.vars.tabs {
-        for entry in &tab.entries {
-            match entry {
-                VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
-                VarEntry::Group(name, vars) => {
-                    for var in vars {
-                        max_id = usize::max(max_id, var.id.0)
-                    }
-                },
-            }
+    for entry in &host.vars.entries {
+        match entry {
+            VarEntry::Variable(v) => max_id = usize::max(max_id, v.id.0),
+            VarEntry::Group(name, vars) => {
+                for var in vars {
+                    max_id = usize::max(max_id, var.id.0)
+                }
+            },
         }
     }
 
-    match &mut host.vars.tabs[index1].entries[index2] {
-        VarEntry::Variable(_) => panic!("Expected group"),
-        VarEntry::Group(name, vars) => vars.push(
-            Var {
-                name: String::from("New Variable"),
-                value: Value::Float(0.0),
-                id: Id(max_id + 1)
+    host.vars.entries.push(
+        VarEntry::Group(
+            String::from("New Group"),
+            Vec::new()
+        )
+    );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_entry_reorder(host: &mut Host, old_index: usize, mut new_index: usize) {
+    let element = host.vars.entries.remove(old_index);
+
+    if new_index > old_index {
+        new_index -= 1;
+    }
+
+    if new_index >= host.vars.entries.len() {
+        host.vars.entries.push(element);
+    } else {
+        host.vars.entries.insert(new_index, element);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_vars_group_var_reorder(host: &mut Host, group_index: usize, old_index: usize, mut new_index: usize) {
+    match &mut host.vars.entries[group_index] {
+        VarEntry::Variable(_) => panic!("Expected group at index"),
+        VarEntry::Group(name, vars) => {
+            let element = vars.remove(old_index);
+
+            if new_index > old_index {
+                new_index -= 1;
             }
-        ),
+
+            if new_index >= vars.len() {
+                vars.push(element);
+            } else {
+                vars.insert(new_index, element);
+            }
+        },
     }
 }
 
@@ -387,20 +400,18 @@ pub unsafe extern "C" fn ffi_host_var_set_type(host: &mut Host, id: usize, kind:
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_var_delete(host: &mut Host, id: usize) {
-    for tab in &mut host.vars.tabs {
-        tab.entries.retain_mut(| entry | {
-            match entry {
-                VarEntry::Variable(var) => var.id.0 != id,
-                VarEntry::Group(name, group) => {
-                    group.retain(| var | {
-                        var.id.0 != id
-                    });
+    host.vars.entries.retain_mut(| entry | {
+        match entry {
+            VarEntry::Variable(var) => var.id.0 != id,
+            VarEntry::Group(name, group) => {
+                group.retain(| var | {
+                    var.id.0 != id
+                });
 
-                    true
-                }
+                true
             }
-        });
-    }
+        }
+    });
 }
 
 /* Some other stuff */

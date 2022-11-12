@@ -11,7 +11,7 @@ impl Module for Granular {
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         params: &[
-            Param("Value 1", Value::Bool(0.0))
+            Param("Value 1", Value::Bool(false))
         ],
         inputs: &[
             Pin::Control("Control Input", 15),

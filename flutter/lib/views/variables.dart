@@ -80,9 +80,8 @@ void Function(FFIHost) ffiHostVarsAddVar = core
     .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_vars_add_var")
     .asFunction();
 
-void Function(FFIHost, int) ffiHostVarsGroupAddVar = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64)>>(
-        "ffi_host_vars_group_add_var")
+void Function(FFIHost) ffiHostVarsAddGroup = core
+    .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_vars_add_group")
     .asFunction();
 
 double Function(FFIHost, int) ffiHostVarGetFloat = core
@@ -103,6 +102,16 @@ bool Function(FFIHost, int) ffiHostVarGetBool = core
 void Function(FFIHost, int, bool) ffiHostVarSetBool = core
     .lookup<NativeFunction<Void Function(FFIHost, Int64, Bool)>>(
         "ffi_host_var_set_bool")
+    .asFunction();
+
+void Function(FFIHost, int, int) ffiHostVarsEntryReorder = core
+    .lookup<NativeFunction<Void Function(FFIHost, Int64, Int64)>>(
+        "ffi_host_vars_entry_reorder")
+    .asFunction();
+
+void Function(FFIHost, int, int, int) ffiHostVarsGroupVarReorder = core
+    .lookup<NativeFunction<Void Function(FFIHost, Int64, Int64, Int64)>>(
+        "ffi_host_vars_group_var_reorder")
     .asFunction();
 
 class Vars extends StatefulWidget {
@@ -185,8 +194,9 @@ class Vars extends StatefulWidget {
           ));
         }
 
-        tempEntries.add(
-            VarEntry(variable: null, group: VarGroup(name: name, vars: vars)));
+        tempEntries.add(VarEntry(
+            variable: null,
+            group: VarGroup(host: host, name: name, vars: vars, index: j)));
       } else {
         print("ERROR: UNSUPPORTED VAR TYPE");
       }
@@ -215,13 +225,75 @@ class _Vars extends State<Vars> {
                 Expanded(
                     child: Theme(
                         data: ThemeData(canvasColor: Colors.transparent),
-                        child: ReorderableListView(
-                          buildDefaultDragHandles: false,
-                          onReorder: (oldIndex, newIndex) {
-                            print("Reorder stuff");
-                          },
-                          children: entries,
-                        ))),
+                        child: Column(children: [
+                          Expanded(
+                              child: ReorderableListView(
+                            buildDefaultDragHandles: false,
+                            onReorder: (oldIndex, newIndex) {
+                              print("Reordering from " +
+                                  oldIndex.toString() +
+                                  " " +
+                                  newIndex.toString());
+
+                              ffiHostVarsEntryReorder(
+                                  widget.host.host, oldIndex, newIndex);
+
+                              if (newIndex > oldIndex) {
+                                newIndex -= 1;
+                              }
+
+                              var element = widget.host.vars.entries.value
+                                  .removeAt(oldIndex);
+                              if (newIndex >=
+                                  widget.host.vars.entries.value.length) {
+                                widget.host.vars.entries.value.add(element);
+                              } else {
+                                widget.host.vars.entries.value
+                                    .insert(newIndex, element);
+                              }
+
+                              for (int i = 0;
+                                  i < widget.host.vars.entries.value.length;
+                                  i++) {
+                                widget.host.vars.entries.value[i].group?.index =
+                                    i;
+                                widget.host.vars.entries.value[i].variable
+                                    ?.listIndex = i;
+                              }
+                            },
+                            children: entries,
+                          )),
+                          SizedBox(
+                              height: 30,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.add),
+                                        color: Colors.grey,
+                                        iconSize: 16,
+                                        onPressed: () {
+                                          ffiHostVarsAddVar(widget.host.host);
+                                          widget.host.vars.refresh();
+                                        },
+                                      )),
+                                  SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.folder_copy),
+                                        color: Colors.grey,
+                                        iconSize: 16,
+                                        onPressed: () {
+                                          ffiHostVarsAddGroup(widget.host.host);
+                                          widget.host.vars.refresh();
+                                        },
+                                      )),
+                                ],
+                              ))
+                        ]))),
                 Expanded(
                     child: Container(
                         decoration: const BoxDecoration(
@@ -240,7 +312,8 @@ class _Vars extends State<Vars> {
                                   ),
                                 );
                               } else {
-                                return Column(children: [
+                                return SingleChildScrollView(
+                                    child: Column(children: [
                                   const Padding(
                                       padding: EdgeInsets.all(10),
                                       child: Text(
@@ -248,6 +321,10 @@ class _Vars extends State<Vars> {
                                         style: TextStyle(
                                             color: Colors.white, fontSize: 15),
                                       )),
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
                                   Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: Row(
@@ -258,16 +335,42 @@ class _Vars extends State<Vars> {
                                             const Text(
                                               "Name",
                                               style: TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.grey,
                                                   fontSize: 14),
                                             ),
-                                            Text(
-                                              selectedVar.name,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            )
+                                            Container(
+                                              width: 120,
+                                              height: 28,
+                                              padding: const EdgeInsets.all(5),
+                                              decoration: BoxDecoration(
+                                                  color: const Color.fromRGBO(
+                                                      20, 20, 20, 1.0),
+                                                  border: Border.all(
+                                                      color:
+                                                          const Color.fromRGBO(
+                                                              80, 80, 80, 1.0),
+                                                      width: 1),
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(5))),
+                                              child: EditableText(
+                                                controller:
+                                                    TextEditingController(
+                                                        text: selectedVar.name),
+                                                focusNode: FocusNode(),
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.white),
+                                                cursorColor: Colors.blue,
+                                                backgroundCursorColor:
+                                                    Colors.red,
+                                              ),
+                                            ),
                                           ])),
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
                                   Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: Row(
@@ -277,7 +380,7 @@ class _Vars extends State<Vars> {
                                             const Text(
                                               "Type",
                                               style: TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.grey,
                                                   fontSize: 14),
                                             ),
                                             Text(
@@ -289,6 +392,10 @@ class _Vars extends State<Vars> {
                                                   fontSize: 14),
                                             )
                                           ])),
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
                                   Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: Row(
@@ -298,7 +405,7 @@ class _Vars extends State<Vars> {
                                             const Text(
                                               "Value",
                                               style: TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.grey,
                                                   fontSize: 14),
                                             ),
                                             Text(
@@ -309,6 +416,10 @@ class _Vars extends State<Vars> {
                                                   fontSize: 14),
                                             )
                                           ])),
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
                                   Padding(
                                       padding: const EdgeInsets.all(10),
                                       child: Column(
@@ -316,32 +427,9 @@ class _Vars extends State<Vars> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             const Text(
-                                              "Description",
+                                              "Parameter Assignments",
                                               style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              height: 60,
-                                              decoration: const BoxDecoration(
-                                                  color: Color.fromRGBO(
-                                                      30, 30, 30, 1.0),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(5))),
-                                            )
-                                          ])),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "Assignments",
-                                              style: TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.grey,
                                                   fontSize: 14),
                                             ),
                                             const SizedBox(height: 10),
@@ -355,7 +443,34 @@ class _Vars extends State<Vars> {
                                                           Radius.circular(5))),
                                             )
                                           ])),
-                                ]);
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Widget Assignments",
+                                              style: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 14),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Container(
+                                              height: 100,
+                                              decoration: const BoxDecoration(
+                                                  color: Color.fromRGBO(
+                                                      30, 30, 30, 1.0),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(5))),
+                                            )
+                                          ])),
+                                ]));
                               }
                             })))
               ]);
@@ -388,9 +503,16 @@ class _VarEntry extends State<VarEntry> {
 }
 
 class VarGroup extends StatefulWidget {
-  VarGroup({required this.name, required this.vars});
+  VarGroup(
+      {required this.host,
+      required this.name,
+      required this.vars,
+      required this.index})
+      : super(key: UniqueKey());
   String name;
   List<Var> vars;
+  int index;
+  Host host;
 
   @override
   _VarGroup createState() => _VarGroup();
@@ -398,62 +520,106 @@ class VarGroup extends StatefulWidget {
 
 class _VarGroup extends State<VarGroup> {
   bool hovering = false;
+  bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
-        child: Container(
-            decoration: const BoxDecoration(
-                color: Color.fromRGBO(60, 60, 60, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: ExpansionTile(
-                trailing: const SizedBox.shrink(),
-                initiallyExpanded: false,
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                title: MouseRegion(
-                    onEnter: (e) {
-                      setState(() {
-                        hovering = true;
-                      });
-                    },
-                    onExit: (e) {
-                      setState(() {
-                        hovering = false;
-                      });
-                    },
-                    child: Container(
-                        height: 35,
-                        color: hovering
-                            ? const Color.fromRGBO(70, 70, 70, 1.0)
-                            : const Color.fromRGBO(60, 60, 60, 1.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            const SizedBox(
-                              width: 40,
-                              child: Icon(Icons.folder,
-                                  size: 18, color: Colors.blue),
-                            ),
-                            SizedBox(
-                                width: 200,
-                                child: Text(widget.name,
-                                    style: const TextStyle(
-                                        fontSize: 15, color: Colors.white))),
-                          ],
-                        ))),
-                children: [
-                  SizedBox(
-                      height: widget.vars.length * 30 + 10,
-                      child: ReorderableListView(
+        child: Column(children: [
+          Container(
+              height: 35,
+              decoration: BoxDecoration(
+                  color: hovering
+                      ? const Color.fromRGBO(70, 70, 70, 1.0)
+                      : const Color.fromRGBO(60, 60, 60, 1.0),
+                  borderRadius: const BorderRadius.all(Radius.circular(5))),
+              child: MouseRegion(
+                  onEnter: (e) {
+                    setState(() {
+                      hovering = true;
+                    });
+                  },
+                  onExit: (e) {
+                    setState(() {
+                      hovering = false;
+                    });
+                  },
+                  child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          expanded = !expanded;
+                        });
+                      },
+                      child: Row(children: [
+                        const SizedBox(
+                            width: 40,
+                            child: Icon(
+                              Icons.folder,
+                              color: Colors.blueAccent,
+                              size: 18,
+                            )),
+                        Expanded(
+                            child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child: Text(
+                                  widget.name,
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 15),
+                                ))),
+                        SizedBox(
+                            width: 40,
+                            child: ReorderableDragStartListener(
+                                index: widget.index,
+                                child: const Icon(
+                                  Icons.drag_handle,
+                                  color: Colors.grey,
+                                )))
+                      ])))),
+          AnimatedSize(
+              curve: Curves.fastLinearToSlowEaseIn,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                  height: expanded ? null : 0,
+                  padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                  decoration: BoxDecoration(
+                      color: const Color.fromRGBO(60, 60, 60, 1.0),
+                      borderRadius: expanded
+                          ? const BorderRadius.vertical(
+                              bottom: Radius.circular(5))
+                          : const BorderRadius.all(Radius.circular(5))),
+                  child: SizedBox(
+                    height: widget.vars.length * 30 + 10,
+                    child: ReorderableListView(
                         buildDefaultDragHandles: false,
                         onReorder: (oldIndex, newIndex) {
-                          print("Should reorder child list");
+                          print("Reordering from " +
+                              oldIndex.toString() +
+                              " " +
+                              newIndex.toString());
+
+                          ffiHostVarsGroupVarReorder(widget.host.host,
+                              widget.index, oldIndex, newIndex);
+
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+
+                          var element = widget.vars.removeAt(oldIndex);
+                          if (newIndex >= widget.vars.length) {
+                            widget.vars.add(element);
+                          } else {
+                            widget.vars.insert(newIndex, element);
+                          }
+
+                          for (int i = 0; i < widget.vars.length; i++) {
+                            widget.vars[i].listIndex = i;
+                          }
                         },
-                        children: widget.vars,
-                      ))
-                ])));
+                        children: widget.vars),
+                  )))
+        ]));
   }
 }
 
