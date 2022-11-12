@@ -271,6 +271,17 @@ class _Vars extends State<Vars> {
                                       width: 30,
                                       height: 30,
                                       child: IconButton(
+                                        icon: const Icon(Icons.lock),
+                                        color: Colors.grey,
+                                        iconSize: 16,
+                                        onPressed: () {
+                                          print("LOCKY THINGY");
+                                        },
+                                      )),
+                                  SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: IconButton(
                                         icon: const Icon(Icons.add),
                                         color: Colors.grey,
                                         iconSize: 16,
@@ -470,6 +481,35 @@ class _Vars extends State<Vars> {
                                                           Radius.circular(5))),
                                             )
                                           ])),
+                                  const Divider(
+                                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                                    height: 1,
+                                  ),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                              // color: Colors.grey,
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                      Radius.circular(5)),
+                                              border: Border.all(
+                                                  width: 2, color: Colors.red)),
+                                          child: TextButton(
+                                            onPressed: () {
+                                              print("Delete thing");
+                                              widget.selectedVar.value = null;
+                                              ffiHostVarDelete(widget.host.host,
+                                                  selectedVar.id);
+                                              widget.host.vars.refresh();
+                                            },
+                                            child: const Text(
+                                              "Delete",
+                                              style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 14),
+                                            ),
+                                          ))),
                                 ]));
                               }
                             })))
