@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../host.dart';
+import '../common.dart';
 
 import 'dart:ffi';
 
@@ -350,7 +351,7 @@ class _Vars extends State<Vars> {
                                                   fontSize: 14),
                                             ),
                                             Container(
-                                              width: 120,
+                                              width: 140,
                                               height: 28,
                                               padding: const EdgeInsets.all(5),
                                               decoration: BoxDecoration(
@@ -365,9 +366,6 @@ class _Vars extends State<Vars> {
                                                       const BorderRadius.all(
                                                           Radius.circular(5))),
                                               child: EditableText(
-                                                controller:
-                                                    TextEditingController(
-                                                        text: selectedVar.name),
                                                 focusNode: FocusNode(),
                                                 style: const TextStyle(
                                                     fontSize: 14,
@@ -375,6 +373,21 @@ class _Vars extends State<Vars> {
                                                 cursorColor: Colors.blue,
                                                 backgroundCursorColor:
                                                     Colors.red,
+                                                controller:
+                                                    TextEditingController(
+                                                        text: selectedVar.name),
+                                                onChanged: (value) {
+                                                  print(value);
+                                                  var rawName =
+                                                      value.toNativeUtf8();
+                                                  ffiHostVarRename(
+                                                      widget.host.host,
+                                                      selectedVar.id,
+                                                      rawName);
+                                                  calloc.free(rawName);
+
+                                                  selectedVar.name = value;
+                                                },
                                               ),
                                             ),
                                           ])),
@@ -394,14 +407,37 @@ class _Vars extends State<Vars> {
                                                   color: Colors.grey,
                                                   fontSize: 14),
                                             ),
-                                            Text(
-                                              selectedVar
-                                                  .notifier.value.runtimeType
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            )
+                                            SearchableDropdown(
+                                                width: 140,
+                                                height: 30,
+                                                value: selectedVar
+                                                    .notifier.value.runtimeType
+                                                    .toString(),
+                                                categories: [
+                                                  Category(
+                                                      name: "Basic",
+                                                      elements: [
+                                                        CategoryElement(
+                                                            "Boolean"),
+                                                        CategoryElement(
+                                                            "Float"),
+                                                        CategoryElement(
+                                                            "Integer")
+                                                      ]),
+                                                  Category(
+                                                      name: "Files",
+                                                      elements: [
+                                                        CategoryElement(
+                                                            "Sample"),
+                                                        CategoryElement(
+                                                            "Multi-sample"),
+                                                        CategoryElement(
+                                                            "Wavetable")
+                                                      ]),
+                                                ],
+                                                onSelect: (s) {
+                                                  print("Change type");
+                                                })
                                           ])),
                                   const Divider(
                                     color: Color.fromRGBO(30, 30, 30, 1.0),
@@ -489,7 +525,6 @@ class _Vars extends State<Vars> {
                                       padding: const EdgeInsets.all(10),
                                       child: Container(
                                           decoration: BoxDecoration(
-                                              // color: Colors.grey,
                                               borderRadius:
                                                   const BorderRadius.all(
                                                       Radius.circular(5)),
@@ -622,7 +657,7 @@ class _VarGroup extends State<VarGroup> {
               duration: const Duration(milliseconds: 500),
               child: Container(
                   height: expanded ? null : 0,
-                  padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                  padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
                       color: const Color.fromRGBO(60, 60, 60, 1.0),
                       borderRadius: expanded
@@ -777,382 +812,5 @@ class _Var extends State<Var> {
                         );
                       }))));
     });
-  }
-}
-
-class VarsGroup extends StatefulWidget {
-  VarsGroup(this.name, this.host, {this.vars = const []});
-
-  String name;
-  List<Var> vars;
-  Host host;
-
-  @override
-  _VarsGroup createState() => _VarsGroup();
-}
-
-class _VarsGroup extends State<VarsGroup> {
-  bool expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-        child: Column(children: [
-          Container(
-              height: 30,
-              decoration: BoxDecoration(
-                  color: const Color.fromRGBO(60, 60, 60, 1.0),
-                  borderRadius: expanded
-                      ? const BorderRadius.vertical(top: Radius.circular(5))
-                      : const BorderRadius.all(Radius.circular(5))),
-              child: Stack(
-                children: [
-                  const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(5, 0, 10, 0),
-                        child: Icon(
-                          Icons.chevron_right,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      )),
-                  Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(25, 0, 10, 0),
-                        child: Text(
-                          widget.name,
-                          style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300),
-                        ),
-                      )),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        expanded = !expanded;
-                      });
-                    },
-                  ),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: IconButton(
-                          padding: const EdgeInsets.all(0),
-                          onPressed: () {
-                            /*ffiHostAddVar(widget.host.host, 0,
-                                widget.name.toNativeUtf8());
-                            widget.host.refreshVariables();
-                            widget.host.vars.notifyListeners();*/
-                            print("Add var here");
-                          },
-                          icon: const Icon(
-                            Icons.add_circle_outline,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      )),
-                ],
-              )),
-          AnimatedSize(
-              curve: Curves.fastLinearToSlowEaseIn,
-              duration: const Duration(milliseconds: 500),
-              child: Container(
-                height: expanded ? null : 0,
-                padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
-                decoration: BoxDecoration(
-                    color: const Color.fromRGBO(60, 60, 60, 1.0),
-                    borderRadius: expanded
-                        ? const BorderRadius.vertical(
-                            bottom: Radius.circular(5))
-                        : const BorderRadius.all(Radius.circular(5))),
-                child: Column(children: widget.vars),
-              ))
-        ]));
-  }
-}
-
-class VarDeleteButton extends StatefulWidget {
-  VarDeleteButton({required this.onTap});
-
-  void Function() onTap;
-
-  @override
-  State<VarDeleteButton> createState() => _VarDeleteButton();
-}
-
-class _VarDeleteButton extends State<VarDeleteButton> {
-  bool hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: widget.onTap,
-            child: Container(
-              width: 30,
-              height: 30,
-              child: Icon(
-                Icons.close,
-                size: 16,
-                color: hovering ? Colors.white : Colors.grey,
-              ),
-              decoration: BoxDecoration(
-                  color: hovering
-                      ? const Color.fromRGBO(100, 100, 100, 1.0)
-                      : Colors.red.withOpacity(0.0),
-                  borderRadius:
-                      const BorderRadius.horizontal(right: Radius.circular(5))),
-            )));
-  }
-}
-
-class VarTypeDropdown extends StatefulWidget {
-  VarTypeDropdown(this.v, this.host);
-
-  Var v;
-  Host host;
-
-  @override
-  State<VarTypeDropdown> createState() => _VarTypeDropdown();
-}
-
-class _VarTypeDropdown extends State<VarTypeDropdown>
-    with TickerProviderStateMixin {
-  final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
-  bool _isOpen = false;
-  AnimationController? _animationController;
-  Animation<double>? _expandAnimation;
-  Animation<double>? _rotateAnimation;
-
-  TextEditingController controller = TextEditingController(text: "hello");
-
-  final FocusScopeNode _focusScopeNode = FocusScopeNode();
-  final FocusNode focusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
-
-    _expandAnimation = CurvedAnimation(
-      parent: _animationController!,
-      curve: Curves.easeInOut,
-    );
-
-    _rotateAnimation = Tween(begin: 0.0, end: 0.5).animate(CurvedAnimation(
-      parent: _animationController!,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  /*@override
-  void dispose() {
-    _focusScopeNode.dispose();
-    super.dispose();
-  }*/
-
-  @override
-  Widget build(BuildContext context) {
-    Color color = Colors.black;
-
-    if (widget.v.notifier.value is double) {
-      color = Colors.green;
-    } else if (widget.v.notifier.value is bool) {
-      color = Colors.red;
-    }
-
-    return CompositedTransformTarget(
-        link: _layerLink,
-        child: Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-                color: color, borderRadius: BorderRadius.circular(5)),
-            child: GestureDetector(
-              onTap: _toggleDropdown,
-            )));
-  }
-
-  OverlayEntry _createOverlayEntry() {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-
-    var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
-    var topOffset = offset.dy + size.height + 5;
-
-    print("Create overlay entry");
-
-    return OverlayEntry(
-        maintainState: false,
-        opaque: false,
-        builder: (entryContext) {
-          print("Overlay entry build");
-
-          /*return Material(
-          key: UniqueKey(),
-          child: TextField(
-            autofocus: true,
-            focusNode: focusNode,
-            controller: controller,
-        ));*/
-
-          /*return FocusScope(
-          node: _focusScopeNode,
-          child: Material(
-            child: TextField(
-              controller: controller,
-            )
-          )
-        );*/
-
-          return FocusScope(
-              autofocus: true,
-              node: _focusScopeNode,
-              child: GestureDetector(
-                  onTap: () {
-                    _toggleDropdown(close: true);
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Stack(children: [
-                    Positioned(
-                        left: offset.dx,
-                        top: topOffset,
-                        child: CompositedTransformFollower(
-                            offset: Offset(0, size.height + 5),
-                            link: _layerLink,
-                            showWhenUnlinked: false,
-                            child: Material(
-                                elevation: 0,
-                                borderRadius: BorderRadius.zero,
-                                color: Colors.transparent,
-                                child: SizeTransition(
-                                    axisAlignment: 1,
-                                    sizeFactor: _expandAnimation!,
-                                    // child: widget.child,
-                                    child: Container(
-                                        decoration: BoxDecoration(
-                                            color: const Color.fromRGBO(
-                                                120, 120, 120, 1.0),
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
-                                        child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              VarDropdownTypeElement(
-                                                  Icons.numbers,
-                                                  "Float",
-                                                  0,
-                                                  Colors.green,
-                                                  widget.v),
-                                              VarDropdownTypeElement(
-                                                  Icons.select_all,
-                                                  "Boolean",
-                                                  1,
-                                                  Colors.red,
-                                                  widget.v),
-                                            ]))))))
-                  ])));
-        });
-  }
-
-  void _toggleDropdown({bool close = false}) async {
-    if (_isOpen || close) {
-      await _animationController?.reverse();
-      _overlayEntry?.remove();
-      setState(() {
-        _isOpen = false;
-      });
-    } else {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_overlayEntry!);
-      setState(() => _isOpen = true);
-      _animationController?.forward();
-    }
-  }
-}
-
-class VarDropdownTypeElement extends StatefulWidget {
-  VarDropdownTypeElement(
-      this.iconData, this.text, this.type, this.color, this.v);
-
-  IconData iconData;
-  String text;
-  int type;
-  Color color;
-  Var v;
-
-  @override
-  State<VarDropdownTypeElement> createState() => _VarDropdownTypeElement();
-}
-
-class _VarDropdownTypeElement extends State<VarDropdownTypeElement> {
-  bool hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: () {
-              /*var rawName = widget.v.name.toNativeUtf8();
-              ffiHostVarSetType(widget.v.host.host, rawName, widget.type);
-              calloc.free(rawName);
-              widget.v.host.refreshVariables();*/
-              print("Should change a thing here");
-            },
-            child: Container(
-                height: 30,
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                color: hovering
-                    ? const Color.fromRGBO(140, 140, 140, 1.0)
-                    : const Color.fromRGBO(120, 120, 120, 1.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                            color: widget.color,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5))),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(widget.text,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w300))
-                    ]))));
   }
 }
