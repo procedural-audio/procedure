@@ -196,13 +196,12 @@ class _Bar extends State<Bar> {
                     return Padding(
                         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                         child: Container(
-                          height: 400,
-                          width: barExpanded ? 600 : 500,
-                          decoration: BoxDecoration(
-                              color: const Color.fromRGBO(40, 40, 40, 1.0),
-                              borderRadius: BorderRadius.circular(10)),
-                          child: VariablesWidget(widget.host),
-                        ));
+                            height: 400,
+                            width: barExpanded ? 600 : 500,
+                            decoration: BoxDecoration(
+                                color: const Color.fromRGBO(40, 40, 40, 1.0),
+                                borderRadius: BorderRadius.circular(10)),
+                            child: widget.host.vars));
                   } else {
                     return const SizedBox(width: 0, height: 0);
                   }
@@ -339,16 +338,15 @@ class _ExtendedBar extends State<Bar> {
             )
           : Container(),
       AnimatedPositioned(
-        top: 60,
-        // bottom: 20,
-        right: selected == 0 ? 10 : -290,
-        curve: Curves.fastLinearToSlowEaseIn,
-        duration: const Duration(milliseconds: 500),
-        child: AnimatedOpacity(
-            opacity: selected == 0 ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: VariablesWidget(widget.host)),
-      ),
+          top: 60,
+          // bottom: 20,
+          right: selected == 0 ? 10 : -290,
+          curve: Curves.fastLinearToSlowEaseIn,
+          duration: const Duration(milliseconds: 500),
+          child: AnimatedOpacity(
+              opacity: selected == 0 ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: widget.host.vars)),
       AnimatedPositioned(
         top: 60,
         right: selected == 1 ? 10 : -290,

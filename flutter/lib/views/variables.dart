@@ -11,7 +11,7 @@ import 'dart:ffi';
 
 const radius = 15.0;
 
-int Function(FFIHost) ffiHostVarsGetTabCount = core
+/*int Function(FFIHost) ffiHostVarsGetTabCount = core
     .lookup<NativeFunction<Int64 Function(FFIHost)>>(
         "ffi_host_vars_get_tab_count")
     .asFunction();
@@ -19,36 +19,36 @@ int Function(FFIHost) ffiHostVarsGetTabCount = core
 Pointer<Utf8> Function(FFIHost, int) ffiHostVarsTabGetName = core
     .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
         "ffi_host_vars_tab_get_name")
+    .asFunction();*/
+
+int Function(FFIHost) ffiHostVarsGetEntryCount = core
+    .lookup<NativeFunction<Int64 Function(FFIHost)>>(
+        "ffi_host_vars_get_entry_count")
     .asFunction();
 
-int Function(FFIHost, int) ffiHostVarsTabGetEntryCount = core
+int Function(FFIHost, int) ffiHostVarsEntryGetType = core
+    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
+        "ffi_host_vars_entry_get_type")
+    .asFunction();
+
+int Function(FFIHost, int) ffiHostVarsEntryGetId = core
     .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
-        "ffi_host_vars_tab_get_entry_count")
+        "ffi_host_vars_entry_get_id")
     .asFunction();
 
-int Function(FFIHost, int, int) ffiHostVarsTabEntryGetType = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_tab_entry_get_type")
+Pointer<Utf8> Function(FFIHost, int) ffiHostVarsGroupGetName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
+        "ffi_host_vars_group_get_name")
     .asFunction();
 
-int Function(FFIHost, int, int) ffiHostVarsTabEntryGetId = core
+int Function(FFIHost, int) ffiHostVarsGroupGetVarCount = core
+    .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
+        "ffi_host_vars_group_get_var_count")
+    .asFunction();
+
+int Function(FFIHost, int, int) ffiHostVarsGroupVarGetId = core
     .lookup<NativeFunction<Int64 Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_tab_entry_get_id")
-    .asFunction();
-
-Pointer<Utf8> Function(FFIHost, int, int) ffiHostVarsTabGroupGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_tab_group_get_name")
-    .asFunction();
-
-int Function(FFIHost, int, int) ffiHostVarsTabGroupGetVarCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_tab_group_get_var_count")
-    .asFunction();
-
-int Function(FFIHost, int, int, int) ffiHostVarsTabGroupVarGetId = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64, Int64, Int64)>>(
-        "ffi_host_vars_tab_group_var_get_id")
+        "ffi_host_vars_group_var_get_id")
     .asFunction();
 
 int Function(FFIHost, int) ffiHostVarGetType = core
@@ -76,14 +76,13 @@ void Function(FFIHost, int) ffiHostVarDelete = core
         "ffi_host_var_delete")
     .asFunction();
 
-void Function(FFIHost, int) ffiHostVarsTabAddVar = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64)>>(
-        "ffi_host_vars_tab_add_var")
+void Function(FFIHost) ffiHostVarsAddVar = core
+    .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_vars_add_var")
     .asFunction();
 
-void Function(FFIHost, int) ffiHostVarsTabGroupAddVar = core
+void Function(FFIHost, int) ffiHostVarsGroupAddVar = core
     .lookup<NativeFunction<Void Function(FFIHost, Int64)>>(
-        "ffi_host_vars_tab_group_add_var")
+        "ffi_host_vars_group_add_var")
     .asFunction();
 
 double Function(FFIHost, int) ffiHostVarGetFloat = core
@@ -106,31 +105,61 @@ void Function(FFIHost, int, bool) ffiHostVarSetBool = core
         "ffi_host_var_set_bool")
     .asFunction();
 
-class Vars {
+class Vars extends StatefulWidget {
   Vars(this.host);
 
   Host host;
-  ValueNotifier<List<VarTab>> tabs = ValueNotifier([]);
+  ValueNotifier<List<VarEntry>> entries = ValueNotifier([]);
+  ValueNotifier<Var?> selectedVar = ValueNotifier(null);
 
   void refresh() {
-    tabs.value.clear();
+    entries.value.clear();
 
-    List<VarTab> tempTabs = [];
-    int tabCount = ffiHostVarsGetTabCount(host.host);
+    List<VarEntry> tempEntries = [];
+    int entryCount = ffiHostVarsGetEntryCount(host.host);
 
-    for (int i = 0; i < tabCount; i++) {
-      var rawName = ffiHostVarsTabGetName(host.host, i);
-      String name = rawName.toDartString();
-      calloc.free(rawName);
+    for (int j = 0; j < entryCount; j++) {
+      int entryType = ffiHostVarsEntryGetType(host.host, j);
 
-      List<VarEntry> entries = [];
-      int entryCount = ffiHostVarsTabGetEntryCount(host.host, i);
+      if (entryType == 0) {
+        int id = ffiHostVarsEntryGetId(host.host, j);
+        int varType = ffiHostVarGetType(host.host, id);
 
-      for (int j = 0; j < entryCount; j++) {
-        int entryType = ffiHostVarsTabEntryGetType(host.host, i, j);
+        dynamic value;
 
-        if (entryType == 0) {
-          int id = ffiHostVarsTabEntryGetId(host.host, i, j);
+        if (varType == 0) {
+          value = ffiHostVarGetFloat(host.host, id);
+        } else if (varType == 1) {
+          value = ffiHostVarGetBool(host.host, id);
+        } else {
+          print("TYPE NOT SUPPORTED IN VAR GETTER");
+        }
+
+        var rawName = ffiHostVarGetName(host.host, id);
+        String name = rawName.toDartString();
+        calloc.free(rawName);
+
+        print(name + ": " + id.toString());
+
+        tempEntries.add(VarEntry(
+            variable: Var(
+              host: host,
+              id: id,
+              name: name,
+              notifier: ValueNotifier(value),
+              listIndex: tempEntries.length,
+            ),
+            group: null));
+      } else if (entryType == 1) {
+        var rawName = ffiHostVarsGroupGetName(host.host, j);
+        String name = rawName.toDartString();
+        calloc.free(rawName);
+
+        List<Var> vars = [];
+        int varCount = ffiHostVarsGroupGetVarCount(host.host, j);
+
+        for (int k = 0; k < varCount; k++) {
+          int id = ffiHostVarsGroupVarGetId(host.host, j, k);
           int varType = ffiHostVarGetType(host.host, id);
 
           dynamic value;
@@ -147,74 +176,30 @@ class Vars {
           String name = rawName.toDartString();
           calloc.free(rawName);
 
-          print(name + ": " + id.toString());
-
-          entries.add(VarEntry(
-              variable: Var(
-                host: host,
-                id: id,
-                name: name,
-                notifier: ValueNotifier(value),
-              ),
-              group: null));
-        } else if (entryType == 1) {
-          var rawName = ffiHostVarsTabGroupGetName(host.host, i, j);
-          String name = rawName.toDartString();
-          calloc.free(rawName);
-
-          List<Var> vars = [];
-          int varCount = ffiHostVarsTabGroupGetVarCount(host.host, i, j);
-
-          for (int k = 0; k < varCount; k++) {
-            int id = ffiHostVarsTabGroupVarGetId(host.host, i, j, k);
-            int varType = ffiHostVarGetType(host.host, id);
-
-            dynamic value;
-
-            if (varType == 0) {
-              value = ffiHostVarGetFloat(host.host, id);
-            } else if (varType == 1) {
-              value = ffiHostVarGetBool(host.host, id);
-            } else {
-              print("TYPE NOT SUPPORTED IN VAR GETTER");
-            }
-
-            var rawName = ffiHostVarGetName(host.host, id);
-            String name = rawName.toDartString();
-            calloc.free(rawName);
-
-            vars.add(Var(
-              host: host,
-              id: id,
-              name: name,
-              notifier: ValueNotifier(value),
-            ));
-          }
-
-          entries.add(VarEntry(
-              variable: null, group: VarGroup(name: name, vars: vars)));
-        } else {
-          print("ERROR: UNSUPPORTED VAR TYPE");
+          vars.add(Var(
+            host: host,
+            id: id,
+            name: name,
+            notifier: ValueNotifier(value),
+            listIndex: k,
+          ));
         }
-      }
 
-      tempTabs.add(VarTab(name: name, entries: entries));
+        tempEntries.add(
+            VarEntry(variable: null, group: VarGroup(name: name, vars: vars)));
+      } else {
+        print("ERROR: UNSUPPORTED VAR TYPE");
+      }
     }
 
-    tabs.value = tempTabs;
+    entries.value = tempEntries;
   }
-}
-
-class VariablesWidget extends StatefulWidget {
-  VariablesWidget(this.host);
-
-  Host host;
 
   @override
-  _VariablesWidget createState() => _VariablesWidget();
+  _Vars createState() => _Vars();
 }
 
-class _VariablesWidget extends State<VariablesWidget> {
+class _Vars extends State<Vars> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -223,48 +208,158 @@ class _VariablesWidget extends State<VariablesWidget> {
         decoration: const BoxDecoration(
             color: Color.fromRGBO(40, 40, 40, 1.0),
             borderRadius: BorderRadius.all(Radius.circular(10))),
-        child: ValueListenableBuilder<List<VarTab>>(
-            valueListenable: widget.host.vars.tabs,
-            builder: (context, tabs, w) {
-              return DefaultTabController(
-                  length: tabs.length,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                          height: 30,
-                          width: 300,
-                          color: const Color.fromRGBO(50, 50, 50, 1.0),
-                          child: TabBar(
-                            tabs:
-                                tabs.map((tab) => Tab(text: tab.name)).toList(),
-                          )),
-                      Expanded(
-                          child: TabBarView(
-                              children: tabs.map((tab) => tab).toList()))
-                    ],
-                  ));
+        child: ValueListenableBuilder<List<VarEntry>>(
+            valueListenable: widget.host.vars.entries,
+            builder: (context, entries, w) {
+              return Row(children: [
+                Expanded(
+                    child: Theme(
+                        data: ThemeData(canvasColor: Colors.transparent),
+                        child: ReorderableListView(
+                          buildDefaultDragHandles: false,
+                          onReorder: (oldIndex, newIndex) {
+                            print("Reorder stuff");
+                          },
+                          children: entries,
+                        ))),
+                Expanded(
+                    child: Container(
+                        decoration: const BoxDecoration(
+                            color: Color.fromRGBO(50, 50, 50, 1.0),
+                            borderRadius: BorderRadius.horizontal(
+                                right: Radius.circular(10))),
+                        child: ValueListenableBuilder<Var?>(
+                            valueListenable: widget.host.vars.selectedVar,
+                            builder: (context, selectedVar, child) {
+                              if (selectedVar == null) {
+                                return const Center(
+                                  child: Text(
+                                    "Variable Details",
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 14),
+                                  ),
+                                );
+                              } else {
+                                return Column(children: [
+                                  const Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Text(
+                                        "Variable Details",
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 15),
+                                      )),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            const Text(
+                                              "Name",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            ),
+                                            Text(
+                                              selectedVar.name,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            )
+                                          ])),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              "Type",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            ),
+                                            Text(
+                                              selectedVar
+                                                  .notifier.value.runtimeType
+                                                  .toString(),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            )
+                                          ])),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              "Value",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            ),
+                                            Text(
+                                              selectedVar.notifier.value
+                                                  .toString(),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            )
+                                          ])),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Description",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Container(
+                                              height: 60,
+                                              decoration: const BoxDecoration(
+                                                  color: Color.fromRGBO(
+                                                      30, 30, 30, 1.0),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(5))),
+                                            )
+                                          ])),
+                                  Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Assignments",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Container(
+                                              height: 100,
+                                              decoration: const BoxDecoration(
+                                                  color: Color.fromRGBO(
+                                                      30, 30, 30, 1.0),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(5))),
+                                            )
+                                          ])),
+                                ]);
+                              }
+                            })))
+              ]);
             }));
-  }
-}
-
-class VarTab extends StatefulWidget {
-  VarTab({required this.name, required this.entries});
-  String name;
-  List<VarEntry> entries;
-
-  @override
-  _VarTab createState() => _VarTab();
-}
-
-class _VarTab extends State<VarTab> {
-  @override
-  Widget build(BuildContext context) {
-    return ReorderableListView(
-        children: widget.entries,
-        onReorder: (int oldIndex, int newIndex) {
-          print("Move item");
-        });
   }
 }
 
@@ -307,37 +402,58 @@ class _VarGroup extends State<VarGroup> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-        child: MouseRegion(
-            onEnter: (e) {
-              setState(() {
-                hovering = true;
-              });
-            },
-            onExit: (e) {
-              setState(() {
-                hovering = false;
-              });
-            },
-            child: Container(
-                height: 40,
-                color: hovering
-                    ? const Color.fromRGBO(70, 70, 70, 1.0)
-                    : const Color.fromRGBO(60, 60, 60, 1.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const SizedBox(
-                      width: 40,
-                      child: Icon(Icons.folder, size: 18, color: Colors.blue),
-                    ),
-                    SizedBox(
-                        width: 200,
-                        child: Text(widget.name,
-                            style: const TextStyle(
-                                fontSize: 16, color: Colors.white))),
-                  ],
-                ))));
+        padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+        child: Container(
+            decoration: const BoxDecoration(
+                color: Color.fromRGBO(60, 60, 60, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: ExpansionTile(
+                trailing: const SizedBox.shrink(),
+                initiallyExpanded: false,
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+                title: MouseRegion(
+                    onEnter: (e) {
+                      setState(() {
+                        hovering = true;
+                      });
+                    },
+                    onExit: (e) {
+                      setState(() {
+                        hovering = false;
+                      });
+                    },
+                    child: Container(
+                        height: 35,
+                        color: hovering
+                            ? const Color.fromRGBO(70, 70, 70, 1.0)
+                            : const Color.fromRGBO(60, 60, 60, 1.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            const SizedBox(
+                              width: 40,
+                              child: Icon(Icons.folder,
+                                  size: 18, color: Colors.blue),
+                            ),
+                            SizedBox(
+                                width: 200,
+                                child: Text(widget.name,
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.white))),
+                          ],
+                        ))),
+                children: [
+                  SizedBox(
+                      height: widget.vars.length * 30 + 10,
+                      child: ReorderableListView(
+                        buildDefaultDragHandles: false,
+                        onReorder: (oldIndex, newIndex) {
+                          print("Should reorder child list");
+                        },
+                        children: widget.vars,
+                      ))
+                ])));
   }
 }
 
@@ -346,12 +462,15 @@ class Var extends StatefulWidget {
       {required this.host,
       required this.id,
       required this.name,
-      required this.notifier});
+      required this.notifier,
+      required this.listIndex})
+      : super(key: UniqueKey());
 
   Host host;
   int id;
   String name;
   ValueNotifier<dynamic> notifier;
+  int listIndex;
 
   @override
   _Var createState() => _Var();
@@ -362,8 +481,6 @@ class _Var extends State<Var> {
 
   @override
   Widget build(BuildContext context) {
-    double width = 600.0 / 4.0;
-
     String typeName = "Unknown";
 
     if (widget.notifier.value.runtimeType == double) {
@@ -372,117 +489,88 @@ class _Var extends State<Var> {
       typeName = "bool";
     }
 
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-        child: MouseRegion(
-            onEnter: (e) {
-              setState(() {
-                hovering = true;
-              });
-            },
-            onExit: (e) {
-              setState(() {
-                hovering = false;
-              });
-            },
-            child: Container(
-              height: 30,
-              color: hovering
-                  ? const Color.fromRGBO(60, 60, 60, 1.0)
-                  : const Color.fromRGBO(50, 50, 50, 1.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    width: width,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                              color: Colors.red,
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+          padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+          child: MouseRegion(
+              onEnter: (e) {
+                setState(() {
+                  hovering = true;
+                });
+              },
+              onExit: (e) {
+                setState(() {
+                  hovering = false;
+                });
+              },
+              child: GestureDetector(
+                  onTap: () {
+                    if (widget == widget.host.vars.selectedVar.value) {
+                      widget.host.vars.selectedVar.value = null;
+                    } else {
+                      widget.host.vars.selectedVar.value = widget;
+                    }
+                  },
+                  child: ValueListenableBuilder<Var?>(
+                      valueListenable: widget.host.vars.selectedVar,
+                      builder: (context, selectedVar, child) {
+                        return Container(
+                          height: 30,
+                          decoration: BoxDecoration(
+                              color: selectedVar == widget
+                                  ? (hovering
+                                      ? const Color.fromRGBO(90, 90, 90, 1.0)
+                                      : const Color.fromRGBO(80, 80, 80, 1.0))
+                                  : (hovering
+                                      ? const Color.fromRGBO(70, 70, 70, 1.0)
+                                      : const Color.fromRGBO(60, 60, 60, 1.0)),
                               borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(typeName,
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    width: width,
-                    child: Text(widget.name,
-                        style:
-                            const TextStyle(fontSize: 13, color: Colors.white)),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    width: width,
-                    child: Text("Assignments here",
-                        style:
-                            const TextStyle(fontSize: 13, color: Colors.white)),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                    width: width,
-                    child: Text("Value Stuff",
-                        style:
-                            const TextStyle(fontSize: 13, color: Colors.white)),
-                  ),
-                ],
-              ),
-            )));
-    /*return Align(
-        alignment: Alignment.centerLeft,
-        child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
-            child: Container(
-                width: null,
-                height: 30,
-                padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: const Color.fromRGBO(80, 80, 80, 1.0),
-                    borderRadius: BorderRadius.circular(5)),
-                child: Row(mainAxisSize: MainAxisSize.max, children: [
-                  VarTypeDropdown(widget, widget.host),
-                  const SizedBox(width: 10),
-                  Text("Should Get Name Here",
-                      style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w300)),
-                  const Expanded(
-                    child: SizedBox(),
-                  ),
-                  ValueListenableBuilder<dynamic>(
-                      valueListenable: widget.notifier,
-                      builder: (context, value, w) {
-                        return Text(
-                            value
-                                .toString()
-                                .substring(0, min(value.toString().length, 8)),
-                            style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w300));
-                      }),
-                  const SizedBox(width: 10),
-                  VarDeleteButton(
-                    onTap: () {
-                      /*ffiHostDeleteVar(
-                          widget.host.host, widget.name.toNativeUtf8());
-                      widget.host.refreshVariables();
-                      widget.host.vars.notifyListeners();*/
-                      print("Delete var here");
-                    },
-                  )
-                ]))));*/
+                                  const BorderRadius.all(Radius.circular(5))),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child: Container(
+                                  width: 20,
+                                  height: 20,
+                                  decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(5))),
+                                ),
+                              ),
+                              Expanded(
+                                  child: Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child: Text(widget.name,
+                                    style: const TextStyle(
+                                        fontSize: 13, color: Colors.white)),
+                              )),
+                              Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child: Text(widget.notifier.value.toString(),
+                                    style: const TextStyle(
+                                        fontSize: 13, color: Colors.white)),
+                              ),
+                              ReorderableDragStartListener(
+                                  index: widget.listIndex,
+                                  child: const SizedBox(
+                                    width: 40,
+                                    child: Icon(
+                                      Icons.drag_handle,
+                                      color: Colors.grey,
+                                    ),
+                                  ))
+                            ],
+                          ),
+                        );
+                      }))));
+    });
   }
 }
 
