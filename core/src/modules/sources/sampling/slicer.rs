@@ -54,8 +54,7 @@ impl Module for Slicer {
                 color: Color::BLUE,
         size: Size::Static(305, 195),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Control("Splice Select", 15 + 30 * 0),
             Pin::Control("Playback speed", 15 + 30 * 1),
             Pin::Control("Window start", 15 + 30 * 2),
@@ -64,6 +63,8 @@ inputs: &[
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         let sample: Sample<2>;

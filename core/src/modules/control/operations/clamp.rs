@@ -10,7 +10,6 @@ impl Module for Clamp {
                 color: Color::RED,
         size: Size::Static(110, 105),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Control("Input", 15),
             Pin::Control("Min", 45),
@@ -18,6 +17,8 @@ impl Module for Clamp {
         ],
         outputs: &[Pin::Control("Output", 45)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

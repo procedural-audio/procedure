@@ -10,13 +10,14 @@ impl Module for Noise {
 
     const INFO: Info = Info {
         name: "Noise",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Control("Noise Type", 25)],
+        inputs: &[Pin::Control("Noise Type", 25)],
         outputs: &[Pin::Audio("Audio Output", 25)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

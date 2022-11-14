@@ -13,13 +13,19 @@ impl Module for Flanger {
 
     const INFO: Info = Info {
         name: "Flanger",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
-        outputs: &[Pin::Audio("Audio Output", 20)],
+        inputs: &[
+            Pin::Audio("Audio Input", 20),
+            Pin::Control("Control 1", 50)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 20)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Flanger {

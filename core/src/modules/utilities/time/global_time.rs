@@ -10,10 +10,11 @@ impl Module for GlobalTime {
                 color: Color::PURPLE,
         size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[],
+        inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

@@ -10,13 +10,14 @@ impl Module for Reverse {
                 color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Time("Time Input", 15),
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

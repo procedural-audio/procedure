@@ -11,17 +11,20 @@ impl Module for ControlVariable {
 
     const INFO: Info = Info {
         name: "",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(180, 50),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Control("Input", 17)
         ],
         outputs: &[
             Pin::Control("Output", 17)
         ],
     };
+
+    const PARAMS: Params = &[
+        Param("Enabled", Value::Bool(false))
+    ];
 
     fn new() -> Self {
         Self {

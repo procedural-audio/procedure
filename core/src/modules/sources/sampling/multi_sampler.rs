@@ -14,10 +14,11 @@ impl Module for MultiSampler {
                 color: Color::BLUE,
         size: Size::Static(600, 400),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Notes("Midi Input", 20)],
+        inputs: &[Pin::Notes("Midi Input", 20)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

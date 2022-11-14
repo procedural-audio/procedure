@@ -21,7 +21,6 @@ impl Module for SawModule {
         color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Notes("Notes", 15)
         ],
@@ -29,6 +28,8 @@ impl Module for SawModule {
             Pin::Audio("Audio Output", 15)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

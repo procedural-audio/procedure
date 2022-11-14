@@ -18,10 +18,11 @@ impl Module for Phaser {
                 color: Color::BLUE,
         size: Size::Static(310 - 40, 200),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
+        inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Phaser {

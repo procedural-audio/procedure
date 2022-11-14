@@ -35,10 +35,11 @@ impl Module for WavetableOscillator {
                 color: Color::BLUE,
         size: Size::Static(500, 300),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[Pin::Notes("Midi Input", 20), Pin::Control("Pitch", 50)],
+        inputs: &[Pin::Notes("Midi Input", 20), Pin::Control("Pitch", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

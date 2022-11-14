@@ -7,16 +7,17 @@ impl Module for Not {
 
     const INFO: Info = Info {
         name: "Not",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Control("Control Input", 15),
             Pin::Control("Control Input", 45),
         ],
         outputs: &[Pin::Control("Control Output", 30)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

@@ -14,7 +14,6 @@ impl Module for AudioPluginModule {
                 color: Color::BLUE,
         size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Audio("Audio Input", 15),
             Pin::Notes("Notes Input", 45),
@@ -24,6 +23,8 @@ impl Module for AudioPluginModule {
             Pin::Notes("Notes Output", 45),
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         // let manager = AudioPluginManager::new();

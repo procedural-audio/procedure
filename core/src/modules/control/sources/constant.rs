@@ -12,12 +12,13 @@ impl Module for Constant {
         color: Color::RED,
         size: Size::Static(115, 50),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[],
         outputs: &[
             Pin::Control("Control Output", 17)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

@@ -89,19 +89,18 @@ impl JSON {
     }
 }
 
-pub struct Param(pub &'static str, pub Value);
-
 pub struct Info {
+    // pub title: Title(&'static str, Color)
     pub name: &'static str,
     pub color: Color,
     pub size: Size,
     pub voicing: Voicing,
-    pub params: &'static [Param],
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
 }
 
-pub type Params = &'static [(&'static str, Value)];
+pub type Params = &'static [Param];
+pub struct Param(pub &'static str, pub Value);
 
 #[derive(Copy, Clone)]
 pub enum Value {
@@ -113,19 +112,30 @@ pub enum Value {
     None,
 }
 
+pub struct Param2<T>(&'static str, T);
+
 pub trait Module {
     type Voice;
 
     const INFO: Info;
+    const PARAMS: Params;
 
     fn info(&self) -> Info {
         Self::INFO
+    }
+
+    fn params(&self) -> Params {
+        Self::PARAMS
     }
 
     fn new() -> Self;
     fn new_voice(index: u32) -> Self::Voice;
 
     fn build<'w>(&'w mut self, ui: &'w UI) -> Box<dyn WidgetNew + 'w>;
+
+    fn set_param(&mut self, name: &str, value: Value) {
+        panic!("set_param(...) called but not implemented");
+    }
 
     fn is_active(_voice: &Self::Voice) -> bool {
         true
@@ -220,6 +230,11 @@ pub struct Var {
     pub value: Value,
 }
 
+pub struct VarAssignment {
+    module_id: u32,
+    param_name: String,
+}
+
 pub enum Size {
     Static(u32, u32),
     Reisizable {
@@ -235,47 +250,3 @@ pub enum Voicing {
     Polyphonic,
     Dynamic,
 }
-
-/*pub struct Lock<T: Copy> {
-    data: std::sync::RwLock<T>,
-    data_backup: T,
-}
-
-impl<T: Copy> Lock<T> {
-    pub fn new(data: T) -> Self {
-        Self {
-            data: std::sync::RwLock::new(data),
-            data_backup: data,
-        }
-    }
-
-    pub fn load(&self) -> T {
-        let data = *self.data.read().unwrap();
-
-        unsafe {
-            *(((&self.data_backup) as *const T) as *mut T) = data;
-        }
-
-        return data;
-    }
-
-    pub fn get(&self) -> T {
-        match self.data.try_read() {
-            Ok(data) => {
-                unsafe {
-                    *(((&self.data_backup) as *const T) as *mut T) = *data;
-                }
-
-                return *data;
-            }
-            Err(_e) => {
-                return self.data_backup;
-            }
-        }
-    }
-
-    pub fn store(&self, value: T) {
-        *self.data.write().unwrap() = value;
-    }
-}
-*/

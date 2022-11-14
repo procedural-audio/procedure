@@ -10,13 +10,14 @@ impl Module for Pressure {
                 color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Notes("Notes Input", 15),
             Pin::Control("Pressure (0-1)", 45),
         ],
         outputs: &[Pin::Notes("Notes Output", 30)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

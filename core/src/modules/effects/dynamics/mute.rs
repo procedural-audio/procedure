@@ -9,13 +9,18 @@ impl Module for Mute {
 
     const INFO: Info = Info {
         name: "Mute",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(100, 80),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Audio("Audio Input", 25)],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        inputs: &[
+            Pin::Audio("Audio Input", 25)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { muted: false }

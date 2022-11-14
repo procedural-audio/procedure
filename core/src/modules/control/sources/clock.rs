@@ -10,10 +10,9 @@ impl Module for Clock {
 
     const INFO: Info = Info {
         name: "Clock",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Control("Clock Rate (0-1)", 25),
             Pin::Time("Time", 55)
@@ -22,6 +21,8 @@ impl Module for Clock {
             Pin::Control("Clock Output", 25)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.0 }

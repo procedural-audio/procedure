@@ -19,16 +19,19 @@ impl Module for Compressor {
                 color: Color::BLUE,
         size: Size::Static(410, 220),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Threshold", 55),
             Pin::Control("Ratio", 85),
             Pin::Control("Attack", 85 + 30),
             Pin::Control("Release", 85 + 60),
         ],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

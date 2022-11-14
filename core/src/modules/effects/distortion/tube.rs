@@ -27,17 +27,18 @@ impl Module for Tube {
 
     const INFO: Info = Info {
         name: "Tube",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(200, 170),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 20),
             Pin::Control("Knob 1", 50),
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

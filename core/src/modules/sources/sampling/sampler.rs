@@ -44,14 +44,15 @@ impl Module for Sampler {
                 color: Color::BLUE,
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Notes("Notes Input", 15 + 30 * 0),
             Pin::Control("Gate Input", 15 + 30 * 1),
             // Pin::Time("Time Input", 15 + 30 * 2),
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         if cfg!(target_os = "macos") {

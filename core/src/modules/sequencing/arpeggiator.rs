@@ -23,10 +23,11 @@ impl Module for Arpeggiator {
                 color: Color::GREEN,
         size: Size::Static(640, 290),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[Pin::Notes("Midi Input", 20), Pin::Time("Time", 50)],
+        inputs: &[Pin::Notes("Midi Input", 20), Pin::Time("Time", 50)],
         outputs: &[Pin::Notes("Midi Output", 20)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

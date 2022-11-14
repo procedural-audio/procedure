@@ -22,10 +22,9 @@ impl Module for Scale {
 
     const INFO: Info = Info {
         name: "Scale",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(300 - 35, 100),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Control("Control Input", 20)
         ],
@@ -34,6 +33,7 @@ impl Module for Scale {
         ],
     };
 
+    const PARAMS: Params = &[];
     
     fn new() -> Self {
         Self {

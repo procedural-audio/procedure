@@ -13,13 +13,14 @@ impl Module for Crossover {
                 color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Crossover", 55),
         ],
         outputs: &[Pin::Audio("Audio High", 25), Pin::Audio("Audio Low", 55)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

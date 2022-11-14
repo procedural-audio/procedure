@@ -12,13 +12,14 @@ impl Module for Transpose {
                 color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Notes("Notes Input", 25),
             Pin::Control("Transpose Amount", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

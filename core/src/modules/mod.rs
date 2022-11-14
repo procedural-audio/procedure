@@ -142,6 +142,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 pub trait PolyphonicModule {
     fn new() -> Self where Self: Sized;
     fn info(&self) -> Info;
+    fn params(&self) -> Params;
     fn load(&mut self, state: &JSON);
     fn save(&self, state: &mut JSON);
     fn should_refresh(&self) -> bool;
@@ -149,6 +150,8 @@ pub trait PolyphonicModule {
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn process_voice(&mut self, vars: &Vars, voice_index: usize, inputs: &IO, outputs: &mut IO);
     fn voicing(&self) -> Voicing;
+
+    fn set_param(&mut self, index: usize, value: Value);
 
     fn get_module_root(&self) -> &dyn WidgetNew;
     fn get_module_size(&self) -> (f32, f32);
@@ -255,6 +258,14 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
 
     fn info(&self) -> Info {
         self.module.info()
+    }
+
+    fn params(&self) -> Params {
+        self.module.params()
+    }
+
+    fn set_param(&mut self, index: usize, value: Value) {
+        self.module.set_param(self.module.params()[index].0, value);
     }
 
     fn load(&mut self, json: &JSON) {

@@ -20,11 +20,10 @@ impl Module for Mixer {
 
     const INFO: Info = Info {
         name: "",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(120, 505),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 25 + 60 * 0),
             Pin::Control("Linear Gain", 50 + 60 * 0),
             Pin::Audio("Audio Input", 25 + 60 * 1),
@@ -42,8 +41,12 @@ inputs: &[
             Pin::Audio("Audio Input", 25 + 60 * 7),
             Pin::Control("Linear Gain", 50 + 60 * 7),
         ],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

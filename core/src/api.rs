@@ -19,8 +19,6 @@ use widgets::*;
 
 use tonevision_types::*;
 
-// pub use audio_plugin_loader::*;
-
 /* Begin main */
 
 #[no_mangle]
@@ -46,33 +44,6 @@ pub unsafe extern "C" fn api_create_host() -> Box<Host> {
 pub unsafe extern "C" fn ffi_destroy_host(host: *mut Host) {
     let _ = Box::from_raw(host);
 }
-
-/*#[no_mangle]
-pub extern "C" fn ffi_host_create_gui(host: *mut Host) {
-    println!("Creating GUI in rust");
-
-    exec_bundle();
-    register_observatory_listener("metasampler".into());
-
-    let context = Context::new(ContextOptions {
-        app_namespace: "NativeShellDemo".into(),
-        flutter_plugins: flutter_get_plugins(),
-        ..Default::default()
-    });
-
-    let context = context.unwrap();
-
-    let _file_open_dialog = FileOpenDialog::new(context.weak()).register();
-    let _platform_channels = PlatformChannels::new(context.weak()).register();
-
-    context
-        .window_manager
-        .borrow_mut()
-        .create_window(codec::Value::I64(host as i64), None)
-        .unwrap();
-
-    context.run_loop.borrow().run();
-}*/
 
 fn str_from_char(buffer: &i8) -> &str {
     unsafe {
@@ -416,14 +387,6 @@ pub unsafe extern "C" fn ffi_host_var_delete(host: &mut Host, id: usize) {
 
 /* Some other stuff */
 
-#[repr(C)]
-pub struct m_Connector {
-    start_id: i32,
-    start_index: i32,
-    end_id: i32,
-    end_index: i32,
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_add_connector(
     host: &mut Host,
@@ -764,6 +727,54 @@ pub unsafe extern "C" fn ffi_node_should_refresh(node: &mut Node) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_should_rebuild(node: &mut Node) -> bool {
     node.module.should_rebuild()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_get_param_count(node: &mut Node) -> usize {
+    node.module.params().len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_param_get_name(node: &mut Node, index: usize) -> *const i8 {
+    let name = node.module.params()[index].0;
+    let s = CString::new(name).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_param_get_type(node: &mut Node, index: usize) -> u32 {
+    return match &node.module.params()[index].1 {
+        Value::Float(_) => 0,
+        Value::Int(_) => 1,
+        Value::Bool(_) => 2,
+        _ => panic!("Not implemented")
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_param_set_float(node: &mut Node, index: usize, value: f32) {
+    match &node.module.params()[index].1 {
+        Value::Float(v) => node.module.set_param(index, Value::Float(*v)),
+        _ => panic!("Expected float")
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_param_set_int(node: &mut Node, index: usize, value: u32) {
+    match &node.module.params()[index].1 {
+        Value::Int(v) => node.module.set_param(index, Value::Int(*v)),
+        _ => panic!("Expected int")
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_node_param_set_bool(node: &mut Node, index: usize, value: bool) {
+    match &node.module.params()[index].1 {
+        Value::Bool(v) => node.module.set_param(index, Value::Bool(*v)),
+        _ => panic!("Expected int")
+    }
 }
 
 /* Widget */

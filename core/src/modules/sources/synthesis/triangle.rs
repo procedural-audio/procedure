@@ -25,10 +25,11 @@ impl Module for TriangleModule {
                 color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[Pin::Notes("Notes", 15)],
+        inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

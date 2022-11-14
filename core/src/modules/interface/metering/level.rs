@@ -13,10 +13,11 @@ impl Module for LevelMeter {
                 color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Audio("Audio Input", 25)],
+        inputs: &[Pin::Audio("Audio Input", 25)],
         outputs: &[Pin::Control("RMS", 25)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

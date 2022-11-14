@@ -13,13 +13,16 @@ impl Module for Gain {
                 color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Gain", 55),
         ],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

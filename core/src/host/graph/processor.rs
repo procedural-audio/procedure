@@ -6,8 +6,6 @@ use tonevision_types::AudioChannelMut;
 
 use crate::graph::*;
 
-/* Actions */
-
 enum CopyAction<T> {
     AudioCopy {
         src: ManuallyDrop<T>,
@@ -33,47 +31,7 @@ enum CopyAction<T> {
 
 impl<T> Clone for CopyAction<T> {
     fn clone(&self) -> Self {
-        // SIMPLIFY THIS TO A SINGLE transmute_copy
-        unsafe {
-            match self {
-                Self::AudioCopy {
-                    src,
-                    dest,
-                    should_copy,
-                } => Self::AudioCopy {
-                    src: transmute_copy(src),
-                    dest: transmute_copy(dest),
-                    should_copy: should_copy.clone(),
-                },
-                Self::NotesCopy {
-                    src,
-                    dest,
-                    should_copy,
-                } => Self::NotesCopy {
-                    src: transmute_copy(src),
-                    dest: transmute_copy(dest),
-                    should_copy: should_copy.clone(),
-                },
-                Self::ControlCopy {
-                    src,
-                    dest,
-                    should_copy,
-                } => Self::ControlCopy {
-                    src: transmute_copy(src),
-                    dest: transmute_copy(dest),
-                    should_copy: should_copy.clone(),
-                },
-                Self::TimeCopy {
-                    src,
-                    dest,
-                    should_copy,
-                } => Self::TimeCopy {
-                    src: transmute_copy(src),
-                    dest: transmute_copy(dest),
-                    should_copy: should_copy.clone(),
-                },
-            }
-        }
+        unsafe { transmute_copy(self) }
     }
 }
 
@@ -172,13 +130,9 @@ impl GraphProcessor {
         }
 
         let mut audio_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
-
         let mut events_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
-
         let mut control_channels_buffers: Vec<Bus<Box<f32>>> = Vec::new();
-
         let mut time_channels_buffers: Vec<Bus<Box<Time>>> = Vec::new();
-
         let mut process_actions: Vec<ProcessAction> = Vec::new();
 
         /* Allocate channel buffers */
@@ -225,9 +179,6 @@ impl GraphProcessor {
             };
 
             for voice_index in 0..node_voice_count {
-                // let audio_inputs_buffer = AudioBus::new(audio_input_channels_count, block_size);
-                // let audio_outputs_buffer = AudioBus::new(audio_output_channels_count, block_size);
-
                 let mut audio_input_bus = Bus::new();
                 for i in 0..audio_input_channels_count {
                     let mut connected = false;
@@ -253,9 +204,6 @@ impl GraphProcessor {
 
                     audio_output_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
                 }
-
-                // let events_inputs_buffer = NotesBus::new(events_input_channels_count, block_size);
-                // let events_outputs_buffer = NotesBus::new(events_output_channels_count, block_size);
 
                 let mut events_input_bus = Bus::new();
                 for i in 0..events_input_channels_count {
@@ -374,14 +322,68 @@ impl GraphProcessor {
 
         /* Push copy actions */
 
-        println!("Pushing copy actions");
-
         let mut dest_audio_buffers_used = Vec::new();
         let mut dest_events_buffers_used = Vec::new();
         let mut dest_control_buffers_used = Vec::new();
         let mut dest_time_buffers_used = Vec::new();
 
         let mut process_actions_final: Vec<ProcessAction> = Vec::new();
+
+        /*fn helper_channel<T>(process_actions: &Vec<ProcessAction>, action1: &ProcessAction, new_action: &mut ProcessAction, connector: &Connector, dest_buffers_used: &mut Vec<(i32, usize, usize)>) {
+            let index1 = GraphProcessor::get_node_channel(
+                action1.node.clone(),
+                connector.start.pin_index,
+            ) as usize;
+
+            let source1 = action1.audio_outputs.channel(index1);
+
+            for action2 in process_actions.iter() {
+                if connector.end.module_id == action2.id
+                    && (action2.voice_index == action1.voice_index
+                        || action1.node.info().voicing == Voicing::Monophonic
+                        || action2.node.info().voicing == Voicing::Monophonic)
+                {
+                    let index2 = GraphProcessor::get_node_channel(action2.node.clone(), connector.end.pin_index) as usize;
+
+                    let dest1 = action2.audio_inputs.channel(index2);
+
+                    let dest_id = action2.node.id;
+                    let dest_voice_index = action2.voice_index;
+                    let dest_index1 = index2;
+
+                    let dest_used1 = dest_buffers_used.contains(&(dest_id, dest_index1, dest_voice_index));
+
+                    if !dest_used1 {
+                        dest_buffers_used.push((dest_id, dest_index1, dest_voice_index));
+                    }
+
+                    unsafe {
+                        new_action.copy_actions.push(CopyAction::AudioCopy {
+                            src: transmute_copy(source1),
+                            dest: transmute_copy(dest1),
+                            should_copy: !dest_used1,
+                        });
+                    }
+                }
+            }
+        }
+
+        fn process_stuff(nodes: &Vec<Rc<Node>>, actions: &Vec<ProcessAction>, connectors: &Vec<Connector>, dest_buffers_used: &mut Vec<(i32, usize, usize)>) {
+            for action1 in actions.iter() {
+                let mut new_action: ProcessAction = action1.clone();
+
+                for connector in connectors.iter() {
+                    if connector.start.module_id == action1.id {
+                        match GraphProcessor::get_connector_type(&nodes, connector) {
+                            Pin::Audio(_, _) => {
+                                helper_channel::<Stereo>(actions, action1, &mut new_action, connector, dest_buffers_used);
+                            }
+                            _ => ()
+                        }
+                    }
+                }
+            }
+        }*/
 
         for action1 in process_actions.iter() {
             let mut new_action: ProcessAction = action1.clone();

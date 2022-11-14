@@ -13,10 +13,9 @@ impl Module for EnvelopeModule {
 
     const INFO: Info = Info {
         name: "Envelope",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(300, 150),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Control("Attack", 20),
             Pin::Control("Decay", 50),
@@ -27,6 +26,8 @@ impl Module for EnvelopeModule {
             Pin::Control("Output", 20)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

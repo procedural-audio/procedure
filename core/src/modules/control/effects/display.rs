@@ -10,15 +10,16 @@ impl Module for Display {
 
     const INFO: Info = Info {
         name: "",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(115, 50),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Control("Input", 17)
         ],
         outputs: &[],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

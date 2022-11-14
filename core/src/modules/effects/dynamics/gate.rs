@@ -16,14 +16,17 @@ impl Module for Gate {
                 color: Color::BLUE,
         size: Size::Static(350, 220),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Linear Gate", 55),
             Pin::Control("Linear Gate", 85),
         ],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

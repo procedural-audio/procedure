@@ -22,7 +22,6 @@ impl Module for LfoModule {
                 color: Color::RED,
         size: Size::Static(250, 140),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Control("LFO Rate (hz)", 15),
             Pin::Control("Reset (trigger)", 45),
@@ -31,6 +30,8 @@ impl Module for LfoModule {
             Pin::Control("LFO Output", 15)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

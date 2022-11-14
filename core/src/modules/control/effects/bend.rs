@@ -12,10 +12,9 @@ impl Module for Bend {
 
     const INFO: Info = Info {
         name: "Bend",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::Control("Control Input", 20),
             Pin::Control("Bend Amount", 50),
@@ -24,6 +23,8 @@ impl Module for Bend {
             Pin::Control("Control Output", 20)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

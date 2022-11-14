@@ -10,10 +10,11 @@ impl Module for MidiOutput {
                 color: Color::GREEN,
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[Pin::Notes("Midi Output", 30)],
+        inputs: &[Pin::Notes("Midi Output", 30)],
         outputs: &[],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

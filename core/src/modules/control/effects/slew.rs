@@ -12,7 +12,6 @@ impl Module for Slew {
                 color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Control("Input", 25),
             Pin::Control("Rate (0-1)", 55)
@@ -22,6 +21,7 @@ impl Module for Slew {
         ],
     };
 
+    const PARAMS: Params = &[];
     
     fn new() -> Self {
         Self { rate: 0.0 }

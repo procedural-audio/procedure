@@ -10,7 +10,6 @@ impl Module for Rate {
         color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::Time("Time Input", 15),
             Pin::Control("Rate", 45)
@@ -19,6 +18,8 @@ impl Module for Rate {
             Pin::Time("Time Output", 30)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

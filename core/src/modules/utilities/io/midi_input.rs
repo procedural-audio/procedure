@@ -159,7 +159,6 @@ impl Module for MidiInput {
         color: Color::GREEN,
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
-        params: &[],
         inputs: &[
             Pin::ExternalNotes(0)
         ],
@@ -167,6 +166,8 @@ impl Module for MidiInput {
             Pin::Notes("External Midi 1", 22)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

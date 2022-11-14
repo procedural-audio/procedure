@@ -391,6 +391,14 @@ impl PolyphonicModule for ModuleDynamic {
         panic!("Shouldn't ever call new on ModuleDynamic");
     }
 
+    fn params(&self) -> Params {
+        panic!("Not implemented");
+    }
+
+    fn set_param(&mut self, index: usize, value: Value) {
+        panic!("Not implemented");
+    }
+
     fn get_connected(&mut self) -> &mut Vec<bool> {
         println!("ModuleDynamic::get_connected()");
         &mut self.state.connected

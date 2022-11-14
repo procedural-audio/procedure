@@ -24,17 +24,20 @@ impl Module for AnalogFilter {
 
     const INFO: Info = Info {
         name: "Analog Filter",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(200, 170),
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[
+        inputs: &[
             Pin::Audio("Audio Input", 20),
             Pin::Control("Control Input", 50),
             Pin::Control("Control Input", 80),
         ],
-        outputs: &[Pin::Audio("Audio Output", 20)],
+        outputs: &[
+            Pin::Audio("Audio Output", 20)
+        ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

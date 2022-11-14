@@ -27,10 +27,11 @@ impl Module for NotesTrack {
             max: (8000, 1200),
         },
         voicing: Voicing::Polyphonic,
-        params: &[],
-inputs: &[Pin::Time("Time", 10)],
+        inputs: &[Pin::Time("Time", 10)],
         outputs: &[Pin::Notes("Notes Output", 10)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self {

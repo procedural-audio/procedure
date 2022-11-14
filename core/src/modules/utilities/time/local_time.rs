@@ -10,10 +10,11 @@ impl Module for LocalTime {
                 color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        params: &[],
-inputs: &[],
+        inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

@@ -10,7 +10,6 @@ impl Module for AudioInput {
         color: Color::BLUE,
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[
             Pin::ExternalAudio(0)
         ],
@@ -18,6 +17,8 @@ impl Module for AudioInput {
             Pin::Audio("External Audio 1", 20)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self

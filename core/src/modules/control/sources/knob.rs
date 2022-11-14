@@ -10,15 +10,16 @@ impl Module for KnobModule {
 
     const INFO: Info = Info {
         name: "",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        params: &[],
         inputs: &[],
         outputs: &[
             Pin::Control("Clock Output", 30)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self { value: 0.5 }

@@ -10,9 +10,6 @@ impl Module for Granular {
         color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
-        params: &[
-            Param("Value 1", Value::Bool(false))
-        ],
         inputs: &[
             Pin::Control("Control Input", 15),
             Pin::Control("Control Input", 45)
@@ -21,6 +18,8 @@ impl Module for Granular {
             Pin::Control("Control Output", 30)
         ],
     };
+
+    const PARAMS: Params = &[];
 
     fn new() -> Self {
         Self
