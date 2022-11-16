@@ -10,7 +10,6 @@ pub struct Host {
     pub block_size: usize,
     pub time: Time,
     pub bpm: f64,
-    pub vars: Vars,
     pub plugins: Vec<AudioPlugin>
 }
 
@@ -22,7 +21,6 @@ impl Host {
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            vars: Vars::new(),
             plugins: Vec::new()
         }
     }
@@ -66,7 +64,7 @@ impl Host {
     }
 
     pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
-        self.graph.process(&self.time, &self.vars, audio, midi);
+        self.graph.process(&self.time, audio, midi);
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);

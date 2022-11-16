@@ -17,8 +17,7 @@ impl Module for Noise {
         outputs: &[Pin::Audio("Audio Output", 25)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -55,7 +54,7 @@ impl Module for Noise {
         voice.prepare(sample_rate, block_size);
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         voice.set_param(0, self.value - 1.0);
         voice.process(&[&[]], &mut outputs.audio[0].as_array_mut());
     }

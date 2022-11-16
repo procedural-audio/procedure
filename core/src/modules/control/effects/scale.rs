@@ -33,8 +33,7 @@ impl Module for Scale {
         ],
     };
 
-    const PARAMS: Params = &[];
-    
+        
     fn new() -> Self {
         Self {
             notes: (
@@ -199,7 +198,7 @@ impl Module for Scale {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let value = inputs.control[0];
         outputs.control[0] = value;
 

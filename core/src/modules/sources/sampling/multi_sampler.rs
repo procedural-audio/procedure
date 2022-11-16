@@ -18,8 +18,7 @@ impl Module for MultiSampler {
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             map: Arc::new(RwLock::new(SampleMap::new())),
@@ -92,7 +91,7 @@ impl Module for MultiSampler {
         }
     }
 
-    fn process(&mut self, _vars: &Vars, voices: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voices: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for note in &inputs.events[0] {
             match note {
                 Event::NoteOn { note, offset } => {

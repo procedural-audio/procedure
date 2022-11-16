@@ -391,14 +391,6 @@ impl PolyphonicModule for ModuleDynamic {
         panic!("Shouldn't ever call new on ModuleDynamic");
     }
 
-    fn params(&self) -> Params {
-        panic!("Not implemented");
-    }
-
-    fn set_param(&mut self, index: usize, value: Value) {
-        panic!("Not implemented");
-    }
-
     fn get_connected(&mut self) -> &mut Vec<bool> {
         println!("ModuleDynamic::get_connected()");
         &mut self.state.connected
@@ -551,7 +543,7 @@ impl PolyphonicModule for ModuleDynamic {
         }
     }
 
-    fn process_voice(&mut self, vars: &Vars, voice_index: usize, inputs: &IO, outputs: &mut IO) {
+    fn process_voice(&mut self, voice_index: usize, inputs: &IO, outputs: &mut IO) {
         panic!("Must update to use time correctly");
 
         match self.status.try_write() {

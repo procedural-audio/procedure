@@ -24,8 +24,7 @@ impl Module for AudioPluginModule {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         // let manager = AudioPluginManager::new();
         // let plugin = manager.create_plugin("ValhallaRoom").unwrap();
@@ -59,7 +58,7 @@ impl Module for AudioPluginModule {
     fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         outputs.audio[0].copy_from(&inputs.audio[0]);
         outputs.events[0].copy_from(&inputs.events[0]);
 

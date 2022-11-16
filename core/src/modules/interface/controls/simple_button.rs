@@ -16,8 +16,7 @@ impl Module for SimpleButtonModule {
         outputs: &[Pin::Control("Control Output", 30)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: false }
     }
@@ -42,7 +41,7 @@ impl Module for SimpleButtonModule {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         if self.value {
             outputs.control[0] = 1.0;
         } else {

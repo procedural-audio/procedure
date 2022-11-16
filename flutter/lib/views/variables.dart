@@ -12,17 +12,7 @@ import 'dart:ffi';
 
 const radius = 15.0;
 
-/*int Function(FFIHost) ffiHostVarsGetTabCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost)>>(
-        "ffi_host_vars_get_tab_count")
-    .asFunction();
-
-Pointer<Utf8> Function(FFIHost, int) ffiHostVarsTabGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
-        "ffi_host_vars_tab_get_name")
-    .asFunction();*/
-
-int Function(FFIHost) ffiHostVarsGetEntryCount = core
+/*int Function(FFIHost) ffiHostVarsGetEntryCount = core
     .lookup<NativeFunction<Int64 Function(FFIHost)>>(
         "ffi_host_vars_get_entry_count")
     .asFunction();
@@ -113,97 +103,45 @@ void Function(FFIHost, int, int) ffiHostVarsEntryReorder = core
 void Function(FFIHost, int, int, int) ffiHostVarsGroupVarReorder = core
     .lookup<NativeFunction<Void Function(FFIHost, Int64, Int64, Int64)>>(
         "ffi_host_vars_group_var_reorder")
-    .asFunction();
+    .asFunction();*/
 
 class Vars extends StatefulWidget {
   Vars(this.host);
 
   Host host;
-  ValueNotifier<List<VarEntry>> entries = ValueNotifier([]);
-  ValueNotifier<Var?> selectedVar = ValueNotifier(null);
+  final ValueNotifier<List<VarEntry>> _entries = ValueNotifier([]);
 
-  void refresh() {
-    entries.value.clear();
+  void newGroup() {
+    print("TODO: New group");
+  }
 
-    List<VarEntry> tempEntries = [];
-    int entryCount = ffiHostVarsGetEntryCount(host.host);
+  void deleteVar(Var v) {
+    print("TODO: Delete var");
+  }
 
-    for (int j = 0; j < entryCount; j++) {
-      int entryType = ffiHostVarsEntryGetType(host.host, j);
+  void addVar(Var v) {
+    _entries.value.add(VarEntry(variable: v, group: null));
+    _entries.notifyListeners();
+  }
 
-      if (entryType == 0) {
-        int id = ffiHostVarsEntryGetId(host.host, j);
-        int varType = ffiHostVarGetType(host.host, id);
+  void addEntry(VarEntry v) {
+    _entries.value.add(v);
+    _entries.notifyListeners();
+  }
 
-        dynamic value;
+  void insertEntry(int i, VarEntry v) {
+    _entries.value.insert(i, v);
+    _entries.notifyListeners();
+  }
 
-        if (varType == 0) {
-          value = ffiHostVarGetFloat(host.host, id);
-        } else if (varType == 1) {
-          value = ffiHostVarGetBool(host.host, id);
-        } else {
-          print("TYPE NOT SUPPORTED IN VAR GETTER");
-        }
+  VarEntry removeEntryAt(int i) {
+    var temp = _entries.value.removeAt(i);
+    _entries.notifyListeners();
+    return temp;
+  }
 
-        var rawName = ffiHostVarGetName(host.host, id);
-        String name = rawName.toDartString();
-        calloc.free(rawName);
-
-        print(name + ": " + id.toString());
-
-        tempEntries.add(VarEntry(
-            variable: Var(
-              host: host,
-              id: id,
-              name: name,
-              notifier: ValueNotifier(value),
-              listIndex: tempEntries.length,
-            ),
-            group: null));
-      } else if (entryType == 1) {
-        var rawName = ffiHostVarsGroupGetName(host.host, j);
-        String name = rawName.toDartString();
-        calloc.free(rawName);
-
-        List<Var> vars = [];
-        int varCount = ffiHostVarsGroupGetVarCount(host.host, j);
-
-        for (int k = 0; k < varCount; k++) {
-          int id = ffiHostVarsGroupVarGetId(host.host, j, k);
-          int varType = ffiHostVarGetType(host.host, id);
-
-          dynamic value;
-
-          if (varType == 0) {
-            value = ffiHostVarGetFloat(host.host, id);
-          } else if (varType == 1) {
-            value = ffiHostVarGetBool(host.host, id);
-          } else {
-            print("TYPE NOT SUPPORTED IN VAR GETTER");
-          }
-
-          var rawName = ffiHostVarGetName(host.host, id);
-          String name = rawName.toDartString();
-          calloc.free(rawName);
-
-          vars.add(Var(
-            host: host,
-            id: id,
-            name: name,
-            notifier: ValueNotifier(value),
-            listIndex: k,
-          ));
-        }
-
-        tempEntries.add(VarEntry(
-            variable: null,
-            group: VarGroup(host: host, name: name, vars: vars, index: j)));
-      } else {
-        print("ERROR: UNSUPPORTED VAR TYPE");
-      }
-    }
-
-    entries.value = tempEntries;
+  int count() {
+    return _entries.value.length;
   }
 
   @override
@@ -211,6 +149,8 @@ class Vars extends StatefulWidget {
 }
 
 class _Vars extends State<Vars> {
+  ValueNotifier<Var?> selectedVar = ValueNotifier(null);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -220,7 +160,7 @@ class _Vars extends State<Vars> {
             color: Color.fromRGBO(40, 40, 40, 1.0),
             borderRadius: BorderRadius.all(Radius.circular(10))),
         child: ValueListenableBuilder<List<VarEntry>>(
-            valueListenable: widget.host.vars.entries,
+            valueListenable: widget._entries,
             builder: (context, entries, w) {
               return Row(children: [
                 Expanded(
@@ -231,35 +171,15 @@ class _Vars extends State<Vars> {
                               child: ReorderableListView(
                             buildDefaultDragHandles: false,
                             onReorder: (oldIndex, newIndex) {
-                              print("Reordering from " +
-                                  oldIndex.toString() +
-                                  " " +
-                                  newIndex.toString());
-
-                              ffiHostVarsEntryReorder(
-                                  widget.host.host, oldIndex, newIndex);
-
                               if (newIndex > oldIndex) {
                                 newIndex -= 1;
                               }
 
-                              var element = widget.host.vars.entries.value
-                                  .removeAt(oldIndex);
-                              if (newIndex >=
-                                  widget.host.vars.entries.value.length) {
-                                widget.host.vars.entries.value.add(element);
+                              var element = widget.removeEntryAt(oldIndex);
+                              if (newIndex >= widget.count()) {
+                                widget.host.vars.addEntry(element);
                               } else {
-                                widget.host.vars.entries.value
-                                    .insert(newIndex, element);
-                              }
-
-                              for (int i = 0;
-                                  i < widget.host.vars.entries.value.length;
-                                  i++) {
-                                widget.host.vars.entries.value[i].group?.index =
-                                    i;
-                                widget.host.vars.entries.value[i].variable
-                                    ?.listIndex = i;
+                                widget.host.vars.insertEntry(newIndex, element);
                               }
                             },
                             children: entries,
@@ -287,8 +207,14 @@ class _Vars extends State<Vars> {
                                         color: Colors.grey,
                                         iconSize: 16,
                                         onPressed: () {
-                                          ffiHostVarsAddVar(widget.host.host);
-                                          widget.host.vars.refresh();
+                                          widget.addVar(Var(
+                                              host: widget.host,
+                                              name:
+                                                  ValueNotifier("New Variable"),
+                                              listIndex: widget.count(),
+                                              selectedVar: selectedVar,
+                                              id: 0,
+                                              notifier: ValueNotifier(0.0)));
                                         },
                                       )),
                                   SizedBox(
@@ -299,8 +225,7 @@ class _Vars extends State<Vars> {
                                         color: Colors.grey,
                                         iconSize: 16,
                                         onPressed: () {
-                                          ffiHostVarsAddGroup(widget.host.host);
-                                          widget.host.vars.refresh();
+                                          widget.newGroup();
                                         },
                                       )),
                                 ],
@@ -313,7 +238,7 @@ class _Vars extends State<Vars> {
                             borderRadius: BorderRadius.horizontal(
                                 right: Radius.circular(10))),
                         child: ValueListenableBuilder<Var?>(
-                            valueListenable: widget.host.vars.selectedVar,
+                            valueListenable: selectedVar,
                             builder: (context, selectedVar, child) {
                               if (selectedVar == null) {
                                 return const Center(
@@ -375,18 +300,11 @@ class _Vars extends State<Vars> {
                                                     Colors.red,
                                                 controller:
                                                     TextEditingController(
-                                                        text: selectedVar.name),
+                                                        text: selectedVar
+                                                            .name.value),
                                                 onChanged: (value) {
-                                                  print(value);
-                                                  var rawName =
-                                                      value.toNativeUtf8();
-                                                  ffiHostVarRename(
-                                                      widget.host.host,
-                                                      selectedVar.id,
-                                                      rawName);
-                                                  calloc.free(rawName);
-
-                                                  selectedVar.name = value;
+                                                  selectedVar.name.value =
+                                                      value;
                                                 },
                                               ),
                                             ),
@@ -532,11 +450,7 @@ class _Vars extends State<Vars> {
                                                   width: 2, color: Colors.red)),
                                           child: TextButton(
                                             onPressed: () {
-                                              print("Delete thing");
-                                              widget.selectedVar.value = null;
-                                              ffiHostVarDelete(widget.host.host,
-                                                  selectedVar.id);
-                                              widget.host.vars.refresh();
+                                              widget.deleteVar(selectedVar);
                                             },
                                             child: const Text(
                                               "Delete",
@@ -674,9 +588,6 @@ class _VarGroup extends State<VarGroup> {
                               " " +
                               newIndex.toString());
 
-                          ffiHostVarsGroupVarReorder(widget.host.host,
-                              widget.index, oldIndex, newIndex);
-
                           if (newIndex > oldIndex) {
                             newIndex -= 1;
                           }
@@ -698,19 +609,29 @@ class _VarGroup extends State<VarGroup> {
   }
 }
 
+class VarAssignment {
+  VarAssignment({required this.moduleId, required this.widgetIndex});
+
+  int moduleId;
+  int widgetIndex;
+}
+
 class Var extends StatefulWidget {
   Var(
       {required this.host,
       required this.id,
       required this.name,
       required this.notifier,
+      required this.selectedVar,
       required this.listIndex})
       : super(key: UniqueKey());
 
   Host host;
   int id;
-  String name;
+  ValueNotifier<String> name;
   ValueNotifier<dynamic> notifier;
+  ValueNotifier<Var?> selectedVar;
+  ValueNotifier<List<VarAssignment>> assignments = ValueNotifier([]);
   int listIndex;
 
   @override
@@ -730,87 +651,130 @@ class _Var extends State<Var> {
       typeName = "bool";
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-          padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
-          child: MouseRegion(
-              onEnter: (e) {
-                setState(() {
-                  hovering = true;
-                });
-              },
-              onExit: (e) {
-                setState(() {
-                  hovering = false;
-                });
-              },
-              child: GestureDetector(
-                  onTap: () {
-                    if (widget == widget.host.vars.selectedVar.value) {
-                      widget.host.vars.selectedVar.value = null;
-                    } else {
-                      widget.host.vars.selectedVar.value = widget;
-                    }
-                  },
-                  child: ValueListenableBuilder<Var?>(
-                      valueListenable: widget.host.vars.selectedVar,
-                      builder: (context, selectedVar, child) {
-                        return Container(
-                          height: 30,
-                          decoration: BoxDecoration(
-                              color: selectedVar == widget
-                                  ? (hovering
-                                      ? const Color.fromRGBO(90, 90, 90, 1.0)
-                                      : const Color.fromRGBO(80, 80, 80, 1.0))
-                                  : (hovering
-                                      ? const Color.fromRGBO(70, 70, 70, 1.0)
-                                      : const Color.fromRGBO(60, 60, 60, 1.0)),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(5))),
-                          child: Row(
+    var w = ValueListenableBuilder<Var?>(
+        valueListenable: widget.selectedVar,
+        builder: (context, selectedVar, child) {
+          return Container(
+            height: 30,
+            width: 300,
+            decoration: BoxDecoration(
+                color: selectedVar == widget
+                    ? (hovering
+                        ? const Color.fromRGBO(90, 90, 90, 1.0)
+                        : const Color.fromRGBO(80, 80, 80, 1.0))
+                    : (hovering
+                        ? const Color.fromRGBO(70, 70, 70, 1.0)
+                        : const Color.fromRGBO(60, 60, 60, 1.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(5))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                  ),
+                ),
+                Expanded(
+                    child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: ValueListenableBuilder<String>(
+                            valueListenable: widget.name,
+                            builder: ((context, name, child) {
+                              return Text(name,
+                                  style: const TextStyle(
+                                      fontSize: 13, color: Colors.white));
+                            })))),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Text(widget.notifier.value.toString(),
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white,
+                          fontStyle: FontStyle.normal,
+                          fontWeight: FontWeight.w300)),
+                ),
+                ReorderableDragStartListener(
+                    index: widget.listIndex,
+                    child: const SizedBox(
+                      width: 40,
+                      child: Icon(
+                        Icons.drag_handle,
+                        color: Colors.grey,
+                      ),
+                    ))
+              ],
+            ),
+          );
+        });
+
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+        child: MouseRegion(
+            onEnter: (e) {
+              setState(() {
+                hovering = true;
+              });
+            },
+            onExit: (e) {
+              setState(() {
+                hovering = false;
+              });
+            },
+            child: GestureDetector(
+                onTap: () {
+                  if (widget == widget.selectedVar.value) {
+                    widget.selectedVar.value = null;
+                  } else {
+                    widget.selectedVar.value = widget;
+                  }
+                },
+                child: Draggable<Var>(
+                    data: widget,
+                    feedback: Container(
+                        width: 180,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                            color: Color.fromRGBO(80, 80, 80, 0.3),
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                  decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
-                                ),
-                              ),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                  child: Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                        color: Colors.red.withOpacity(0.5),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(5))),
+                                  )),
                               Expanded(
                                   child: Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                child: Text(widget.name,
-                                    style: const TextStyle(
-                                        fontSize: 13, color: Colors.white)),
-                              )),
-                              Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                child: Text(widget.notifier.value.toString(),
-                                    style: const TextStyle(
-                                        fontSize: 13, color: Colors.white)),
-                              ),
-                              ReorderableDragStartListener(
-                                  index: widget.listIndex,
-                                  child: const SizedBox(
-                                    width: 40,
-                                    child: Icon(
-                                      Icons.drag_handle,
-                                      color: Colors.grey,
-                                    ),
-                                  ))
-                            ],
-                          ),
-                        );
-                      }))));
-    });
+                                      padding: const EdgeInsets.fromLTRB(
+                                          10, 0, 10, 0),
+                                      child: ValueListenableBuilder<String>(
+                                          valueListenable: widget.name,
+                                          builder: ((context, name, child) {
+                                            return Text(name,
+                                                style: const TextStyle(
+                                                    decoration:
+                                                        TextDecoration.none,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 13,
+                                                    color: Color.fromRGBO(
+                                                        255, 255, 255, 0.5)));
+                                          })))),
+                            ])),
+                    childWhenDragging: const SizedBox(width: 0, height: 0),
+                    child: w))));
   }
 }

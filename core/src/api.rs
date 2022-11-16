@@ -148,9 +148,7 @@ pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &No
     host.graph.nodes[index].as_ref()
 }
 
-/* Variable Functions */
-
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_vars_get_entry_count(host: &mut Host) -> usize {
     host.vars.entries.len()
 }
@@ -214,8 +212,6 @@ pub unsafe extern "C" fn ffi_host_var_get_type(host: &mut Host, id: usize) -> u3
         panic!("Couldn't find var");
     }
 }
-
-/* Get and set values */
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_var_get_float(host: &mut Host, id: usize) -> f32 {
@@ -383,7 +379,7 @@ pub unsafe extern "C" fn ffi_host_var_delete(host: &mut Host, id: usize) {
             }
         }
     });
-}
+}*/
 
 /* Some other stuff */
 
@@ -729,7 +725,7 @@ pub unsafe extern "C" fn ffi_node_should_rebuild(node: &mut Node) -> bool {
     node.module.should_rebuild()
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_param_count(node: &mut Node) -> usize {
     node.module.params().len()
 }
@@ -775,7 +771,7 @@ pub unsafe extern "C" fn ffi_node_param_set_bool(node: &mut Node, index: usize, 
         Value::Bool(v) => node.module.set_param(index, Value::Bool(*v)),
         _ => panic!("Expected int")
     }
-}
+}*/
 
 /* Widget */
 

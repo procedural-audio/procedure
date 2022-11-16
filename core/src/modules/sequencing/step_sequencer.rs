@@ -27,8 +27,7 @@ impl Module for StepSequencer {
         outputs: &[Pin::Notes("Midi Output", 10)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             grid: vec![vec![]],
@@ -75,7 +74,7 @@ impl Module for StepSequencer {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let _t = inputs.time[0].cycle(self.grid.len() as f64);
 
         if voice.index == 0 && self.grid.len() > 0 {

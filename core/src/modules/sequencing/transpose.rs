@@ -19,8 +19,7 @@ impl Module for Transpose {
         outputs: &[Pin::Notes("Notes Output", 25)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -50,7 +49,7 @@ impl Module for Transpose {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
         if steps < 0.0 {

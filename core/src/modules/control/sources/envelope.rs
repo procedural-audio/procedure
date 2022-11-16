@@ -27,8 +27,7 @@ impl Module for EnvelopeModule {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             /*attack: 0.0,
@@ -59,7 +58,7 @@ impl Module for EnvelopeModule {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
     }
 }
 

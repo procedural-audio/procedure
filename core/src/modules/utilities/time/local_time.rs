@@ -14,8 +14,7 @@ impl Module for LocalTime {
         outputs: &[Pin::Time("Time Output", 30)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self
     }
@@ -38,7 +37,7 @@ impl Module for LocalTime {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
         // Time buffer automatically set
     }
 }

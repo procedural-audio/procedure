@@ -19,8 +19,7 @@ impl Module for KnobModule {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -47,7 +46,7 @@ impl Module for KnobModule {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         outputs.control[0] = self.value;
     }
 }

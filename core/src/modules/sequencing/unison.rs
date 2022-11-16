@@ -21,8 +21,7 @@ impl Module for Transpose {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             value: 0.5,
@@ -58,7 +57,7 @@ impl Module for Transpose {
 
     }
 
-    fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
         if steps < 0.0 {

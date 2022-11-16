@@ -167,8 +167,7 @@ impl Module for MidiInput {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             listener: NoteListener::new(),
@@ -195,7 +194,7 @@ impl Module for MidiInput {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         self.listener.set_voice(voice.index as usize);
 
         for i in 0..16 {

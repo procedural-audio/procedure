@@ -45,12 +45,6 @@ impl Module for AnalogOscillator {
         ],
     };
 
-    const PARAMS: Params = &[
-        Param("Wave Selector", Value::Int(0)),
-        Param("Frequency", Value::Float(0.0)),
-        Param("Spread", Value::Float(0.0)),
-    ];
-
     fn new() -> Self {
         Self {
             wave_index: 0,
@@ -256,7 +250,7 @@ impl Module for AnalogOscillator {
         }
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut unison = self.unison * 6.0 + 2.0;
 
         if unison < 1.0 {

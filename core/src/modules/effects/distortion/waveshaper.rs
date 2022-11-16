@@ -35,8 +35,7 @@ impl Module for Waveshaper {
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             selected: 0,
@@ -122,7 +121,7 @@ impl Module for Waveshaper {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
         self.gain2 = self.gain;
 
         // let input_l = inputs.audio[0].left.as_channel().as_array();

@@ -26,11 +26,9 @@ class Module {
   var size = const Offset(250, 250);
   var pins = <Pin>[];
   var widgets = <ModuleWidget>[];
-  var widgetsMain = <ModuleWidget>[];
   var color = Color(0x0);
 
   final FFINode module;
-
   final Host host;
 
   Module(this.host, this.module) {
@@ -123,15 +121,6 @@ class Module {
     if (widget != null) {
       widgets.add(widget);
     }
-
-    /*var widgetMainRaw = api.ffiNodeGetWidgetMainRoot(module);
-    if (widgetMainRaw.metadata != 0) {
-      print("Adding widget to main view");
-      var widget = createWidget(host, module, widgetMainRaw);
-      if (widget != null) {
-        widgetsMain.add(widget);
-      }
-    }*/
   }
 }
 
@@ -158,6 +147,62 @@ class Pin {
   var offset = const Offset(15, 15);
   var isInput = true;
   String name = "Unknown";
+}
+
+class Param extends StatefulWidget {
+  Param({required this.index, required this.name, required this.module});
+
+  Module module;
+  int index;
+  String name;
+
+  @override
+  State<Param> createState() => _Param();
+}
+
+class _Param extends State<Param> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
+        },
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: Container(
+            height: 30,
+            padding: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+                color: hovering
+                    ? const Color.fromRGBO(40, 40, 40, 1.0)
+                    : const Color.fromRGBO(20, 20, 20, 1.0)),
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                  ),
+                  const SizedBox(width: 10, height: 30),
+                  Expanded(
+                      child: Text(widget.name,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14)))
+                ])));
+  }
 }
 
 class ModuleContainerWidget extends StatefulWidget {
@@ -232,137 +277,140 @@ class _ModuleContainerState extends State<ModuleContainerWidget> {
       }
     }
 
-    final moduleWidget = Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: MyTheme.greyMid,
-          borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
-          boxShadow: widget.host.globals.selectedModule == module.id
-              ? [
-                  BoxShadow(
-                      color: Colors.white.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 0,
-                      offset: const Offset(0, 0)),
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 5,
-                      blurRadius: 15,
-                      offset: const Offset(0, 5)),
-                ]
-              : [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 5,
-                      blurRadius: 15,
-                      offset: const Offset(0, 5)),
-                ],
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: widgets +
-              (resizable
-                  ? ([
-                      Align(
-                          alignment: Alignment.bottomRight,
-                          child: SizedBox(
-                            width: 30,
-                            height: 30,
-                            child: GestureDetector(
-                              child: const Icon(
-                                Icons.drag_indicator,
-                                color: Colors.grey,
-                              ),
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  var m = widget.host.globals.zoom * 10;
-
-                                  var w = width + details.delta.dx * m;
-                                  var h = height + details.delta.dy * m;
-
-                                  var minWidth =
-                                      api.ffiNodeGetMinWidth(module.module);
-                                  var maxWidth =
-                                      api.ffiNodeGetMaxWidth(module.module);
-                                  var minHeight =
-                                      api.ffiNodeGetMinHeight(module.module);
-                                  var maxHeight =
-                                      api.ffiNodeGetMaxHeight(module.module);
-
-                                  if (w < minWidth) {
-                                    w = minWidth.toDouble();
-                                  }
-
-                                  if (w > maxWidth) {
-                                    w = maxWidth.toDouble();
-                                  }
-
-                                  if (h < minHeight) {
-                                    h = minHeight.toDouble();
-                                  }
-
-                                  if (h > maxHeight) {
-                                    h = maxHeight.toDouble();
-                                  }
-
-                                  api.ffiNodeSetNodeWidth(module.module, w);
-                                  api.ffiNodeSetNodeHeight(module.module, h);
-                                  module.size = Offset(w, h);
-                                });
-                              },
-                            ),
-                          ))
-                    ])
-                  : []),
-        ));
-
     return Positioned(
         left: module.position.dx,
         top: module.position.dy,
         child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          // Can't do this. Might accidentally delete when playing pads
-          /*onDoubleTap: () {
-          globals.host.instrument.preset.graph.removeModule(module.id);
-          gGridState?.refresh();
-        },*/
-          onTap: () {
-            print("Tap module");
-            if (widget.host.globals.selectedModule == module.id) {
-              widget.host.globals.selectedModule = -1;
-              refresh();
-            } else {
-              var oldModule = widget.host.globals.selectedModule;
-              widget.host.globals.selectedModule = module.id;
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              print("Tap module");
+              if (widget.host.globals.selectedModule == module.id) {
+                widget.host.globals.selectedModule = -1;
+                refresh();
+              } else {
+                var oldModule = widget.host.globals.selectedModule;
+                widget.host.globals.selectedModule = module.id;
 
-              for (var moduleWidget in widget.host.graph.moduleWidgets) {
-                if (moduleWidget.module.id == oldModule) {
-                  moduleWidget.refresh();
+                for (var moduleWidget in widget.host.graph.moduleWidgets) {
+                  if (moduleWidget.module.id == oldModule) {
+                    moduleWidget.refresh();
+                  }
                 }
+
+                refresh();
               }
+            },
+            onSecondaryTap: () {
+              print("Secondary tap module");
+            },
+            onPanUpdate: (details) {
+              api.ffiNodeSetX(module.module, module.position.dx.toInt());
+              api.ffiNodeSetY(module.module, module.position.dy.toInt());
 
-              refresh();
-            }
-          },
-          onSecondaryTap: () {
-            print("Secondary tap module");
-          },
-          onPanUpdate: (details) {
-            api.ffiNodeSetX(module.module, module.position.dx.toInt());
-            api.ffiNodeSetY(module.module, module.position.dy.toInt());
+              setState(() {
+                module.position = Offset(module.position.dx + details.delta.dx,
+                    module.position.dy + details.delta.dy);
+              });
+            },
+            child: DragTarget<Var>(
+                builder: (context, candidateData, rejectedData) {
+              return Container(
+                  width: width,
+                  height: height,
+                  decoration: BoxDecoration(
+                    color: MyTheme.greyMid,
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10)),
+                    boxShadow: widget.host.globals.selectedModule == module.id
+                        ? [
+                            BoxShadow(
+                                color: Colors.white.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 0,
+                                offset: const Offset(0, 0)),
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                spreadRadius: 5,
+                                blurRadius: 15,
+                                offset: const Offset(0, 5)),
+                          ]
+                        : [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                spreadRadius: 5,
+                                blurRadius: 15,
+                                offset: const Offset(0, 5)),
+                          ],
+                  ),
+                  child: Stack(
+                      fit: StackFit.expand,
+                      children: widgets +
+                          (resizable
+                              ? ([
+                                  Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: GestureDetector(
+                                          child: const Icon(
+                                            Icons.drag_indicator,
+                                            color: Colors.grey,
+                                          ),
+                                          onPanUpdate: (details) {
+                                            setState(() {
+                                              var m =
+                                                  widget.host.globals.zoom * 10;
 
-            setState(() {
-              module.position = Offset(module.position.dx + details.delta.dx,
-                  module.position.dy + details.delta.dy);
-            });
-          },
-          child: moduleWidget,
-        ));
+                                              var w =
+                                                  width + details.delta.dx * m;
+                                              var h =
+                                                  height + details.delta.dy * m;
+
+                                              var minWidth =
+                                                  api.ffiNodeGetMinWidth(
+                                                      module.module);
+                                              var maxWidth =
+                                                  api.ffiNodeGetMaxWidth(
+                                                      module.module);
+                                              var minHeight =
+                                                  api.ffiNodeGetMinHeight(
+                                                      module.module);
+                                              var maxHeight =
+                                                  api.ffiNodeGetMaxHeight(
+                                                      module.module);
+
+                                              if (w < minWidth) {
+                                                w = minWidth.toDouble();
+                                              }
+
+                                              if (w > maxWidth) {
+                                                w = maxWidth.toDouble();
+                                              }
+
+                                              if (h < minHeight) {
+                                                h = minHeight.toDouble();
+                                              }
+
+                                              if (h > maxHeight) {
+                                                h = maxHeight.toDouble();
+                                              }
+
+                                              api.ffiNodeSetNodeWidth(
+                                                  module.module, w);
+                                              api.ffiNodeSetNodeHeight(
+                                                  module.module, h);
+                                              module.size = Offset(w, h);
+                                            });
+                                          },
+                                        ),
+                                      ))
+                                ])
+                              : [])));
+            })));
   }
 }
 

@@ -64,8 +64,7 @@ impl Module for Slicer {
         outputs: &[Pin::Audio("Audio Output", 15)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         let sample: Sample<2>;
 
@@ -154,7 +153,7 @@ impl Module for Slicer {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         let mut start_point = 0.0;
         let mut end_point = 1.0;
 

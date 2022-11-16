@@ -434,7 +434,6 @@ impl Graph {
     pub fn process(
         &mut self,
         time: &Time,
-        vars: &Vars,
         audio: &mut [AudioBuffer],
         midi: &mut NoteBuffer,
     ) {
@@ -442,6 +441,6 @@ impl Graph {
 
         // self.plugins.update();
 
-        self.processor.process(time, vars, audio, midi);
+        self.processor.process(time, audio, midi);
     }
 }

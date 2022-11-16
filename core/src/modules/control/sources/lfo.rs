@@ -31,8 +31,7 @@ impl Module for LfoModule {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             wave: 0,
@@ -174,7 +173,7 @@ impl Module for LfoModule {
         voice.triangle.prepare(sample_rate / block_size as u32, 1);
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let hz = self.value * 20.0;
         let reset = inputs.control[0];
 

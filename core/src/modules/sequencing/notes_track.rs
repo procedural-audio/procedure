@@ -31,8 +31,7 @@ impl Module for NotesTrack {
         outputs: &[Pin::Notes("Notes Output", 10)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             notes: Vec::with_capacity(256),
@@ -64,7 +63,7 @@ impl Module for NotesTrack {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if *voice == 0 {
             let time = inputs.time[0];
             self.beat = time.cycle(self.beats as f64).start();

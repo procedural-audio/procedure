@@ -38,8 +38,7 @@ impl Module for Tube {
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             selected: 0,
@@ -119,7 +118,7 @@ impl Module for Tube {
         voice.tube6_r.prepare(sample_rate, block_size);
     }
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
         /*let input_l = inputs.audio[0].left.as_channel().as_array();
         let input_r = inputs.audio[0].right.as_channel().as_array();
 

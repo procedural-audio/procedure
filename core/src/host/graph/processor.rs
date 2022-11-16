@@ -624,7 +624,6 @@ impl GraphProcessor {
     pub fn process(
         &mut self,
         time: &Time,
-        vars: &Vars,
         audio: &mut [AudioBuffer],
         events: &mut NoteBuffer,
     ) {
@@ -697,7 +696,7 @@ impl GraphProcessor {
 
                 /* Process Voice */
 
-                (*module).process_voice(vars, action.voice_index, &inputs, &mut outputs);
+                (*module).process_voice(action.voice_index, &inputs, &mut outputs);
 
                 /* Copy IO Outputs */
 

@@ -37,8 +37,7 @@ impl Module for DigitalFilter {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             low_pass_6: LowPass6::new(),

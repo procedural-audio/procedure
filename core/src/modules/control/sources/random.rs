@@ -20,8 +20,7 @@ impl Module for Random {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             rng: rand::thread_rng(),
@@ -47,7 +46,7 @@ impl Module for Random {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         outputs.control[0] = self.rng.gen_range(0.0..=1.0);
     }
 }

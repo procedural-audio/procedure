@@ -29,8 +29,7 @@ impl Module for SawModule {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             wave_index: 0,
@@ -68,7 +67,7 @@ impl Module for SawModule {
         voice.saw.init(sample_rate as i32);
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for note in &inputs.events[0] {
             println!("Found input event");
             match note {

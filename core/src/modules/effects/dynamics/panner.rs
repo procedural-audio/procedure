@@ -20,8 +20,7 @@ impl Module for Panner {
         outputs: &[Pin::Audio("Audio Output", 25)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -50,7 +49,7 @@ impl Module for Panner {
         voice.prepare(sample_rate, block_size)
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         voice.set_param(0, self.value);
 
         voice.process(

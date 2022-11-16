@@ -16,8 +16,7 @@ impl Module for SimpleKnob {
         outputs: &[Pin::Control("Control Output", 30)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -50,7 +49,7 @@ impl Module for SimpleKnob {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         outputs.control[0] = self.value;
     }
 }

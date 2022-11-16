@@ -17,8 +17,7 @@ impl Module for Timbre {
         outputs: &[Pin::Notes("Notes Output", 30)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self
     }
@@ -41,7 +40,7 @@ impl Module for Timbre {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let new_timbre = inputs.control[0];
 
         for event in &inputs.events[0] {

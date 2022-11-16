@@ -37,8 +37,7 @@ impl Module for AnalogFilter {
         ],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             selected: 0,
@@ -116,7 +115,7 @@ impl Module for AnalogFilter {
         voice.sallen_key.prepare(sample_rate, block_size);
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let input = inputs.audio[0].as_array();
         let mut output = outputs.audio[0].as_array_mut();
 

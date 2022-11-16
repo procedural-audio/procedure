@@ -22,10 +22,6 @@ impl Module for ControlVariable {
         ],
     };
 
-    const PARAMS: Params = &[
-        Param("Enabled", Value::Bool(false))
-    ];
-
     fn new() -> Self {
         Self {
             name: Arc::new(Mutex::new(String::new()))
@@ -48,7 +44,7 @@ impl Module for ControlVariable {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, vars: &Vars, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
         match self.name.try_lock() {
             Ok(name) => {
                 /*for var in vars {

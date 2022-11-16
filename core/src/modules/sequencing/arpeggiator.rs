@@ -27,8 +27,7 @@ impl Module for Arpeggiator {
         outputs: &[Pin::Notes("Midi Output", 20)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             indicators: [Color::GREEN; 16],
@@ -178,7 +177,7 @@ impl Module for Arpeggiator {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         /* Arpeggiator Inputs */
 
         for event in &inputs.events[0] {

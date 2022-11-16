@@ -99,9 +99,6 @@ pub struct Info {
     pub outputs: &'static [Pin],
 }
 
-pub type Params = &'static [Param];
-pub struct Param(pub &'static str, pub Value);
-
 #[derive(Copy, Clone)]
 pub enum Value {
     Float(f32),
@@ -118,24 +115,15 @@ pub trait Module {
     type Voice;
 
     const INFO: Info;
-    const PARAMS: Params;
 
     fn info(&self) -> Info {
         Self::INFO
-    }
-
-    fn params(&self) -> Params {
-        Self::PARAMS
     }
 
     fn new() -> Self;
     fn new_voice(index: u32) -> Self::Voice;
 
     fn build<'w>(&'w mut self, ui: &'w UI) -> Box<dyn WidgetNew + 'w>;
-
-    fn set_param(&mut self, name: &str, value: Value) {
-        panic!("set_param(...) called but not implemented");
-    }
 
     fn is_active(_voice: &Self::Voice) -> bool {
         true
@@ -145,94 +133,7 @@ pub trait Module {
     fn save(&self, state2: &mut JSON);
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) where Self: Sized;
-    fn process(&mut self, vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
-}
-
-pub struct Vars {
-    pub entries: Vec<VarEntry<Var>>
-}
-
-impl Vars {
-    pub fn new() -> Self {
-        Self {
-            entries: vec![
-                VarEntry::Variable(Var {
-                    id: Id(0),
-                    name: String::from("Variable 1"),
-                    value: Value::Float(0.0)
-                }),
-                VarEntry::Variable(Var {
-                    id: Id(1),
-                    name: String::from("Variable 2"),
-                    value: Value::Float(0.0)
-                }),
-                VarEntry::Group(
-                    String::from("Group 1"),
-                    vec![
-                        Var {
-                            id: Id(2),
-                            name: String::from("Variable 3"),
-                            value: Value::Bool(false)
-                        },
-                        Var {
-                            id: Id(3),
-                            name: String::from("Variable 4"),
-                            value: Value::Bool(false)
-                        },
-                        Var {
-                            id: Id(4),
-                            name: String::from("Variable 5"),
-                            value: Value::Bool(true)
-                        },
-                    ]
-                ),
-                VarEntry::Variable(Var {
-                    id: Id(5),
-                    name: String::from("Variable 6"),
-                    value: Value::Bool(true)
-                }),
-            ]
-        }
-    }
-
-    pub fn find_id(&mut self, id: Id) -> Option<&mut Var> {
-        for entry in &mut self.entries {
-            match entry {
-                VarEntry::Variable(var) => {
-                    if var.id.0 == id.0 {
-                        return Some(var);
-                    }
-                },
-                VarEntry::Group(name, group) => {
-                    for var in group {
-                        if var.id.0 == id.0 {
-                            return Some(var);
-                        }
-                    }
-                },
-            }
-        }
-
-        return None;
-    }
-}
-
-pub enum VarEntry<T> {
-    Variable(T),
-    Group(String, Vec<T>)
-}
-
-pub struct Id(pub usize);
-
-pub struct Var {
-    pub id: Id,
-    pub name: String,
-    pub value: Value,
-}
-
-pub struct VarAssignment {
-    module_id: u32,
-    param_name: String,
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
 }
 
 pub enum Size {

@@ -278,6 +278,36 @@ class FFIApi {
           "ffi_node_get_ui_root")
       .asFunction();*/
 
+  /*int Function(FFINode) ffiNodeGetParamCount = core
+      .lookup<NativeFunction<Int64 Function(FFINode)>>(
+          "ffi_node_get_param_count")
+      .asFunction();
+
+  Pointer<Utf8> Function(FFINode, int) ffiNodeParamGetName = core
+      .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int64)>>(
+          "ffi_node_param_get_name")
+      .asFunction();
+
+  int Function(FFINode, int) ffiNodeParamGetType = core
+      .lookup<NativeFunction<Int32 Function(FFINode, Int64)>>(
+          "ffi_node_param_get_type")
+      .asFunction();
+
+  void Function(FFINode, int, double) ffiNodeParamSetFloat = core
+      .lookup<NativeFunction<Void Function(FFINode, Int64, Float)>>(
+          "ffi_node_param_set_float")
+      .asFunction();
+
+  void Function(FFINode, int, int) ffiNodeParamSetInt = core
+      .lookup<NativeFunction<Void Function(FFINode, Int64, Int32)>>(
+          "ffi_node_param_set_int")
+      .asFunction();
+
+  void Function(FFINode, int, bool) ffiNodeParamSetBool = core
+      .lookup<NativeFunction<Void Function(FFINode, Int64, Bool)>>(
+          "ffi_node_param_set_bool")
+      .asFunction();*/
+
   /* Widget */
 
   FFIWidgetTrait Function(FFIWidget) ffiWidgetGetTrait = core
@@ -448,8 +478,6 @@ class Host extends ChangeNotifier {
         gGridState?.refresh();
       }
     });
-
-    vars.refresh();
   }
 
   @override

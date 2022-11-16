@@ -17,8 +17,7 @@ impl Module for LevelMeter {
         outputs: &[Pin::Control("RMS", 25)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             left: 0.5,
@@ -57,7 +56,7 @@ impl Module for LevelMeter {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, _voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
         /* Left */
 
         let mut sum = 0.0;

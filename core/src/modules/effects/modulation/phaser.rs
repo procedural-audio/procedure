@@ -22,8 +22,7 @@ impl Module for Phaser {
         outputs: &[Pin::Audio("Audio Output", 20)],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Phaser {
             level: 0.5,
@@ -116,7 +115,7 @@ impl Module for Phaser {
         voice.prepare(sample_rate, block_size);
     }
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         voice.process(
             &inputs.audio[0].as_array(),
             &mut outputs.audio[0].as_array_mut(),

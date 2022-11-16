@@ -19,8 +19,7 @@ impl Module for Display {
         outputs: &[],
     };
 
-    const PARAMS: Params = &[];
-
+    
     fn new() -> Self {
         Self {
             rate: 0.0,
@@ -54,7 +53,7 @@ impl Module for Display {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _vars: &Vars, voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
         if *voice == 0 {
             let input = inputs.control[0];
 
