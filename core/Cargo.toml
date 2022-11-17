@@ -1,6 +1,8 @@
 [workspace]
 
 members = [
+	"dsp",
 	"graph",
 	"modules",
+	"plugins"
 ]
