@@ -18,7 +18,6 @@ impl Module for KnobModule {
             Pin::Control("Clock Output", 30)
         ],
     };
-
     
     fn new() -> Self {
         Self { value: 0.5 }

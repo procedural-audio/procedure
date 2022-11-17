@@ -54,6 +54,7 @@ class KnobWidget extends ModuleWidget {
   void onVarUpdate(dynamic value) {
     setState(() {
       angle = value as double;
+      ffiKnobSetValue(widgetRaw.pointer, angle);
     });
   }
 
@@ -197,7 +198,7 @@ class KnobWidget extends ModuleWidget {
 
                           angle += (-details.delta.dy / 60) / 5;
 
-                          ffiKnobSetValue(widgetRaw.pointer, (angle + 2.5));
+                          ffiKnobSetValue(widgetRaw.pointer, angle);
 
                           if (assignedVar.value != null) {
                             if (assignedVar.value!.notifier.value is double) {

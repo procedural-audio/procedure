@@ -313,11 +313,9 @@ class _ModuleWidgetState extends State<ModuleWidget> {
                     width: labelHovering ? 100 : 8,
                     height: labelHovering ? 14 : 8,
                     padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(
-                            255, 0, 0, labelHovering ? 0.5 : 1.0),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5))),
+                    decoration: const BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
                     child: Visibility(
                         visible: labelHovering,
                         child: ValueListenableBuilder<String>(
@@ -354,9 +352,12 @@ class _ModuleWidgetState extends State<ModuleWidget> {
         if (widget.assignedVar.value != null) {
           widget.assignedVar.value!.notifier.removeListener(onVarUpdate);
           widget.assignedVar.value = v as Var;
+          widget.assignedVar.value!.notifier.addListener(onVarUpdate);
+          onVarUpdate();
         } else {
           widget.assignedVar.value = v as Var;
           widget.assignedVar.value!.notifier.addListener(onVarUpdate);
+          onVarUpdate();
         }
       }, onLeave: (data) {
         if (varDragging) {
