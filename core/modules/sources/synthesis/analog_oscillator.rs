@@ -170,7 +170,7 @@ impl Module for AnalogOscillator {
                 },
                 Transform {
                     position: (60 + size * 2, 40 + size * 0),
-                    size: (50, 70),
+                    size: (60, 70),
                     child: Knob {
                         text: "Unison",
                         color: Color::BLUE,

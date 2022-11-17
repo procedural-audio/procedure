@@ -30,11 +30,10 @@ int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionLowNote = core
         "ffi_sample_mapper_get_region_low_note")
     .asFunction();
 
-void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionLowNote =
-    core
-        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
-            "ffi_sample_mapper_set_region_low_note")
-        .asFunction();
+void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionLowNote = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+        "ffi_sample_mapper_set_region_low_note")
+    .asFunction();
 
 int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionHighNote = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(

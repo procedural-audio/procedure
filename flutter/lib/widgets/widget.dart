@@ -13,6 +13,7 @@ import 'dart:typed_data';
 
 import '../host.dart';
 
+import '../views/variables.dart';
 import 'knob.dart';
 import 'nodeSequencer.dart';
 import 'stack.dart';
@@ -169,12 +170,9 @@ abstract class ModuleWidget extends StatefulWidget {
   final Host host;
 
   late List<ModuleWidget> children = [];
-
-  _ModuleWidgetState state = _ModuleWidgetState();
+  final _ModuleWidgetState state = _ModuleWidgetState();
 
   ModuleWidget(this.host, this.moduleRaw, this.widgetRaw) {
-    state.setBuildFunction(build);
-
     int childCount = api.ffiWidgetGetChildCount(widgetRaw);
 
     for (int i = 0; i < childCount; i++) {
@@ -186,6 +184,8 @@ abstract class ModuleWidget extends StatefulWidget {
       }
     }
   }
+
+  ValueNotifier<Var?> assignedVar = ValueNotifier(null);
 
   Widget createEditor(BuildContext context) {
     return state.createEditor();
@@ -200,6 +200,16 @@ abstract class ModuleWidget extends StatefulWidget {
   void refresh() {
     state.refresh();
   }
+
+  bool canAcceptVars() {
+    return false;
+  }
+
+  bool willAcceptVar(Var v) {
+    return false;
+  }
+
+  void onVarUpdate(dynamic value) {}
 
   void refreshRecursive() {
     state.refresh();
@@ -239,30 +249,12 @@ abstract class ModuleWidget extends StatefulWidget {
   }
 
   @override
-  _ModuleWidgetState createState() {
-    this.state = _ModuleWidgetState();
-    this.state.setBuildFunction(build);
-    return this.state;
-  }
+  _ModuleWidgetState createState() => state;
 }
 
 class _ModuleWidgetState extends State<ModuleWidget> {
   bool varDragging = false;
-
-  // ignore: prefer_function_declarations_over_variables
-  Widget Function(BuildContext) buildFunction = (b) {
-    return const SizedBox(
-      height: 14,
-      child: Text(
-        "Error: Wrong build method",
-        style: TextStyle(
-            color: Colors.red,
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
-            decoration: TextDecoration.none),
-      ),
-    );
-  };
+  bool labelHovering = false;
 
   @override
   void initState() {
@@ -274,12 +266,6 @@ class _ModuleWidgetState extends State<ModuleWidget> {
   void dispose() {
     widget.dispose();
     super.dispose();
-  }
-
-  _ModuleWidgetState();
-
-  void setBuildFunction(Widget Function(BuildContext) f) {
-    buildFunction = f;
   }
 
   bool willAccept(Object? data) {
@@ -294,9 +280,124 @@ class _ModuleWidgetState extends State<ModuleWidget> {
     setState(() {});
   }
 
+  void onVarUpdate() {
+    if (widget.willAcceptVar(widget.assignedVar.value!)) {
+      widget.onVarUpdate(widget.assignedVar.value!.notifier.value);
+    } else {
+      print("Type is incorrect");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return buildFunction(context);
+    var widgetTree = widget.build(context);
+
+    if (widget.assignedVar.value != null) {
+      widgetTree = Stack(children: [
+        widgetTree,
+        Align(
+            alignment: Alignment.topLeft,
+            child: MouseRegion(
+                onEnter: (e) {
+                  setState(() {
+                    labelHovering = true;
+                  });
+                },
+                onExit: (e) {
+                  setState(() {
+                    labelHovering = false;
+                  });
+                },
+                child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: labelHovering ? 100 : 8,
+                    height: labelHovering ? 14 : 8,
+                    padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(
+                            255, 0, 0, labelHovering ? 0.5 : 1.0),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(5))),
+                    child: Visibility(
+                        visible: labelHovering,
+                        child: ValueListenableBuilder<String>(
+                            valueListenable: widget.assignedVar.value!.name,
+                            builder: (context, name, child) {
+                              return Text(name,
+                                  softWrap: false,
+                                  style: const TextStyle(
+                                      color: Color.fromRGBO(255, 255, 255, 0.8),
+                                      fontSize: 10));
+                            })))))
+      ]);
+    }
+
+    if (widget.canAcceptVars()) {
+      return DragTarget(onWillAccept: (data) {
+        setState(() {
+          varDragging = true;
+        });
+        if (data != null) {
+          if (data is Var) {
+            return widget.willAcceptVar(data);
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }, onAccept: (v) {
+        setState(() {
+          varDragging = false;
+        });
+
+        if (widget.assignedVar.value != null) {
+          widget.assignedVar.value!.notifier.removeListener(onVarUpdate);
+          widget.assignedVar.value = v as Var;
+        } else {
+          widget.assignedVar.value = v as Var;
+          widget.assignedVar.value!.notifier.addListener(onVarUpdate);
+        }
+      }, onLeave: (data) {
+        if (varDragging) {
+          setState(() {
+            varDragging = false;
+          });
+        }
+      }, builder: (context, candidateData, rejectedData) {
+        if (varDragging) {
+          bool shouldAccept = false;
+
+          if (candidateData.isNotEmpty) {
+            shouldAccept = widget.willAcceptVar(candidateData[0] as Var);
+          }
+
+          return Stack(
+            children: [
+              Positioned(
+                  left: 0,
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromRGBO(30, 30, 30, 1.0),
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                    ),
+                    child: Icon(
+                      shouldAccept ? Icons.add : Icons.error,
+                      color: shouldAccept ? Colors.green : Colors.red,
+                    ),
+                  ))
+            ],
+          );
+        } else {
+          return widgetTree;
+        }
+      });
+    } else {
+      return widgetTree;
+    }
   }
 }
 

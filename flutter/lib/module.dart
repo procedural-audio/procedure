@@ -2,22 +2,13 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'dart:ffi';
-import 'dart:async';
-import 'dart:io';
-import 'dart:convert';
-
-import 'config.dart';
 import 'main.dart';
 
 import 'widgets/widget.dart';
-
 import 'views/variables.dart';
-import 'views/presets.dart';
-import 'views/info.dart';
+import 'views/settings.dart';
 
 import 'host.dart';
-import 'views/settings.dart';
 
 class Module extends StatefulWidget {
   var id = 1;
@@ -327,62 +318,6 @@ class Pin {
   var offset = const Offset(15, 15);
   var isInput = true;
   String name = "Unknown";
-}
-
-class Param extends StatefulWidget {
-  Param({required this.index, required this.name, required this.module});
-
-  Module module;
-  int index;
-  String name;
-
-  @override
-  State<Param> createState() => _Param();
-}
-
-class _Param extends State<Param> {
-  bool hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: Container(
-            height: 30,
-            padding: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-                color: hovering
-                    ? const Color.fromRGBO(40, 40, 40, 1.0)
-                    : const Color.fromRGBO(20, 20, 20, 1.0)),
-            child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.all(Radius.circular(5))),
-                  ),
-                  const SizedBox(width: 10, height: 30),
-                  Expanded(
-                      child: Text(widget.name,
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 14)))
-                ])));
-  }
 }
 
 class PinLabel extends StatelessWidget {

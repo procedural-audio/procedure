@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import '../host.dart';
+import '../views/variables.dart';
 import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
@@ -31,17 +32,30 @@ int Function(FFIWidgetPointer) ffiKnobGetColor = core
     .asFunction();
 
 class KnobWidget extends ModuleWidget {
-  KnobWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    /*var rawLabel = ffiKnobGetLabel(widgetRaw);
-    labelText = rawLabel.toDartString();
-    calloc.free(rawLabel);*/
-  }
+  KnobWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   double angle = 0;
   String labelText = "";
   bool hovering = false;
   bool dragging = false;
+
+  @override
+  bool canAcceptVars() {
+    return true;
+  }
+
+  @override
+  bool willAcceptVar(Var v) {
+    return v.notifier.value is double;
+  }
+
+  @override
+  void onVarUpdate(dynamic value) {
+    setState(() {
+      angle = value as double;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +88,7 @@ class KnobWidget extends ModuleWidget {
             child: CustomPaint(
               painter: ArcPainter(
                 startAngle: 2.2,
-                endAngle: angle + 2.5,
+                endAngle: (angle - 0.5) * 5 + 2.5,
                 color: color,
                 shouldGlow: true,
               ),
@@ -89,8 +103,8 @@ class KnobWidget extends ModuleWidget {
             height: height + 0.0,
             child: CustomPaint(
               painter: ArcPainter(
-                startAngle: angle - 1.55,
-                endAngle: 2.5 - angle,
+                startAngle: (angle - 0.5) * 5 - 1.55,
+                endAngle: 2.5 - (angle - 0.5) * 5,
                 color: MyTheme.grey60,
                 shouldGlow: false,
               ),
@@ -120,7 +134,7 @@ class KnobWidget extends ModuleWidget {
               alignment: Alignment.topCenter,
             ),
             Transform.rotate(
-              angle: angle,
+              angle: (angle - 0.5) * 5,
               alignment: Alignment.center,
               child: Container(
                 width: width - 10.0,
@@ -179,17 +193,22 @@ class KnobWidget extends ModuleWidget {
                   },
                   onVerticalDragUpdate: (details) => setState(
                         () {
-                          // angle += -details.delta.dy / 60 * globals.zoom;
-                          // ^^^ changed this during refactor
+                          // print(angle.toString());
 
-                          angle += -details.delta.dy / 60;
+                          angle += (-details.delta.dy / 60) / 5;
 
-                          ffiKnobSetValue(widgetRaw.pointer, (angle + 2.5) / 5);
+                          ffiKnobSetValue(widgetRaw.pointer, (angle + 2.5));
 
-                          if (angle > 2.5) {
-                            angle = 2.5;
-                          } else if (angle < -2.5) {
-                            angle = -2.5;
+                          if (assignedVar.value != null) {
+                            if (assignedVar.value!.notifier.value is double) {
+                              assignedVar.value!.notifier.value = angle;
+                            }
+                          }
+
+                          if (angle > 1) {
+                            angle = 1.0;
+                          } else if (angle < 0) {
+                            angle = 0;
                           }
 
                           setState(() {

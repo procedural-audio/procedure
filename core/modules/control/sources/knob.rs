@@ -34,7 +34,7 @@ impl Module for KnobModule {
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (10, 10),
-            size: (50, 70),
+            size: (60, 70),
             child: Knob {
                 text: "",
                 color: Color::RED,
