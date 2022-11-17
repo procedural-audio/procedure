@@ -19,7 +19,7 @@ import 'views/info.dart';
 import 'host.dart';
 import 'views/settings.dart';
 
-class Module {
+class Module extends StatefulWidget {
   var id = 1;
   var name = "Name";
   var position = const Offset(100, 100);
@@ -122,6 +122,186 @@ class Module {
       widgets.add(widget);
     }
   }
+
+  @override
+  State<Module> createState() => _Module();
+}
+
+class _Module extends State<Module> {
+  @override
+  Widget build(BuildContext context) {
+    bool resizable = api.ffiNodeGetResizable(widget.module);
+    var width = api.ffiNodeGetWidth(widget.module);
+    var height = api.ffiNodeGetHeight(widget.module);
+
+    final widgets = <Widget>[];
+
+    widgets.addAll(widget.widgets);
+
+    widgets.add(Container(
+        padding: const EdgeInsets.all(10),
+        child: Align(
+            alignment: Alignment.topCenter,
+            child: Text(
+              widget.name,
+              style: TextStyle(
+                  color: widget.color,
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  decoration: TextDecoration.none),
+            ))));
+
+    for (var pin in widget.pins) {
+      if (pin.isInput) {
+        if (pin.type != IO.external) {
+          widgets.add(PinWidget(widget.id, pin.index, pin.type, 10,
+              pin.offset.dy, pin.name, pin.isInput, widget.host));
+        }
+      } else {
+        pin.offset = Offset(width - 25, pin.offset.dy);
+
+        if (pin.type != IO.external) {
+          widgets.add(PinWidget(widget.id, pin.index, pin.type, width - 25,
+              pin.offset.dy, pin.name, pin.isInput, widget.host));
+        }
+      }
+    }
+
+    return Positioned(
+        left: widget.position.dx,
+        top: widget.position.dy,
+        child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              print("TODO: Tap module");
+              /*if (widget.host.globals.selectedModule == widget.id) {
+                widget.host.globals.selectedModule = -1;
+                setState(() {});
+              } else {
+                var oldModule = widget.host.globals.selectedModule;
+                widget.host.globals.selectedModule = widget.id;
+
+                for (var moduleWidget in widget.host.graph.moduleWidgets) {
+                  if (moduleWidget.module.id == oldModule) {
+                    moduleWidget.refresh();
+                  }
+                }
+
+                setState(() {});
+              }*/
+            },
+            onSecondaryTap: () {
+              print("Secondary tap module");
+            },
+            onPanUpdate: (details) {
+              api.ffiNodeSetX(widget.module, widget.position.dx.toInt());
+              api.ffiNodeSetY(widget.module, widget.position.dy.toInt());
+
+              setState(() {
+                widget.position = Offset(widget.position.dx + details.delta.dx,
+                    widget.position.dy + details.delta.dy);
+              });
+            },
+            child: DragTarget<Var>(
+                builder: (context, candidateData, rejectedData) {
+              return Container(
+                  width: width,
+                  height: height,
+                  decoration: BoxDecoration(
+                    color: MyTheme.greyMid,
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10)),
+                    boxShadow: widget.host.globals.selectedModule == widget.id
+                        ? [
+                            BoxShadow(
+                                color: Colors.white.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 0,
+                                offset: const Offset(0, 0)),
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                spreadRadius: 5,
+                                blurRadius: 15,
+                                offset: const Offset(0, 5)),
+                          ]
+                        : [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                spreadRadius: 5,
+                                blurRadius: 15,
+                                offset: const Offset(0, 5)),
+                          ],
+                  ),
+                  child: Stack(
+                      fit: StackFit.expand,
+                      children: widgets +
+                          (resizable
+                              ? ([
+                                  Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: GestureDetector(
+                                          child: const Icon(
+                                            Icons.drag_indicator,
+                                            color: Colors.grey,
+                                          ),
+                                          onPanUpdate: (details) {
+                                            setState(() {
+                                              var m =
+                                                  widget.host.globals.zoom * 10;
+
+                                              var w =
+                                                  width + details.delta.dx * m;
+                                              var h =
+                                                  height + details.delta.dy * m;
+
+                                              var minWidth =
+                                                  api.ffiNodeGetMinWidth(
+                                                      widget.module);
+                                              var maxWidth =
+                                                  api.ffiNodeGetMaxWidth(
+                                                      widget.module);
+                                              var minHeight =
+                                                  api.ffiNodeGetMinHeight(
+                                                      widget.module);
+                                              var maxHeight =
+                                                  api.ffiNodeGetMaxHeight(
+                                                      widget.module);
+
+                                              if (w < minWidth) {
+                                                w = minWidth.toDouble();
+                                              }
+
+                                              if (w > maxWidth) {
+                                                w = maxWidth.toDouble();
+                                              }
+
+                                              if (h < minHeight) {
+                                                h = minHeight.toDouble();
+                                              }
+
+                                              if (h > maxHeight) {
+                                                h = maxHeight.toDouble();
+                                              }
+
+                                              api.ffiNodeSetNodeWidth(
+                                                  widget.module, w);
+                                              api.ffiNodeSetNodeHeight(
+                                                  widget.module, h);
+                                              widget.size = Offset(w, h);
+                                            });
+                                          },
+                                        ),
+                                      ))
+                                ])
+                              : [])));
+            })));
+  }
 }
 
 class Connector {
@@ -202,215 +382,6 @@ class _Param extends State<Param> {
                           style: const TextStyle(
                               color: Colors.white, fontSize: 14)))
                 ])));
-  }
-}
-
-class ModuleContainerWidget extends StatefulWidget {
-  ModuleContainerWidget(Module m, this.host) : super(key: UniqueKey()) {
-    module = m;
-    state = _ModuleContainerState(module);
-  }
-
-  Host host;
-
-  late Module module;
-  late _ModuleContainerState state;
-
-  void refresh() {
-    state.refresh();
-  }
-
-  @override
-  State<StatefulWidget> createState() {
-    return state;
-  }
-}
-
-class _ModuleContainerState extends State<ModuleContainerWidget> {
-  _ModuleContainerState(this.module);
-
-  late Module module;
-
-  void refresh() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    bool resizable = api.ffiNodeGetResizable(module.module);
-    //print("Building module container");
-    // PERFORMANCE ISSUE: THIS GETS CALLED TOO OFTEN
-
-    var width = api.ffiNodeGetWidth(module.module);
-    var height = api.ffiNodeGetHeight(module.module);
-
-    final widgets = <Widget>[];
-
-    widgets.addAll(module.widgets);
-
-    widgets.add(Container(
-        padding: const EdgeInsets.all(10),
-        child: Align(
-            alignment: Alignment.topCenter,
-            child: Text(
-              module.name,
-              style: TextStyle(
-                  color: module.color,
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  decoration: TextDecoration.none),
-            ))));
-
-    for (var pin in module.pins) {
-      if (pin.isInput) {
-        if (pin.type != IO.external) {
-          widgets.add(PinWidget(module.id, pin.index, pin.type, 10,
-              pin.offset.dy, pin.name, pin.isInput, widget.host));
-        }
-      } else {
-        pin.offset = Offset(width - 25, pin.offset.dy);
-
-        if (pin.type != IO.external) {
-          widgets.add(PinWidget(module.id, pin.index, pin.type, width - 25,
-              pin.offset.dy, pin.name, pin.isInput, widget.host));
-        }
-      }
-    }
-
-    return Positioned(
-        left: module.position.dx,
-        top: module.position.dy,
-        child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              print("Tap module");
-              if (widget.host.globals.selectedModule == module.id) {
-                widget.host.globals.selectedModule = -1;
-                refresh();
-              } else {
-                var oldModule = widget.host.globals.selectedModule;
-                widget.host.globals.selectedModule = module.id;
-
-                for (var moduleWidget in widget.host.graph.moduleWidgets) {
-                  if (moduleWidget.module.id == oldModule) {
-                    moduleWidget.refresh();
-                  }
-                }
-
-                refresh();
-              }
-            },
-            onSecondaryTap: () {
-              print("Secondary tap module");
-            },
-            onPanUpdate: (details) {
-              api.ffiNodeSetX(module.module, module.position.dx.toInt());
-              api.ffiNodeSetY(module.module, module.position.dy.toInt());
-
-              setState(() {
-                module.position = Offset(module.position.dx + details.delta.dx,
-                    module.position.dy + details.delta.dy);
-              });
-            },
-            child: DragTarget<Var>(
-                builder: (context, candidateData, rejectedData) {
-              return Container(
-                  width: width,
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: MyTheme.greyMid,
-                    borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10)),
-                    boxShadow: widget.host.globals.selectedModule == module.id
-                        ? [
-                            BoxShadow(
-                                color: Colors.white.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 0,
-                                offset: const Offset(0, 0)),
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                spreadRadius: 5,
-                                blurRadius: 15,
-                                offset: const Offset(0, 5)),
-                          ]
-                        : [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                spreadRadius: 5,
-                                blurRadius: 15,
-                                offset: const Offset(0, 5)),
-                          ],
-                  ),
-                  child: Stack(
-                      fit: StackFit.expand,
-                      children: widgets +
-                          (resizable
-                              ? ([
-                                  Align(
-                                      alignment: Alignment.bottomRight,
-                                      child: SizedBox(
-                                        width: 30,
-                                        height: 30,
-                                        child: GestureDetector(
-                                          child: const Icon(
-                                            Icons.drag_indicator,
-                                            color: Colors.grey,
-                                          ),
-                                          onPanUpdate: (details) {
-                                            setState(() {
-                                              var m =
-                                                  widget.host.globals.zoom * 10;
-
-                                              var w =
-                                                  width + details.delta.dx * m;
-                                              var h =
-                                                  height + details.delta.dy * m;
-
-                                              var minWidth =
-                                                  api.ffiNodeGetMinWidth(
-                                                      module.module);
-                                              var maxWidth =
-                                                  api.ffiNodeGetMaxWidth(
-                                                      module.module);
-                                              var minHeight =
-                                                  api.ffiNodeGetMinHeight(
-                                                      module.module);
-                                              var maxHeight =
-                                                  api.ffiNodeGetMaxHeight(
-                                                      module.module);
-
-                                              if (w < minWidth) {
-                                                w = minWidth.toDouble();
-                                              }
-
-                                              if (w > maxWidth) {
-                                                w = maxWidth.toDouble();
-                                              }
-
-                                              if (h < minHeight) {
-                                                h = minHeight.toDouble();
-                                              }
-
-                                              if (h > maxHeight) {
-                                                h = maxHeight.toDouble();
-                                              }
-
-                                              api.ffiNodeSetNodeWidth(
-                                                  module.module, w);
-                                              api.ffiNodeSetNodeHeight(
-                                                  module.module, h);
-                                              module.size = Offset(w, h);
-                                            });
-                                          },
-                                        ),
-                                      ))
-                                ])
-                              : [])));
-            })));
   }
 }
 

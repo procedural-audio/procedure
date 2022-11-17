@@ -559,7 +559,7 @@ class _GridState extends State<Grid> {
             TempConnectorWidget(widget.host),
             Connectors(widget.host),
             Stack(
-              children: widget.host.graph.moduleWidgets,
+              children: widget.host.graph.modules,
             ),
             DragTarget(
               builder: (BuildContext context, List<dynamic> accepted,
@@ -571,14 +571,15 @@ class _GridState extends State<Grid> {
                     // THIS DOESN'T WORK
                     behavior: HitTestBehavior.deferToChild,
                     onTap: () {
-                      print("Tapped");
-                      var oldWidget = widget.host.globals.selectedModule;
+                      print("TODO: Fixup tap");
+                      /*var oldWidget = widget.host.globals.selectedModule;
                       widget.host.globals.selectedModule = -1;
                       for (var widget in widget.host.graph.moduleWidgets) {
                         if (widget.module.id == oldWidget) {
                           widget.refresh();
                         }
                       }
+                      */
                     },
                   ),
                 );

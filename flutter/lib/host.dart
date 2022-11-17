@@ -241,73 +241,6 @@ class FFIApi {
           "ffi_node_set_height")
       .asFunction();
 
-  /* Main widget stuff */
-
-  /*double Function(FFINode) ffiNodeGetWidgetMainX = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_ui_x")
-      .asFunction();
-  double Function(FFINode) ffiNodeGetWidgetMainY = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_ui_y")
-      .asFunction();
-  void Function(FFINode, double) ffiNodeSetWidgetMainX = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_ui_x")
-      .asFunction();
-  void Function(FFINode, double) ffiNodeSetWidgetMainY = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_ui_y")
-      .asFunction();
-
-  double Function(FFINode) ffiNodeGetWidgetMainWidth = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_ui_width")
-      .asFunction();
-  double Function(FFINode) ffiNodeGetWidgetMainHeight = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_ui_height")
-      .asFunction();
-  void Function(FFINode, double) ffiNodeSetWidgetMainWidth = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_ui_width")
-      .asFunction();
-  void Function(FFINode, double) ffiNodeSetWidgetMainHeight = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_ui_height")
-      .asFunction();
-
-  FFIWidget Function(FFINode) ffiNodeGetWidgetMainRoot = core
-      .lookup<NativeFunction<FFIWidget Function(FFINode)>>(
-          "ffi_node_get_ui_root")
-      .asFunction();*/
-
-  /*int Function(FFINode) ffiNodeGetParamCount = core
-      .lookup<NativeFunction<Int64 Function(FFINode)>>(
-          "ffi_node_get_param_count")
-      .asFunction();
-
-  Pointer<Utf8> Function(FFINode, int) ffiNodeParamGetName = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int64)>>(
-          "ffi_node_param_get_name")
-      .asFunction();
-
-  int Function(FFINode, int) ffiNodeParamGetType = core
-      .lookup<NativeFunction<Int32 Function(FFINode, Int64)>>(
-          "ffi_node_param_get_type")
-      .asFunction();
-
-  void Function(FFINode, int, double) ffiNodeParamSetFloat = core
-      .lookup<NativeFunction<Void Function(FFINode, Int64, Float)>>(
-          "ffi_node_param_set_float")
-      .asFunction();
-
-  void Function(FFINode, int, int) ffiNodeParamSetInt = core
-      .lookup<NativeFunction<Void Function(FFINode, Int64, Int32)>>(
-          "ffi_node_param_set_int")
-      .asFunction();
-
-  void Function(FFINode, int, bool) ffiNodeParamSetBool = core
-      .lookup<NativeFunction<Void Function(FFINode, Int64, Bool)>>(
-          "ffi_node_param_set_bool")
-      .asFunction();*/
-
   /* Widget */
 
   FFIWidgetTrait Function(FFIWidget) ffiWidgetGetTrait = core
@@ -441,8 +374,8 @@ class Host extends ChangeNotifier {
 
   Globals globals = Globals();
 
-  late Timer timer1;
-  late Timer timer2;
+  //late Timer timer1;
+  //late Timer timer2;
 
   late AudioPlugins audioPlugins;
 
@@ -451,23 +384,21 @@ class Host extends ChangeNotifier {
     vars = Vars(this);
     audioPlugins = AudioPlugins();
 
-    timer1 = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+    /*timer1 = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       for (var module in graph.moduleWidgets) {
         for (var widget in module.module.widgets) {
           callTickRecursive(widget);
         }
       }
-    });
+    });*/
 
-    timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
+    /*timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
       var rebuilt = false;
       for (var i = 0; i < graph.moduleWidgets.length; i++) {
         if (api.ffiNodeShouldRebuild(graph.moduleWidgets[i].module.module)) {
           print("Rebuilt a module");
-          var moduleRaw = graph.moduleWidgets[i].module.module;
+          // var moduleRaw = graph.moduleWidgets[i].module.module;
           var module = Module(this, moduleRaw);
-          graph.moduleWidgets[i] = ModuleContainerWidget(module, this);
-          //globals.host.graph.moduleWidgets[i].refresh();
           gGridState?.refresh();
           rebuilt = true;
         }
@@ -477,13 +408,13 @@ class Host extends ChangeNotifier {
         api.ffiHostRefresh(host);
         gGridState?.refresh();
       }
-    });
+    });*/
   }
 
   @override
   void dispose() {
-    timer1.cancel();
-    timer2.cancel();
+    //timer1.cancel();
+    //timer2.cancel();
 
     super.dispose();
   }
@@ -684,7 +615,6 @@ class Preset {}
 class Graph {
   var modules = <Module>[];
   var connectors = <Connector>[];
-  var moduleWidgets = <ModuleContainerWidget>[];
 
   final FFIHost raw;
   Host host;
@@ -707,10 +637,7 @@ class Graph {
       api.ffiNodeSetX(moduleRaw, x);
       api.ffiNodeSetY(moduleRaw, y);
 
-      var module = Module(host, moduleRaw);
-
-      moduleWidgets.add(ModuleContainerWidget(module, host));
-      modules.add(module);
+      modules.add(Module(host, moduleRaw));
     }
 
     return ret;
@@ -718,7 +645,6 @@ class Graph {
 
   void removeModule(int id) {
     modules.retainWhere((element) => element.id != id);
-    moduleWidgets.retainWhere((element) => element.module.id != id);
 
     connectors.retainWhere((element) => element.start.moduleId != id);
     connectors.retainWhere((element) => element.end.moduleId != id);
@@ -746,7 +672,6 @@ class Graph {
 
   void refresh() {
     modules.clear();
-    moduleWidgets.clear();
     connectors.clear();
 
     int moduleCount = api.ffiHostGetNodeCount(raw);
@@ -754,7 +679,6 @@ class Graph {
     for (int i = 0; i < moduleCount; i++) {
       var moduleRaw = api.ffiHostGetNode(raw, i);
       var module = Module(host, moduleRaw);
-      moduleWidgets.add(ModuleContainerWidget(module, host));
       modules.add(module);
     }
 

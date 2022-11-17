@@ -10,106 +10,12 @@ import '../common.dart';
 
 import 'dart:ffi';
 
-const radius = 15.0;
-
-/*int Function(FFIHost) ffiHostVarsGetEntryCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost)>>(
-        "ffi_host_vars_get_entry_count")
-    .asFunction();
-
-int Function(FFIHost, int) ffiHostVarsEntryGetType = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
-        "ffi_host_vars_entry_get_type")
-    .asFunction();
-
-int Function(FFIHost, int) ffiHostVarsEntryGetId = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
-        "ffi_host_vars_entry_get_id")
-    .asFunction();
-
-Pointer<Utf8> Function(FFIHost, int) ffiHostVarsGroupGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
-        "ffi_host_vars_group_get_name")
-    .asFunction();
-
-int Function(FFIHost, int) ffiHostVarsGroupGetVarCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
-        "ffi_host_vars_group_get_var_count")
-    .asFunction();
-
-int Function(FFIHost, int, int) ffiHostVarsGroupVarGetId = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_group_var_get_id")
-    .asFunction();
-
-int Function(FFIHost, int) ffiHostVarGetType = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
-        "ffi_host_var_get_type")
-    .asFunction();
-
-Pointer<Utf8> Function(FFIHost, int) ffiHostVarGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
-        "ffi_host_var_get_name")
-    .asFunction();
-
-void Function(FFIHost, int, Pointer<Utf8>) ffiHostVarRename = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Pointer<Utf8>)>>(
-        "ffi_host_var_rename")
-    .asFunction();
-
-void Function(FFIHost, int, int) ffiHostVarSetType = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Int32)>>(
-        "ffi_host_var_set_type")
-    .asFunction();
-
-void Function(FFIHost, int) ffiHostVarDelete = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64)>>(
-        "ffi_host_var_delete")
-    .asFunction();
-
-void Function(FFIHost) ffiHostVarsAddVar = core
-    .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_vars_add_var")
-    .asFunction();
-
-void Function(FFIHost) ffiHostVarsAddGroup = core
-    .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_vars_add_group")
-    .asFunction();
-
-double Function(FFIHost, int) ffiHostVarGetFloat = core
-    .lookup<NativeFunction<Float Function(FFIHost, Int64)>>(
-        "ffi_host_var_get_float")
-    .asFunction();
-
-void Function(FFIHost, int, double) ffiHostVarSetFloat = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Float)>>(
-        "ffi_host_var_set_float")
-    .asFunction();
-
-bool Function(FFIHost, int) ffiHostVarGetBool = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Int64)>>(
-        "ffi_host_var_get_bool")
-    .asFunction();
-
-void Function(FFIHost, int, bool) ffiHostVarSetBool = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Bool)>>(
-        "ffi_host_var_set_bool")
-    .asFunction();
-
-void Function(FFIHost, int, int) ffiHostVarsEntryReorder = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Int64)>>(
-        "ffi_host_vars_entry_reorder")
-    .asFunction();
-
-void Function(FFIHost, int, int, int) ffiHostVarsGroupVarReorder = core
-    .lookup<NativeFunction<Void Function(FFIHost, Int64, Int64, Int64)>>(
-        "ffi_host_vars_group_var_reorder")
-    .asFunction();*/
-
 class Vars extends StatefulWidget {
   Vars(this.host);
 
   Host host;
   final ValueNotifier<List<VarEntry>> _entries = ValueNotifier([]);
+  ValueNotifier<Var?> selectedVar = ValueNotifier(null);
 
   void newGroup() {
     print("TODO: New group");
@@ -149,8 +55,6 @@ class Vars extends StatefulWidget {
 }
 
 class _Vars extends State<Vars> {
-  ValueNotifier<Var?> selectedVar = ValueNotifier(null);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -181,6 +85,19 @@ class _Vars extends State<Vars> {
                               } else {
                                 widget.host.vars.insertEntry(newIndex, element);
                               }
+
+                              for (int i = 0;
+                                  i < widget._entries.value.length;
+                                  i++) {
+                                var entry = widget._entries.value[i];
+                                if (entry.variable != null) {
+                                  entry.variable!.listIndex = i;
+                                } else if (entry.group != null) {
+                                  entry.group!.index = i;
+                                } else {
+                                  print("ERROR: UNREACHABLE ENTRY");
+                                }
+                              }
                             },
                             children: entries,
                           )),
@@ -207,12 +124,39 @@ class _Vars extends State<Vars> {
                                         color: Colors.grey,
                                         iconSize: 16,
                                         onPressed: () {
+                                          var name = "New Variable";
+                                          bool done = false;
+                                          int varIndex = 1;
+
+                                          while (!done) {
+                                            done = true;
+                                            for (int i = 0;
+                                                i <
+                                                    widget
+                                                        ._entries.value.length;
+                                                i++) {
+                                              var entry =
+                                                  widget._entries.value[i];
+
+                                              if (entry.variable != null) {
+                                                if (entry
+                                                        .variable!.name.value ==
+                                                    name) {
+                                                  done = false;
+                                                  varIndex += 1;
+                                                  name = name.substring(0, 12) +
+                                                      " " +
+                                                      varIndex.toString();
+                                                }
+                                              }
+                                            }
+                                          }
+
                                           widget.addVar(Var(
                                               host: widget.host,
-                                              name:
-                                                  ValueNotifier("New Variable"),
+                                              name: ValueNotifier(name),
                                               listIndex: widget.count(),
-                                              selectedVar: selectedVar,
+                                              selectedVar: widget.selectedVar,
                                               id: 0,
                                               notifier: ValueNotifier(0.0)));
                                         },
@@ -238,7 +182,7 @@ class _Vars extends State<Vars> {
                             borderRadius: BorderRadius.horizontal(
                                 right: Radius.circular(10))),
                         child: ValueListenableBuilder<Var?>(
-                            valueListenable: selectedVar,
+                            valueListenable: widget.selectedVar,
                             builder: (context, selectedVar, child) {
                               if (selectedVar == null) {
                                 return const Center(
@@ -583,11 +527,6 @@ class _VarGroup extends State<VarGroup> {
                     child: ReorderableListView(
                         buildDefaultDragHandles: false,
                         onReorder: (oldIndex, newIndex) {
-                          print("Reordering from " +
-                              oldIndex.toString() +
-                              " " +
-                              newIndex.toString());
-
                           if (newIndex > oldIndex) {
                             newIndex -= 1;
                           }

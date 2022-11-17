@@ -5,6 +5,7 @@ import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/samplePicker.dart';
 import 'package:metasampler/widgets/textBox.dart';
 import 'package:flutter/src/foundation/key.dart' as keyLib;
+import 'package:spritewidget/spritewidget.dart';
 
 import 'dart:ui' as ui;
 import 'dart:async';
@@ -43,7 +44,6 @@ import 'fader.dart';
 import 'input.dart';
 import 'wavetable.dart';
 import 'display.dart';
-import 'controlVariable.dart';
 import 'audioPlugin.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
@@ -143,8 +143,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return WavetableWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Display") {
     return DisplayWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "ControlVariable") {
-    return ControlVariableWidget(host, host, moduleRaw, widgetRaw);
   } else if (name == "AudioPlugin") {
     return AudioPluginWidget(host, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
@@ -249,6 +247,8 @@ abstract class ModuleWidget extends StatefulWidget {
 }
 
 class _ModuleWidgetState extends State<ModuleWidget> {
+  bool varDragging = false;
+
   // ignore: prefer_function_declarations_over_variables
   Widget Function(BuildContext) buildFunction = (b) {
     return const SizedBox(
@@ -282,6 +282,10 @@ class _ModuleWidgetState extends State<ModuleWidget> {
     buildFunction = f;
   }
 
+  bool willAccept(Object? data) {
+    return false;
+  }
+
   Widget createEditor() {
     return Container();
   }
@@ -296,135 +300,7 @@ class _ModuleWidgetState extends State<ModuleWidget> {
   }
 }
 
-class PathSegmentAction {
-  int kind = 0;
-  double f1 = 0.0;
-  double f2 = 0.0;
-  double f3 = 0.0;
-  double f4 = 0.0;
-  double f5 = 0.0;
-  double f6 = 0.0;
-
-  PathSegmentAction(
-      {this.kind = 0,
-      this.f1 = 0,
-      this.f2 = 0,
-      this.f3 = 0,
-      this.f4 = 0,
-      this.f5 = 0,
-      this.f6 = 0});
-}
-
-class PaintAction {
-  int kind = 0;
-  int i1 = 0;
-  int i2 = 0;
-  int i3 = 0;
-  int i4 = 0;
-  double f1 = 0.0;
-  double f2 = 0.0;
-  int width = 0;
-  Color color = Colors.blue;
-  int glow = 0;
-  List<PathSegmentAction> segments = [];
-
-  PaintAction(
-      {this.kind = 0,
-      this.i1 = 0,
-      this.i2 = 0,
-      this.i3 = 0,
-      this.i4 = 0,
-      this.f1 = 0,
-      this.f2 = 0,
-      this.color = Colors.blue,
-      this.width = 5,
-      this.glow = 0,
-      required this.segments});
-}
-
-class ModuleWidgetPainter extends CustomPainter {
-  final List<PaintAction> paintActions;
-
-  ModuleWidgetPainter({required this.paintActions});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (var action in paintActions) {
-      Paint paint = Paint();
-      paint.color = action.color;
-      paint.strokeWidth = action.width.toDouble();
-      paint.style = PaintingStyle.stroke;
-
-      if (action.kind == 1) {
-        canvas.drawArc(
-            Rect.fromLTWH(action.i1.toDouble(), action.i2.toDouble(),
-                action.i3.toDouble(), action.i4.toDouble()),
-            action.f1,
-            action.f2,
-            true,
-            paint);
-      } else if (action.kind == 2) {
-        canvas.drawCircle(Offset(action.i1.toDouble(), action.i2.toDouble()),
-            action.f1, paint);
-      } else if (action.kind == 3) {
-        canvas.drawRect(
-            Rect.fromLTWH(action.i1.toDouble(), action.i2.toDouble(),
-                action.i3.toDouble(), action.i4.toDouble()),
-            paint);
-      } else if (action.kind == 4) {
-        canvas.drawRRect(
-            RRect.fromLTRBR(
-                action.i1.toDouble(),
-                action.i2.toDouble(),
-                action.i3.toDouble(),
-                action.i4.toDouble(),
-                Radius.circular(action.f1)),
-            paint);
-      } else if (action.kind == 5) {
-        canvas.drawLine(Offset(action.i1.toDouble(), action.i2.toDouble()),
-            Offset(action.i3.toDouble(), action.i4.toDouble()), paint);
-      } else if (action.kind == 6) {
-        // Draw point
-      } else if (action.kind == 7) {
-        // Draw points
-      } else if (action.kind == 8) {
-        Path path = Path();
-
-        for (var segment in action.segments) {
-          if (segment.kind == 1) {
-            path.moveTo(segment.f1, segment.f2);
-          } else if (segment.kind == 2) {
-            path.lineTo(segment.f1, segment.f2);
-          } else if (segment.kind == 3) {
-            path.cubicTo(segment.f1, segment.f2, segment.f3, segment.f4,
-                segment.f5, segment.f6);
-          } else if (segment.kind == 4) {
-            path.arcTo(
-                Rect.fromLTWH(segment.f1, segment.f2, segment.f3, segment.f4),
-                segment.f5,
-                segment.f6,
-                true);
-          } else if (segment.kind == 5) {
-            path.conicTo(
-                segment.f1, segment.f2, segment.f3, segment.f4, segment.f5);
-          } else if (segment.kind == 6) {
-            path.quadraticBezierTo(
-                segment.f1, segment.f2, segment.f3, segment.f4);
-          }
-        }
-
-        canvas.drawPath(path, paint);
-      } else if (action.kind == 9) {
-        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-      } else if (action.kind == 10) {
-        // Draw image
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
+/* Utilities */
 
 Color intToColor(int value) {
   return Color(value);
