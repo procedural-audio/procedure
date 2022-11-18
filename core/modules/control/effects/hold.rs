@@ -14,10 +14,12 @@ impl Module for Hold {
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Control("Control Input", 15),
+            Pin::Control("Input", 15),
             Pin::Control("Hold (boolean)", 45),
         ],
-        outputs: &[Pin::Control("Control Output", 30)],
+        outputs: &[
+            Pin::Control("Output", 30)
+        ],
     };
 
         
@@ -36,10 +38,10 @@ impl Module for Hold {
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 20),
-            size: (40, 40),
+            position: (35, 32),
+            size: (30, 30),
             child: Svg {
-                path: "comparisons/hold.svg",
+                path: "hold.svg",
                 color: Color::RED,
             },
         })
@@ -54,9 +56,8 @@ impl Module for Hold {
             if inputs.control[1] < 0.5 {
                 outputs.control[0] = value;
                 self.hold = false;
-                println!("Stop hold");
             } else {
-                outputs.control[0] = value;
+                outputs.control[0] = self.value;
             }
         } else {
             if inputs.control[1] < 0.5 {
@@ -65,7 +66,6 @@ impl Module for Hold {
                 self.hold = true;
                 self.value = value;
                 outputs.control[0] = value;
-                println!("Hold");
             }
         }
     }

@@ -1,7 +1,7 @@
 use crate::*;
 
 pub struct Display {
-    rate: f32,
+    value: f32,
     updated: bool,
 }
 
@@ -22,7 +22,7 @@ impl Module for Display {
     
     fn new() -> Self {
         Self {
-            rate: 0.0,
+            value: 0.0,
             updated: true,
         }
     }
@@ -42,7 +42,7 @@ impl Module for Display {
                 text: || {
                     if self.updated {
                         self.updated = false;
-                        Some(format!("{:.1}", self.rate))
+                        Some(format!("{:.1}", self.value))
                     } else {
                         None
                     }
@@ -57,8 +57,8 @@ impl Module for Display {
         if *voice == 0 {
             let input = inputs.control[0];
 
-            if self.rate != input {
-                self.rate = input;
+            if self.value != input {
+                self.value = input;
                 self.updated = true;
             }
         }

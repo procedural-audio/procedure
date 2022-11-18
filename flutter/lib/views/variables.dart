@@ -81,9 +81,9 @@ class _Vars extends State<Vars> {
 
                               var element = widget.removeEntryAt(oldIndex);
                               if (newIndex >= widget.count()) {
-                                widget.host.vars.addEntry(element);
+                                widget.addEntry(element);
                               } else {
-                                widget.host.vars.insertEntry(newIndex, element);
+                                widget.insertEntry(newIndex, element);
                               }
 
                               for (int i = 0;
@@ -298,7 +298,28 @@ class _Vars extends State<Vars> {
                                                       ]),
                                                 ],
                                                 onSelect: (s) {
-                                                  print("Change type");
+                                                  if (s == "Boolean") {
+                                                    selectedVar.notifier.value =
+                                                        false;
+                                                  } else if (s == "Float") {
+                                                    selectedVar.notifier.value =
+                                                        false;
+                                                    selectedVar.notifier.value =
+                                                        0.0;
+                                                  } else if (s == "Integer") {
+                                                    selectedVar.notifier.value =
+                                                        false;
+                                                    selectedVar.notifier.value =
+                                                        0.toInt();
+                                                  } else {
+                                                    print(
+                                                        "Unknown supported type");
+                                                  }
+
+                                                  print("Type is " +
+                                                      selectedVar.notifier.value
+                                                          .runtimeType
+                                                          .toString());
                                                 })
                                           ])),
                                   const Divider(
@@ -317,13 +338,18 @@ class _Vars extends State<Vars> {
                                                   color: Colors.grey,
                                                   fontSize: 14),
                                             ),
-                                            Text(
-                                              selectedVar.notifier.value
-                                                  .toString(),
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            )
+                                            ValueListenableBuilder(
+                                                valueListenable:
+                                                    selectedVar.notifier,
+                                                builder:
+                                                    (context, value, child) {
+                                                  return Text(
+                                                    formatValue(value),
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 14),
+                                                  );
+                                                })
                                           ])),
                                   const Divider(
                                     color: Color.fromRGBO(30, 30, 30, 1.0),
@@ -630,14 +656,17 @@ class _Var extends State<Var> {
                                       fontSize: 13, color: Colors.white));
                             })))),
                 Container(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: Text(widget.notifier.value.toString(),
-                      style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontStyle: FontStyle.normal,
-                          fontWeight: FontWeight.w300)),
-                ),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ValueListenableBuilder(
+                        valueListenable: widget.notifier,
+                        builder: (context, value, child) {
+                          return Text(formatValue(value),
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontWeight: FontWeight.w300));
+                        })),
                 ReorderableDragStartListener(
                     index: widget.listIndex,
                     child: const SizedBox(
@@ -716,4 +745,14 @@ class _Var extends State<Var> {
                     childWhenDragging: const SizedBox(width: 0, height: 0),
                     child: w))));
   }
+}
+
+String formatValue(dynamic value) {
+  var text = value.toString();
+
+  if (value is double) {
+    text = value.toStringAsFixed(2);
+  }
+
+  return text;
 }

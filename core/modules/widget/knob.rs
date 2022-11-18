@@ -318,3 +318,58 @@ pub unsafe extern "C" fn ffi_text_get_color(w: &mut Text) -> u32 {
 pub unsafe extern "C" fn ffi_text_get_size(w: &mut Text) -> u32 {
     w.size
 }
+
+/* Icon Select */
+
+#[repr(C)]
+pub struct ButtonGrid<'a> {
+    pub index: &'a mut usize,
+    pub color: Color,
+    pub rows: usize,
+    pub icons: &'static [&'static str]
+}
+
+impl<'a> WidgetNew for ButtonGrid<'a> {
+    fn get_name(&self) -> &'static str {
+        "ButtonGrid"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}
+
+/* ========== FFI ========== */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_get_index(widget: &mut ButtonGrid) -> usize {
+    *widget.index
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_set_index(widget: &mut ButtonGrid, index: usize) {
+    *widget.index = index;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_get_color(widget: &mut ButtonGrid) -> u32 {
+    widget.color.0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_get_row_count(widget: &mut ButtonGrid) -> usize {
+    widget.rows
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_get_icon_count(widget: &mut ButtonGrid) -> usize {
+    widget.icons.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_button_grid_icon_get_path(widget: &mut ButtonGrid, index: usize) -> *const i8 {
+    let s = CString::new(widget.icons[index]).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}

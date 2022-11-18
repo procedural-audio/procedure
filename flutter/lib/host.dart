@@ -374,7 +374,7 @@ class Host extends ChangeNotifier {
 
   Globals globals = Globals();
 
-  //late Timer timer1;
+  late Timer ticker;
   //late Timer timer2;
 
   late AudioPlugins audioPlugins;
@@ -384,13 +384,13 @@ class Host extends ChangeNotifier {
     vars = Vars(this);
     audioPlugins = AudioPlugins();
 
-    /*timer1 = Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      for (var module in graph.moduleWidgets) {
-        for (var widget in module.module.widgets) {
+    ticker = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+      for (var module in graph.modules) {
+        for (var widget in module.widgets) {
           callTickRecursive(widget);
         }
       }
-    });*/
+    });
 
     /*timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
       var rebuilt = false;
@@ -411,9 +411,11 @@ class Host extends ChangeNotifier {
     });*/
   }
 
+  void tick(Timer timer) {}
+
   @override
   void dispose() {
-    //timer1.cancel();
+    ticker.cancel();
     //timer2.cancel();
 
     super.dispose();

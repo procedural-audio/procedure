@@ -14,14 +14,13 @@ impl Module for Clock {
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
-            Pin::Control("Clock Rate (0-1)", 25),
+            Pin::Control("Rate (0-1)", 25),
             Pin::Time("Time", 55)
         ],
         outputs: &[
-            Pin::Control("Clock Output", 25)
+            Pin::Control("Clock Pulses", 25)
         ],
     };
-
     
     fn new() -> Self {
         Self { value: 0.0 }

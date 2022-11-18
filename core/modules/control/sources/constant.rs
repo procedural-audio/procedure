@@ -17,7 +17,6 @@ impl Module for Constant {
             Pin::Control("Control Output", 17)
         ],
     };
-
     
     fn new() -> Self {
         Self { value: 0.5 }

@@ -46,6 +46,7 @@ import 'input.dart';
 import 'wavetable.dart';
 import 'display.dart';
 import 'audioPlugin.dart';
+import 'buttonGrid.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = api.ffiWidgetGetName(widgetRaw);
@@ -72,6 +73,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return TransformWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Svg") {
     return SvgWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "ButtonGrid") {
+    return ButtonGridWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
     return DropdownWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Painter") {
@@ -272,20 +275,20 @@ class _ModuleWidgetState extends State<ModuleWidget> {
     return false;
   }
 
-  Widget createEditor() {
-    return Container();
-  }
-
-  void refresh() {
-    setState(() {});
-  }
-
   void onVarUpdate() {
     if (widget.willAcceptVar(widget.assignedVar.value!)) {
       widget.onVarUpdate(widget.assignedVar.value!.notifier.value);
     } else {
       print("Type is incorrect");
     }
+  }
+
+  Widget createEditor() {
+    return Container();
+  }
+
+  void refresh() {
+    setState(() {});
   }
 
   @override

@@ -7,7 +7,7 @@ impl Module for Clamp {
 
     const INFO: Info = Info {
         name: "Clamp",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(110, 105),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -15,16 +15,19 @@ impl Module for Clamp {
             Pin::Control("Min", 45),
             Pin::Control("Max", 75),
         ],
-        outputs: &[Pin::Control("Output", 45)],
+        outputs: &[
+            Pin::Control("Output", 45)
+        ],
     };
 
-    
     fn new() -> Self {
         Self
     }
+
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 

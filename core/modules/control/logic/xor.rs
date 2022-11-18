@@ -7,14 +7,16 @@ impl Module for Xor {
 
     const INFO: Info = Info {
         name: "Xor",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Control("Control Input", 15),
-            Pin::Control("Control Input", 45),
+            Pin::Control("Input 1", 15),
+            Pin::Control("Input 2", 45),
         ],
-        outputs: &[Pin::Control("Control Output", 30)],
+        outputs: &[
+            Pin::Control("Control Output", 30)
+        ],
     };
 
     

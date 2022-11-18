@@ -410,13 +410,8 @@ class _RightClickView extends State<RightClickView> {
             Colors.red,
             30,
             widget.addPosition));
-        subCategory.add(RightClickElement(
-            widget.host,
-            "Hold",
-            MaterialCommunityIcons.car_brake_hold,
-            Colors.red,
-            30,
-            widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Hold",
+            MaterialCommunityIcons.hand, Colors.red, 30, widget.addPosition));
         subCategory.add(RightClickElement(
             widget.host,
             "Toggle",

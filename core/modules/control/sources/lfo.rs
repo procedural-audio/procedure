@@ -3,7 +3,6 @@ use crate::*;
 pub struct LfoModule {
     wave: usize,
     value: f32,
-    // buttons: [[bool; 2]; 2]
 }
 
 pub struct LfoVoice {
@@ -19,7 +18,7 @@ impl Module for LfoModule {
 
     const INFO: Info = Info {
         name: "LFO",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(250, 140),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -28,7 +27,7 @@ impl Module for LfoModule {
         ],
         outputs: &[
             Pin::Control("LFO Output", 15)
-        ],
+        ]
     };
 
     
@@ -36,7 +35,6 @@ impl Module for LfoModule {
         Self {
             wave: 0,
             value: 0.5,
-            // buttons: [[true, false], [false, false]]
         }
     }
 
@@ -73,7 +71,6 @@ impl Module for LfoModule {
     }
 
     fn load(&mut self, _json: &JSON) {}
-
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
@@ -82,79 +79,21 @@ impl Module for LfoModule {
                 Transform {
                     position: (40, 30),
                     size: (100, 100),
-                    /*child: GridBuilder {
-                        state: &self.buttons,
-                        builder: | index | {
-                            return Button {
-                                pressed: self.wave == index,
-                                toggle: true,
-                                on_changed: | value | {
-                                },
-                                child: if index == 0 {
-                                    Svg { path: "path/here", color: Color::RED }
-                                } else if index == 1 {
-                                    Svg { path: "path/here", color: Color::RED }
-                                } else if index == 2 {
-                                    Svg { path: "path/here", color: Color::RED }
-                                } else {
-                                    Svg { path: "path/here", color: Color::RED }
-                                },
-                            };
-                        },
-                    }*/
-                    child: Grid {
-                        columns: 2,
-                        children: (
-                            Button {
-                                pressed: true,
-                                toggle: false,
-                                on_changed: |_v| {
-                                    self.wave = 0;
-                                },
-                                child: Svg {
-                                    path: "waveforms/saw.svg",
-                                    color: Color::RED,
-                                },
-                            },
-                            Button {
-                                pressed: true,
-                                toggle: false,
-                                on_changed: |_v| {
-                                    // self.wave = 1;
-                                },
-                                child: Svg {
-                                    path: "waveforms/square.svg",
-                                    color: Color::RED,
-                                },
-                            },
-                            Button {
-                                pressed: true,
-                                toggle: false,
-                                on_changed: |_v| {
-                                    // self.wave = 1;
-                                },
-                                child: Svg {
-                                    path: "waveforms/sine.svg",
-                                    color: Color::RED,
-                                },
-                            },
-                            Button {
-                                pressed: true,
-                                toggle: false,
-                                on_changed: |_v| {
-                                    // self.wave = 1;
-                                },
-                                child: Svg {
-                                    path: "waveforms/triangle.svg",
-                                    color: Color::RED,
-                                },
-                            },
-                        ),
-                    },
+                    child: ButtonGrid {
+                        index: &mut self.wave,
+                        color: Color::RED,
+                        rows: 2,
+                        icons: &[
+                            "waveforms/saw.svg",
+                            "waveforms/square.svg",
+                            "waveforms/sine.svg",
+                            "waveforms/triangle.svg",
+                        ]
+                    }
                 },
                 Transform {
-                    position: (160, 40),
-                    size: (50, 70),
+                    position: (155, 40),
+                    size: (60, 70),
                     child: Knob {
                         text: "Rate",
                         color: Color::RED,
@@ -176,6 +115,14 @@ impl Module for LfoModule {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let hz = self.value * 20.0;
         let reset = inputs.control[0];
+
+        if inputs.control.is_connected(0) {
+            println!("Conencted to 0");
+        }
+
+        if inputs.control.is_connected(1) {
+            println!("Connected to 1");
+        }
 
         if voice.last_reset < 0.5 {
             if reset >= 0.5 {
@@ -201,7 +148,5 @@ impl Module for LfoModule {
             voice.triangle.set_pitch(hz);
             outputs.control[0] = voice.triangle.gen();
         }
-
-        println!("{}", outputs.control[0]);
     }
 }

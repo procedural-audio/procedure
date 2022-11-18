@@ -198,18 +198,18 @@ class KnobWidget extends ModuleWidget {
 
                           angle += (-details.delta.dy / 60) / 5;
 
+                          if (angle > 1) {
+                            angle = 1.0;
+                          } else if (angle < 0) {
+                            angle = 0;
+                          }
+
                           ffiKnobSetValue(widgetRaw.pointer, angle);
 
                           if (assignedVar.value != null) {
                             if (assignedVar.value!.notifier.value is double) {
                               assignedVar.value!.notifier.value = angle;
                             }
-                          }
-
-                          if (angle > 1) {
-                            angle = 1.0;
-                          } else if (angle < 0) {
-                            angle = 0;
                           }
 
                           setState(() {

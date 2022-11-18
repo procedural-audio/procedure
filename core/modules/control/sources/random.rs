@@ -19,7 +19,6 @@ impl Module for Random {
             Pin::Control("Output (0-1)", 22)
         ],
     };
-
     
     fn new() -> Self {
         Self {
@@ -30,6 +29,7 @@ impl Module for Random {
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 

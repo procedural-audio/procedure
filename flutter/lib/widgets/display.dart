@@ -18,16 +18,15 @@ Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
 class DisplayWidget extends ModuleWidget {
   DisplayWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
-  String text = "";
+  ValueNotifier<String> text = ValueNotifier("");
 
   @override
   void tick() {
     var temp = ffiDisplayGetText(widgetRaw.getTrait());
 
     if (temp.address != 0) {
-      text = temp.toDartString();
+      text.value = temp.toDartString();
       calloc.free(temp);
-      setState(() {});
     }
   }
 
@@ -38,10 +37,15 @@ class DisplayWidget extends ModuleWidget {
         decoration: BoxDecoration(
             color: const Color.fromRGBO(20, 20, 20, 1.0),
             borderRadius: BorderRadius.circular(5)),
-        child: Text(
-          text,
-          textAlign: TextAlign.right,
-          style: const TextStyle(fontSize: 16, color: Colors.red),
+        child: ValueListenableBuilder<String>(
+          valueListenable: text,
+          builder: (context, text, child) {
+            return Text(
+              text,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontSize: 16, color: Colors.red),
+            );
+          },
         ));
   }
 }

@@ -7,23 +7,26 @@ impl Module for Multiply {
 
     const INFO: Info = Info {
         name: "Mul",
-                color: Color::RED,
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Control("Control Input", 15),
-            Pin::Control("Control Input", 45),
+            Pin::Control("Input 1", 15),
+            Pin::Control("Input 2", 45),
         ],
-        outputs: &[Pin::Control("Control Output", 30)],
+        outputs: &[
+            Pin::Control("Output", 30)
+        ],
     };
-
     
     fn new() -> Self {
         Self
     }
+
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 

@@ -26,7 +26,6 @@ impl Module for EnvelopeModule {
             Pin::Control("Output", 20)
         ],
     };
-
     
     fn new() -> Self {
         Self {
