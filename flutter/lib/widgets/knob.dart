@@ -3,17 +3,16 @@ import 'package:ffi/ffi.dart';
 import '../host.dart';
 import '../views/variables.dart';
 import 'widget.dart';
-import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
 import 'canvas.dart';
 
 import '../views/settings.dart';
 
-var knobValue = "value".toNativeUtf8();
-var colorValue = "color".toNativeUtf8();
-
-//int Function(FFIWidgetPointer) ffiKnobGetValue = core.lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>("ffi_knob_get_value").asFunction();
+double Function(FFIWidgetPointer) ffiKnobGetValue = core
+    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+        "ffi_knob_get_value")
+    .asFunction();
 void Function(FFIWidgetPointer, double) ffiKnobSetValue = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
         "ffi_knob_set_value")
@@ -35,7 +34,6 @@ class KnobWidget extends ModuleWidget {
   KnobWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
-  double angle = 0;
   String labelText = "";
   bool hovering = false;
   bool dragging = false;
@@ -52,16 +50,16 @@ class KnobWidget extends ModuleWidget {
 
   @override
   void onVarUpdate(dynamic value) {
-    setState(() {
-      angle = value as double;
-      ffiKnobSetValue(widgetRaw.pointer, angle);
-    });
+    ffiKnobSetValue(widgetRaw.pointer, value as double);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     var colorIndex = ffiKnobGetColor(widgetRaw.pointer);
     color = Color(colorIndex);
+
+    double value = ffiKnobGetValue(widgetRaw.pointer);
 
     if (hovering || dragging) {
       var labelRaw = ffiKnobGetFeedback(widgetRaw.pointer);
@@ -89,7 +87,7 @@ class KnobWidget extends ModuleWidget {
             child: CustomPaint(
               painter: ArcPainter(
                 startAngle: 2.2,
-                endAngle: (angle - 0.5) * 5 + 2.5,
+                endAngle: (value - 0.5) * 5 + 2.5,
                 color: color,
                 shouldGlow: true,
               ),
@@ -104,8 +102,8 @@ class KnobWidget extends ModuleWidget {
             height: height + 0.0,
             child: CustomPaint(
               painter: ArcPainter(
-                startAngle: (angle - 0.5) * 5 - 1.55,
-                endAngle: 2.5 - (angle - 0.5) * 5,
+                startAngle: (value - 0.5) * 5 - 1.55,
+                endAngle: 2.5 - (value - 0.5) * 5,
                 color: MyTheme.grey60,
                 shouldGlow: false,
               ),
@@ -135,7 +133,7 @@ class KnobWidget extends ModuleWidget {
               alignment: Alignment.topCenter,
             ),
             Transform.rotate(
-              angle: (angle - 0.5) * 5,
+              angle: (value - 0.5) * 5,
               alignment: Alignment.center,
               child: Container(
                 width: width - 10.0,
@@ -194,27 +192,23 @@ class KnobWidget extends ModuleWidget {
                   },
                   onVerticalDragUpdate: (details) => setState(
                         () {
-                          // print(angle.toString());
+                          value += (-details.delta.dy / 60) / 5;
 
-                          angle += (-details.delta.dy / 60) / 5;
-
-                          if (angle > 1) {
-                            angle = 1.0;
-                          } else if (angle < 0) {
-                            angle = 0;
+                          if (value > 1) {
+                            value = 1.0;
+                          } else if (value < 0) {
+                            value = 0;
                           }
 
-                          ffiKnobSetValue(widgetRaw.pointer, angle);
+                          ffiKnobSetValue(widgetRaw.pointer, value);
 
                           if (assignedVar.value != null) {
                             if (assignedVar.value!.notifier.value is double) {
-                              assignedVar.value!.notifier.value = angle;
+                              assignedVar.value!.notifier.value = value;
                             }
                           }
 
-                          setState(() {
-                            this.angle = angle;
-                          });
+                          setState(() {});
                         },
                       )),
             ),
@@ -271,64 +265,4 @@ class ArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-//int Function(FFIWidgetPointer) ffiKnobGetValue = core.lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>("ffi_knob_get_value").asFunction();
-void Function(FFIWidgetPointer, double) ffiPaintedKnobSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
-        "ffi_painted_knob_set_value")
-    .asFunction();
-
-class PaintedKnobWidget extends ModuleWidget {
-  PaintedKnobWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
-
-  Color color = Colors.blue;
-  double angle = 0;
-  String? labelText;
-
-  Pointer<CanvasFFI> canvasRaw = ffiNewCanvas(); // LEAK HERE
-
-  @override
-  Widget build(BuildContext context) {
-    int width = 50;
-    int height = 50;
-
-    return Stack(
-      fit: StackFit.loose,
-      alignment: Alignment.center,
-      children: [
-        CustomPaint(
-          painter: CanvasPainter(widgetRaw, canvasRaw),
-        ),
-        Positioned(
-          top: 2.0,
-          left: 2.0,
-          child: SizedBox(
-            width: width + 20,
-            height: height + 20,
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) => setState(() {
-                // angle += -details.delta.dy / 60 * globals.zoom;
-                // ^^^ changed this during refactor
-
-                angle += -details.delta.dy / 60;
-
-                ffiPaintedKnobSetValue(widgetRaw.pointer, (angle + 2.5) / 5);
-
-                if (angle > 2.5) {
-                  angle = 2.5;
-                } else if (angle < -2.5) {
-                  angle = -2.5;
-                }
-
-                setState(() {
-                  this.angle = angle;
-                });
-              }),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

@@ -21,6 +21,11 @@ impl<'a> WidgetNew for Knob<'a> {
 /* ========== FFI ========== */
 
 #[no_mangle]
+pub unsafe extern "C" fn ffi_knob_get_value(knob: &mut Knob) -> f32 {
+    *knob.value
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn ffi_knob_set_value(knob: &mut Knob, mut value: f32) {
     if value < 0.0 {
         value = 0.0;

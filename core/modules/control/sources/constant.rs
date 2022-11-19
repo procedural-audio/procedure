@@ -34,21 +34,7 @@ impl Module for Constant {
             position: (10, 10),
             size: (70, 30),
             child: Input {
-                value: 0.0,
-                on_changed: | s | {
-                    match f32::from_str(s) {
-                        Ok(v) => {
-                            self.value = v;
-
-                            Ok(v)
-                        },
-                        Err(_) => {
-                            self.value = 0.0;
-
-                            Err(String::from("Not a float"))
-                        }
-                    }
-                }
+                value: &mut self.value,
             }
         })
     }

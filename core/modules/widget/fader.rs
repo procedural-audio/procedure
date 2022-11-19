@@ -257,22 +257,12 @@ pub unsafe extern "C" fn ffi_number_set_value(widget: &mut Number, value: i32) {
 
 /* ========== Input ========== */
 
-pub use std::str::FromStr;
-use std::string::ToString;
-
 #[repr(C)]
-pub struct Input<T: ToString, F>
-where
-    F: FnMut(&str) -> Result<T, String>,
-{
-    pub value: T,
-    pub on_changed: F,
+pub struct Input<'a> {
+    pub value: &'a mut f32,
 }
 
-impl<T: ToString, F> WidgetNew for Input<T, F>
-where
-    F: FnMut(&str) -> Result<T, String>,
-{
+impl<'a> WidgetNew for Input<'a> {
     fn get_name(&self) -> &'static str {
         "Input"
     }
@@ -280,60 +270,16 @@ where
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
-
-    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
-        unsafe { std::mem::transmute(self as &dyn InputTrait) }
-    }
-}
-
-pub trait InputTrait {
-    fn get_value(&self) -> String;
-    fn set_value(&mut self, value: &str) -> Result<(), String>;
-}
-
-impl<T: ToString, F> InputTrait for Input<T, F>
-where
-    F: FnMut(&str) -> Result<T, String>,
-{
-    fn get_value(&self) -> String {
-        self.value.to_string()
-    }
-
-    fn set_value(&mut self, value: &str) -> Result<(), String> {
-        match (self.on_changed)(value) {
-            Ok(v) => {
-                self.value = v;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
-    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_input_get_value(widget: &mut dyn InputTrait) -> *const i8 {
-    let s = CString::new(widget.get_value()).unwrap();
-    let p = s.as_ptr();
-    std::mem::forget(s);
-    p
+pub unsafe extern "C" fn ffi_input_get_value(widget: &mut Input) -> f32 {
+    *widget.value
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_input_set_value(
-    widget: &mut dyn InputTrait,
-    value: *const i8,
-) -> *const i8 {
-    let c_str = std::ffi::CStr::from_ptr(value);
-    let str_slice = c_str.to_str().unwrap();
-    match widget.set_value(str_slice) {
-        Ok(()) => std::ptr::null(),
-        Err(s) => {
-            let s = CString::new(s).unwrap();
-            let p = s.as_ptr();
-            std::mem::forget(s);
-            p
-        }
-    }
+pub unsafe extern "C" fn ffi_input_set_value(widget: &mut Input, value: f32) {
+    *widget.value = value
 }
 
 /* Refresh Callback */

@@ -1,75 +1,101 @@
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
-import 'widget.dart';
-import 'dart:io';
 import 'dart:ffi';
 
-import '../main.dart';
+import '../views/variables.dart';
 import '../host.dart';
+import 'widget.dart';
 
-Pointer<Utf8> Function(FFIWidgetTrait) ffiInputGetValue = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetTrait)>>(
+double Function(FFIWidgetPointer) ffiInputGetValue = core
+    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
         "ffi_input_get_value")
     .asFunction();
-
-Pointer<Utf8> Function(FFIWidgetTrait, Pointer<Utf8>) ffiInputSetValue = core
-    .lookup<
-        NativeFunction<
-            Pointer<Utf8> Function(
-                FFIWidgetTrait, Pointer<Utf8>)>>("ffi_input_set_value")
+void Function(FFIWidgetPointer, double) ffiInputSetValue = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+        "ffi_input_set_value")
     .asFunction();
 
 class InputWidget extends ModuleWidget {
-  InputWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  InputWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+    knobValue = ffiInputGetValue(widgetRaw.pointer);
+  }
 
   TextEditingController controller = TextEditingController();
 
+  double knobValue = 0.0;
+  bool ignoreNextUpdate = false;
+
+  @override
+  bool canAcceptVars() {
+    return true;
+  }
+
+  @override
+  bool willAcceptVar(Var v) {
+    return v.notifier.value is double ||
+        v.notifier.value is bool ||
+        v.notifier.value is int;
+  }
+
+  @override
+  void onVarUpdate(dynamic value) {
+    if (!ignoreNextUpdate) {
+      if (value is double) {
+        knobValue = value;
+      } else if (value is int) {
+        knobValue = value.toDouble();
+      } else if (value is bool) {
+        knobValue = value ? 1.0 : 0.0;
+      } else {
+        print("ERROR: Invalid type in input");
+      }
+
+      ffiInputSetValue(widgetRaw.pointer, knobValue);
+      setState(() {});
+    } else {
+      ignoreNextUpdate = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("BUILD INPUT WIDGET");
-
-    var temp = ffiInputGetValue(widgetRaw.getTrait());
-    String value = temp.toDartString();
-    calloc.free(temp);
-
-    controller.text = value;
+    controller.text = knobValue.toString();
 
     return TextField(
-      controller: controller,
-      onChanged: (String v) {
-        var temp = v.toNativeUtf8();
-        var error = ffiInputSetValue(widgetRaw.getTrait(), temp);
-        calloc.free(temp);
+        controller: controller,
+        onChanged: (String s) {
+          var v = double.tryParse(s);
+          if (v != null) {
+            knobValue = v;
+            ffiInputSetValue(widgetRaw.pointer, v);
+            ignoreNextUpdate = true;
 
-        if (error != nullptr) {
-          print("Error: " + error.toDartString());
-          calloc.free(error);
-        }
-      },
-      cursorColor: Colors.grey,
-      style: const TextStyle(color: Colors.red, fontSize: 16),
-      decoration: const InputDecoration(
-        filled: true,
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.all(5.0),
-        fillColor: Color.fromRGBO(20, 20, 20, 1.0),
-        focusColor: Colors.red,
-        iconColor: Colors.red,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Color.fromRGBO(60, 60, 60, 1.0),
-            width: 2.0
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.red,
-            width: 2.0
-          )
-        )
-      )
-    );
+            if (assignedVar.value != null) {
+              if (assignedVar.value!.notifier.value is double) {
+                assignedVar.value!.notifier.value = v;
+              } else if (assignedVar.value!.notifier.value is int) {
+                assignedVar.value!.notifier.value = v.toInt();
+              } else if (assignedVar.value!.notifier.value is bool) {
+                assignedVar.value!.notifier.value = v > 0.5;
+              }
+            }
+          } else {
+            print("Error: Invalid input");
+          }
+        },
+        cursorColor: Colors.grey,
+        style: const TextStyle(color: Colors.red, fontSize: 16),
+        decoration: const InputDecoration(
+            filled: true,
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.all(5.0),
+            fillColor: Color.fromRGBO(20, 20, 20, 1.0),
+            focusColor: Colors.red,
+            iconColor: Colors.red,
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  color: Color.fromRGBO(60, 60, 60, 1.0), width: 2.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 2.0))));
   }
 }

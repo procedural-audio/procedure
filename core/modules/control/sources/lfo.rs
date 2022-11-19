@@ -29,7 +29,6 @@ impl Module for LfoModule {
             Pin::Control("LFO Output", 15)
         ]
     };
-
     
     fn new() -> Self {
         Self {
@@ -115,14 +114,6 @@ impl Module for LfoModule {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let hz = self.value * 20.0;
         let reset = inputs.control[0];
-
-        if inputs.control.is_connected(0) {
-            println!("Conencted to 0");
-        }
-
-        if inputs.control.is_connected(1) {
-            println!("Connected to 1");
-        }
 
         if voice.last_reset < 0.5 {
             if reset >= 0.5 {

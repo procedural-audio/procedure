@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/samplePicker.dart';
-import 'package:metasampler/widgets/textBox.dart';
 import 'package:flutter/src/foundation/key.dart' as keyLib;
 import 'package:spritewidget/spritewidget.dart';
 
@@ -25,15 +24,12 @@ import 'slider.dart';
 import 'simpleButton.dart';
 import 'simpleSwitch.dart';
 import 'simplePad.dart';
-import 'imageFader.dart';
-import 'imageKnob.dart';
 import 'solidColor.dart';
 import 'image.dart';
 import 'text.dart';
 import 'pianoRoll.dart';
 import 'envelope.dart';
 import 'levelMeter.dart';
-import 'container.dart';
 import 'stepSequencer.dart';
 import 'keyboard.dart';
 import 'sampler.dart';
@@ -59,18 +55,16 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return KnobWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Stack") {
     return StackWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "Transform") {
+    return TransformWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Positioned") {
     return PositionedWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "Container") {
-    return ContainerWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Padding") {
     return PaddingWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SizedBox") {
     return SizedBoxWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SvgButton") {
     return ButtonSVG(host, moduleRaw, widgetRaw);
-  } else if (name == "Transform") {
-    return TransformWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Svg") {
     return SvgWidget(host, moduleRaw, widgetRaw);
   } else if (name == "ButtonGrid") {
@@ -91,10 +85,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return SimpleSwitchWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
     return SimplePadWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "ImageFader") {
-    return ImageFaderWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "ImageKnob") {
-    return ImageKnobWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SolidColor") {
     return SolidColorWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Image") {
@@ -121,8 +111,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return LuaEditorWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Tabs") {
     return TabsWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "FloatBox") {
-    return FloatBox(host, moduleRaw, widgetRaw);
   } else if (name == "NodeSequencer") {
     return NodeSequencerWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SamplePicker") {
