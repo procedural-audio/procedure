@@ -517,7 +517,7 @@ class _RightClickView extends State<RightClickView> {
         subCategory.add(RightClickElement(widget.host, "Negative",
             MaterialCommunityIcons.minus, Colors.red, 30, widget.addPosition));
         subCategory.add(RightClickElement(widget.host, "Clamp",
-            MaterialCommunityIcons.stairs, Colors.red, 30, widget.addPosition));
+            MaterialCommunityIcons.scale, Colors.red, 30, widget.addPosition));
 
         category.add(RightClickCategory("Operations", 20, subCategory));
       }

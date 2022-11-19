@@ -99,12 +99,12 @@ void main(List<String> args) {
 
     core.graph.refresh();
 
-    var json = jsonDecode(
+    /*var json = jsonDecode(
         File(contentPath + "/instruments/UntitledInstrument/info/info.json")
             .readAsStringSync());
 
     core.globals.instrument = InstrumentInfo.fromJson(
-        json, contentPath + "/instruments/UntitledInstrument");
+        json, contentPath + "/instruments/UntitledInstrument");*/
 
     runApp(Window(core));
   }

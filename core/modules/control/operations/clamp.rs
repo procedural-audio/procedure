@@ -33,10 +33,10 @@ impl Module for Clamp {
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 25),
+            position: (34, 35),
             size: (40, 40),
             child: Svg {
-                path: "comparisons/clamp.svg",
+                path: "operations/clamp.svg",
                 color: Color::RED,
             },
         })
@@ -45,10 +45,20 @@ impl Module for Clamp {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.control[0] = f32::clamp(
-            inputs.control[0],
-            inputs.control[1],
-            inputs.control[2],
-        );
+        if inputs.control[1] < inputs.control[2] {
+            outputs.control[0] = f32::clamp(
+                inputs.control[0],
+                inputs.control[1],
+                inputs.control[2],
+            );
+        } else if inputs.control[1] > inputs.control[2] {
+            outputs.control[0] = f32::clamp(
+                inputs.control[0],
+                inputs.control[2],
+                inputs.control[1],
+            );
+        } else {
+            outputs.control[0] = inputs.control[1];
+        }
     }
 }

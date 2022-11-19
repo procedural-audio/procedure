@@ -32,8 +32,8 @@ impl Module for Modulo {
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 25),
-            size: (40, 40),
+            position: (32, 28),
+            size: (36, 36),
             child: Svg {
                 path: "operations/modulo.svg",
                 color: Color::RED,
