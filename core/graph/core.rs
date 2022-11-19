@@ -23,12 +23,6 @@ use std::ffi::CString;
 /* Begin main */
 
 #[no_mangle]
-pub unsafe fn do_thing() {
-    nodio::do_thing_1();
-    nodio::do_thing_2();
-}
-
-#[no_mangle]
 pub unsafe fn ffi_hack_convert(data: usize) -> usize {
     data
 }
@@ -38,6 +32,7 @@ pub extern "C" fn api_io_test() {}
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
+    nodio::do_thing_1();
     println!("CREATING NEW HOST");
     Box::into_raw(api_create_host())
 }
