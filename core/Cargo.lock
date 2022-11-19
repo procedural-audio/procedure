@@ -447,6 +447,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "nodio"
+version = "0.1.0"
+dependencies = [
+ "cmake",
+]
+
+[[package]]
 name = "notify"
 version = "4.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -704,6 +711,7 @@ dependencies = [
  "libloading 0.7.4",
  "metasampler-macros",
  "modules",
+ "nodio",
  "pa-dsp",
  "rand 0.8.5",
  "serde",

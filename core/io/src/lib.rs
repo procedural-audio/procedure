@@ -17,6 +17,16 @@ extern "C" {
     fn audio_plugin_show_gui(plugin: *mut JuceAudioPlugin);
 }
 
+#[no_mangle]
+pub extern "C" fn do_thing_1() {
+    unsafe { create_manager(); }
+}
+
+#[no_mangle]
+pub extern "C" fn do_thing_2() {
+    println!("Doing thing 2");
+}
+
 /*pub struct AudioPluginManager {
     manager: *mut JuceAudioPluginManager
 }

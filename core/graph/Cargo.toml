@@ -8,7 +8,7 @@ edition = "2021"
 modules = { path = "../modules" }
 pa-dsp = { path = "../dsp" }
 
-# audio-plugin-loader = { path = "deps/loader" }
+nodio = { path = "../io" }
 faust-types = { path = "../deps/faust-rs/faust-types" }
 faust-state = { path = "../deps/faust-rs/faust-state" }
 metasampler-macros = { path = "../deps/metasampler-macros" }

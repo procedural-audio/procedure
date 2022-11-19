@@ -20,11 +20,13 @@ use modules::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-use pa_dsp::AudioChannelMut;
-
-use pa_dsp::*;
-
 /* Begin main */
+
+#[no_mangle]
+pub unsafe fn do_thing() {
+    nodio::do_thing_1();
+    nodio::do_thing_2();
+}
 
 #[no_mangle]
 pub unsafe fn ffi_hack_convert(data: usize) -> usize {

@@ -27,16 +27,16 @@ if not os.system("cd core && cargo build --release && cd .."):
         # Copy executables
         # os.system("cp build/bin/standalone/debug/standalone build/package/linux/.")
         #os.system("cp build/debug/plugin build/package/linux/.")
-        os.system("cp src/workstation/build/workstation_artefacts/Standalone/workstation build/package/linux/.")
+        # os.system("cp src/workstation/build/workstation_artefacts/Standalone/workstation build/package/linux/.")
 
         # Copy libraries
-        os.system("cp -r build/bin/lib/release/lib/ build/package/linux/.")
-        os.system("cp build/bin/lib/release/libtonevision_core.so build/package/linux/lib/.")
-        os.system("mkdir build/package/linux/lib/lib")
-        os.system("mv build/package/linux/lib/libflutter_linux_gtk.so build/package/linux/lib/lib/.")
+        # os.system("cp -r build/bin/lib/release/lib/ build/package/linux/.")
+        # os.system("cp build/bin/lib/release/libtonevision_core.so build/package/linux/lib/.")
+        # os.system("mkdir build/package/linux/lib/lib")
+        # os.system("mv build/package/linux/lib/libflutter_linux_gtk.so build/package/linux/lib/lib/.")
 
         # Copy data
-        os.system("cp -r build/bin/lib/release/data/ build/package/linux/.")
+        # os.system("cp -r build/bin/lib/release/data/ build/package/linux/.")
 
     if "darwin" in platform:
         if debug:

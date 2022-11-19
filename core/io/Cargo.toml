@@ -1,5 +1,5 @@
 [package]
-name = "audio-plugin-loader"
+name = "nodio"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,4 +10,3 @@ edition = "2021"
 cmake = "0.1"
 
 [lib]
-crate-type = ["cdylib"]

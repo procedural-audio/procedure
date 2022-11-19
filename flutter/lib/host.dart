@@ -37,7 +37,7 @@ DynamicLibrary getCore() {
 
     if (Platform.isLinux) {
       library = DynamicLibrary.open(
-          "/home/chase/github/metasampler/build/package/linux/lib/libtonevision_core.so");
+          "/home/chase/github/nodus/build/out/core/release/libtonevision_core.so");
 
       if (library.providesSymbol("ffi_create_host")) {
         print("Loaded core dynamically");

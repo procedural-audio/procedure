@@ -6,7 +6,7 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", dst.display());
     println!("cargo:rustc-link-search=native={}/build", dst.display());
 
-    println!("cargo:rustc-link-lib=static=JucePluginLoader");
+    println!("cargo:rustc-link-lib=dylib=JucePluginLoader");
 
     println!("cargo:rerun-if-changed=juce_io/lib.cpp");
 
