@@ -4,9 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# tonevision-types = { path = "../../lib/types" }
 
 [build-dependencies]
 cmake = "0.1"
-
-[lib]

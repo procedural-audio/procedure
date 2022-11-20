@@ -15,12 +15,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
-name = "cache-padded"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1db59621ec70f09c5e9b597b220c7a2b43611f4710dc03ceb8748637775692c"
-
-[[package]]
 name = "cc"
 version = "1.0.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -144,25 +138,9 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ee0f039b6eab34fb0c03908024fa554a903d383bbce61adda3f0e4b718b7c1a"
 dependencies = [
- "libloading 0.7.4",
+ "libloading",
  "notify",
  "tempdir",
-]
-
-[[package]]
-name = "faust-state"
-version = "0.1.0"
-dependencies = [
- "faust-types",
- "rtrb",
-]
-
-[[package]]
-name = "faust-types"
-version = "0.1.0"
-dependencies = [
- "jack",
- "libm",
 ]
 
 [[package]]
@@ -230,12 +208,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hound"
-version = "3.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d13cdbd5dbb29f9c88095bbdc2590c9cba0d0a1269b983fef6b2cdd7e9f4db1"
-
-[[package]]
 name = "inotify"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -271,31 +243,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4217ad341ebadf8d8e724e264f13e593e0648f5b3e94b3896a5df283be015ecc"
 
 [[package]]
-name = "jack"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d79b205ea723e478eb31a91dcdda100912c69cc32992eb7ba26ec0bbae7bebe4"
-dependencies = [
- "bitflags",
- "jack-sys",
- "lazy_static",
- "libc",
- "log",
-]
-
-[[package]]
-name = "jack-sys"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b91f2d2d10bc2bab38f4dfa4bc77123a988828af39dd3f30dd9db14d44f2cc1"
-dependencies = [
- "lazy_static",
- "libc",
- "libloading 0.6.7",
- "pkg-config",
-]
-
-[[package]]
 name = "kernel32-sys"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -325,16 +272,6 @@ checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
 
 [[package]]
 name = "libloading"
-version = "0.6.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "351a32417a12d5f7e82c368a66781e307834dae04c6ce0cd4456d52989229883"
-dependencies = [
- "cfg-if 1.0.0",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "libloading"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
@@ -342,12 +279,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "winapi 0.3.9",
 ]
-
-[[package]]
-name = "libm"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "348108ab3fba42ec82ff6e9564fc4ca0247bdccdc68dd8af9764bbc79c3c8ffb"
 
 [[package]]
 name = "libsamplerate-sys"
@@ -365,15 +296,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if 1.0.0",
-]
-
-[[package]]
-name = "metasampler-macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -423,15 +345,9 @@ dependencies = [
 name = "modules"
 version = "0.1.0"
 dependencies = [
- "dynamic_reload",
- "faust-state",
- "faust-types",
- "libloading 0.7.4",
- "metasampler-macros",
  "pa-dsp",
  "rand 0.8.5",
  "serde",
- "serde_json",
  "xml-rs",
 ]
 
@@ -477,22 +393,10 @@ version = "0.1.0"
 dependencies = [
  "dasp_interpolate",
  "dasp_signal",
- "faust-state",
- "faust-types",
- "hound",
  "lazy_static",
- "libc",
  "rand 0.8.5",
  "samplerate",
- "serde",
- "serde_json",
 ]
-
-[[package]]
-name = "pkg-config"
-version = "0.3.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
 name = "plugins"
@@ -608,15 +512,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rtrb"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "318256ac02f7e11a48a10339ba5dca8bd7eb17496abf384e8ea909bb2ae5275f"
-dependencies = [
- "cache-padded",
-]
-
-[[package]]
 name = "ryu"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -706,17 +601,11 @@ name = "tonevision-core"
 version = "0.1.0"
 dependencies = [
  "dynamic_reload",
- "faust-state",
- "faust-types",
- "libloading 0.7.4",
- "metasampler-macros",
+ "libloading",
  "modules",
- "nodio",
  "pa-dsp",
- "rand 0.8.5",
  "serde",
  "serde_json",
- "xml-rs",
 ]
 
 [[package]]

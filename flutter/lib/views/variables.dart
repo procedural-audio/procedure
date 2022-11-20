@@ -316,6 +316,7 @@ class _Vars extends State<Vars> {
                                                         "Unknown supported type");
                                                   }
 
+                                                  setState(() {});
                                                   print("Type is " +
                                                       selectedVar.notifier.value
                                                           .runtimeType

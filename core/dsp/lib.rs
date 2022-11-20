@@ -5,8 +5,6 @@ pub mod sample;
 pub mod voice;
 // pub mod widget;
 
-pub use faust_types::FaustDsp;
-
 // pub use crate::buffers::audio::*;
 // pub use crate::buffers::event::*;
 // pub use crate::buffers::control::*;

@@ -1,4 +1,3 @@
-use metasampler_macros::*;
 use pa_dsp::*;
 use crate::*;
 
@@ -9,7 +8,7 @@ pub struct Tube {
 }
 
 pub struct TubeVoice {
-    tube1_l: Tube1,
+    /*tube1_l: Tube1,
     tube1_r: Tube1,
     tube2_l: Tube2,
     tube2_r: Tube2,
@@ -20,7 +19,7 @@ pub struct TubeVoice {
     tube5_l: Tube5,
     tube5_r: Tube5,
     tube6_l: Tube6,
-    tube6_r: Tube6,
+    tube6_r: Tube6,*/
 }
 
 impl Module for Tube {
@@ -50,7 +49,7 @@ impl Module for Tube {
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            tube1_l: Tube1::new(),
+            /*tube1_l: Tube1::new(),
             tube1_r: Tube1::new(),
             tube2_l: Tube2::new(),
             tube2_r: Tube2::new(),
@@ -61,7 +60,7 @@ impl Module for Tube {
             tube5_l: Tube5::new(),
             tube5_r: Tube5::new(),
             tube6_l: Tube6::new(),
-            tube6_r: Tube6::new(),
+            tube6_r: Tube6::new(),*/
         }
     }
 
@@ -105,7 +104,7 @@ impl Module for Tube {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.tube1_l.prepare(sample_rate, block_size);
+        /*voice.tube1_l.prepare(sample_rate, block_size);
         voice.tube1_r.prepare(sample_rate, block_size);
         voice.tube2_l.prepare(sample_rate, block_size);
         voice.tube2_r.prepare(sample_rate, block_size);
@@ -116,7 +115,7 @@ impl Module for Tube {
         voice.tube5_l.prepare(sample_rate, block_size);
         voice.tube5_r.prepare(sample_rate, block_size);
         voice.tube6_l.prepare(sample_rate, block_size);
-        voice.tube6_r.prepare(sample_rate, block_size);
+        voice.tube6_r.prepare(sample_rate, block_size);*/
     }
 
     fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
@@ -180,7 +179,7 @@ impl Module for Tube {
     }
 }
 
-faust!(Tube1,
+/*faust!(Tube1,
     import("filters.lib");
 
     tubes = component("tubes.lib").T1_12AX7 : *(preamp):
@@ -257,3 +256,4 @@ faust!(Tube6,
 
     process = tubes;
 );
+*/

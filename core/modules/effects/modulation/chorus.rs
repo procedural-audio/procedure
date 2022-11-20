@@ -1,5 +1,4 @@
 use crate::*;
-use metasampler_macros::*;
 
 pub struct Chorus {
     level: f32,
@@ -9,7 +8,7 @@ pub struct Chorus {
 }
 
 impl Module for Chorus {
-    type Voice = ChorusDsp;
+    type Voice = (); // ChorusDsp;
 
     const INFO: Info = Info {
         name: "Chorus",
@@ -31,7 +30,7 @@ impl Module for Chorus {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        ChorusDsp::new()
+        () // ChorusDsp::new()
     }
 
     fn load(&mut self, _json: &JSON) {
@@ -90,18 +89,18 @@ impl Module for Chorus {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.prepare(sample_rate, block_size);
+        // voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        voice.process(
+        /*voice.process(
             &inputs.audio[0].as_array(),
             &mut outputs.audio[0].as_array_mut(),
-        );
+        );*/
     }
 }
 
-faust!(ChorusDsp,
+/*faust!(ChorusDsp,
     import("music.lib");
 
     level	= hslider("level", 0.5, 0, 1, 0.01);
@@ -124,4 +123,4 @@ faust!(ChorusDsp,
 
     process			= vgroup("chorus", (c, c))
     with { c(x) = x+level*chorus(dtime,freq,depth,x); };
-);
+);*/

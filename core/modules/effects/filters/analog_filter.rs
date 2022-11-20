@@ -1,6 +1,5 @@
 use crate::*;
 
-use metasampler_macros::*;
 use pa_dsp::*;
 
 pub struct AnalogFilter {
@@ -10,13 +9,13 @@ pub struct AnalogFilter {
 }
 
 pub struct AnalogFilterVoice {
-    korg: Korg35LPF,
+    /*korg: Korg35LPF,
     diode: DiodeLPF,
     oberheim: OberheimLPF,
     ladder: LadderLPF,
     half_ladder: HalfLadderLPF,
     moog: MoogLPF,
-    sallen_key: SallenKeyLPF,
+    sallen_key: SallenKeyLPF,*/
 }
 
 impl Module for AnalogFilter {
@@ -48,13 +47,13 @@ impl Module for AnalogFilter {
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            korg: Korg35LPF::new(),
+            /*korg: Korg35LPF::new(),
             diode: DiodeLPF::new(),
             oberheim: OberheimLPF::new(),
             ladder: LadderLPF::new(),
             half_ladder: HalfLadderLPF::new(),
             moog: MoogLPF::new(),
-            sallen_key: SallenKeyLPF::new(),
+            sallen_key: SallenKeyLPF::new(),*/
         }
     }
 
@@ -106,20 +105,20 @@ impl Module for AnalogFilter {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.korg.prepare(sample_rate, block_size);
+        /*voice.korg.prepare(sample_rate, block_size);
         voice.diode.prepare(sample_rate, block_size);
         voice.oberheim.prepare(sample_rate, block_size);
         voice.ladder.prepare(sample_rate, block_size);
         voice.half_ladder.prepare(sample_rate, block_size);
         voice.moog.prepare(sample_rate, block_size);
-        voice.sallen_key.prepare(sample_rate, block_size);
+        voice.sallen_key.prepare(sample_rate, block_size);*/
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let input = inputs.audio[0].as_array();
         let mut output = outputs.audio[0].as_array_mut();
 
-        match self.selected {
+        /*match self.selected {
             0 => {
                 voice.korg.set_param(0, self.cutoff);
                 voice.korg.set_param(1, self.resonance);
@@ -156,11 +155,11 @@ impl Module for AnalogFilter {
                 voice.sallen_key.process(&input, &mut output);
             }
             _ => panic!("Dropdown value out of range"),
-        }
+        }*/
     }
 }
 
-faust!(Korg35LPF,
+/*faust!(Korg35LPF,
     freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
     res = hslider("res",1,0,10,0.01);
     process = _,_ : ve.korg35LPF(freq, res), ve.korg35LPF(freq, res);
@@ -200,4 +199,4 @@ faust!(SallenKeyLPF,
     freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
     res = hslider("res",1,0.5,10,0.01);
     process = _,_ : ve.sallenKeyOnePoleLPF(freq), ve.sallenKeyOnePoleLPF(freq);
-);
+);*/

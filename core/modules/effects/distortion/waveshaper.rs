@@ -1,4 +1,3 @@
-use metasampler_macros::*;
 use pa_dsp::*;
 use crate::*;
 
@@ -12,12 +11,6 @@ pub struct Waveshaper {
 }
 
 pub struct WaveshaperVoice {
-    tube1_l: Tube1,
-    tube2_l: Tube2,
-    tube3_l: Tube3,
-    tube4_l: Tube4,
-    tube5_l: Tube5,
-    tube6_l: Tube6,
 }
 
 impl Module for Waveshaper {
@@ -48,12 +41,6 @@ impl Module for Waveshaper {
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            tube1_l: Tube1::new(),
-            tube2_l: Tube2::new(),
-            tube3_l: Tube3::new(),
-            tube4_l: Tube4::new(),
-            tube5_l: Tube5::new(),
-            tube6_l: Tube6::new(),
         }
     }
 
@@ -143,81 +130,3 @@ impl Module for Waveshaper {
         f(0.0)
     ]
 }*/
-
-faust!(Tube1,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_12AX7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_12AX7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_12AX7 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);
-
-faust!(Tube2,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_12AT7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_12AT7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_12AT7 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);
-
-faust!(Tube3,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_12AU7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_12AU7 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_12AU7 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);
-
-faust!(Tube4,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_6V6 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_6V6 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_6V6 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);
-
-faust!(Tube5,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_6DJ8 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_6DJ8 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_6DJ8 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);
-
-faust!(Tube6,
-    import("filters.lib");
-
-    tubes = component("tubes.lib").T1_6C16 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T2_6C16 : *(preamp):
-        lowpass(1,6531.0) : component("tubes.lib").T3_6C16 : *(gain) with {
-        preamp = vslider("Pregain",-6,-20,20,0.1) : ba.db2linear : si.smooth(0.999);
-        gain  = vslider("Gain", -6, -20.0, 20.0, 0.1) : ba.db2linear : si.smooth(0.999);
-    };
-
-    process = tubes;
-);

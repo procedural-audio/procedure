@@ -1,5 +1,4 @@
 use crate::*;
-use metasampler_macros::*;
 
 pub struct Flanger {
     delay: f32,
@@ -9,7 +8,7 @@ pub struct Flanger {
 }
 
 impl Module for Flanger {
-    type Voice = FlangerDsp;
+    type Voice = (); // FlangerDsp;
 
     const INFO: Info = Info {
         name: "Flanger",
@@ -36,7 +35,7 @@ impl Module for Flanger {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        FlangerDsp::new()
+        () // FlangerDsp::new()
     }
 
     fn load(&mut self, _json: &JSON) {
@@ -95,18 +94,18 @@ impl Module for Flanger {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.prepare(sample_rate, block_size);
+        // voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        voice.process(
+        /*voice.process(
             &inputs.audio[0].as_array(),
             &mut outputs.audio[0].as_array_mut(),
-        );
+        );*/
     }
 }
 
-faust!(FlangerDsp,
+/*faust!(FlangerDsp,
     import("math.lib");
 
     dmax = 2048;
@@ -125,4 +124,4 @@ faust!(FlangerDsp,
     curdel2 = odflange+dflange*(1 + lfor(freq))/2;
 
     process = _,_ : pf.flanger_stereo(dmax,curdel1,curdel2,depth,fb,0) : _,_;
-);
+);*/

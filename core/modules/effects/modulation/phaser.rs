@@ -1,5 +1,4 @@
 use crate::*;
-use metasampler_macros::*;
 
 pub struct Phaser {
     level: f32,
@@ -11,15 +10,20 @@ pub struct Phaser {
 }
 
 impl Module for Phaser {
-    type Voice = PhaserDsp;
+    type Voice = (); // PhaserDsp;
 
     const INFO: Info = Info {
         name: "Phaser",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(310 - 40, 200),
         voicing: Voicing::Monophonic,
-        inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
-        outputs: &[Pin::Audio("Audio Output", 20)],
+        inputs: &[
+            Pin::Audio("Audio Input", 20),
+            Pin::Control("Control 1", 50)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 20)
+        ],
     };
 
     
@@ -35,7 +39,7 @@ impl Module for Phaser {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        PhaserDsp::new()
+        () // PhaserDsp::new()
     }
 
     fn load(&mut self, _json: &JSON) {
@@ -112,18 +116,18 @@ impl Module for Phaser {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.prepare(sample_rate, block_size);
+        // voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        voice.process(
+        /*voice.process(
             &inputs.audio[0].as_array(),
             &mut outputs.audio[0].as_array_mut(),
-        );
+        );*/
     }
 }
 
-faust!(PhaserDsp,
+/*faust!(PhaserDsp,
     import("math.lib");
 
     // Notches: number of spectral notches (MACRO ARGUMENT - not a signal)
@@ -149,4 +153,4 @@ faust!(PhaserDsp,
     invert = 0;
 
     process = _,_ : pf.phaser2_stereo(Notches,width,frqmin,fratio,frqmax,speed,depth,fb,invert) : _,_;
-);
+);*/

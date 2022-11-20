@@ -1,5 +1,4 @@
 use crate::*;
-use metasampler_macros::*;
 
 use pa_dsp::buffers::*;
 
@@ -15,10 +14,10 @@ pub struct AnalogOscillator {
 }
 
 pub struct OscillatorVoice {
-    saws: Vec<Saw>,
+    /*saws: Vec<Saw>,
     squares: Vec<Square>,
     sines: Vec<Sine>,
-    triangles: Vec<Triangle>,
+    triangles: Vec<Triangle>,*/
     buffer1: AudioBuffer,
     buffer2: AudioBuffer,
     freq: f32,
@@ -60,10 +59,10 @@ impl Module for AnalogOscillator {
         println!("Created voice {}", index);
 
         Self::Voice {
-            saws: vec![Saw::new(); 8],
+            /*saws: vec![Saw::new(); 8],
             squares: vec![Square::new(); 8],
             sines: vec![Sine::new(); 8],
-            triangles: vec![Triangle::new(); 8],
+            triangles: vec![Triangle::new(); 8],*/
             buffer1: AudioBuffer::init(0.0, 512),
             buffer2: AudioBuffer::init(0.0, 512),
             freq: 100.0,
@@ -233,7 +232,7 @@ impl Module for AnalogOscillator {
         voice.buffer2 = AudioBuffer::init(0.0, block_size);
         voice.buffer2.zero();
 
-        for osc in &mut voice.saws {
+        /*for osc in &mut voice.saws {
             osc.prepare(sample_rate, block_size);
         }
 
@@ -247,7 +246,7 @@ impl Module for AnalogOscillator {
 
         for osc in &mut voice.triangles {
             osc.prepare(sample_rate, block_size);
-        }
+        }*/
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -276,7 +275,7 @@ impl Module for AnalogOscillator {
             }
         }
 
-        if self.wave_index == 0 {
+        /*if self.wave_index == 0 {
             let osc_count = unison as usize;
             for index in 0..osc_count {
                 let saw = &mut voice.saws[index];
@@ -393,11 +392,11 @@ impl Module for AnalogOscillator {
                 outputs.audio[0].left.add_from(&voice.buffer2);
                 outputs.audio[0].right.add_from(&voice.buffer2);
             }
-        }
+        }*/
     }
 }
 
-faust!(Saw,
+/*faust!(Saw,
     freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
     pan = hslider("pan[style:numerical]", 0.5, 0, 1, 0.001) : si.smoo;
     glide = hslider("glide[style:numerical]", 0.5, 0, 1, 0.001) : si.smoo;
@@ -421,4 +420,4 @@ faust!(Sine,
 faust!(Triangle,
     freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
     process = _ + os.triangle(freq);
-);
+);*/

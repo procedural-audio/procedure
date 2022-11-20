@@ -1,12 +1,11 @@
 use crate::*;
-use metasampler_macros::*;
 
 pub struct Noise {
     value: f32,
 }
 
 impl Module for Noise {
-    type Voice = NoiseProcessor;
+    type Voice = (); // NoiseProcessor;
 
     const INFO: Info = Info {
         name: "Noise",
@@ -23,7 +22,7 @@ impl Module for Noise {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        NoiseProcessor::new()
+        // NoiseProcessor::new()
     }
 
     fn load(&mut self, _json: &JSON) {}
@@ -51,16 +50,16 @@ impl Module for Noise {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.prepare(sample_rate, block_size);
+        // voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
-        voice.set_param(0, self.value - 1.0);
-        voice.process(&[&[]], &mut outputs.audio[0].as_array_mut());
+        // voice.set_param(0, self.value - 1.0);
+        // voice.process(&[&[]], &mut outputs.audio[0].as_array_mut());
     }
 }
 
-faust!(NoiseProcessor,
+/*faust!(NoiseProcessor,
     freq = hslider("freq[style:numerical]", -0.5, -1.0, 1.0, 0.001) : si.smoo;
     process = no.colored_noise(2, freq);
-);
+);*/

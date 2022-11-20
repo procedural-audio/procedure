@@ -1,23 +1,24 @@
 use crate::*;
-use metasampler_macros::*;
 
 pub struct Panner {
     value: f32,
 }
 
 impl Module for Panner {
-    type Voice = PannerDSP;
+    type Voice = (); // PannerDSP;
 
     const INFO: Info = Info {
         name: "Panner",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Pan Amount", 55),
         ],
-        outputs: &[Pin::Audio("Audio Output", 25)],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
     };
 
     
@@ -26,7 +27,7 @@ impl Module for Panner {
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
-        PannerDSP::new()
+        () // PannerDSP::new()
     }
 
     fn load(&mut self, _json: &JSON) {}
@@ -46,20 +47,20 @@ impl Module for Panner {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.prepare(sample_rate, block_size)
+        // voice.prepare(sample_rate, block_size)
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        voice.set_param(0, self.value);
+        /*voice.set_param(0, self.value);
 
         voice.process(
             &inputs.audio[0].as_array(),
             &mut outputs.audio[0].as_array_mut(),
-        );
+        );*/
     }
 }
 
-faust!(PannerDSP,
+/*faust!(PannerDSP,
     pan = hslider("value", 0.5, 0, 1, 0.0001) : si.smoo;
     process = sp.panner(pan);
-);
+);*/

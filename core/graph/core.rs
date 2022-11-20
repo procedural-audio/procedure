@@ -1,8 +1,3 @@
-extern crate metasampler_macros;
-extern crate rand;
-extern crate serde;
-extern crate serde_json;
-
 pub mod host;
 pub mod plugin;
 pub mod plugins;
@@ -32,7 +27,6 @@ pub extern "C" fn api_io_test() {}
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
-    nodio::do_thing_1();
     println!("CREATING NEW HOST");
     Box::into_raw(api_create_host())
 }
