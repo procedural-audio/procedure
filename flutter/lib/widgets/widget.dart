@@ -3,12 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/samplePicker.dart';
-import 'package:flutter/src/foundation/key.dart' as keyLib;
-import 'package:spritewidget/spritewidget.dart';
 
 import 'dart:ui' as ui;
 import 'dart:async';
-import 'dart:typed_data';
 
 import '../host.dart';
 
@@ -18,14 +15,10 @@ import 'nodeSequencer.dart';
 import 'stack.dart';
 import 'buttonSVG.dart';
 import 'dropdown.dart';
-import 'canvas.dart';
-import 'simpleKnob.dart';
 import 'slider.dart';
 import 'simpleButton.dart';
 import 'simpleSwitch.dart';
 import 'simplePad.dart';
-import 'solidColor.dart';
-import 'image.dart';
 import 'text.dart';
 import 'pianoRoll.dart';
 import 'envelope.dart';
@@ -71,10 +64,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return ButtonGridWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
     return DropdownWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "Painter") {
-    return CanvasWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "SimpleKnob") {
-    return SimpleKnobWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Slider") {
     return SliderWidget(host, moduleRaw, widgetRaw);
   } else if (name == "RangeSlider") {
@@ -85,10 +74,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return SimpleSwitchWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
     return SimplePadWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "SolidColor") {
-    return SolidColorWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "Image") {
-    return ImageWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Text") {
     return TextWidget(host, moduleRaw, widgetRaw);
   } else if (name == "NotesTrack") {

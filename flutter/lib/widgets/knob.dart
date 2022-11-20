@@ -5,7 +5,6 @@ import '../views/variables.dart';
 import 'widget.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
-import 'canvas.dart';
 
 import '../views/settings.dart';
 

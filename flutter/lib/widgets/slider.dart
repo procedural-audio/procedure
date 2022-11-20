@@ -5,7 +5,6 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
-import 'canvas.dart';
 
 double Function(FFIWidgetPointer) ffiSliderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
