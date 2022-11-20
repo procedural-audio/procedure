@@ -13,7 +13,7 @@ fn main() {
     if cfg!(target_os = "macos") {
         println!("cargo:rustc-link-lib=dylib=c++");
 
-        println!("cargo:rustc-link-lib=framework=CoreAudio");
+        /*println!("cargo:rustc-link-lib=framework=CoreAudio");
         println!("cargo:rustc-link-lib=framework=CoreMIDI");
 
         println!("cargo:rustc-link-lib=framework=UserNotifications");
@@ -28,6 +28,7 @@ fn main() {
 
         println!("cargo:rustc-link-lib=framework=Accelerate");
         println!("cargo:rustc-link-lib=framework=AppKit");
+*/
     } else {
         println!("cargo:rustc-link-lib=dylib=stdc++");
         println!("cargo:rustc-link-lib=dylib=asound");

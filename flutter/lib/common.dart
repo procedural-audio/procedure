@@ -87,7 +87,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
         child: Container(
             width: widget.width,
             height: widget.height,
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
             decoration: BoxDecoration(
                 color: const Color.fromRGBO(20, 20, 20, 1.0),
                 border: Border.all(
@@ -99,7 +99,12 @@ class _SearchableDropdown extends State<SearchableDropdown>
                       focusNode: textFieldFocus,
                       controller: controller,
                       style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: const InputDecoration(isDense: true),
+                      decoration: InputDecoration(
+                          hintText: widget.value,
+                          hintStyle:
+                              const TextStyle(color: Colors.grey, fontSize: 14),
+                          isDense: true,
+                          border: InputBorder.none),
                       onChanged: (v) {
                         print("Search updated");
                       })),
