@@ -28,6 +28,7 @@ pub extern "C" fn api_io_test() {}
 #[no_mangle]
 pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
     println!("CREATING NEW HOST");
+    nodio::do_thing_1();
     Box::into_raw(api_create_host())
 }
 

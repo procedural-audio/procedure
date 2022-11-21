@@ -7,20 +7,21 @@ impl Module for GlobalTime {
 
     const INFO: Info = Info {
         name: "",
-                color: Color::PURPLE,
+        color: Color::PURPLE,
         size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
     };
-
     
     fn new() -> Self {
         Self
     }
+
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 

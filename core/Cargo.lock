@@ -603,6 +603,7 @@ dependencies = [
  "dynamic_reload",
  "libloading",
  "modules",
+ "nodio",
  "pa-dsp",
  "serde",
  "serde_json",

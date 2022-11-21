@@ -134,7 +134,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Reverse", create_module::<Reverse>));
     modules.push(("Rate", create_module::<Rate>));
 
-    modules.push(("Control Variable", create_module::<ControlVariable>));
     modules.push(("Audio Plugin", create_module::<AudioPluginModule>));
 
     println!("Loaded {} static modules", modules.len());

@@ -7,20 +7,21 @@ impl Module for LocalTime {
 
     const INFO: Info = Info {
         name: "Time",
-                color: Color::PURPLE,
+        color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
     };
-
     
     fn new() -> Self {
         Self
     }
+
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
