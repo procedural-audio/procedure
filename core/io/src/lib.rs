@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::ffi::CString;
+use std::ffi::{CString, c_void};
 
 #[repr(C)]
 struct JuceAudioPluginManager;
@@ -10,25 +10,16 @@ struct JuceAudioPlugin;
 
 #[link(name="JucePluginLoader", kind="static")]
 extern "C" {
-    fn create_manager() -> *mut JuceAudioPluginManager;
-    fn delete_manager(manager: *mut JuceAudioPluginManager);
+    fn create_audio_plugin_manager() -> *mut c_void;
+    fn destroy_audio_plugin_manager(manager: *mut c_void);
 
-    fn create_audio_plugin(manager: *mut JuceAudioPluginManager, name: *const i8) -> *mut JuceAudioPlugin;
-    fn audio_plugin_show_gui(plugin: *mut JuceAudioPlugin);
+    fn create_audio_plugin(manager: *mut c_void, name: *const i8) -> *mut c_void;
+    fn destroy_audio_plugin(plugin: *mut c_void);
+    fn audio_plugin_show_gui(plugin: *mut c_void);
 }
 
-#[no_mangle]
-pub extern "C" fn do_thing_1() {
-    unsafe { create_manager(); }
-}
-
-#[no_mangle]
-pub extern "C" fn do_thing_2() {
-    println!("Doing thing 2");
-}
-
-/*pub struct AudioPluginManager {
-    manager: *mut JuceAudioPluginManager
+pub struct AudioPluginManager {
+    manager: *mut c_void
 }
 
 impl AudioPluginManager {
@@ -63,11 +54,17 @@ impl Drop for AudioPluginManager {
 }
 
 pub struct AudioPlugin {
-    plugin: *mut JuceAudioPlugin
+    plugin: *mut c_void
 }
 
 impl AudioPlugin {
     pub fn show_gui(&self) {
         unsafe { audio_plugin_show_gui(self.plugin); }
     }
-}*/
+}
+
+impl Drop for AudioPlugin {
+    fn drop(&mut self) {
+        unsafe { destroy_audio_plugin(self.plugin); }
+    }
+}

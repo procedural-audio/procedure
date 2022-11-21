@@ -3,7 +3,7 @@ use pa_dsp::*;
 
 use libloading::{Library, Symbol};
 
-#[no_mangle]
+/*#[no_mangle]
 extern "C" fn ffi_host_create_audio_plugin_manager(
         ptr: *const c_void, 
         create_plugin_callback: extern "C" fn (*const c_void, *const u8) -> *const c_void,
@@ -131,3 +131,4 @@ impl AudioPluginInfo {
         }
     }
 }
+*/
