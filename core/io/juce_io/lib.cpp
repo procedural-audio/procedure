@@ -10,6 +10,16 @@
 
 using namespace juce;
 
+extern "C" juce::AudioDeviceManager* create_audio_device_manager() {
+    auto manager = new juce::AudioDeviceManager();
+    manager->initialise(2, 2, nullptr, true);
+    return manager;
+}
+
+extern "C" void destroy_audio_device_manager(juce::AudioDeviceManager* manager) {
+    delete manager;
+}
+
 class MyAudioPlugin {
 public:
     MyAudioPlugin(std::unique_ptr<juce::AudioPluginInstance> p) {

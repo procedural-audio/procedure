@@ -2,14 +2,11 @@
 
 use std::ffi::{CString, c_void};
 
-#[repr(C)]
-struct JuceAudioPluginManager;
-
-#[repr(C)]
-struct JuceAudioPlugin;
-
 #[link(name="JucePluginLoader", kind="static")]
 extern "C" {
+    fn create_audio_device_manager() -> *mut c_void;
+    fn destroy_audio_device_manager(manager: *mut c_void);
+
     fn create_audio_plugin_manager() -> *mut c_void;
     fn destroy_audio_plugin_manager(manager: *mut c_void);
 
@@ -18,6 +15,26 @@ extern "C" {
     fn audio_plugin_show_gui(plugin: *mut c_void);
 }
 
+#[repr(transparent)]
+pub struct AudioDeviceManager {
+    manager: *mut c_void
+}
+
+impl AudioDeviceManager {
+    pub fn new() -> Self {
+        Self {
+            manager: unsafe { create_audio_device_manager() }
+        }
+    }
+}
+
+impl Drop for AudioDeviceManager {
+    fn drop(&mut self) {
+        unsafe { destroy_audio_device_manager(self.manager) }
+    }
+}
+
+#[repr(transparent)]
 pub struct AudioPluginManager {
     manager: *mut c_void
 }
@@ -53,6 +70,7 @@ impl Drop for AudioPluginManager {
     }
 }
 
+#[repr(transparent)]
 pub struct AudioPlugin {
     plugin: *mut c_void
 }

@@ -1,6 +1,6 @@
 use pa_dsp::*;
 
-use nodio::{AudioPluginManager, AudioPlugin};
+use nodio::{AudioDeviceManager, AudioPluginManager, AudioPlugin};
 use crate::graph::*;
 
 pub struct Host {
@@ -9,7 +9,8 @@ pub struct Host {
     pub block_size: usize,
     pub time: Time,
     pub bpm: f64,
-    pub plugin_manager: AudioPluginManager
+    pub plugin_manager: AudioPluginManager,
+    pub device_manager: AudioDeviceManager
 }
 
 impl Host {
@@ -20,7 +21,8 @@ impl Host {
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            plugin_manager: AudioPluginManager::new()
+            plugin_manager: AudioPluginManager::new(),
+            device_manager: AudioDeviceManager::new()
         }
     }
 
