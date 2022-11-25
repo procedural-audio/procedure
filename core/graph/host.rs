@@ -1,7 +1,8 @@
 use pa_dsp::*;
 
-use nodio::{AudioDeviceManager, AudioPluginManager, AudioPlugin};
+use nodio::{IOManager, IOCallback, AudioPluginManager, AudioPlugin};
 use crate::graph::*;
+use pa_dsp::*;
 
 pub struct Host {
     pub graph: Graph,
@@ -9,21 +10,26 @@ pub struct Host {
     pub block_size: usize,
     pub time: Time,
     pub bpm: f64,
-    pub plugin_manager: AudioPluginManager,
-    pub device_manager: AudioDeviceManager
+    pub io_manager: IOManager,
+    pub plugin_manager: AudioPluginManager
 }
 
 impl Host {
-    pub fn new() -> Self {
-        Host {
+    pub fn new() -> Box<Self> {
+        let mut host = Box::new(Host {
             graph: Graph::new(),
             block_size: 128,
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            plugin_manager: AudioPluginManager::new(),
-            device_manager: AudioDeviceManager::new()
-        }
+            io_manager: IOManager::new(),
+            plugin_manager: AudioPluginManager::new()
+        });
+
+        let ptr = (&mut *host) as *mut dyn IOCallback;
+        host.io_manager.set_callback(ptr);
+
+        return host;
     }
 
     pub fn load(&mut self, path: &str) {
@@ -69,5 +75,11 @@ impl Host {
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);
+    }
+}
+
+impl IOCallback for Host {
+    fn process(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer) {
+        println!("Process thing");
     }
 }

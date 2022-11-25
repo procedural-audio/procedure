@@ -10,14 +10,59 @@
 
 using namespace juce;
 
-extern "C" juce::AudioDeviceManager* create_audio_device_manager() {
-    auto manager = new juce::AudioDeviceManager();
-    manager->initialise(2, 2, nullptr, true);
-    return manager;
+extern "C" void io_manager_callback(const float**, int, float**, int, int);
+
+class IOManager : public AudioIODeviceCallback, public MidiInputCallback {
+public:
+    IOManager() {
+        deviceManager.initialise(2, 2, nullptr, true);
+        deviceManager.addAudioCallback(this);
+        deviceManager.addMidiInputDeviceCallback("", this);
+        collector.ensureStorageAllocated(512);
+    }
+
+    ~IOManager() {
+        deviceManager.removeAudioCallback(this);
+        deviceManager.removeMidiInputDeviceCallback("", this);
+    }
+
+    void audioDeviceAboutToStart(AudioIODevice *device) {
+        puts("Audio device about to start");
+    }
+
+    void audioDeviceIOCallback(const float **inputChannelData, int numInputChannels, float **outputChannelData, int numOutputChannels, int numSamples) {
+        io_manager_callback(inputChannelData, numInputChannels, outputChannelData, numOutputChannels, numSamples);
+    }
+
+    void audioDeviceStopped() {
+        puts("Audio device stopped");
+    }
+
+    void handleIncomingMidiMessage(juce::MidiInput *source, const juce::MidiMessage &message) {
+        collector.addMessageToQueue(message);
+    }
+
+    void setManager(void* m) {
+        this->manager = m;
+    }
+
+private:
+    void* manager;
+
+    juce::MidiMessageCollector collector;
+    juce::AudioDeviceManager deviceManager;
+};
+
+extern "C" IOManager* create_io_manager() {
+    return new IOManager();
 }
 
-extern "C" void destroy_audio_device_manager(juce::AudioDeviceManager* manager) {
+extern "C" void destroy_io_manager(IOManager* manager) {
     delete manager;
+}
+
+extern "C" void io_manager_set_manager(IOManager* manager, void* m) {
+    manager->setManager(m);
 }
 
 class MyAudioPlugin {

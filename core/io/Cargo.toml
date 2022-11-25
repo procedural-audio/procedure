@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+pa-dsp = { path = "../dsp" }
 
 [build-dependencies]
 cmake = "0.1"

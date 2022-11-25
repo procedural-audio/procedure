@@ -33,7 +33,7 @@ pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
 
 #[no_mangle]
 pub unsafe extern "C" fn api_create_host() -> Box<Host> {
-    Box::new(Host::new())
+    Host::new()
 }
 
 #[no_mangle]
