@@ -2,7 +2,6 @@ use pa_dsp::*;
 
 use nodio::{IOManager, IOCallback, AudioPluginManager, AudioPlugin};
 use crate::graph::*;
-use pa_dsp::*;
 
 pub struct Host {
     pub graph: Graph,
@@ -26,7 +25,7 @@ impl Host {
             plugin_manager: AudioPluginManager::new()
         });
 
-        let ptr = (&mut *host) as *mut dyn IOCallback;
+        let ptr: *mut dyn IOCallback = &mut *host;
         host.io_manager.set_callback(ptr);
 
         return host;
@@ -79,7 +78,7 @@ impl Host {
 }
 
 impl IOCallback for Host {
-    fn process(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer) {
+    fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer) {
         println!("Process thing");
     }
 }

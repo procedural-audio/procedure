@@ -78,8 +78,6 @@ void main(List<String> args) {
   print("Found " + args.length.toString() + " args in main()");
 
   if (args.isEmpty) {
-    print("Failed to get host pointer");
-
     Host core = Host(api.ffiCreateHost());
 
     core.graph.refresh();

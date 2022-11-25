@@ -4,7 +4,7 @@ use std::ffi::{CString, c_void};
 use pa_dsp::{AudioBuffer, NoteBuffer};
 
 pub trait IOCallback {
-    fn process(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
+    fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
 }
 
 #[no_mangle]
@@ -91,7 +91,7 @@ impl Drop for IODevice {
 
 pub struct IOManager {
     manager: *mut c_void,
-    callback: Option<*mut dyn IOCallback>
+    callback: Option<&'static mut dyn IOCallback>
 }
 
 impl IOManager {
@@ -109,7 +109,9 @@ impl IOManager {
     }
 
     pub fn set_callback(&mut self, callback: *mut dyn IOCallback) {
-        self.callback = Some(callback);
+        unsafe {
+            self.callback = Some(&mut *callback);
+        }
     }
 
     pub fn clear_callback(&mut self) {
@@ -117,17 +119,16 @@ impl IOManager {
     }
 
     pub fn process(&mut self, inputs: *const *const f32, input_channels: u32, outputs: *mut *mut f32, output_channels: u32, num_samples: u32) {
-
-        // TODO: Should copy inputs to outputs
-
-        if let Some(callback) = self.callback {
+        if let Some(callback) = &mut self.callback {
             unsafe {
                 let size = num_samples as usize;
 
                 println!("Process callback");
                 let events = NoteBuffer::new();
 
-                let audio_outputs = [
+                // callback.process2(&[], &events);
+
+                /*let audio_outputs = [
                     AudioBuffer::from_raw_parts(*outputs.offset(isize::min(0, output_channels as isize)), size, size),
                     AudioBuffer::from_raw_parts(*outputs.offset(isize::min(1, output_channels as isize)), size, size),
                     AudioBuffer::from_raw_parts(*outputs.offset(isize::min(2, output_channels as isize)), size, size),
@@ -148,7 +149,7 @@ impl IOManager {
 
                 (*callback).process(&audio_outputs[0..output_channels as usize], &events);
 
-                std::mem::forget(audio_outputs);
+                std::mem::forget(audio_outputs);*/
             }
         }
     }
@@ -156,6 +157,7 @@ impl IOManager {
 
 impl Drop for IOManager {
     fn drop(&mut self) {
+        self.callback = None;
         unsafe { destroy_io_manager(self.manager) }
     }
 }
