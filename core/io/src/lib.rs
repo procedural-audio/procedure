@@ -123,7 +123,7 @@ impl IOManager {
             unsafe {
                 let size = num_samples as usize;
 
-                println!("Process callback");
+                // println!("Process callback");
                 let events = NoteBuffer::new();
 
                 // callback.process2(&[], &events);

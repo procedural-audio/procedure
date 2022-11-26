@@ -25,8 +25,7 @@ class AudioPluginWidget extends ModuleWidget {
   AudioPluginWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
     ffiAudioPluginSetModuleId(widgetRaw.pointer, api.ffiNodeGetId(moduleRaw));
 
-    channel =
-        const BasicMessageChannel("AudioPluginWidget", JSONMessageCodec());
+    channel = const BasicMessageChannel("AudioPluginWidget", StringCodec());
     channel.setMessageHandler(handleMessages);
   }
 
@@ -206,9 +205,10 @@ class _SearchableDropdown extends State<SearchableDropdown>
               node: _focusScopeNode,
               child: GestureDetector(
                   onTap: () {
+                    print("Unfocus");
                     textFieldFocus.unfocus();
                   },
-                  behavior: HitTestBehavior.opaque,
+                  behavior: HitTestBehavior.deferToChild,
                   child: Stack(children: [
                     Positioned(
                         left: offset.dx - 50,
@@ -271,6 +271,7 @@ class _PluginListCategory extends State<PluginListCategory> {
           children: <Widget>[
                 MouseRegion(
                     onEnter: (event) {
+                      print("Enter");
                       setState(() {
                         hovering = true;
                       });
@@ -281,13 +282,21 @@ class _PluginListCategory extends State<PluginListCategory> {
                       });
                     },
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                         onTap: () {
+                          print("Tapped");
                           setState(() {
                             expanded = !expanded;
                           });
                         },
+                        onTapDown: (e) {
+                          print("down");
+                        },
+                        onSecondaryTap: () {
+                          print("Secondary tap");
+                        },
                         child: Container(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                           height: 24,
                           child: Align(
                             alignment: Alignment.centerLeft,
@@ -296,14 +305,12 @@ class _PluginListCategory extends State<PluginListCategory> {
                                 expanded
                                     ? Icons.arrow_drop_up
                                     : Icons.arrow_drop_down,
-                                //color: Colors.white,
-                                color: Color.fromRGBO(200, 200, 200, 1.0),
+                                color: const Color.fromRGBO(200, 200, 200, 1.0),
                                 size: 20,
                               ),
                               Text(
                                 widget.name,
                                 style: const TextStyle(
-                                    //color: Colors.white,
                                     color: Color.fromRGBO(200, 200, 200, 1.0),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w300),

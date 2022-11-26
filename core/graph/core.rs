@@ -10,6 +10,8 @@ pub use crate::plugins::*;
 pub use crate::processor::*;
 pub use crate::graph::*;
 
+use nodio::AudioPlugin;
+
 use modules::*;
 
 use std::ffi::CStr;
@@ -142,6 +144,14 @@ pub unsafe extern "C" fn ffi_host_get_node_count(host: &mut Host) -> usize {
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &Node {
     host.graph.nodes[index].as_ref()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) -> AudioPlugin {
+    match host.plugin_manager.create_plugin(str_from_char(buffer)) {
+        Some(plugin) => plugin,
+        None => panic!("Failed to create plugin")
+    }
 }
 
 /* Some other stuff */

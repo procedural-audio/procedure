@@ -41,12 +41,12 @@ class _SearchableDropdown extends State<SearchableDropdown>
   bool _isOpen = false;
   AnimationController? _animationController;
 
-  FocusNode textFieldFocus = FocusNode();
+  final FocusNode textFieldFocus = FocusNode();
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
 
   TextEditingController controller = TextEditingController(text: "");
 
-  final FocusScopeNode _focusScopeNode = FocusScopeNode();
-  final FocusNode focusNode = FocusNode();
+  // final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -58,7 +58,27 @@ class _SearchableDropdown extends State<SearchableDropdown>
     textFieldFocus.addListener(onTextFieldFocus);
   }
 
+  void onTextFieldUnfocus() async {
+    if (_isOpen) {
+      await _animationController?.reverse();
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    }
+  }
+
   void onTextFieldFocus() async {
+    if (!_isOpen) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+      _animationController?.forward();
+    }
+  }
+
+  /*void onTextFieldFocus() async {
+    print("CHANGED FOCUS HERE");
     if (_isOpen) {
       await _animationController?.reverse();
       _overlayEntry?.remove();
@@ -67,11 +87,11 @@ class _SearchableDropdown extends State<SearchableDropdown>
       });
     } else {
       _overlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_overlayEntry!);
+      Overlay.of(context).insert(_overlayEntry!);
       setState(() => _isOpen = true);
       _animationController?.forward();
     }
-  }
+  }*/
 
   @override
   void dispose() {
@@ -122,19 +142,23 @@ class _SearchableDropdown extends State<SearchableDropdown>
     var size = renderBox.size;
     var offset = renderBox.localToGlobal(Offset.zero);
 
+    print("Width is " + MediaQuery.of(context).size.width.toString());
+
     return OverlayEntry(
         maintainState: false,
         opaque: false,
         builder: (entryContext) {
           return FocusScope(
-              autofocus: true,
               node: _focusScopeNode,
               child: GestureDetector(
                   onTap: () {
-                    textFieldFocus.unfocus();
+                    onTextFieldUnfocus();
                   },
                   behavior: HitTestBehavior.opaque,
-                  child: Stack(children: [
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: Stack(children: [
                     Positioned(
                         left: offset.dx - 50,
                         top: offset.dy + size.height + 5,
@@ -167,7 +191,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
                                         );
                                       }).toList()),
                                 ))))
-                  ])));
+                  ]))));
         });
   }
 }
@@ -207,7 +231,9 @@ class _SearchableDropdownCategory extends State<SearchableDropdownCategory> {
                       });
                     },
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                         onTap: () {
+                          print("Tapped");
                           setState(() {
                             expanded = !expanded;
                           });
@@ -222,14 +248,12 @@ class _SearchableDropdownCategory extends State<SearchableDropdownCategory> {
                                 expanded
                                     ? Icons.arrow_drop_up
                                     : Icons.arrow_drop_down,
-                                //color: Colors.white,
                                 color: const Color.fromRGBO(200, 200, 200, 1.0),
                                 size: 20,
                               ),
                               Text(
                                 widget.name,
                                 style: const TextStyle(
-                                    //color: Colors.white,
                                     color: Color.fromRGBO(200, 200, 200, 1.0),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w300),
@@ -282,6 +306,7 @@ class _SearchableDropdownElement extends State<SearchableDropdownElement> {
         },
         child: GestureDetector(
             onTap: () {
+              print("Tapped child");
               widget.onSelect(widget.name);
             },
             child: Container(

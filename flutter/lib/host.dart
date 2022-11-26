@@ -102,6 +102,10 @@ class FFIApi {
       .lookup<NativeFunction<Int64 Function(FFIHost)>>(
           "ffi_host_get_node_count")
       .asFunction();
+  FFIAudioPlugin Function(FFIHost, Pointer<Utf8>) ffiHostCreatePlugin = core
+      .lookup<NativeFunction<FFIAudioPlugin Function(FFIHost, Pointer<Utf8>)>>(
+          "ffi_host_create_plugin")
+      .asFunction();
 
   bool Function(FFIHost, int, int, int, int) ffiHostAddConnector = core
       .lookup<
@@ -279,6 +283,11 @@ class FFIHost extends Struct {
 }
 
 class FFINode extends Struct {
+  @Int64()
+  external int pointer;
+}
+
+class FFIAudioPlugin extends Struct {
   @Int64()
   external int pointer;
 }

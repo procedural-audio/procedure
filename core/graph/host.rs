@@ -27,7 +27,7 @@ impl Host {
 
         let ptr: *mut dyn IOCallback = &mut *host;
         host.io_manager.set_callback(ptr);
-
+        
         return host;
     }
 
