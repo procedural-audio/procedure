@@ -47,10 +47,17 @@ impl Module for AudioPluginModule {
         Box::new(Transform {
             position: (35, 40),
             size: (200, 35),
-            child: _AudioPlugin {
-                process: &mut self.process,
-                id: &mut self.id,
-                // plugin: &mut self.plugin
+            child: SearchableDropdown {
+                categories: vec![
+                    Category {
+                        name: String::from("Category 1"),
+                        elements: vec![
+                            String::from("Element 1"),
+                            String::from("Element 2"),
+                            String::from("Element 3"),
+                        ]
+                    }
+                ]
             }
         })
     }

@@ -3,6 +3,8 @@ use pa_dsp::*;
 use nodio::{IOManager, IOCallback, AudioPluginManager, AudioPlugin};
 use crate::graph::*;
 
+use std::sync::Arc;
+
 pub struct Host {
     pub graph: Graph,
     pub sample_rate: u32,
@@ -10,7 +12,7 @@ pub struct Host {
     pub time: Time,
     pub bpm: f64,
     pub io_manager: IOManager,
-    pub plugin_manager: AudioPluginManager
+    pub plugin_manager: Arc<AudioPluginManager>
 }
 
 impl Host {
@@ -22,7 +24,7 @@ impl Host {
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
             io_manager: IOManager::new(),
-            plugin_manager: AudioPluginManager::new()
+            plugin_manager: Arc::new(AudioPluginManager::new())
         });
 
         let ptr: *mut dyn IOCallback = &mut *host;

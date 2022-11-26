@@ -378,3 +378,22 @@ pub unsafe extern "C" fn ffi_button_grid_icon_get_path(widget: &mut ButtonGrid, 
     std::mem::forget(s);
     p
 }
+
+pub struct Category<T> {
+    pub name: T,
+    pub elements: Vec<T>
+}
+
+pub struct SearchableDropdown {
+    pub categories: Vec<Category<String>>
+}
+
+impl WidgetNew for SearchableDropdown {
+    fn get_name(&self) -> &'static str {
+        "SearchableDropdown"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}

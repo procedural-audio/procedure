@@ -1,8 +1,4 @@
-use std::io::Empty;
-
 use serde::{Deserialize, Serialize};
-
-use crate::buffers::*;
 
 pub mod control;
 pub mod effects;
@@ -140,7 +136,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 
     return modules;
 }
-
 
 #[repr(C)]
 #[derive(Copy, Clone)]
