@@ -384,11 +384,13 @@ pub struct Category<T> {
     pub elements: Vec<T>
 }
 
-pub struct SearchableDropdown {
-    pub categories: Vec<Category<String>>
+
+pub struct SearchableDropdown<F: FnMut(&str)> {
+    pub categories: Vec<Category<String>>,
+    pub on_select: F
 }
 
-impl WidgetNew for SearchableDropdown {
+impl<F: FnMut(&str)> WidgetNew for SearchableDropdown<F> {
     fn get_name(&self) -> &'static str {
         "SearchableDropdown"
     }
@@ -396,4 +398,30 @@ impl WidgetNew for SearchableDropdown {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn SearchableDropdownTrait) }
+    }
+}
+
+fn str_from_char(buffer: &i8) -> &str {
+    unsafe {
+        let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(buffer);
+        c_str.to_str().unwrap()
+    }
+}
+
+pub trait SearchableDropdownTrait {
+    fn on_select(&mut self, element: &str);
+}
+
+impl<F: FnMut(&str)> SearchableDropdownTrait for SearchableDropdown<F> {
+    fn on_select(&mut self, element: &str) {
+        (self.on_select)(element);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_searchable_dropdown_on_select(widget: &mut dyn SearchableDropdownTrait, element: &i8) {
+    widget.on_select(str_from_char(element));
 }

@@ -1,9 +1,11 @@
 use crate::*;
+use nodio::*;
 
 pub struct AudioPluginModule {
     process: Option<extern "C" fn (u32, *const *mut f32, u32, u32, *mut Event, u32)>,
     id: Option<u32>,
-    // plugin: Option<AudioPlugin>
+    manager: AudioPluginManager,
+    plugin: Option<AudioPlugin>,
 }
 
 impl Module for AudioPluginModule {
@@ -11,7 +13,7 @@ impl Module for AudioPluginModule {
 
     const INFO: Info = Info {
         name: "Audio Plugin",
-                color: Color::BLUE,
+        color: Color::BLUE,
         size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -24,15 +26,14 @@ impl Module for AudioPluginModule {
         ],
     };
 
-    
     fn new() -> Self {
-        // let manager = AudioPluginManager::new();
-        // let plugin = manager.create_plugin("ValhallaRoom").unwrap();
+        let manager = AudioPluginManager::new();
 
         Self {
             process: None,
             id: None,
-            // plugin: Some(plugin),
+            manager: manager,
+            plugin: None,
         }
     }
 
@@ -57,7 +58,15 @@ impl Module for AudioPluginModule {
                             String::from("Element 3"),
                         ]
                     }
-                ]
+                ],
+                on_select: | element | {
+                    println!("Selected element {} and showing gui", element);
+                    self.plugin = self.manager.create_plugin("Vital");
+                    
+                    if let Some(plugin) = &self.plugin {
+                        plugin.show_gui();
+                    }
+                }
             }
         })
     }
@@ -81,37 +90,3 @@ impl Module for AudioPluginModule {
         }
     }
 }
-
-#[repr(C)]
-pub struct _AudioPlugin<'a> {
-    pub process: &'a mut Option<extern "C" fn (u32, *const *mut f32, u32, u32, *mut Event, u32)>,
-    id: &'a mut Option<u32>,
-    // plugin: &'a mut Option<AudioPlugin>
-}
-
-impl<'a> WidgetNew for _AudioPlugin<'a> {
-    fn get_name(&self) -> &'static str {
-        "AudioPlugin"
-    }
-
-    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
-        &()
-    }
-}
-
-#[no_mangle]
-extern "C" fn ffi_audio_plugin_set_process_addr(plugin: &mut _AudioPlugin, f: Option<extern "C" fn(u32, *const *mut f32, u32, u32, *mut Event, u32)>) {
-    *plugin.process = f;
-}
-
-#[no_mangle]
-extern "C" fn ffi_audio_plugin_set_module_id(plugin: &mut _AudioPlugin, id: u32) {
-    *plugin.id = Some(id);
-}
-
-/*#[no_mangle]
-extern "C" fn ffi_audio_plugin_show_gui(plugin: &mut _AudioPlugin) {
-    if let Some(plugin) = plugin.plugin {
-        plugin.show_gui();
-    }
-}*/

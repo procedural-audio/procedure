@@ -178,6 +178,7 @@ extern "C" void destroy_audio_plugin(MyAudioPlugin* plugin) {
 
 extern "C" void audio_plugin_show_gui(MyAudioPlugin* plugin) {
     if (plugin != nullptr) {
+        juce::MessageManager::getInstance()->setCurrentThreadAsMessageThread();
         plugin->createGui();
     } else {
         puts("Plugin is nullptr, couldn't show gui");

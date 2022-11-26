@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 # audio-plugin-loader = { path = "deps/loader" }
+nodio = { path = "../io" }
 pa-dsp = { path = "../dsp" }
 
 rand = "0.8"

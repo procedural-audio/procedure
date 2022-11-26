@@ -36,6 +36,7 @@ import 'wavetable.dart';
 import 'display.dart';
 import 'audioPlugin.dart';
 import 'buttonGrid.dart';
+import 'searchableDropdown.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = api.ffiWidgetGetName(widgetRaw);
@@ -120,6 +121,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return WavetableWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Display") {
     return DisplayWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "SearchableDropdown") {
+    return SearchableDropdownWidget(host, moduleRaw, widgetRaw);
   } else if (name == "AudioPlugin") {
     return AudioPluginWidget(host, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
