@@ -6,10 +6,11 @@ import '../host.dart';
 import 'widget.dart';
 import '../common.dart';
 
-void Function(FFIWidgetTrait, Pointer<Utf8>) ffiSearchableDropdownOnSelect = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Pointer<Utf8>)>>(
-        "ffi_searchable_dropdown_on_select")
-    .asFunction();
+void Function(FFIWidgetTrait, Pointer<Utf8>) ffiSearchableDropdownOnSelect =
+    core
+        .lookup<NativeFunction<Void Function(FFIWidgetTrait, Pointer<Utf8>)>>(
+            "ffi_searchable_dropdown_on_select")
+        .asFunction();
 
 class SearchableDropdownWidget extends ModuleWidget {
   SearchableDropdownWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
@@ -34,24 +35,16 @@ class SearchableDropdownWidget extends ModuleWidget {
     return SearchableDropdown(
       value: "Element 1",
       categories: [
-        Category(
-          name: "Category 1",
-          elements: [
-            CategoryElement("Element 1"),
-            CategoryElement("Element 2"),
-            CategoryElement("Element 3"),
-            CategoryElement("Element 4"),
-          ]
-        ),
-        Category(
-          name: "Category 2",
-          elements: [
-            CategoryElement("Element 5"),
-            CategoryElement("Element 6"),
-            CategoryElement("Element 7"),
-            CategoryElement("Element 8"),
-          ]
-        )
+        Category(name: "Valhalla", elements: [
+          CategoryElement("ValhallaRoom"),
+          CategoryElement("ValhallaDelay"),
+          CategoryElement("ValhallaShimmer"),
+        ]),
+        Category(name: "u-he", elements: [
+          CategoryElement("Diva"),
+          CategoryElement("Zebra2"),
+          CategoryElement("Repro-1"),
+        ])
       ],
       onSelect: (element) {
         print("Selected " + element.toString());

@@ -76,9 +76,9 @@ public:
     }
 
     void createGui() {
-        puts("Creating gui");
+        juce::MessageManager::callAsync([this] {
+            puts("Creating gui");
 
-        try {
             auto w = std::unique_ptr<DocumentWindow>(new DocumentWindow("Audio plugin", Colours::grey, DocumentWindow::allButtons));
 
             puts("Created plugin");
@@ -94,9 +94,7 @@ public:
             puts("set visible");
 
             window.swap(w);
-        } catch (...) {
-            puts("Exception in GUI creation");
-        }
+        });
     }
 
 private:
@@ -178,7 +176,6 @@ extern "C" void destroy_audio_plugin(MyAudioPlugin* plugin) {
 
 extern "C" void audio_plugin_show_gui(MyAudioPlugin* plugin) {
     if (plugin != nullptr) {
-        juce::MessageManager::getInstance()->setCurrentThreadAsMessageThread();
         plugin->createGui();
     } else {
         puts("Plugin is nullptr, couldn't show gui");

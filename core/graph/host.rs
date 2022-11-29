@@ -11,7 +11,7 @@ pub struct Host {
     pub block_size: usize,
     pub time: Time,
     pub bpm: f64,
-    pub io_manager: IOManager,
+    pub io_manager: Option<IOManager>,
     pub plugin_manager: Arc<AudioPluginManager>
 }
 
@@ -23,12 +23,12 @@ impl Host {
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            io_manager: IOManager::new(),
+            io_manager: None,// IOManager::new(),
             plugin_manager: Arc::new(AudioPluginManager::new())
         });
 
-        let ptr: *mut dyn IOCallback = &mut *host;
-        host.io_manager.set_callback(ptr);
+        // let ptr: *mut dyn IOCallback = &mut *host;
+        // host.io_manager.set_callback(ptr);
         
         return host;
     }

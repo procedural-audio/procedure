@@ -71,7 +71,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
   void onTextFieldFocus() async {
     if (!_isOpen) {
       _overlayEntry = _createOverlayEntry();
-      Overlay.of(context).insert(_overlayEntry!);
+      Overlay.of(context)?.insert(_overlayEntry!);
       setState(() => _isOpen = true);
       _animationController?.forward();
     }
@@ -156,42 +156,43 @@ class _SearchableDropdown extends State<SearchableDropdown>
                   },
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: Stack(children: [
-                    Positioned(
-                        left: offset.dx - 50,
-                        top: offset.dy + size.height + 5,
-                        child: CompositedTransformFollower(
-                            offset: Offset(0, size.height),
-                            link: _layerLink,
-                            showWhenUnlinked: false,
-                            child: Material(
-                                elevation: 0,
-                                borderRadius: BorderRadius.zero,
-                                color: Colors.transparent,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color:
-                                          const Color.fromRGBO(20, 20, 20, 1.0),
-                                      borderRadius: BorderRadius.circular(5),
-                                      border: Border.all(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      child: Stack(children: [
+                        Positioned(
+                            left: offset.dx - 50,
+                            top: offset.dy + size.height + 5,
+                            child: CompositedTransformFollower(
+                                offset: Offset(0, size.height),
+                                link: _layerLink,
+                                showWhenUnlinked: false,
+                                child: Material(
+                                    elevation: 0,
+                                    borderRadius: BorderRadius.zero,
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      decoration: BoxDecoration(
                                           color: const Color.fromRGBO(
-                                              40, 40, 40, 1.0),
-                                          width: 1.0)),
-                                  child: Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: widget.categories.map((e) {
-                                        return SearchableDropdownCategory(
-                                          name: e.name,
-                                          elements: e.elements,
-                                          onSelect: widget.onSelect,
-                                        );
-                                      }).toList()),
-                                ))))
-                  ]))));
+                                              20, 20, 20, 1.0),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: Border.all(
+                                              color: const Color.fromRGBO(
+                                                  40, 40, 40, 1.0),
+                                              width: 1.0)),
+                                      child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: widget.categories.map((e) {
+                                            return SearchableDropdownCategory(
+                                              name: e.name,
+                                              elements: e.elements,
+                                              onSelect: widget.onSelect,
+                                            );
+                                          }).toList()),
+                                    ))))
+                      ]))));
         });
   }
 }
@@ -231,7 +232,7 @@ class _SearchableDropdownCategory extends State<SearchableDropdownCategory> {
                       });
                     },
                     child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           print("Tapped");
                           setState(() {

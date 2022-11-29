@@ -14,98 +14,6 @@
 
 #include <dlfcn.h>
 
-/*#[no_mangle]
-extern "C" fn ffi_host_create_audio_plugin_manager(
-        ptr: *const c_void, 
-        create_plugin_callback: extern "C" fn (*const u8) -> *const c_void,
-        manager_delete_callback: extern "C" fn (*const c_void),
-        plugin_prepare: extern "C" fn (*const c_void, u32, usize),
-        plugin_process: extern "C" fn (*const c_void, *const *mut f32),
-        plugin_delete_callback: extern "C" fn (*const c_void),
-    ) -> AudioPluginManager {
-
-    AudioPluginManager {
-        ptr,
-        create_plugin_callback,
-        manager_delete_callback,
-        plugin_prepare,
-        plugin_process,
-        plugin_delete_callback
-    }
-}*/
-
-std::vector<std::unique_ptr<AudioPlugin>> plugins;
-
-extern "C" void plugin_process_block(uint32_t moduleId, float** audio_buffers, uint32_t channels, uint32_t samples, Event* events, uint32_t events_count) {
-    auto audio = juce::AudioBuffer<float>(audio_buffers, channels, samples);
-    auto midi = juce::MidiBuffer();
-
-    for (int i = 0; i < events_count; i++) {
-        Event event = events[i];
-        puts("Added event to plugin process");
-
-        if (event.tag == EventTag::NoteOn) {
-            auto message = juce::MidiMessage::noteOn(0, event.value.noteOn.note.id, (uint8_t) 127 * event.value.noteOn.note.pressure);
-            midi.addEvent(message, 0);
-        } else if (event.tag == EventTag::NoteOff) {
-            auto message = juce::MidiMessage::noteOff(0, event.value.noteOff.id);
-            midi.addEvent(message, 0);
-        }
-    }
-
-    /*auto message = data.getMessage();
-
-    if (message.isNoteOn()) {
-        Event event;
-        event.tag = EventTag::NoteOn;
-
-        EventValue value;
-        value.noteOn = NoteOn {
-            note: Note {
-                id: (unsigned short) message.getNoteNumber(),
-                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
-                pressure: ((float) message.getVelocity()) / 127,
-                timbre: 0
-            },
-            offset: (uint16_t) data.samplePosition,
-        };
-        event.value = value;
-
-        events.push_back(event);
-    } else if (message.isNoteOff()) {
-        auto event = Event {
-            tag: EventTag::NoteOff,
-        };
-
-        event.value.noteOff = NoteOff {
-            id: (unsigned short) message.getNoteNumber()
-        };
-
-        events.push_back(event);
-    }*/
-
-    for (auto& plugin : plugins) {
-        if (plugin->getModuleId() == moduleId) {
-            // auto audio2 = juce::AudioBuffer<float>(channels, samples);
-            // audio2.copyFrom(0, 0, audio_buffers[0], samples);
-            // audio2.copyFrom(1, 0, audio_buffers[1], samples);
-
-            float input = audio.getArrayOfReadPointers()[0][0];
-
-            plugin->processBlock(audio, midi);
-
-            // audio.copyFrom(0, 0, audio2, 0, 0, samples);
-            // audio.copyFrom(1, 0, audio2, 1, 0, samples);
-
-            float output = audio.getArrayOfReadPointers()[0][0];
-
-            // std::cout << "Processed " << channels << " channels with " << samples << " samples. " << input << " -> " << output << std::endl;
-
-            return;
-        }
-    }
-}
-
 //==============================================================================
 Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -119,6 +27,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
                        ), pluginFormatManager()
 #endif
 {
+    puts("Created processor");
     #ifdef __APPLE__
         auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
         handle = dlopen(libPath, RTLD_LAZY);
@@ -198,13 +107,12 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
 {
     [flutterViewController release];
-    plugins.clear();
     // ffiDestroyHost(host);
     // dlclose(handle);
 }
 
 void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
-    auto json = juce::JSON::parse(message);
+    /*auto json = juce::JSON::parse(message);
     
     if (json["message"] == "create") {
         juce::String name = json["name"];
@@ -217,7 +125,7 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
             }
         }
         
-        addAudioPlugin(moduleId, name);
+        // addAudioPlugin(moduleId, name);
         
     } else if (json["message"] == "show") {
         int moduleId = json["module_id"];
@@ -242,10 +150,10 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
         [audioPluginsChannel sendMessage:s3];
     } else {
         std::cout << "Recieved message: " << message << std::endl;
-    }
+    }*/
 }
 
-void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name) {
+/*void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name) {
     for (auto format : pluginFormatManager.getFormats()) {
         auto locations = format->getDefaultLocationsToSearch();
         auto paths = format->searchPathsForPlugins(locations, false);
@@ -298,7 +206,7 @@ void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name)
             }
         }
     }
-}
+}*/
 
 //==============================================================================
 const juce::String Flutter_juceAudioProcessor::getName() const
@@ -371,10 +279,10 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         ffiHostPrepare(core, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
     }
     
-    for (auto& plugin : plugins) {
+    /*for (auto& plugin : plugins) {
         std::cout << "Preparing plugin " << plugin->getName() << std::endl;
         plugin->prepareToPlay(sampleRate, samplesPerBlock);
-    }
+    }*/
 }
 
 void Flutter_juceAudioProcessor::releaseResources()
