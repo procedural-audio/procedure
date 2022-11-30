@@ -6,8 +6,8 @@
   ==============================================================================
 */
 
-#include "PluginProcessor.h"
-#include "PluginEditor.h"
+#include "NodusProcessor.h"
+#include "NodusEditor.h"
 
 #import "FlutterViewController.h"
 #import "FlutterChannels.h"
@@ -15,7 +15,7 @@
 #include <dlfcn.h>
 
 //==============================================================================
-Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
+NodusProcessor::NodusProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
@@ -28,19 +28,18 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 #endif
 {
     puts("Created processor");
-    #ifdef __APPLE__
-        auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
-        handle = dlopen(libPath, RTLD_LAZY);
-    #endif
 
-    #ifdef __MINGW32__
+    auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
+    handle = dlopen(libPath, RTLD_LAZY);
+
+    /*#ifdef __MINGW32__
         EDITTHIS();
     #endif
 
     #ifdef __linux__
         auto libPath = "./lib/libtonevision_core.so";
         handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
-    #endif
+    #endif*/
 
     if (handle) {
         ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
@@ -104,14 +103,14 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
     }
 }
 
-Flutter_juceAudioProcessor::~Flutter_juceAudioProcessor()
+NodusProcessor::~NodusProcessor()
 {
     [flutterViewController release];
     // ffiDestroyHost(host);
     // dlclose(handle);
 }
 
-void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
+void NodusProcessor::pluginsMessage(juce::String message) {
     /*auto json = juce::JSON::parse(message);
     
     if (json["message"] == "create") {
@@ -153,7 +152,7 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
     }*/
 }
 
-/*void Flutter_juceAudioProcessor::addAudioPlugin(int moduleId, juce::String name) {
+/*void NodusProcessor::addAudioPlugin(int moduleId, juce::String name) {
     for (auto format : pluginFormatManager.getFormats()) {
         auto locations = format->getDefaultLocationsToSearch();
         auto paths = format->searchPathsForPlugins(locations, false);
@@ -209,12 +208,12 @@ void Flutter_juceAudioProcessor::pluginsMessage(juce::String message) {
 }*/
 
 //==============================================================================
-const juce::String Flutter_juceAudioProcessor::getName() const
+const juce::String NodusProcessor::getName() const
 {
-    return JucePlugin_Name;
+    return "Nodus";
 }
 
-bool Flutter_juceAudioProcessor::acceptsMidi() const
+bool NodusProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -223,7 +222,7 @@ bool Flutter_juceAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool Flutter_juceAudioProcessor::producesMidi() const
+bool NodusProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -232,7 +231,7 @@ bool Flutter_juceAudioProcessor::producesMidi() const
    #endif
 }
 
-bool Flutter_juceAudioProcessor::isMidiEffect() const
+bool NodusProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -241,37 +240,37 @@ bool Flutter_juceAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double Flutter_juceAudioProcessor::getTailLengthSeconds() const
+double NodusProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int Flutter_juceAudioProcessor::getNumPrograms()
+int NodusProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int Flutter_juceAudioProcessor::getCurrentProgram()
+int NodusProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void Flutter_juceAudioProcessor::setCurrentProgram (int index)
+void NodusProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String Flutter_juceAudioProcessor::getProgramName (int index)
+const juce::String NodusProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void Flutter_juceAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void NodusProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void NodusProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
@@ -285,14 +284,14 @@ void Flutter_juceAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     }*/
 }
 
-void Flutter_juceAudioProcessor::releaseResources()
+void NodusProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool Flutter_juceAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool NodusProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -317,7 +316,7 @@ bool Flutter_juceAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 }
 #endif
 
-void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -398,25 +397,25 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 }
 
 //==============================================================================
-bool Flutter_juceAudioProcessor::hasEditor() const
+bool NodusProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* Flutter_juceAudioProcessor::createEditor()
+juce::AudioProcessorEditor* NodusProcessor::createEditor()
 {
-    return new Flutter_juceAudioProcessorEditor (*this);
+    return new NodusEditor (*this);
 }
 
 //==============================================================================
-void Flutter_juceAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void NodusProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void Flutter_juceAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void NodusProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -426,5 +425,5 @@ void Flutter_juceAudioProcessor::setStateInformation (const void* data, int size
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new Flutter_juceAudioProcessor();
+    return new NodusProcessor();
 }

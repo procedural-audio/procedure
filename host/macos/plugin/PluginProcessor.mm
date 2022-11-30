@@ -28,19 +28,18 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
 #endif
 {
     puts("Created processor");
-    #ifdef __APPLE__
-        auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
-        handle = dlopen(libPath, RTLD_LAZY);
-    #endif
 
-    #ifdef __MINGW32__
+    auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
+    handle = dlopen(libPath, RTLD_LAZY);
+
+    /*#ifdef __MINGW32__
         EDITTHIS();
     #endif
 
     #ifdef __linux__
         auto libPath = "./lib/libtonevision_core.so";
         handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
-    #endif
+    #endif*/
 
     if (handle) {
         ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");

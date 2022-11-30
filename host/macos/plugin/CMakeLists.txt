@@ -1,4 +1,4 @@
-juce_add_gui_app(NodusStandalone
+juce_add_plugin(NodusPlugin
     # VERSION ...                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
@@ -12,16 +12,18 @@ juce_add_gui_app(NodusStandalone
     PLUGIN_MANUFACTURER_CODE Juce               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE Dem0                            # A unique four-character plugin id with exactly one upper-case character
     FORMATS Standalone VST3 AUv3              # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-    PRODUCT_NAME "NodusStandalone")                       # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "NodusPlugin")                       # The name of the final executable, which can differ from the target name
 
-juce_generate_juce_header(NodusStandalone)
+juce_generate_juce_header(NodusPlugin)
 
-target_sources(NodusStandalone
+target_sources(NodusPlugin
     PRIVATE
-        main.mm)
+        PluginEditor.mm
+        PluginProcessor.mm)
 
-target_compile_definitions(NodusStandalone
+target_compile_definitions(NodusPlugin
     PUBLIC
+        # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
         JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
         JUCE_VST3_CAN_REPLACE_VST2=0
@@ -31,7 +33,7 @@ target_compile_definitions(NodusStandalone
         JUCE_PLUGINHOST_AUv2=1
 )
 
-target_link_libraries(NodusStandalone
+target_link_libraries(NodusPlugin
     PRIVATE
         juce::juce_audio_utils
     PUBLIC
@@ -40,14 +42,14 @@ target_link_libraries(NodusStandalone
         juce::juce_recommended_warning_flags)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_include_directories(NodusStandalone
+    target_include_directories(NodusPlugin
         PRIVATE
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/FlutterMacOS.framework/Headers
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/App.framework/Headers
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/Pods_Runner.framework/Headers
     )
 
-    target_link_directories(NodusStandalone
+    target_link_directories(NodusPlugin
         PUBLIC
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/App.framework
@@ -55,23 +57,23 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/FlutterMacOS.framework/Versions/A/
     )
 
-    set_target_properties(NodusStandalone PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
-    target_link_libraries(NodusStandalone PUBLIC "-framework FlutterMacOS")
+    set_target_properties(NodusPlugin PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
+    target_link_libraries(NodusPlugin PUBLIC "-framework FlutterMacOS")
 
     find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
     find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Debug/")
 
-    target_link_libraries(NodusStandalone PRIVATE ${FLUTTER_LIB})
-    target_link_libraries(NodusStandalone PRIVATE ${APP_LIB})
+    target_link_libraries(NodusPlugin PRIVATE ${FLUTTER_LIB})
+    target_link_libraries(NodusPlugin PRIVATE ${APP_LIB})
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_include_directories(NodusStandalone
+    target_include_directories(NodusPlugin
         PRIVATE
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/FlutterMacOS.framework/Headers
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/App.framework/Headers
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/Pods_Runner.framework/Headers
     )
 
-    target_link_directories(NodusStandalone
+    target_link_directories(NodusPlugin
         PUBLIC
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/App.framework
@@ -79,12 +81,12 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
             /Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/FlutterMacOS.framework/Versions/A/
     )
 
-    set_target_properties(NodusStandalone PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
-    target_link_libraries(NodusStandalone PUBLIC "-framework FlutterMacOS")
+    set_target_properties(NodusPlugin PROPERTIES LINK_FLAGS "-Wl,-F/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
+    target_link_libraries(NodusPlugin PUBLIC "-framework FlutterMacOS")
 
     find_library(FLUTTER_LIB FlutterMacOS "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
     find_library(APP_LIB App "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/")
 
-    target_link_libraries(NodusStandalone PRIVATE ${FLUTTER_LIB})
-    target_link_libraries(NodusStandalone PRIVATE ${APP_LIB})
+    target_link_libraries(NodusPlugin PRIVATE ${FLUTTER_LIB})
+    target_link_libraries(NodusPlugin PRIVATE ${APP_LIB})
 endif()

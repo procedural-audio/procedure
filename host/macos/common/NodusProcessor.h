@@ -20,12 +20,12 @@ struct FFIHost {};
 
 //==============================================================================
 
-class Flutter_juceAudioProcessor  : public juce::AudioProcessor
+class NodusProcessor  : public juce::AudioProcessor
 {
 public:
     //==============================================================================
-    Flutter_juceAudioProcessor();
-    ~Flutter_juceAudioProcessor() override;
+    NodusProcessor();
+    ~NodusProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -92,5 +92,5 @@ private:
     juce::AudioPluginFormatManager pluginFormatManager;
     
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NodusProcessor)
 };

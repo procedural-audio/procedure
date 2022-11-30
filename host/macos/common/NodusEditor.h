@@ -9,24 +9,24 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "PluginProcessor.h"
+#include "NodusProcessor.h"
 
 //==============================================================================
 /**
 */
-class Flutter_juceAudioProcessorEditor  : public juce::AudioProcessorEditor
+class NodusEditor  : public juce::AudioProcessorEditor
 {
 public:
-    Flutter_juceAudioProcessorEditor (Flutter_juceAudioProcessor&);
-    ~Flutter_juceAudioProcessorEditor() override;
+    NodusEditor (NodusProcessor&);
+    ~NodusEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-    Flutter_juceAudioProcessor& audioProcessor;
+    NodusProcessor& audioProcessor;
     juce::NSViewComponent flutterView;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Flutter_juceAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NodusEditor)
 };
