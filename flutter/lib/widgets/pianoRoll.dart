@@ -39,13 +39,12 @@ void Function(FFIWidgetPointer, int, int) ffiNotesTrackSetNoteNum = core
         "ffi_notes_track_set_note_num")
     .asFunction();
 
-void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote =
-    core
-        .lookup<
-            NativeFunction<
-                Void Function(FFIWidgetPointer, Double, Double,
-                    Int32)>>("ffi_notes_track_add_note")
-        .asFunction();
+void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
+    .lookup<
+        NativeFunction<
+            Void Function(FFIWidgetPointer, Double, Double,
+                Int32)>>("ffi_notes_track_add_note")
+    .asFunction();
 void Function(FFIWidgetPointer, int) ffiNotesTrackRemoveNote = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
         "ffi_notes_track_remove_note")

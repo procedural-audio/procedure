@@ -16,8 +16,8 @@ pub struct Host {
 }
 
 impl Host {
-    pub fn new() -> Box<Self> {
-        let mut host = Box::new(Host {
+    pub fn new() -> Self {
+        Host {
             graph: Graph::new(),
             block_size: 128,
             sample_rate: 44100,
@@ -25,12 +25,10 @@ impl Host {
             bpm: 120.0,
             io_manager: None,// IOManager::new(),
             plugin_manager: Arc::new(AudioPluginManager::new())
-        });
+        }
 
         // let ptr: *mut dyn IOCallback = &mut *host;
         // host.io_manager.set_callback(ptr);
-        
-        return host;
     }
 
     pub fn load(&mut self, path: &str) {

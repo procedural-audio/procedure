@@ -44,6 +44,11 @@ class SearchableDropdownWidget extends ModuleWidget {
           CategoryElement("Diva"),
           CategoryElement("Zebra2"),
           CategoryElement("Repro-1"),
+        ]),
+        Category(name: "Other", elements: [
+          CategoryElement("Kontakt"),
+          CategoryElement("Keyscape"),
+          CategoryElement("Omnisphere"),
         ])
       ],
       onSelect: (element) {
