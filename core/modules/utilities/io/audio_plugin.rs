@@ -60,14 +60,10 @@ impl Module for AudioPluginModule {
                     }
                 ],
                 on_select: | element | {
-                    println!("Selected element {} and showing gui", element);
                     self.plugin = self.manager.create_plugin(element);
-                    
+
                     if let Some(plugin) = &self.plugin {
-                        println!("Created plugin");
                         plugin.show_gui();
-                    } else {
-                        println!("Couldn't create plugin");
                     }
                 }
             }

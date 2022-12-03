@@ -101,6 +101,8 @@ NodusProcessor::NodusProcessor()
             }
         }
     }
+
+    puts("Done creating processor");
 }
 
 NodusProcessor::~NodusProcessor()

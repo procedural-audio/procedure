@@ -65,6 +65,21 @@ extern "C" void io_manager_set_manager(IOManager* manager, void* m) {
     manager->setManager(m);
 }
 
+class AudioPluginWindow : public DocumentWindow {
+public:
+    AudioPluginWindow() : DocumentWindow("Audio Plugin", Colours::grey, DocumentWindow::closeButton) {
+
+    }
+
+    ~AudioPluginWindow() {
+
+    }
+
+    void closeButtonPressed() {
+        setVisible(false);
+    }
+};
+
 class MyAudioPlugin {
 public:
     MyAudioPlugin(std::unique_ptr<juce::AudioPluginInstance> p) {
@@ -76,30 +91,31 @@ public:
     }
 
     void createGui() {
-        juce::MessageManager::callAsync([this] {
-            puts("Creating gui");
+        puts("Creating gui");
 
-            auto w = std::unique_ptr<DocumentWindow>(new DocumentWindow("Audio plugin", Colours::grey, DocumentWindow::allButtons));
+        juce::MessageManager::callAsync([this] {
+            puts("Crate gui callback");
+
+            auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
 
             puts("Created plugin");
 
             w->setUsingNativeTitleBar(true);
-            puts("created title bar");
             w->setContentOwned(plugin->createEditor(), true);
-            puts("created content owned");
-
             w->centreWithSize(w->getWidth(), w->getHeight());
-            puts("center with size");
             w->setVisible(true);
-            puts("set visible");
 
             window.swap(w);
         });
     }
 
+    void setInstance(std::unique_ptr<juce::AudioPluginInstance> instance) {
+        this->plugin = std::move(instance);
+    }
+
 private:
     std::unique_ptr<juce::AudioPluginInstance> plugin;
-    std::unique_ptr<DocumentWindow> window;
+    std::unique_ptr<AudioPluginWindow> window;
 };
 
 extern "C" juce::AudioPluginFormatManager* create_audio_plugin_manager() {
@@ -136,33 +152,24 @@ extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* ma
         auto paths = format->searchPathsForPlugins(locations, false);
 
         for (auto path : paths) {
-
             if (path.contains(name)) {
-                puts("Found hardcoded plugin");
-
                 OwnedArray<PluginDescription> descs;
-
-                format->findAllTypesForFile(descs, path);
+                format->findAllTypesForFile(descs, path); // THIS CAUSES KONTAKT CRASH ???
 
                 for (auto desc : descs) {
                     if (desc->name.contains(name)) {
-                        puts("Found instance to add");
-
                         juce::String error = "";
-
-                        auto plugin = manager->createPluginInstance(*desc, 44100, 256, error);
-
-                        if (plugin != nullptr) {
-                            puts("Created plugin instance");
-                            return new MyAudioPlugin(std::move(plugin));
+                        if (manager->doesPluginStillExist(*desc)) {
+                            puts("Creating plugin instance");
+                            auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
+                            auto plugin = new MyAudioPlugin(std::move(instance));
+                            return plugin;
                         } else {
-                            puts("Failed to create plugin");
+                            puts("Can't create plugin instance");
                             return nullptr;
                         }
                     }
                 }
-
-                break;
             }
         }
     }

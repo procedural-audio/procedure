@@ -19,7 +19,8 @@ juce_generate_juce_header(NodusPlugin)
 target_sources(NodusPlugin
     PRIVATE
         PluginEditor.mm
-        PluginProcessor.mm)
+        PluginProcessor.mm
+)
 
 target_compile_definitions(NodusPlugin
     PUBLIC

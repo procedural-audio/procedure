@@ -16,8 +16,10 @@ public:
 
     void initialise (const juce::String& commandLine) override
     {
+        puts("Called initialise");
         juce::ignoreUnused (commandLine);
         mainWindow.reset (new MainWindow (getApplicationName()));
+        puts("Done initialising");
     }
 
     void shutdown() override

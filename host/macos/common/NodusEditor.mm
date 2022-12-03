@@ -17,7 +17,7 @@
 NodusEditor::NodusEditor (NodusProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-	puts("Created editor");
+	puts("Creating editor");
     
     setResizable(true, true);
     setResizeLimits(400, 300, 2000, 1000);
@@ -26,6 +26,8 @@ NodusEditor::NodusEditor (NodusProcessor& p)
     flutterView.setView(audioProcessor.flutterViewController.view);
 
     setSize (800, 600);
+
+    puts("Done creating editor");
 }
 
 NodusEditor::~NodusEditor()
