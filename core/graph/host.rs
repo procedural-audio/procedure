@@ -23,7 +23,7 @@ impl Host {
             sample_rate: 44100,
             time: Time::from(0.0, 0.0),
             bpm: 120.0,
-            io_manager: None,// IOManager::new(),
+            io_manager: None,
             plugin_manager: Arc::new(AudioPluginManager::new())
         }
 
@@ -74,6 +74,8 @@ impl Host {
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);
+
+        println!("Processing {}", audio[0][0]);
     }
 }
 
