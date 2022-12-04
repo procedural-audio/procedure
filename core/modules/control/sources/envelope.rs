@@ -12,7 +12,9 @@ impl Module for EnvelopeModule {
     type Voice = EnvelopeVoice;
 
     const INFO: Info = Info {
-        title: Title("Envelope", Color::RED),
+        title: "Envelope",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(300, 150),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -24,6 +26,7 @@ impl Module for EnvelopeModule {
         outputs: &[
             Pin::Control("Output", 20)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

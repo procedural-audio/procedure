@@ -155,7 +155,9 @@ impl Module for MidiInput {
     type Voice = MidiInputVoice;
 
     const INFO: Info = Info {
-        title: Title("", Color::GREEN),
+        title: "",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -164,6 +166,7 @@ impl Module for MidiInput {
         outputs: &[
             Pin::Notes("External Midi 1", 22)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

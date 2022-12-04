@@ -6,7 +6,9 @@ impl Module for Reverse {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Rev", Color::PURPLE),
+        title: "Rev",
+        version: "0.0.0",
+        color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -14,6 +16,7 @@ impl Module for Reverse {
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

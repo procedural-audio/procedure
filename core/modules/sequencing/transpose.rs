@@ -8,7 +8,9 @@ impl Module for Transpose {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Transpose", Color::GREEN),
+        title: "Transpose",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -16,6 +18,7 @@ impl Module for Transpose {
             Pin::Control("Transpose Amount", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

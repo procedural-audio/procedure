@@ -8,13 +8,16 @@ impl Module for KnobModule {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("", Color::RED),
+        title: "",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[
             Pin::Control("Clock Output", 30)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

@@ -20,7 +20,9 @@ impl Module for NotesTrack {
     type Voice = u32;
 
     const INFO: Info = Info {
-        title: Title("Notes Track", Color::GREEN),
+        title: "Notes Track",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Reisizable {
             default: (800, 500),
             min: (300, 200),
@@ -29,6 +31,7 @@ impl Module for NotesTrack {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Time("Time", 10)],
         outputs: &[Pin::Notes("Notes Output", 10)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -9,7 +9,9 @@ impl Module for Crossover {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Crossover", Color::GREEN),
+        title: "Crossover",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -17,6 +19,7 @@ impl Module for Crossover {
             Pin::Control("Linear Crossover", 55),
         ],
         outputs: &[Pin::Audio("Audio High", 25), Pin::Audio("Audio Low", 55)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

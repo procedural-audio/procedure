@@ -40,7 +40,9 @@ impl Module for AudioTrack {
     type Voice = AudioTrackVoice;
 
     const INFO: Info = Info {
-        title: Title("Audio Track", Color::BLUE),
+        title: "Audio Track",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -48,6 +50,7 @@ impl Module for AudioTrack {
             Pin::Time("Time Input", 15 + 30 * 2),
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

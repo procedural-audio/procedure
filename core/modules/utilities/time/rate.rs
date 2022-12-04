@@ -6,7 +6,9 @@ impl Module for Rate {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Rate", Color::PURPLE),
+        title: "Rate",
+        version: "0.0.0",
+        color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -16,6 +18,7 @@ impl Module for Rate {
         outputs: &[
             Pin::Time("Time Output", 30)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

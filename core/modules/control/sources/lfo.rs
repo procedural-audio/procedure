@@ -17,7 +17,9 @@ impl Module for LfoModule {
     type Voice = LfoVoice;
 
     const INFO: Info = Info {
-        title: Title("LFO", Color::RED),
+        title: "LFO",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(250, 140),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -26,7 +28,8 @@ impl Module for LfoModule {
         ],
         outputs: &[
             Pin::Control("LFO Output", 15)
-        ]
+        ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

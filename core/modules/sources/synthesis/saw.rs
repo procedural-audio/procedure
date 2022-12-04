@@ -17,7 +17,9 @@ impl Module for SawModule {
     type Voice = SawModuleVoice;
 
     const INFO: Info = Info {
-        title: Title("Saw", Color::BLUE),
+        title: "Saw",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -26,6 +28,7 @@ impl Module for SawModule {
         outputs: &[
             Pin::Audio("Audio Output", 15)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     fn new() -> Self {
@@ -45,7 +48,7 @@ impl Module for SawModule {
         }
     }
 
-    fn load(&mut self, json: &JSON) {
+    fn load(&mut self, _json: &JSON) {
     }
 
     fn save(&self, _json: &mut JSON) {

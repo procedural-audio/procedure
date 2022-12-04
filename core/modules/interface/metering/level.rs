@@ -9,11 +9,14 @@ impl Module for LevelMeter {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Level", Color::GREEN),
+        title: "Level",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Audio("Audio Input", 25)],
         outputs: &[Pin::Control("RMS", 25)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

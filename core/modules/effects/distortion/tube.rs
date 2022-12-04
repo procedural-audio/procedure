@@ -26,7 +26,9 @@ impl Module for Tube {
     type Voice = TubeVoice;
 
     const INFO: Info = Info {
-        title: Title("Tube", Color::BLUE),
+        title: "Tube",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(200, 170),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -35,6 +37,7 @@ impl Module for Tube {
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

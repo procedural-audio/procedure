@@ -6,7 +6,9 @@ impl Module for Negative {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Neg", Color::RED),
+        title: "Neg",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -16,6 +18,7 @@ impl Module for Negative {
         outputs: &[
             Pin::Control("Output", 30)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

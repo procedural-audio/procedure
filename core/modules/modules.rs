@@ -203,16 +203,15 @@ impl JSON {
     }
 }
 
-pub struct Title(pub &'static str, pub Color);
-
 pub struct Info {
-    pub title: Title,
-    // pub name: &'static str,
-    // pub color: Color,
+    pub title: &'static str,
+    pub version: &'static str,
+    pub color: Color,
     pub size: Size,
     pub voicing: Voicing,
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
+    pub path: &'static str,
 }
 
 #[derive(Copy, Clone)]

@@ -6,7 +6,9 @@ impl Module for Timbre {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Timbre", Color::GREEN),
+        title: "Timbre",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -14,6 +16,7 @@ impl Module for Timbre {
             Pin::Control("Timbre (0-1)", 45),
         ],
         outputs: &[Pin::Notes("Notes Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

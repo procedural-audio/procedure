@@ -19,7 +19,9 @@ impl Module for Mixer {
     type Voice = MixerVoice;
 
     const INFO: Info = Info {
-        title: Title("", Color::BLUE),
+        title: "",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(120, 505),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -43,6 +45,7 @@ impl Module for Mixer {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

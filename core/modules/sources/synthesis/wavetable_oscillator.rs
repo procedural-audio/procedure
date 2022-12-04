@@ -31,11 +31,14 @@ impl Module for WavetableOscillator {
     type Voice = WavetableOscillatorVoice;
 
     const INFO: Info = Info {
-        title: Title("Wavetable Oscillator", Color::GREEN),
+        title: "Wavetable Oscillator",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(500, 300),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Midi Input", 20), Pin::Control("Pitch", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -6,7 +6,9 @@ impl Module for Clamp {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Clamp", Color::RED),
+        title: "Clamp",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(110, 105),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -17,6 +19,7 @@ impl Module for Clamp {
         outputs: &[
             Pin::Control("Output", 45)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     fn new() -> Self {

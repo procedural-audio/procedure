@@ -12,7 +12,9 @@ impl Module for Gate {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Gate", Color::GREEN),
+        title: "Gate",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(350, 220),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -23,6 +25,7 @@ impl Module for Gate {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

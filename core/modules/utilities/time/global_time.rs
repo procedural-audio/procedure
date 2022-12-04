@@ -6,11 +6,14 @@ impl Module for GlobalTime {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("", Color::PURPLE),
+        title: "",
+        version: "0.0.0",
+        color: Color::PURPLE,
         size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

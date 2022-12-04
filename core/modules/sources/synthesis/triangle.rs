@@ -21,11 +21,14 @@ impl Module for TriangleModule {
     type Voice = TriangleModuleVoice;
 
     const INFO: Info = Info {
-        title: Title("Triangle", Color::GREEN),
+        title: "Triangle",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

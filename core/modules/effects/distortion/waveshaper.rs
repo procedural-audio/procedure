@@ -17,7 +17,9 @@ impl Module for Waveshaper {
     type Voice = WaveshaperVoice;
 
     const INFO: Info = Info {
-        title: Title("Waveshaper", Color::BLUE),
+        title: "Waveshaper",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -26,6 +28,7 @@ impl Module for Waveshaper {
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -9,13 +9,16 @@ impl Module for Display {
     type Voice = u32;
 
     const INFO: Info = Info {
-        title: Title("", Color::RED),
+        title: "",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(115, 50),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Control("Input", 17)
         ],
         outputs: &[],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

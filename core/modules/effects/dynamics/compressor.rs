@@ -15,7 +15,9 @@ impl Module for Compressor {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Compressor", Color::GREEN),
+        title: "Compressor",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(410, 220),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -28,6 +30,7 @@ impl Module for Compressor {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

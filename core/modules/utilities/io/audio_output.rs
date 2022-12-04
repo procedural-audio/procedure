@@ -6,7 +6,9 @@ impl Module for AudioOutput {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Audio Output", Color::BLUE),
+        title: "Audio Output",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(130, 80),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -15,6 +17,7 @@ impl Module for AudioOutput {
         outputs: &[
             Pin::ExternalAudio(0)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -9,7 +9,9 @@ impl Module for Gain {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Gain", Color::GREEN),
+        title: "Gain",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -19,6 +21,7 @@ impl Module for Gain {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

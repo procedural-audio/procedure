@@ -22,11 +22,14 @@ impl Module for SquareModule {
     type Voice = SquareModuleVoice;
 
     const INFO: Info = Info {
-        title: Title("Square", Color::GREEN),
+        title: "Square",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

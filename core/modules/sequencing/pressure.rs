@@ -6,7 +6,9 @@ impl Module for Pressure {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Pressure", Color::GREEN),
+        title: "Pressure",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -14,6 +16,7 @@ impl Module for Pressure {
             Pin::Control("Pressure (0-1)", 45),
         ],
         outputs: &[Pin::Notes("Notes Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

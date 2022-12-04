@@ -10,11 +10,14 @@ impl Module for MultiSampler {
     type Voice = Vec<SamplePlayer>;
 
     const INFO: Info = Info {
-        title: Title("Multi-Sampler", Color::GREEN),
+        title: "Multi-Sampler",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(600, 400),
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Notes("Midi Input", 20)],
         outputs: &[Pin::Audio("Audio Output", 20)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

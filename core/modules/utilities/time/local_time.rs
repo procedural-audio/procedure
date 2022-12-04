@@ -6,11 +6,14 @@ impl Module for LocalTime {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Time", Color::PURPLE),
+        title: "Time",
+        version: "0.0.0",
+        color: Color::PURPLE,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

@@ -9,7 +9,9 @@ impl Module for Hold {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Hold", Color::RED),
+        title: "Hold",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -19,6 +21,7 @@ impl Module for Hold {
         outputs: &[
             Pin::Control("Output", 30)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
         

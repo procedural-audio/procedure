@@ -24,7 +24,9 @@ impl Module for DigitalFilter {
     type SharedState = DigitalFilterState;
 
     const INFO: ModuleInfo = ModuleInfo {
-        title: Title("Digital Filter", Color::BLUE),
+        title: "Digital Filter",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(315-60, 200-70),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -32,8 +34,9 @@ impl Module for DigitalFilter {
             IO::Control(10, 50),
         ],
         outputs: &[
-            IO::Audio(230, 20),
+            IO::Audio(230, 20)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

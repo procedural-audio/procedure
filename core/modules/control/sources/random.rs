@@ -10,13 +10,16 @@ impl Module for Random {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("", Color::RED),
+        title: "",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
         inputs: &[],
         outputs: &[
             Pin::Control("Output (0-1)", 22)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

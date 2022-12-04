@@ -11,7 +11,9 @@ impl Module for Flanger {
     type Voice = (); // FlangerDsp;
 
     const INFO: Info = Info {
-        title: Title("Flanger", Color::BLUE),
+        title: "Flanger",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -21,6 +23,7 @@ impl Module for Flanger {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -8,7 +8,9 @@ impl Module for Slew {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Slew", Color::RED),
+        title: "Slew",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -18,6 +20,7 @@ impl Module for Slew {
         outputs: &[
             Pin::Control("Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
         

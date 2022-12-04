@@ -8,7 +8,9 @@ impl Module for Mute {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Mute", Color::BLUE),
+        title: "Mute",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(100, 80),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -17,6 +19,7 @@ impl Module for Mute {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

@@ -6,7 +6,9 @@ impl Module for Modulo {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Mod", Color::RED),
+        title: "Mod",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -16,6 +18,7 @@ impl Module for Modulo {
         outputs: &[
             Pin::Control("Output", 30)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

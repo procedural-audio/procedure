@@ -27,7 +27,9 @@ impl Module for AnalogOscillator {
     type Voice = OscillatorVoice;
 
     const INFO: Info = Info {
-        title: Title("Analog Oscillator", Color::BLUE),
+        title: "Analog Oscillator",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(310, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -39,8 +41,9 @@ impl Module for AnalogOscillator {
         ],
         outputs: &[
             Pin::Audio("Audio Output", 20),
-            Pin::Audio("Audio Output", 50),
+            Pin::Audio("Audio Output", 50)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     fn new() -> Self {

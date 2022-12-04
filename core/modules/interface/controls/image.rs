@@ -8,11 +8,14 @@ impl Module for Image {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Image", Color::RED),
+        title: "Image",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Control("Control Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

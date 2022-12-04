@@ -21,7 +21,9 @@ impl Module for Scale {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Scale", Color::RED),
+        title: "Scale",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(300 - 35, 100),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -30,6 +32,7 @@ impl Module for Scale {
         outputs: &[
             Pin::Control("Control Output", 20)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
         

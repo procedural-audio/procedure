@@ -50,7 +50,9 @@ impl Module for Slicer {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Slicer", Color::GREEN),
+        title: "Slicer",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(305, 195),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -61,6 +63,7 @@ impl Module for Slicer {
             Pin::Control("Window crossfade", 15 + 30 * 4),
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

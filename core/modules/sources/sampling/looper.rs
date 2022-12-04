@@ -6,7 +6,9 @@ impl Module for Looper {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("", Color::RED),
+        title: "",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -14,6 +16,7 @@ impl Module for Looper {
             Pin::Control("Control Input", 45),
         ],
         outputs: &[Pin::Control("Control Output", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

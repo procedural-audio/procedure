@@ -10,7 +10,9 @@ impl Module for ControlToNotes {
     type Voice = ControlToNotesVoice;
 
     const INFO: Info = Info {
-        title: Title("", Color::GREEN),
+        title: "",
+        version: "0.0.0",
+        color: Color::GREEN,
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -18,6 +20,7 @@ impl Module for ControlToNotes {
             Pin::Control("Note Pitch", 45),
         ],
         outputs: &[Pin::Notes("Notes", 30)],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

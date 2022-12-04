@@ -6,7 +6,9 @@ impl Module for NotesToControl {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("", Color::RED),
+        title: "",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(120, 135),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes Input", 15)],
@@ -14,8 +16,9 @@ impl Module for NotesToControl {
             Pin::Control("Gate", 15),
             Pin::Control("Pitch", 45),
             Pin::Control("Pressure", 75),
-            Pin::Control("Timbre", 105),
+            Pin::Control("Timbre", 105)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     

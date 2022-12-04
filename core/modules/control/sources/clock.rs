@@ -9,7 +9,9 @@ impl Module for Clock {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Clock", Color::RED),
+        title: "Clock",
+        version: "0.0.0",
+        color: Color::RED,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -19,6 +21,7 @@ impl Module for Clock {
         outputs: &[
             Pin::Control("Clock Pulses", 25)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
     
     fn new() -> Self {

@@ -12,7 +12,9 @@ impl Module for AudioPluginModule {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: Title("Audio Plugin", Color::BLUE),
+        title: "Audio Plugin",
+        version: "0.0.0",
+        color: Color::BLUE,
         size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -21,8 +23,9 @@ impl Module for AudioPluginModule {
         ],
         outputs: &[
             Pin::Audio("Audio Output", 15),
-            Pin::Notes("Notes Output", 45),
+            Pin::Notes("Notes Output", 45)
         ],
+        path: "Category 1/Category 2/Module Name"
     };
 
     fn new() -> Self {
