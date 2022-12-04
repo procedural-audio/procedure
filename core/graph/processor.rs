@@ -2,32 +2,43 @@ use std::mem::transmute_copy;
 use std::mem::ManuallyDrop;
 
 use pa_dsp::buffers::IO;
-use pa_dsp::AudioChannelMut;
 
 use std::rc::Rc;
 
 use crate::graph::*;
 use crate::*;
 
+type Ptr<T> = ManuallyDrop<Box<T>>;
+
 enum CopyAction<T> {
     AudioCopy {
-        src: ManuallyDrop<T>,
-        dest: ManuallyDrop<T>,
+        // src: Ptr<T>,
+        // dest: Ptr<T>,
+        src: Ptr<Bus<T>>,
+        dest: Ptr<Bus<T>>,
+        src_index: usize,
+        dest_index: usize,
         should_copy: bool,
     },
     NotesCopy {
-        src: ManuallyDrop<NoteBuffer>,
-        dest: ManuallyDrop<NoteBuffer>,
+        src: Ptr<Bus<NoteBuffer>>,
+        dest: Ptr<Bus<NoteBuffer>>,
+        src_index: usize,
+        dest_index: usize,
         should_copy: bool,
     },
     ControlCopy {
-        src: ManuallyDrop<Box<f32>>,
-        dest: ManuallyDrop<Box<f32>>,
+        src: Ptr<Bus<Box<f32>>>,
+        dest: Ptr<Bus<Box<f32>>>,
+        src_index: usize,
+        dest_index: usize,
         should_copy: bool,
     },
     TimeCopy {
-        src: ManuallyDrop<Box<Time>>,
-        dest: ManuallyDrop<Box<Time>>,
+        src: Ptr<Bus<Box<Time>>>,
+        dest: Ptr<Bus<Box<Time>>>,
+        src_index: usize,
+        dest_index: usize,
         should_copy: bool,
     },
 }
@@ -43,14 +54,14 @@ pub struct ProcessAction {
     module: *mut dyn PolyphonicModule,
     voice_index: usize,
     node: Rc<Node>,
-    audio_inputs: ManuallyDrop<Bus<Stereo>>,
-    audio_outputs: ManuallyDrop<Bus<Stereo>>,
-    events_inputs: ManuallyDrop<Bus<NoteBuffer>>,
-    events_outputs: ManuallyDrop<Bus<NoteBuffer>>,
-    control_inputs: ManuallyDrop<Bus<Box<f32>>>,
-    control_outputs: ManuallyDrop<Bus<Box<f32>>>,
-    time_inputs: ManuallyDrop<Bus<Box<Time>>>,
-    time_outputs: ManuallyDrop<Bus<Box<Time>>>,
+    audio_inputs: Ptr<Bus<Stereo>>,
+    audio_outputs: Ptr<Bus<Stereo>>,
+    events_inputs: Ptr<Bus<NoteBuffer>>,
+    events_outputs: Ptr<Bus<NoteBuffer>>,
+    control_inputs: Ptr<Bus<Box<f32>>>,
+    control_outputs: Ptr<Bus<Box<f32>>>,
+    time_inputs: Ptr<Bus<Box<Time>>>,
+    time_outputs: Ptr<Bus<Box<Time>>>,
     copy_actions: Vec<CopyAction<Stereo>>,
 }
 
@@ -79,10 +90,10 @@ impl Clone for ProcessAction {
 pub struct GraphProcessor {
     pub actions: Vec<ProcessAction>,
 
-    pub audio_buffers: Vec<Bus<Stereo>>,
-    pub events_buffers: Vec<Bus<NoteBuffer>>,
-    pub control_buffers: Vec<Bus<Box<f32>>>,
-    pub time_buffers: Vec<Bus<Box<Time>>>,
+    pub audio_buffers: Vec<Box<Bus<Stereo>>>,
+    pub events_buffers: Vec<Box<Bus<NoteBuffer>>>,
+    pub control_buffers: Vec<Box<Bus<Box<f32>>>>,
+    pub time_buffers: Vec<Box<Bus<Box<Time>>>>,
 
     pub nodes: Vec<Rc<Node>>,
     pub block_size: usize,
@@ -132,10 +143,10 @@ impl GraphProcessor {
             );
         }
 
-        let mut audio_channels_buffers: Vec<Bus<Stereo>> = Vec::new();
-        let mut events_channels_buffers: Vec<Bus<NoteBuffer>> = Vec::new();
-        let mut control_channels_buffers: Vec<Bus<Box<f32>>> = Vec::new();
-        let mut time_channels_buffers: Vec<Bus<Box<Time>>> = Vec::new();
+        let mut audio_channels_buffers: Vec<Box<Bus<Stereo>>> = Vec::new();
+        let mut events_channels_buffers: Vec<Box<Bus<NoteBuffer>>> = Vec::new();
+        let mut control_channels_buffers: Vec<Box<Bus<Box<f32>>>> = Vec::new();
+        let mut time_channels_buffers: Vec<Box<Bus<Box<Time>>>> = Vec::new();
         let mut process_actions: Vec<ProcessAction> = Vec::new();
 
         /* Allocate channel buffers */
@@ -182,7 +193,7 @@ impl GraphProcessor {
             };
 
             for voice_index in 0..node_voice_count {
-                let mut audio_input_bus = Bus::new();
+                let mut audio_input_bus = Box::new(Bus::new());
                 for i in 0..audio_input_channels_count {
                     let mut connected = false;
 
@@ -195,7 +206,7 @@ impl GraphProcessor {
                     audio_input_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
                 }
 
-                let mut audio_output_bus = Bus::new();
+                let mut audio_output_bus = Box::new(Bus::new());
                 for i in 0..audio_output_channels_count {
                     let mut connected = false;
 
@@ -208,7 +219,7 @@ impl GraphProcessor {
                     audio_output_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
                 }
 
-                let mut events_input_bus = Bus::new();
+                let mut events_input_bus = Box::new(Bus::new());
                 for i in 0..events_input_channels_count {
                     let mut connected = false;
 
@@ -218,10 +229,10 @@ impl GraphProcessor {
                         }
                     });
 
-                    events_input_bus.add_channel(Channel::new(NoteBuffer::with_capacity(32), connected));
+                    events_input_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
                 }
 
-                let mut events_output_bus = Bus::new();
+                let mut events_output_bus = Box::new(Bus::new());
                 for i in 0..events_output_channels_count {
                     let mut connected = false;
 
@@ -231,10 +242,10 @@ impl GraphProcessor {
                         }
                     });
 
-                    events_output_bus.add_channel(Channel::new(NoteBuffer::with_capacity(32), connected));
+                    events_output_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
                 }
 
-                let mut control_input_bus = Bus::new();
+                let mut control_input_bus = Box::new(Bus::new());
                 for i in 0..control_input_channels_count {
                     let mut connected = false;
 
@@ -247,7 +258,7 @@ impl GraphProcessor {
                     control_input_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
-                let mut control_output_bus = Bus::new();
+                let mut control_output_bus = Box::new(Bus::new());
                 for i in 0..control_output_channels_count {
                     let mut connected = false;
 
@@ -260,7 +271,7 @@ impl GraphProcessor {
                     control_output_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
-                let mut time_input_bus = Bus::new();
+                let mut time_input_bus = Box::new(Bus::new());
                 for i in 0..time_input_channels_count {
                     let mut connected = false;
 
@@ -273,7 +284,7 @@ impl GraphProcessor {
                     time_input_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
                 }
 
-                let mut time_output_bus = Bus::new();
+                let mut time_output_bus = Box::new(Bus::new());
                 for i in 0..time_output_channels_count {
                     let mut connected = false;
 
@@ -437,8 +448,10 @@ impl GraphProcessor {
 
                                     unsafe {
                                         new_action.copy_actions.push(CopyAction::AudioCopy {
-                                            src: transmute_copy(source1),
-                                            dest: transmute_copy(dest1),
+                                            src: transmute_copy(&action1.audio_outputs),
+                                            dest: transmute_copy(&action2.audio_inputs),
+                                            src_index: index1,
+                                            dest_index: index2,
                                             should_copy: !dest_used1,
                                         });
                                     }
@@ -489,8 +502,10 @@ impl GraphProcessor {
 
                                     unsafe {
                                         new_action.copy_actions.push(CopyAction::NotesCopy {
-                                            src: transmute_copy(source1),
-                                            dest: transmute_copy(dest1),
+                                            src: transmute_copy(&action1.events_outputs),
+                                            dest: transmute_copy(&action2.events_inputs),
+                                            src_index: index1,
+                                            dest_index: index2,
                                             should_copy: !dest_used1,
                                         });
                                     }
@@ -540,8 +555,10 @@ impl GraphProcessor {
 
                                     unsafe {
                                         new_action.copy_actions.push(CopyAction::ControlCopy {
-                                            src: transmute_copy(source1),
-                                            dest: transmute_copy(dest1),
+                                            src: transmute_copy(&action1.control_outputs),
+                                            dest: transmute_copy(&action2.control_inputs),
+                                            src_index: index1,
+                                            dest_index: index2,
                                             should_copy: !dest_used1,
                                         });
                                     }
@@ -591,8 +608,10 @@ impl GraphProcessor {
 
                                     unsafe {
                                         new_action.copy_actions.push(CopyAction::TimeCopy {
-                                            src: transmute_copy(source1),
-                                            dest: transmute_copy(dest1),
+                                            src: transmute_copy(&action1.time_outputs),
+                                            dest: transmute_copy(&action2.time_inputs),
+                                            src_index: index1,
+                                            dest_index: index2,
                                             should_copy: !dest_used1,
                                         });
                                     }
@@ -658,17 +677,17 @@ impl GraphProcessor {
                 let module = action.module;
 
                 let mut inputs = IO {
-                    audio: transmute_copy(&action.audio_inputs),
-                    events: transmute_copy(&action.events_inputs),
-                    control: transmute_copy(&action.control_inputs),
-                    time: transmute_copy(&action.time_inputs),
+                    audio: transmute_copy(&**action.audio_inputs),
+                    events: transmute_copy(&**action.events_inputs),
+                    control: transmute_copy(&**action.control_inputs),
+                    time: transmute_copy(&**action.time_inputs),
                 };
 
                 let mut outputs = IO {
-                    audio: transmute_copy(&action.audio_outputs),
-                    events: transmute_copy(&action.events_outputs),
-                    control: transmute_copy(&action.control_outputs),
-                    time: transmute_copy(&action.time_outputs),
+                    audio: transmute_copy(&**action.audio_outputs),
+                    events: transmute_copy(&**action.events_outputs),
+                    control: transmute_copy(&**action.control_outputs),
+                    time: transmute_copy(&**action.time_outputs),
                 };
 
                 /* Copy IO Inputs */
@@ -733,53 +752,53 @@ impl GraphProcessor {
                     CopyAction::AudioCopy {
                         ref src,
                         ref mut dest,
+                        src_index,
+                        dest_index,
                         should_copy,
                     } => {
                         if should_copy {
-                            dest.copy_from(src);
+                            dest[dest_index].copy_from(&src[src_index]);
                         } else {
-                            dest.add_from(src);
+                            dest[dest_index].add_from(&src[src_index]);
                         }
                     }
                     CopyAction::NotesCopy {
                         ref src,
                         ref mut dest,
+                        src_index,
+                        dest_index,
                         should_copy,
                     } => {
                         if should_copy {
-                            dest.copy_from(src);
-
-                            if src.len() > 0 {
-                                println!("Copied some notes");
-                            }
+                            dest[dest_index].copy_from(&src[src_index]);
                         } else {
-                            dest.append_from(src);
-
-                            if src.len() > 0 {
-                                println!("Copied some notes");
-                            }
+                            dest[dest_index].append_from(&src[src_index]);
                         }
                     }
                     CopyAction::ControlCopy {
                         ref src,
                         ref mut dest,
+                        src_index,
+                        dest_index,
                         should_copy,
                     } => {
                         if should_copy {
-                            ***dest = ***src;
+                            dest[dest_index] = src[src_index];
                         } else {
-                            ***dest = ***dest + ***src;
+                            dest[dest_index] = dest[dest_index] + src[src_index];
                         }
                     }
                     CopyAction::TimeCopy {
                         ref src,
                         ref mut dest,
+                        src_index,
+                        dest_index,
                         should_copy,
                     } => {
                         if should_copy {
-                            ***dest = ***src;
+                            dest[dest_index] = src[src_index];
                         } else {
-                            ***dest = ***src;
+                            dest[dest_index] = src[src_index];
                         }
                     }
                 }

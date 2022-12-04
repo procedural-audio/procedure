@@ -1,6 +1,6 @@
 use pa_dsp::*;
 
-use nodio::{IOManager, IOCallback, AudioPluginManager, AudioPlugin};
+use nodio::{IOManager, AudioPluginManager, AudioPlugin};
 use crate::graph::*;
 
 use std::sync::Arc;
@@ -26,9 +26,6 @@ impl Host {
             io_manager: None,
             plugin_manager: Arc::new(AudioPluginManager::new())
         }
-
-        // let ptr: *mut dyn IOCallback = &mut *host;
-        // host.io_manager.set_callback(ptr);
     }
 
     pub fn load(&mut self, path: &str) {
@@ -71,16 +68,7 @@ impl Host {
 
     pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
         self.graph.process(&self.time, audio, midi);
-
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);
-
-        println!("Processing {}", audio[0][0]);
-    }
-}
-
-impl IOCallback for Host {
-    fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer) {
-        println!("Process thing");
     }
 }

@@ -1,6 +1,3 @@
-// #include "MainComponent.h"
-// #include "PluginEditor.h"
-
 #include "NodusProcessor.h"
 #include "NodusEditor.h"
 #include "JuceHeader.h"
@@ -28,6 +25,7 @@ public:
         midiBuffer.ensureSize(2048);
 
         mainWindow.reset (new MainWindow (getApplicationName(), processor));
+        settingsWindow.reset (new SettingsWindow(manager));
     }
 
     void shutdown() override
@@ -35,6 +33,7 @@ public:
         manager.removeAudioCallback(this);
         manager.removeMidiInputDeviceCallback("", this);
         mainWindow = nullptr;
+        settingsWindow = nullptr;
     }
 
     void systemRequestedQuit() override
@@ -53,6 +52,7 @@ public:
 
     void audioDeviceIOCallback(const float **inputChannelData, int numInputChannels, float **outputChannelData, int numOutputChannels, int numSamples) {
         auto audioBuffer = juce::AudioBuffer<float>(outputChannelData, numOutputChannels, numSamples);
+        midiBuffer.clear();
         collector.removeNextBlockOfMessages(midiBuffer, numSamples);
         processor.processBlock(audioBuffer, midiBuffer);
     }
@@ -62,7 +62,6 @@ public:
     }
 
     void handleIncomingMidiMessage(juce::MidiInput *source, const juce::MidiMessage &message) {
-        puts("Add message");
         collector.addMessageToQueue(message);
     }
 
@@ -97,9 +96,34 @@ public:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
 
+    class SettingsWindow    : public juce::DocumentWindow
+    {
+    public:
+        explicit SettingsWindow (juce::AudioDeviceManager& manager)
+            : DocumentWindow ("Audio/Midi Settings",
+                              juce::Desktop::getInstance().getDefaultLookAndFeel()
+                                                          .findColour (ResizableWindow::backgroundColourId),
+                              DocumentWindow::allButtons)
+        {
+            setUsingNativeTitleBar (true);
+            setContentOwned(new juce::AudioDeviceSelectorComponent(manager, 2, 2, 2, 2, true, true, true, true), true);
+            setVisible (true);
+            centreWithSize(400, 600);
+        }
+
+        void closeButtonPressed() override
+        {
+            setVisible(false);
+        }
+
+    private:
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsWindow)
+    };
+
 private:
     NodusProcessor processor;
     std::unique_ptr<MainWindow> mainWindow;
+    std::unique_ptr<SettingsWindow> settingsWindow;
     juce::AudioDeviceManager manager;
 
     juce::MidiMessageCollector collector;
