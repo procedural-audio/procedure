@@ -6,8 +6,7 @@ impl Module for Negative {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Neg",
-        color: Color::RED,
+        title: Title("Neg", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

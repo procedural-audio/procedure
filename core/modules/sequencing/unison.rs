@@ -8,8 +8,7 @@ impl Module for Transpose {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Transpose",
-                color: Color::GREEN,
+        title: Title("Transpose", Color::GREEN),
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
         inputs: &[

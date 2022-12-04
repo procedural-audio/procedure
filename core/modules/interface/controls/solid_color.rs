@@ -8,8 +8,7 @@ impl Module for SolidColor {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Image Knob",
-                color: Color::RED,
+        title: Title("Image Knob", Color::RED),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],
@@ -42,7 +41,7 @@ impl Module for SolidColor {
     fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(_SolidColor {
             text: "Gain",
-            color: Color::BLUE,
+            color: Color::GREEN,
             value: 0.0,
             control: &0.0,
             on_changed: Box::new(|mut v| {

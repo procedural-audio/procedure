@@ -8,8 +8,7 @@ impl Module for Keyboard {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-                color: Color::RED,
+        title: Title("", Color::RED),
         size: Size::Reisizable {
             default: (400, 200),
             min: (400, 200),
@@ -35,7 +34,6 @@ impl Module for Keyboard {
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(_Keyboard {
             text: "Gain",
-            color: Color::BLUE,
             value: 0.0,
             control: &0.0,
             on_changed: Box::new(|v| {
@@ -47,7 +45,6 @@ impl Module for Keyboard {
     fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(_Keyboard {
             text: "Gain",
-            color: Color::BLUE,
             value: 0.0,
             control: &0.0,
             on_changed: Box::new(|v| {

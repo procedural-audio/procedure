@@ -22,8 +22,7 @@ impl Module for SquareModule {
     type Voice = SquareModuleVoice;
 
     const INFO: Info = Info {
-        name: "Square",
-                color: Color::BLUE,
+        title: Title("Square", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -57,7 +56,7 @@ impl Module for SquareModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/square.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

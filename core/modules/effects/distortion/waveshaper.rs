@@ -17,8 +17,7 @@ impl Module for Waveshaper {
     type Voice = WaveshaperVoice;
 
     const INFO: Info = Info {
-        name: "Waveshaper",
-        color: Color::BLUE,
+        title: Title("Waveshaper", Color::BLUE),
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
         inputs: &[

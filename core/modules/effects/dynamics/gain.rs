@@ -9,8 +9,7 @@ impl Module for Gain {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Gain",
-                color: Color::BLUE,
+        title: Title("Gain", Color::GREEN),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[

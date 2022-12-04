@@ -8,8 +8,7 @@ impl Module for Constant {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::RED,
+        title: Title("", Color::RED),
         size: Size::Static(115, 50),
         voicing: Voicing::Monophonic,
         inputs: &[],

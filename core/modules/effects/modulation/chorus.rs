@@ -11,8 +11,7 @@ impl Module for Chorus {
     type Voice = (); // ChorusDsp;
 
     const INFO: Info = Info {
-        name: "Chorus",
-                color: Color::BLUE,
+        title: Title("Chorus", Color::GREEN),
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],

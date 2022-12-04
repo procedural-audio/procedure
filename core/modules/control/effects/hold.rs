@@ -9,8 +9,7 @@ impl Module for Hold {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Hold",
-        color: Color::RED,
+        title: Title("Hold", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

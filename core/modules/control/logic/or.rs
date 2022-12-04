@@ -6,8 +6,7 @@ impl Module for Or {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Or",
-        color: Color::RED,
+        title: Title("Or", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

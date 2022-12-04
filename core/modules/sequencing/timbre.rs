@@ -6,8 +6,7 @@ impl Module for Timbre {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Timbre",
-                color: Color::GREEN,
+        title: Title("Timbre", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

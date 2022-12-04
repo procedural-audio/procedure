@@ -17,8 +17,7 @@ impl Module for LfoModule {
     type Voice = LfoVoice;
 
     const INFO: Info = Info {
-        name: "LFO",
-        color: Color::RED,
+        title: Title("LFO", Color::RED),
         size: Size::Static(250, 140),
         voicing: Voicing::Monophonic,
         inputs: &[

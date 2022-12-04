@@ -6,8 +6,7 @@ impl Module for Not {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Not",
-        color: Color::RED,
+        title: Title("Not", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

@@ -12,8 +12,7 @@ impl Module for Gate {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Gate",
-                color: Color::BLUE,
+        title: Title("Gate", Color::GREEN),
         size: Size::Static(350, 220),
         voicing: Voicing::Monophonic,
         inputs: &[

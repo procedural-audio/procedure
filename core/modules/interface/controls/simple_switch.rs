@@ -8,8 +8,7 @@ impl Module for SimpleSwitch {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Simple Switch",
-                color: Color::RED,
+        title: Title("Simple Switch", Color::RED),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],
@@ -42,7 +41,6 @@ impl Module for SimpleSwitch {
     fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(_SimpleSwitch {
             text: "Gain",
-            color: Color::BLUE,
             value: false,
             on_changed: Box::new(|v| {
                 self.value = v;

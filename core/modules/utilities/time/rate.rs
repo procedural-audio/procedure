@@ -6,8 +6,7 @@ impl Module for Rate {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Rate",
-        color: Color::PURPLE,
+        title: Title("Rate", Color::PURPLE),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

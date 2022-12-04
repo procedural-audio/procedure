@@ -22,8 +22,7 @@ impl Module for AnalogFilter {
     type Voice = AnalogFilterVoice;
 
     const INFO: Info = Info {
-        name: "Analog Filter",
-        color: Color::BLUE,
+        title: Title("Analog Filter", Color::BLUE),
         size: Size::Static(200, 170),
         voicing: Voicing::Polyphonic,
         inputs: &[

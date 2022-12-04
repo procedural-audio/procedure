@@ -193,7 +193,9 @@ impl UI {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct JSON {}
+pub struct JSON {
+
+}
 
 impl JSON {
     pub fn new() -> Self {
@@ -201,10 +203,12 @@ impl JSON {
     }
 }
 
+pub struct Title(pub &'static str, pub Color);
+
 pub struct Info {
-    // pub title: Title(&'static str, Color)
-    pub name: &'static str,
-    pub color: Color,
+    pub title: Title,
+    // pub name: &'static str,
+    // pub color: Color,
     pub size: Size,
     pub voicing: Voicing,
     pub inputs: &'static [Pin],

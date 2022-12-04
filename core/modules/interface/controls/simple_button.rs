@@ -8,8 +8,7 @@ impl Module for SimpleButtonModule {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Simple Button",
-                color: Color::RED,
+        title: Title("Simple Button", Color::RED),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],

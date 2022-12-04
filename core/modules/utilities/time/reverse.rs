@@ -6,8 +6,7 @@ impl Module for Reverse {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Rev",
-                color: Color::PURPLE,
+        title: Title("Rev", Color::PURPLE),
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[

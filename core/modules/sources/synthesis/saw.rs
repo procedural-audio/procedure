@@ -17,8 +17,7 @@ impl Module for SawModule {
     type Voice = SawModuleVoice;
 
     const INFO: Info = Info {
-        name: "Saw",
-        color: Color::BLUE,
+        title: Title("Saw", Color::BLUE),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
@@ -46,8 +45,12 @@ impl Module for SawModule {
         }
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, json: &JSON) {
+    }
+
+    fn save(&self, _json: &mut JSON) {
+
+    }
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
@@ -55,7 +58,7 @@ impl Module for SawModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/saw.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

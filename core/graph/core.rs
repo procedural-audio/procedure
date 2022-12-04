@@ -412,7 +412,7 @@ pub unsafe extern "C" fn ffi_node_get_output_pin_y(node: &mut Node, pin_index: u
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_name(node: &mut Node) -> *const i8 {
     println!("Getting node name");
-    let name = node.info().name;
+    let name = node.info().title.0;
     let s = CString::new(name).unwrap();
     let p = s.as_ptr();
     std::mem::forget(s);
@@ -421,7 +421,7 @@ pub unsafe extern "C" fn ffi_node_get_name(node: &mut Node) -> *const i8 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_color(node: &mut Node) -> u32 {
-    node.info().color.0
+    node.info().title.1.0
 }
 
 #[no_mangle]

@@ -8,8 +8,7 @@ impl Module for SimplePad {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Simple Pad",
-                color: Color::RED,
+        title: Title("Simple Pad", Color::RED),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],

@@ -10,8 +10,7 @@ impl Module for ControlToNotes {
     type Voice = ControlToNotesVoice;
 
     const INFO: Info = Info {
-        name: "",
-                color: Color::GREEN,
+        title: Title("", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[

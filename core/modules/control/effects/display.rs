@@ -9,8 +9,7 @@ impl Module for Display {
     type Voice = u32;
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::RED,
+        title: Title("", Color::RED),
         size: Size::Static(115, 50),
         voicing: Voicing::Polyphonic,
         inputs: &[

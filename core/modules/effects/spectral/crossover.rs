@@ -9,8 +9,7 @@ impl Module for Crossover {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Crossover",
-                color: Color::BLUE,
+        title: Title("Crossover", Color::GREEN),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -38,7 +37,7 @@ impl Module for Crossover {
             size: (50, 70),
             child: Knob {
                 text: "Crossover",
-                color: Color::BLUE,
+                color: Color::GREEN,
                 value: &mut self.value,
                 feedback: Box::new(|_v| String::new()),
             },

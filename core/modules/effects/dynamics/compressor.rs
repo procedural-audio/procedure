@@ -15,8 +15,7 @@ impl Module for Compressor {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Compressor",
-                color: Color::BLUE,
+        title: Title("Compressor", Color::GREEN),
         size: Size::Static(410, 220),
         voicing: Voicing::Monophonic,
         inputs: &[

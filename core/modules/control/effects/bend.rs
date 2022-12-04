@@ -11,8 +11,7 @@ impl Module for Bend {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Bend",
-        color: Color::RED,
+        title: Title("Bend", Color::RED),
         size: Size::Static(240, 160),
         voicing: Voicing::Monophonic,
         inputs: &[

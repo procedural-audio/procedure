@@ -6,8 +6,7 @@ impl Module for LocalTime {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Time",
-        color: Color::PURPLE,
+        title: Title("Time", Color::PURPLE),
         size: Size::Static(100, 75),
         voicing: Voicing::Monophonic,
         inputs: &[],

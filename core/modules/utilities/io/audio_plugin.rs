@@ -12,8 +12,7 @@ impl Module for AudioPluginModule {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Audio Plugin",
-        color: Color::BLUE,
+        title: Title("Audio Plugin", Color::BLUE),
         size: Size::Static(270, 90),
         voicing: Voicing::Monophonic,
         inputs: &[

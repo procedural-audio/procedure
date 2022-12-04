@@ -6,8 +6,7 @@ impl Module for Divide {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Div",
-        color: Color::RED,
+        title: Title("Div", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

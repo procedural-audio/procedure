@@ -8,8 +8,7 @@ impl Module for Panner {
     type Voice = (); // PannerDSP;
 
     const INFO: Info = Info {
-        name: "Panner",
-        color: Color::BLUE,
+        title: Title("Panner", Color::BLUE),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[

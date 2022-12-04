@@ -8,8 +8,7 @@ impl Module for Noise {
     type Voice = (); // NoiseProcessor;
 
     const INFO: Info = Info {
-        name: "Noise",
-        color: Color::BLUE,
+        title: Title("Noise", Color::BLUE),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Control("Noise Type", 25)],
@@ -34,7 +33,7 @@ impl Module for Noise {
             size: (50, 70),
             child: Knob {
                 text: "Type",
-                color: Color::BLUE,
+                color: Color::GREEN,
                 value: &mut self.value,
                 feedback: Box::new(|v| {
                     if v < 1.0 / 3.0 {

@@ -6,8 +6,7 @@ impl Module for Modulo {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Mod",
-        color: Color::RED,
+        title: Title("Mod", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

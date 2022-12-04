@@ -10,8 +10,7 @@ impl Module for Random {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::RED,
+        title: Title("", Color::RED),
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
         inputs: &[],

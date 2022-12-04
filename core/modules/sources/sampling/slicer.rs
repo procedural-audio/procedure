@@ -50,8 +50,7 @@ impl Module for Slicer {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Slicer",
-                color: Color::BLUE,
+        title: Title("Slicer", Color::GREEN),
         size: Size::Static(305, 195),
         voicing: Voicing::Monophonic,
         inputs: &[

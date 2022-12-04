@@ -20,8 +20,7 @@ impl Module for Arpeggiator {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Arpeggiator",
-                color: Color::GREEN,
+        title: Title("Arpeggiator", Color::GREEN),
         size: Size::Static(640, 290),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Midi Input", 20), Pin::Time("Time", 50)],

@@ -41,7 +41,7 @@ impl Serialize for Node {
         let mut state = serializer.serialize_struct("Node", 3)?;
         state.serialize_field("id", &self.id)?;
         state.serialize_field("position", &self.position)?;
-        state.serialize_field("name", &self.info().name)?;
+        state.serialize_field("name", &self.info().title.0)?;
 
         let mut module_state = JSON::new();
         self.module.save(&mut module_state);

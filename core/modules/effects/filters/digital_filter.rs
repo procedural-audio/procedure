@@ -24,8 +24,7 @@ impl Module for DigitalFilter {
     type SharedState = DigitalFilterState;
 
     const INFO: ModuleInfo = ModuleInfo {
-        name: "Digital Filter",
-        color: Color::BLUE,
+        title: Title("Digital Filter", Color::BLUE),
         size: Size::Static(315-60, 200-70),
         voicing: Voicing::Polyphonic,
         inputs: &[

@@ -6,8 +6,7 @@ impl Module for Pitch {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Pitch",
-                color: Color::GREEN,
+        title: Title("Pitch", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

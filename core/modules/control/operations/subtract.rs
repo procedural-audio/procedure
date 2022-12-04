@@ -6,8 +6,7 @@ impl Module for Subtract {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Sub",
-        color: Color::RED,
+        title: Title("Sub", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

@@ -13,8 +13,7 @@ impl Module for Phaser {
     type Voice = (); // PhaserDsp;
 
     const INFO: Info = Info {
-        name: "Phaser",
-        color: Color::BLUE,
+        title: Title("Phaser", Color::BLUE),
         size: Size::Static(310 - 40, 200),
         voicing: Voicing::Monophonic,
         inputs: &[

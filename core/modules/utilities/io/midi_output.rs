@@ -6,8 +6,7 @@ impl Module for MidiOutput {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-                color: Color::GREEN,
+        title: Title("", Color::GREEN),
         size: Size::Static(100, 100),
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Notes("Midi Output", 30)],

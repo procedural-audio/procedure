@@ -12,8 +12,7 @@ impl Module for EnvelopeModule {
     type Voice = EnvelopeVoice;
 
     const INFO: Info = Info {
-        name: "Envelope",
-        color: Color::RED,
+        title: Title("Envelope", Color::RED),
         size: Size::Static(300, 150),
         voicing: Voicing::Monophonic,
         inputs: &[

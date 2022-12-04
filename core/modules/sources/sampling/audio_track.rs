@@ -40,8 +40,7 @@ impl Module for AudioTrack {
     type Voice = AudioTrackVoice;
 
     const INFO: Info = Info {
-        name: "Audio Track",
-        color: Color::BLUE,
+        title: Title("Audio Track", Color::BLUE),
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[

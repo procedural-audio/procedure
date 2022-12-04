@@ -21,8 +21,7 @@ impl Module for TriangleModule {
     type Voice = TriangleModuleVoice;
 
     const INFO: Info = Info {
-        name: "Triangle",
-                color: Color::BLUE,
+        title: Title("Triangle", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -56,7 +55,7 @@ impl Module for TriangleModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/saw.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

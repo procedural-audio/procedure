@@ -155,8 +155,7 @@ impl Module for MidiInput {
     type Voice = MidiInputVoice;
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::GREEN,
+        title: Title("", Color::GREEN),
         size: Size::Static(85, 60),
         voicing: Voicing::Polyphonic,
         inputs: &[

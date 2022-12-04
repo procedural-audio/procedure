@@ -6,8 +6,7 @@ impl Module for GlobalTime {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::PURPLE,
+        title: Title("", Color::PURPLE),
         size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[],

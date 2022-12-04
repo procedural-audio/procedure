@@ -19,8 +19,7 @@ impl Module for Mixer {
     type Voice = MixerVoice;
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::BLUE,
+        title: Title("", Color::BLUE),
         size: Size::Static(120, 505),
         voicing: Voicing::Monophonic,
         inputs: &[

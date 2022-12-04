@@ -21,8 +21,7 @@ impl Module for Scale {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Scale",
-        color: Color::RED,
+        title: Title("Scale", Color::RED),
         size: Size::Static(300 - 35, 100),
         voicing: Voicing::Monophonic,
         inputs: &[

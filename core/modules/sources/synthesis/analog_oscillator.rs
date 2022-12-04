@@ -27,8 +27,7 @@ impl Module for AnalogOscillator {
     type Voice = OscillatorVoice;
 
     const INFO: Info = Info {
-        name: "Analog Oscillator",
-        color: Color::BLUE,
+        title: Title("Analog Oscillator", Color::BLUE),
         size: Size::Static(310, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[

@@ -8,8 +8,7 @@ impl Module for SimpleKnob {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Simple Knob",
-                color: Color::RED,
+        title: Title("Simple Knob", Color::RED),
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[],

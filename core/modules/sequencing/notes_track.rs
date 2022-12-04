@@ -20,8 +20,7 @@ impl Module for NotesTrack {
     type Voice = u32;
 
     const INFO: Info = Info {
-        name: "Notes Track",
-                color: Color::GREEN,
+        title: Title("Notes Track", Color::GREEN),
         size: Size::Reisizable {
             default: (800, 500),
             min: (300, 200),

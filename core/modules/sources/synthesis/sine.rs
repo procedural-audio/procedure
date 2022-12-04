@@ -22,8 +22,7 @@ impl Module for SineModule {
     type Voice = SineModuleVoice;
 
     const INFO: Info = Info {
-        name: "Sine",
-                color: Color::BLUE,
+        title: Title("Sine", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -57,7 +56,7 @@ impl Module for SineModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/sine.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

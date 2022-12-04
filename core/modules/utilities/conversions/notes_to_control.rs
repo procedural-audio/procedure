@@ -6,8 +6,7 @@ impl Module for NotesToControl {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "",
-        color: Color::RED,
+        title: Title("", Color::RED),
         size: Size::Static(120, 135),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes Input", 15)],

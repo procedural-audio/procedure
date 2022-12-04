@@ -6,8 +6,7 @@ impl Module for AudioOutput {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Audio Output",
-        color: Color::BLUE,
+        title: Title("Audio Output", Color::BLUE),
         size: Size::Static(130, 80),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -34,7 +33,7 @@ impl Module for AudioOutput {
             size: (30, 30),
             child: Svg {
                 path: "logos/audio.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

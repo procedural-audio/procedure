@@ -22,8 +22,7 @@ impl Module for PulseModule {
     type Voice = PulseModuleVoice;
 
     const INFO: Info = Info {
-        name: "Pulse",
-                color: Color::BLUE,
+        title: Title("Pulse", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -57,7 +56,7 @@ impl Module for PulseModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/saw.svg",
-                color: Color::BLUE,
+                color: Color::GREEN,
             },
         })
     }

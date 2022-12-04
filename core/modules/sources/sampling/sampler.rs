@@ -40,8 +40,7 @@ impl Module for Sampler {
     type Voice = SamplerVoice;
 
     const INFO: Info = Info {
-        name: "Sampler",
-                color: Color::BLUE,
+        title: Title("Sampler", Color::GREEN),
         size: Size::Static(390, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[

@@ -6,8 +6,7 @@ impl Module for Clamp {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Clamp",
-        color: Color::RED,
+        title: Title("Clamp", Color::RED),
         size: Size::Static(110, 105),
         voicing: Voicing::Polyphonic,
         inputs: &[

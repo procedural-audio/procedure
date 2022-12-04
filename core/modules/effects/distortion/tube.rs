@@ -26,8 +26,7 @@ impl Module for Tube {
     type Voice = TubeVoice;
 
     const INFO: Info = Info {
-        name: "Tube",
-        color: Color::BLUE,
+        title: Title("Tube", Color::BLUE),
         size: Size::Static(200, 170),
         voicing: Voicing::Monophonic,
         inputs: &[

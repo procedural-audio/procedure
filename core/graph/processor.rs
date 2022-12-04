@@ -884,7 +884,7 @@ impl GraphProcessor {
         let mut seq = Vec::new();
 
         for node in nodes.iter() {
-            if node.info().name == "Audio Output" {
+            if node.info().title.0 == "Audio Output" {
                 GraphProcessor::sort_nodes_rec(&mut seq, node.clone(), nodes, connectors);
             }
         }

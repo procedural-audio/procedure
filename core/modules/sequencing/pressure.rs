@@ -6,8 +6,7 @@ impl Module for Pressure {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Pressure",
-                color: Color::GREEN,
+        title: Title("Pressure", Color::GREEN),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[

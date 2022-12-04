@@ -19,8 +19,7 @@ impl Module for StepSequencer {
     type Voice = StepSequencerVoice;
 
     const INFO: Info = Info {
-        name: "",
-                color: Color::GREEN,
+        title: Title("", Color::GREEN),
         size: Size::Static(20 + 80 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Time("Time", 10)],

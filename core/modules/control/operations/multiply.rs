@@ -6,8 +6,7 @@ impl Module for Multiply {
     type Voice = ();
 
     const INFO: Info = Info {
-        name: "Mul",
-        color: Color::RED,
+        title: Title("Mul", Color::RED),
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
