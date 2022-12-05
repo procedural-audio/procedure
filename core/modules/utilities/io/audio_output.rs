@@ -20,13 +20,14 @@ impl Module for AudioOutput {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self
     }
+
     fn new_voice(_index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
@@ -36,7 +37,7 @@ impl Module for AudioOutput {
             size: (30, 30),
             child: Svg {
                 path: "logos/audio.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }

@@ -48,11 +48,14 @@ impl Module for SawModule {
         }
     }
 
-    fn load(&mut self, _json: &JSON) {
+    fn load(&mut self, json: &JSON) {
+        self.freq = json.get("freq");
+        self.wave_index = json.get("wave_index");
     }
 
-    fn save(&self, _json: &mut JSON) {
-
+    fn save(&self, json: &mut JSON) {
+        json.insert("freq", self.freq);
+        json.insert("wave_index", self.wave_index);
     }
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {

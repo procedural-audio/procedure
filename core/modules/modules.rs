@@ -1,3 +1,5 @@
+use std::{ops::Index, marker::PhantomData};
+
 use serde::{Deserialize, Serialize};
 
 pub mod control;
@@ -192,16 +194,84 @@ impl UI {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct JSON {
+#[derive(Serialize, Copy, Clone)]
+pub enum Value {
+    Float(f32),
+    Int(u32),
+    Bool(bool),
+    Str(&'static str),
+    Color(Color),
+    None,
+}
 
+pub trait ToValue {
+    fn to_value(self) -> Value;
+}
+
+pub trait FromValue {
+    fn from_value(value: Value) -> Self where Self: Sized {
+        panic!("Couldn't get type from value");
+    }
+}
+
+impl ToValue for f32 {
+    fn to_value(self) -> Value {
+        Value::Float(self)
+    }
+}
+
+impl FromValue for f32 {
+    fn from_value(value: Value) -> Self {
+        if let Value::Float(v) = value {
+            v
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
+impl ToValue for u32 {
+    fn to_value(self) -> Value {
+        Value::Int(self)
+    }
+}
+
+impl FromValue for u32 {
+    fn from_value(value: Value) -> Self {
+        if let Value::Int(v) = value {
+            v
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct JSON {
+    map: std::collections::HashMap<&'static str, Value>,
 }
 
 impl JSON {
     pub fn new() -> Self {
-        JSON {}
+        JSON {
+            map: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn insert<T: ToValue>(&mut self, name: &'static str, value: T) {
+        self.map.insert(name, value.to_value());
+    }
+
+    pub fn get<T: FromValue>(&self, name: &'static str) -> T {
+        T::from_value(*self.map.get(name).unwrap())
     }
 }
+
+/*impl std::ops::IndexMut<&'static str> for JSON {
+    fn index_mut(&mut self, name: &'static str) -> &mut Self::Output {
+        self.map.get_mut(name).unwrap()
+    }
+}*/
 
 pub struct Info {
     pub title: &'static str,
@@ -212,16 +282,6 @@ pub struct Info {
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
     pub path: &'static str,
-}
-
-#[derive(Copy, Clone)]
-pub enum Value {
-    Float(f32),
-    Int(u32),
-    Bool(bool),
-    Str(&'static str),
-    Color(Color),
-    None,
 }
 
 pub struct Param2<T>(&'static str, T);
