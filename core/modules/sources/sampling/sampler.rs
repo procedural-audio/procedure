@@ -140,6 +140,7 @@ impl Module for Sampler {
                     voice
                         .player
                         .note_on(note.id, *offset, *note, note.pressure, note.timbre);
+                    println!("Playing note");
                 }
                 Event::NoteOff { id } => {
                     if voice.player.id() == *id {
@@ -166,6 +167,7 @@ impl Module for Sampler {
             voice.player.set_one_shot(self.one_shot);
             voice.player.set_reverse(self.reverse);
 
+            println!("PRocessing note");
             voice.player.process(&mut outputs.audio[0]);
         }
     }

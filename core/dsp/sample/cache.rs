@@ -28,9 +28,7 @@ Sample Cache
 pub fn load_sample(path: &str) -> Sample<2> {
     /* Load sample from cache */
 
-    panic!("Load sample not implemented");
-
-    /*for (p, buffer) in &*SAMPLE_CACHE.read().unwrap() {
+    for (p, buffer) in &*SAMPLE_CACHE.read().unwrap() {
         if p.as_str() == path {
             return Sample::from(buffer.clone(), 440.0, 44100, path.to_string());
         }
@@ -102,7 +100,7 @@ pub fn load_sample(path: &str) -> Sample<2> {
             reader.samples::<i32>().for_each(|s| {
                 unsafe {
                     let sample = s.unwrap() as f32 * (1.0 / 32768.0);
-                    *buffer_new.as_ptr().offset(i / spec.channels as isize) = sample;
+                    *buffer_new.left.as_mut_ptr().offset(i / spec.channels as isize) = sample;
                     // ^^^ Takes only left channel
                     i += 1;
                 }
@@ -123,11 +121,11 @@ pub fn load_sample(path: &str) -> Sample<2> {
         "    rate: {}, format: {:?}, bits: {}, channels: {}",
         spec.sample_rate, spec.sample_format, spec.bits_per_sample, spec.channels
     );
-    println!(
+    /*println!(
         "    rms: {}, peak: {}",
         &buffer_new.rms(),
         &buffer_new.peak()
-    );
+    );*/
     println!("    length: {} seconds", seconds / spec.channels as f64);
     println!("");
 
@@ -136,5 +134,4 @@ pub fn load_sample(path: &str) -> Sample<2> {
     // let buffer_new = AudioBuffer::from(buffer_new);
 
     return Sample::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());
-    */
 }

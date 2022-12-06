@@ -160,9 +160,9 @@ pub unsafe extern "C" fn ffi_sample_picker_get_buffer(widget: &mut SamplePicker)
     let mut buffer_new = Vec::new();
     let sample = &*widget.sample.read().unwrap();
 
-    let skip = sample.as_array()[0].len() / 300;
+    // let skip = sample.as_array()[0].len() / 300;
 
-    for sample in sample.as_array()[0].iter().step_by(skip) {
+    for sample in sample.as_array()[0].iter() { // .step_by(skip) {
         buffer_new.push(*sample);
     }
 

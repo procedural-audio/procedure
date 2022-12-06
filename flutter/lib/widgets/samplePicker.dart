@@ -158,6 +158,8 @@ class SamplePickerWidget extends ModuleWidget {
     List<double> bufferLeft = [];
     List<double> bufferRight = [];
 
+    return Container();
+
     double start = ffiSamplePickerGetStart(widgetRaw.pointer);
     double end = ffiSamplePickerGetEnd(widgetRaw.pointer);
     double attack = ffiSamplePickerGetAttack(widgetRaw.pointer);

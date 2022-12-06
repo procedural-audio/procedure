@@ -15,7 +15,7 @@ impl Module for Transpose {
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 25),
-            Pin::Control("Transpose Amount", 55),
+            Pin::Control("Transpose Steps", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
         path: "Category 1/Category 2/Module Name"
@@ -54,6 +54,10 @@ impl Module for Transpose {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
+        if inputs.control.is_connected(0) {
+            steps = f32::round(inputs.control[0]);
+        }
+
         if steps < 0.0 {
             steps = steps / 2.0;
         }
@@ -68,6 +72,12 @@ impl Module for Transpose {
                         note: note.with_pitch(note.pitch * (1.0 + steps / 12.0)),
                         offset: *offset,
                     }
+                }
+                Event::Pitch { id, freq } => {
+                    output[i] = Event::Pitch {
+                        id: *id,
+                        freq: freq * (1.0 + steps / 12.0)
+                    };
                 }
                 e => output[i] = *e,
             }

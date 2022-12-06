@@ -165,11 +165,7 @@ impl Source for SamplePlayer {
         self.sample_rate = sample_rate;
     }
 
-    fn process(&mut self, output: &mut Self::Output) {
-        panic!("Process implementation commented out below");
-    }
-
-    /*fn process(&mut self, buffer: &mut Stereo) {
+    fn process(&mut self, buffer: &mut Stereo) {
         let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
 
         if let Some(sample) = &self.sample {
@@ -217,10 +213,10 @@ impl Source for SamplePlayer {
                     /* Sample end */
 
                     if self.index < end {
-                        buffer.left.add_from(&sample.as_array()[0][self.index..end]);
+                        buffer.left.add_from2(&sample.as_array()[0][self.index..end]);
                         buffer
                             .right
-                            .add_from(&sample.as_array()[1][self.index..end]);
+                            .add_from2(&sample.as_array()[1][self.index..end]);
                     }
 
                     self.index = end;
@@ -270,10 +266,10 @@ impl Source for SamplePlayer {
                     /* Sample end */
 
                     if start < loop_end {
-                        buffer.left.add_from(&sample.as_array()[0][start..loop_end]);
+                        buffer.left.add_from2(&sample.as_array()[0][start..loop_end]);
                         buffer
                             .right
-                            .add_from(&sample.as_array()[1][start..loop_end]);
+                            .add_from2(&sample.as_array()[1][start..loop_end]);
                         self.index = loop_start;
                     } else {
                         self.index = loop_start;
@@ -322,7 +318,7 @@ impl Source for SamplePlayer {
                 }
             }
         }
-    }*/
+    }
 }
 
 impl Voice for SamplePlayer {

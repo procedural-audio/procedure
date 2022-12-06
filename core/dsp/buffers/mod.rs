@@ -254,6 +254,12 @@ impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
             *d = *d + *s;
         }
     }
+
+    pub fn add_from2(&mut self, src: &[T]) {
+        for (d, s) in self.items.iter_mut().zip(src) {
+            *d = *d + *s;
+        }
+    }
 }
 
 impl<T: Copy + Clone> Index<usize> for Buffer<T> {
