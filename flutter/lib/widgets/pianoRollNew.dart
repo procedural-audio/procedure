@@ -6,17 +6,43 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 import 'widget.dart';
 
-int Function(FFIWidgetPointer) ffiNotesTrackGetNoteCount = core.lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>("ffi_notes_track_get_note_count").asFunction();
+int Function(FFIWidgetPointer) ffiNotesTrackGetNoteCount = core
+    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+        "ffi_notes_track_get_note_count")
+    .asFunction();
 
-double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteStart = core.lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>("ffi_notes_track_get_note_start").asFunction();
-double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteLength = core.lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>("ffi_notes_track_get_note_length").asFunction();
-int Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteNum = core.lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>("ffi_notes_track_get_note_num").asFunction();
+double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteStart = core
+    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+        "ffi_notes_track_get_note_start")
+    .asFunction();
+double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteLength = core
+    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+        "ffi_notes_track_get_note_length")
+    .asFunction();
+int Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteNum = core
+    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+        "ffi_notes_track_get_note_num")
+    .asFunction();
 
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteStart = core.lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>("ffi_notes_track_set_note_start").asFunction();
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteLength = core.lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>("ffi_notes_track_set_note_length").asFunction();
-void Function(FFIWidgetPointer, int, int) ffiNotesTrackSetNoteNum = core.lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>("ffi_notes_track_set_note_num").asFunction();
+void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteStart = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+        "ffi_notes_track_set_note_start")
+    .asFunction();
+void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteLength = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+        "ffi_notes_track_set_note_length")
+    .asFunction();
+void Function(FFIWidgetPointer, int, int) ffiNotesTrackSetNoteNum = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+        "ffi_notes_track_set_note_num")
+    .asFunction();
 
-void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core.lookup<NativeFunction<Void Function(FFIWidgetPointer, Double, Double, Int32)>>("ffi_notes_track_add_note").asFunction();
+void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
+    .lookup<
+        NativeFunction<
+            Void Function(FFIWidgetPointer, Double, Double,
+                Int32)>>("ffi_notes_track_add_note")
+    .asFunction();
 
 /*
 
@@ -50,7 +76,7 @@ class DragInfo {
 
 class PianoRollWidget extends ModuleWidget {
   PianoRollWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
-  
+
   final ScrollController controller = ScrollController();
   ValueNotifier<DragInfo> info = ValueNotifier(DragInfo());
 
@@ -58,10 +84,10 @@ class PianoRollWidget extends ModuleWidget {
   bool selecting = false;
 
   bool clicked(Offset offset, Note note) {
-    return note.left() <= offset.dx 
-      && note.left() + note.width() >= offset.dx 
-      && note.top() <= offset.dy 
-      && note.top() + STEP_HEIGHT >= offset.dy;
+    return note.left() <= offset.dx &&
+        note.left() + note.width() >= offset.dx &&
+        note.top() <= offset.dy &&
+        note.top() + STEP_HEIGHT >= offset.dy;
   }
 
   @override
@@ -71,20 +97,21 @@ class PianoRollWidget extends ModuleWidget {
     int count = ffiNotesTrackGetNoteCount(widgetRaw.pointer);
 
     for (int i = notes.length; i < count; i++) {
-      notes.add(
-        Note(
+      notes.add(Note(
           index: i,
           start: ffiNotesTrackGetNoteStart(widgetRaw.pointer, i),
           length: ffiNotesTrackGetNoteLength(widgetRaw.pointer, i),
           num: ffiNotesTrackGetNoteNum(widgetRaw.pointer, i),
-          info: info
-        )
-      );
+          info: info));
     }
 
-    print("Notes length is " + notes.length.toString() + ". Selected " + info.value.selected.length.toString());
+    print("Notes length is " +
+        notes.length.toString() +
+        ". Selected " +
+        info.value.selected.length.toString());
 
-    return Stack( // Over/behind scroll view stack
+    return Stack(
+      // Over/behind scroll view stack
       children: [
         Container(
           child: Scrollbar(
@@ -97,7 +124,8 @@ class PianoRollWidget extends ModuleWidget {
                   child: Container(
                       padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
                       height: 2000,
-                      child: Stack( // Scroll view stack
+                      child: Stack(
+                        // Scroll view stack
                         fit: StackFit.expand,
                         children: <Widget>[
                               CustomPaint(
@@ -105,7 +133,9 @@ class PianoRollWidget extends ModuleWidget {
                                   beatCount: 4,
                                 ),
                               ),
-                            ] + notes + [
+                            ] +
+                            notes +
+                            [
                               GestureDetector(
                                 onTapDown: (e) {
                                   double x = e.localPosition.dx;
@@ -116,7 +146,8 @@ class PianoRollWidget extends ModuleWidget {
                                   // Select note
                                   for (Note note in notes.reversed) {
                                     if (clicked(e.localPosition, note)) {
-                                      if (info.value.selected.contains(note.index)) {
+                                      if (info.value.selected
+                                          .contains(note.index)) {
                                         info.value.selected.remove(note.index);
                                       } else {
                                         info.value.selected.clear();
@@ -134,17 +165,19 @@ class PianoRollWidget extends ModuleWidget {
                                     double length = 1;
                                     int num = STEP_COUNT - y ~/ STEP_HEIGHT;
 
-                                    ffiNotesTrackAddNote(widgetRaw.pointer, start, length, num);
+                                    ffiNotesTrackAddNote(
+                                        widgetRaw.pointer, start, length, num);
                                   }
 
-                                  setState(() { });
+                                  setState(() {});
                                 },
                                 onPanStart: (e) {
                                   selecting = true;
 
                                   for (Note note in notes.reversed) {
                                     if (clicked(e.localPosition, note)) {
-                                      if (!info.value.selected.contains(note.index)) {
+                                      if (!info.value.selected
+                                          .contains(note.index)) {
                                         info.value.selected.clear();
                                         info.value.selected.add(note.index);
                                         selecting = false;
@@ -154,20 +187,25 @@ class PianoRollWidget extends ModuleWidget {
                                     }
                                   }
 
-                                  setState(() { });
+                                  setState(() {});
                                 },
                                 onPanUpdate: (e) {
                                   if (selecting) {
                                     print("Selecting");
                                   } else {
                                     for (Note note in notes) {
-                                      if (info.value.selected.contains(note.index)) {
-                                        ffiNotesTrackSetNoteStart(widgetRaw.pointer, note.index, note.start + e.delta.dx / BEAT_WIDTH);
+                                      if (info.value.selected
+                                          .contains(note.index)) {
+                                        ffiNotesTrackSetNoteStart(
+                                            widgetRaw.pointer,
+                                            note.index,
+                                            note.start +
+                                                e.delta.dx / BEAT_WIDTH);
                                         //ffiNotesTrackSetNoteNum();
                                       }
                                     }
 
-                                    setState(() { });
+                                    setState(() {});
                                   }
                                 },
                               )
@@ -324,7 +362,13 @@ class PianoRollWidget extends ModuleWidget {
 }
 
 class Note extends StatelessWidget {
-  Note({required this.index, required this.start, required this.length, required this.num, required this.info}) : super(key: UniqueKey());
+  Note(
+      {required this.index,
+      required this.start,
+      required this.length,
+      required this.num,
+      required this.info})
+      : super(key: UniqueKey());
 
   int index;
   double start;
@@ -343,28 +387,26 @@ class Note extends StatelessWidget {
   double width() {
     return length * BEAT_WIDTH;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<DragInfo>(
-      valueListenable: info,
-      builder: (context, value, w) {
-        return Positioned(
-          left: left(),
-          top: top(),
-          child: Container(
-              width: width(),
-              height: STEP_HEIGHT,
-              decoration: BoxDecoration(
-                  color: value.selected.contains(index) ? Colors.green.shade200 : Colors.green,
-                  border: Border.all(
-                    color: Colors.green,
-                    width: 2.0
-                  ),
-                  borderRadius: const BorderRadius.all(Radius.circular(5))),
-          ));
-      }
-    );
+        valueListenable: info,
+        builder: (context, value, w) {
+          return Positioned(
+              left: left(),
+              top: top(),
+              child: Container(
+                width: width(),
+                height: STEP_HEIGHT,
+                decoration: BoxDecoration(
+                    color: value.selected.contains(index)
+                        ? Colors.green.shade200
+                        : Colors.green,
+                    border: Border.all(color: Colors.green, width: 2.0),
+                    borderRadius: const BorderRadius.all(Radius.circular(5))),
+              ));
+        });
   }
 }
 

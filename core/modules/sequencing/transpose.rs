@@ -20,7 +20,6 @@ impl Module for Transpose {
         outputs: &[Pin::Notes("Notes Output", 25)],
         path: "Category 1/Category 2/Module Name"
     };
-
     
     fn new() -> Self {
         Self { value: 0.5 }
@@ -62,24 +61,25 @@ impl Module for Transpose {
             steps = steps / 2.0;
         }
 
-        let input = inputs.events[0].as_ref();
-        let output = outputs.events[0].as_mut();
-
-        for i in 0..input.len() {
-            match &input[i] {
+        for event in &inputs.events[0] {
+            match event {
                 Event::NoteOn { note, offset } => {
-                    output[i] = Event::NoteOn {
-                        note: note.with_pitch(note.pitch * (1.0 + steps / 12.0)),
-                        offset: *offset,
-                    }
+                    outputs.events[0].push(
+                        Event::NoteOn {
+                            note: note.with_pitch(note.pitch * (1.0 + steps / 12.0)),
+                            offset: *offset,
+                        }
+                    );
                 }
                 Event::Pitch { id, freq } => {
-                    output[i] = Event::Pitch {
-                        id: *id,
-                        freq: freq * (1.0 + steps / 12.0)
-                    };
+                    outputs.events[0].push(
+                    Event::Pitch {
+                            id: *id,
+                            freq: freq * (1.0 + steps / 12.0)
+                        }
+                    );
                 }
-                e => output[i] = *e,
+                e => outputs.events[0].push(*e)
             }
         }
     }
