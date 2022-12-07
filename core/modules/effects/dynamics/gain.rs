@@ -11,7 +11,7 @@ impl Module for Gain {
     const INFO: Info = Info {
         title: "Gain",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
         inputs: &[
@@ -52,7 +52,13 @@ impl Module for Gain {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        let mut value = self.value;
+
+        if inputs.control.is_connected(0) {
+            value = inputs.control[0];
+        }
+
         outputs.audio[0].copy_from(&inputs.audio[0]);
-        outputs.audio[0].gain(self.value);
+        outputs.audio[0].gain(value);
     }
 }

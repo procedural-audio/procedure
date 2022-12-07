@@ -114,7 +114,7 @@ impl Module for LfoModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let hz = self.value * 20.0;
+        let hz = self.value * 80.0;
         let reset = inputs.control[0];
 
         if voice.last_reset < 0.5 {

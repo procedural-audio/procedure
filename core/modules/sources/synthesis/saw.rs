@@ -64,7 +64,7 @@ impl Module for SawModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/saw.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }
@@ -110,6 +110,14 @@ impl Module for SawModule {
             );
 
             buffer.right.copy_from(&buffer.left);
+
+            for i in 0..buffer.left.len() {
+                if i % 16 == 0 {
+                    print!("{:.2} ", buffer.left[i]);
+                }
+            }
+
+            println!("Length is {}", buffer.left.len());
         }
     }
 }
@@ -159,22 +167,33 @@ impl Saw {
 			fConst0: 0.0,
 			fConst1: 0.0,
 			fConst2: 0.0,
-			fHslider0: 500.0,
+			fHslider0: 0.0,
 			fConst3: 0.0,
 			fRec2: [0.0;2],
 			fRec0: [0.0;2],
 		}
 	}
 
-	fn init(&mut self, sample_rate: i32) {
-		self.fSampleRate = sample_rate;
-		self.fConst0 = f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
-		self.fConst1 = 1.0 / self.fConst0;
-		self.fConst2 = 44.0999985 / self.fConst0;
-		self.fConst3 = 1.0 - self.fConst2;
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
 
+	fn get_num_inputs(&self) -> i32 {
+		return 0;
+	}
+
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn class_init(sample_rate: i32) {
+	}
+
+	fn instance_reset_params(&mut self) {
 		self.fHslider0 = 500.0;
+	}
 
+	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
 			self.fRec2[(l0) as usize] = 0.0;
 		}
@@ -183,11 +202,30 @@ impl Saw {
 		}
 	}
 
-    fn set_freq(&mut self, hz: f32) {
-        self.fHslider0 = hz;
-    }
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		self.fConst0 = f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+		self.fConst1 = 1.0 / self.fConst0;
+		self.fConst2 = 44.0999985 / self.fConst0;
+		self.fConst3 = 1.0 - self.fConst2;
+	}
 
-	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut[ &mut [f32]]) {
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+
+	fn init(&mut self, sample_rate: i32) {
+		Saw::class_init(sample_rate);
+		self.instance_init(sample_rate);
+	}
+
+	fn set_freq(&mut self, hz: f32) {
+        self.fHslider0 = hz;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut [&mut [f32]]) {
 		let (outputs0) = if let [outputs0, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			(outputs0)
