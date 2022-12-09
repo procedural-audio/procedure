@@ -21,7 +21,7 @@ class InstrumentInfo {
   String description =
       "Here is a paragraph that can go below the title. It is here to fill some space.\n";
   String path = "";
-  File image = File("/home/chase/github/metasampler/content/assets/images/logo.png");
+  File image = File("/home/chase/github/content/assets/backgrounds/background_01.png");
   List<String> tags = ["Tag 1", "Tag 2"];
 
   int rating = -1;

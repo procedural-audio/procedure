@@ -401,6 +401,8 @@ class Host extends ChangeNotifier {
       }
     });
 
+    refreshInstruments();
+
     /*timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
       var rebuilt = false;
       for (var i = 0; i < graph.moduleWidgets.length; i++) {

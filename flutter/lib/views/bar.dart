@@ -176,37 +176,29 @@ class _Bar extends State<Bar> {
                           });
                         }),
                   ]),
-              Builder(builder: (context) {
-                return LayoutBuilder(builder: (context, constraints) {
-                  if (instrumentBrowserExpanded) {
+                LayoutBuilder(builder: (context, constraints) {
+                  if (instrumentBrowserExpanded || presetBrowserExpanded || variableViewVisible) {
                     return Padding(
                         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                         child: Container(
-                          height: 600,
-                          width: barExpanded ? 600 : 500,
-                          child: BrowserView(widget.host),
-                        ));
-                  } else if (presetBrowserExpanded) {
-                    return Container(
-                        height: 400,
-                        width: barExpanded ? 600 : 500,
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                        child: PresetsView(widget.host));
-                  } else if (variableViewVisible) {
-                    return Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                        child: Container(
-                            height: 400,
-                            width: barExpanded ? 600 : 500,
-                            decoration: BoxDecoration(
-                                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                                borderRadius: BorderRadius.circular(10)),
-                            child: widget.host.vars));
+                          width: barExpanded ? 710 : 525,
+                          height: 700,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(40, 40, 40, 1.0),
+                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                            border: Border.all(
+                              width: 1,
+                              color: const Color.fromRGBO(70, 70, 70, 1.0)
+                            )
+                          ),
+                          child: instrumentBrowserExpanded ? BrowserView(widget.host) : presetBrowserExpanded ? PresetsView(widget.host) : variableViewVisible ? widget.host.vars : Container(),
+                        )
+                    );
                   } else {
                     return const SizedBox(width: 0, height: 0);
                   }
-                });
-              })
+                })
             ]))));
   }
 }
@@ -516,14 +508,14 @@ class _ExtendedBar extends State<Bar> {
                               selected = -1;
                               expanded = !expanded;
                             });
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ])),
-        ),
+                          }
+                        )
+                      )
+                    )
+                  ]
+                )
+              ]))
+        )
       )
     ]);
   }

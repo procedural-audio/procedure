@@ -35,6 +35,8 @@ class Globals {
 
   /* Instruments */
 
+  ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
+
   InstrumentInfo instrument = InstrumentInfo("Untitled Instrument",
       "/home/chase/github/metasampler/content/instruments/Untitled Instrument");
 
@@ -42,8 +44,6 @@ class Globals {
       "Untitled Instrument",
       File(
           "/home/chase/github/metasampler/content/instruments/Untitled Instrument"));
-
-  ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
 
   List<InstrumentInfo> instruments2 = [];
   InstrumentInfo browserInstrument = InstrumentInfo("Untitled Instrument",

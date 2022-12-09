@@ -1,25 +1,10 @@
-import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/views/info.dart';
 
-import 'package:flutter/painting.dart';
-
 import '../host.dart';
-import 'dropdown.dart';
-import 'samples.dart';
-
-import '../main.dart';
 import 'settings.dart';
-
-/*
-
-Browser view element
- - Show: title, rating, downloaded
-
-*/
 
 class BrowserView extends StatefulWidget {
   BrowserView(this.host);
@@ -39,132 +24,115 @@ class _BrowserView extends State<BrowserView> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.fastLinearToSlowEaseIn,
-      child: Container(
-        width: expanded ? 600 : 290,
-        height: 600,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(40, 40, 40, 1.0),
-          border: Border.all(
-            color: const Color.fromRGBO(60, 60, 60, 1.0),
-            width: 2.0
-          ),
-          borderRadius: const BorderRadius.all(Radius.circular(15)),
-        ),
-        child: Stack(
+    return Stack(
+      children: [
+        Column(
           children: [
-            Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(0, 2, 0, 10),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "Instruments",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w300
-                    ),
-                  ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(0, 2, 0, 10),
+              alignment: Alignment.center,
+              child: const Text(
+                "Instruments",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w300
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 26,
-                          decoration: const BoxDecoration(
-                            color: Color.fromRGBO(30, 30, 30, 1.0),
-                            borderRadius: BorderRadius.all(Radius.circular(5))
-                          ),
-                          child: TextField(
-                            maxLines: 1,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                            decoration: const InputDecoration(
-                              fillColor: Color.fromARGB(255, 112, 35, 30),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3)
-                            ),
-                            onChanged: (text) {
-                              setState(() {
-                                searchText = text;
-                              });
-                            }
-                          )
-                        )
-                      ),
-                      IconButton(
-                        iconSize: 16,
-                        padding: const EdgeInsets.all(0),
-                        icon: const Icon(
-                          Icons.info_outline,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-
-                        }
-                      ),
-                    ]
-                  )
-                ),
-                Expanded(
-                  child: ValueListenableBuilder<List<InstrumentInfo>>(
-                    valueListenable: widget.host.globals.instruments,
-                    builder: (context, instruments, w) {
-                      List<InstrumentInfo> filteredInstruments = [];
-
-                      if (searchText == "") {
-                        filteredInstruments = instruments;
-                      } else {
-                        for (var instrument in instruments) {
-                          if (instrument.name.toLowerCase().contains(searchText.toLowerCase()) 
-                          || instrument.description.toLowerCase().contains(searchText.toLowerCase())) {
-                            filteredInstruments.add(instrument);
-                          }
-                        }
-                      }
-
-                      if (filteredInstruments.isEmpty) {
-                        return Container();
-                      }
-
-                      return GridView.builder(
-                        controller: controller,
-                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 300,
-                          childAspectRatio: 2.5,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 15
-                        ),
-                        itemCount: filteredInstruments.length,
-                        itemBuilder: (BuildContext ctx, index) {
-                          return BrowserViewElement(
-                            index: index,
-                            info: filteredInstruments[index],
-                            selectedIndex: selectedIndex,
-                          );
-                        }
-                      );
-                    },
-                  )
-                )
-              ]
+              ),
             ),
-            InfoView(
-              widget.host,
-              index: selectedIndex,
-              width: expanded ? 600 : 500,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 26,
+                      decoration: const BoxDecoration(
+                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                        borderRadius: BorderRadius.all(Radius.circular(5))
+                      ),
+                      child: TextField(
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        decoration: const InputDecoration(
+                          fillColor: Color.fromARGB(255, 112, 35, 30),
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3)
+                        ),
+                        onChanged: (text) {
+                          setState(() {
+                            searchText = text;
+                          });
+                        }
+                      )
+                    )
+                  ),
+                  IconButton(
+                    iconSize: 16,
+                    padding: const EdgeInsets.all(0),
+                    icon: const Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+
+                    }
+                  ),
+                ]
+              )
+            ),
+            Expanded(
+              child: ValueListenableBuilder<List<InstrumentInfo>>(
+                valueListenable: widget.host.globals.instruments,
+                builder: (context, instruments, w) {
+                  List<InstrumentInfo> filteredInstruments = [];
+
+                  if (searchText == "") {
+                    filteredInstruments = instruments;
+                  } else {
+                    for (var instrument in instruments) {
+                      if (instrument.name.toLowerCase().contains(searchText.toLowerCase()) 
+                      || instrument.description.toLowerCase().contains(searchText.toLowerCase())) {
+                        filteredInstruments.add(instrument);
+                      }
+                    }
+                  }
+
+                  if (filteredInstruments.isEmpty) {
+                    return Container();
+                  }
+
+                  return GridView.builder(
+                    controller: controller,
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 300,
+                      childAspectRatio: 2.5,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 15
+                    ),
+                    itemCount: filteredInstruments.length,
+                    itemBuilder: (BuildContext ctx, index) {
+                      return BrowserViewElement(
+                        index: index,
+                        info: filteredInstruments[index],
+                        selectedIndex: selectedIndex,
+                      );
+                    }
+                  );
+                },
+              )
             )
           ]
+        ),
+        InfoView(
+          widget.host,
+          index: selectedIndex,
+          width: expanded ? 600 : 500,
         )
-      )
+      ]
     );
   }
 }

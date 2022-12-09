@@ -11,7 +11,6 @@ class InstrumentView extends StatefulWidget {
     tree = UITree(host);
   }
 
-  // final editing = ValueNotifier(false);
   Host host;
   late UITree tree;
 
