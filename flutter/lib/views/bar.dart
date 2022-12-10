@@ -182,7 +182,7 @@ class _Bar extends State<Bar> {
                         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                         child: Container(
                           width: barExpanded ? 710 : 525,
-                          height: 700,
+                          height: 600,
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: const Color.fromRGBO(40, 40, 40, 1.0),

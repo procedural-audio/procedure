@@ -130,7 +130,6 @@ class _BrowserView extends State<BrowserView> {
         InfoView(
           widget.host,
           index: selectedIndex,
-          width: expanded ? 600 : 500,
         )
       ]
     );
@@ -138,12 +137,11 @@ class _BrowserView extends State<BrowserView> {
 }
 
 class InfoView extends StatefulWidget {
-  InfoView(this.host, {required this.index, required this.width});
+  InfoView(this.host, {required this.index});
 
   Host host;
 
   ValueNotifier<int> index;
-  double width;
 
   @override
   State<InfoView> createState() => _InfoView();
@@ -157,94 +155,145 @@ class _InfoView extends State<InfoView> {
   
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: widget.index,
-      builder: (context, index, w) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
 
-        if (index >= 0 && index < widget.host.globals.instruments.value.length) {
-          name = widget.host.globals.instruments.value[index].name;
-          description = widget.host.globals.instruments.value[index].description;
-        }
+        return ValueListenableBuilder<int>(
+          valueListenable: widget.index,
+          builder: (context, index, w) {
+            if (index >= 0) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                // STUFF HERE?
+                color: const Color.fromRGBO(40, 40, 40, 1.0),
+              );
+            } else {
+              return const SizedBox(
+                width: 0,
+                height: 0,
+              );
+            }
+          }
+        );
+      }
+    );
+  }
+}
 
-        return AnimatedPositioned(
-          right: widget.index.value < 0 ? -widget.width : 0,
-          curve: Curves.fastLinearToSlowEaseIn,
-          duration: const Duration(milliseconds: 500),
-          child: Container(
-            width: widget.width,
-            height: 600,
-            color: const Color.fromRGBO(40, 40, 40, 1.0),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 15,
-                  top: -5,
-                  child: IconButton(
-                    iconSize: 30,
-                    padding: const EdgeInsets.all(0),
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      widget.index.value = -1;
-                    },
-                  ),
-                ),
-                Column(
+/*class InfoView extends StatefulWidget {
+  InfoView(this.host, {required this.index});
+
+  Host host;
+
+  ValueNotifier<int> index;
+
+  @override
+  State<InfoView> createState() => _InfoView();
+}
+
+class _InfoView extends State<InfoView> {
+  bool mouseOver = false;
+
+  var name = "";
+  var description = "";
+  
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+
+        return ValueListenableBuilder<int>(
+          valueListenable: widget.index,
+          builder: (context, index, w) {
+
+            if (index >= 0 && index < widget.host.globals.instruments.value.length) {
+              name = widget.host.globals.instruments.value[index].name;
+              description = widget.host.globals.instruments.value[index].description;
+            }
+
+            return AnimatedPositioned(
+              right: widget.index.value < 0 ? -width: 0,
+              curve: Curves.fastLinearToSlowEaseIn,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                width: width,
+                height: 600,
+                color: const Color.fromRGBO(40, 40, 40, 1.0),
+                child: Stack(
                   children: [
-                    Container(
-                      height: 20,
-                      alignment: Alignment.center,
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
+                    Positioned(
+                      left: 15,
+                      top: -5,
+                      child: IconButton(
+                        iconSize: 30,
+                        padding: const EdgeInsets.all(0),
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Colors.grey,
                         ),
+                        onPressed: () {
+                          widget.index.value = -1;
+                        },
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      height: 200,
-                      width: widget.width,
-                      alignment: Alignment.center,
-                      color: const Color.fromRGBO(30, 30, 30, 1.0),
-                      child: Text(
-                        description,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w300
+                    Column(
+                      children: [
+                        Container(
+                          height: 20,
+                          alignment: Alignment.center,
+                          child: Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        var path = widget.host.globals.instruments.value[index].path;
-                        print("Loading instrument " + path);
-                        widget.host.loadInstrument(path);
-                      },
-                      icon: const Icon(Icons.download),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        print("Not implemented");
-                      },
-                      icon: const Icon(Icons.delete),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Container(
+                          height: 200,
+                          width: width,
+                          alignment: Alignment.center,
+                          color: const Color.fromRGBO(30, 30, 30, 1.0),
+                          child: Text(
+                            description,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w300
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            var path = widget.host.globals.instruments.value[index].path;
+                            print("Loading instrument " + path);
+                            widget.host.loadInstrument(path);
+                          },
+                          icon: const Icon(Icons.download),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            print("Not implemented");
+                          },
+                          icon: const Icon(Icons.delete),
+                        )
+                      ]
                     )
-                  ],
+                  ]
                 )
-              ]
-            )
-          )
+              )
+            );
+          },
         );
       },
     );
   }
-}
+}*/
 
 class BrowserViewElement extends StatefulWidget {
   BrowserViewElement({required this.index, required this.info, required this.selectedIndex});
