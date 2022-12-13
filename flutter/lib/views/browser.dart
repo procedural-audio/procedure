@@ -24,7 +24,9 @@ class _BrowserView extends State<BrowserView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Stack(
       children: [
         Column(
           children: [
@@ -132,6 +134,7 @@ class _BrowserView extends State<BrowserView> {
           index: selectedIndex,
         )
       ]
+      )
     );
   }
 }

@@ -361,32 +361,30 @@ class _PresetsView extends State<PresetsView> {
 
         return Stack(
           children: [
-            Container(
-              // width: 400,
-              // height: 300,
-              decoration: const BoxDecoration(
-                color: Color.fromRGBO(50, 50, 50, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-              ),
-              child: Row(
+              Row(
                 children: [
                   Expanded(
-                    child: ListView(
-                      children: dirWidgets,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: ListView(
+                        children: dirWidgets,
+                      )
                     )
                   ),
                   Container(
-                    width: 4,
+                    width: 2,
                     color: const Color.fromRGBO(60, 60, 60, 1.0),
                   ),
                   Expanded(
-                    child: ListView(
-                      children: presetWidgets,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: ListView(
+                        children: presetWidgets,
+                      )
                     )
                   )
                 ],
               ),
-            ),
             Positioned(
               right: 0,
               bottom: 0,
@@ -510,22 +508,10 @@ class PresetDirectoryWidget extends StatefulWidget {
       : super(key: UniqueKey());
 
   @override
-  State<PresetDirectoryWidget> createState() => _PresetDirectoryWidgetState(
-      presetDir: presetDir, onTap: onTap, selected: selected, locked: locked);
+  State<PresetDirectoryWidget> createState() => _PresetDirectoryWidgetState();
 }
 
 class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
-  final PresetDirectory presetDir;
-  final Function() onTap;
-  final String selected;
-  final bool locked;
-
-  _PresetDirectoryWidgetState(
-      {required this.presetDir,
-      required this.onTap,
-      required this.selected,
-      required this.locked});
-
   bool hovering = false;
   bool editing = false;
   bool editFailed = false;
@@ -548,32 +534,56 @@ class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
         },
         child: GestureDetector(
           onTap: () {
-            onTap();
+            widget.onTap();
           },
           behavior: HitTestBehavior.deferToChild,
-          child: Stack(children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-              height: 44,
-              child: Stack(children: [
-                Align(
-                  alignment: Alignment.centerLeft,
+          child: DragTarget(
+            onWillAccept: (data) {
+              if (data.runtimeType == String) {
+                return true;
+              } else {
+                return false;
+              }
+            },
+            onAccept: (data) {
+              movePreset(data as String, widget.presetDir.name);
 
-                  /* Static name text */
-                  child: !editing
-                      ? Text(
-                          presetDir.name,
+              widget.notifier.notifyListeners();
+            },
+            builder: (context, List<Object?> candidateData, rejectedData) {
+              return Container(
+                height: 35,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(5)),
+                  color: widget.selected == widget.presetDir.name
+                      ? const Color.fromRGBO(80, 80, 80, 1.0)
+                      : (hovering ? const Color.fromRGBO(70, 70, 70, 1.0): const Color.fromRGBO(60, 60, 60, 1.0)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 40,
+                      child: Icon(
+                        Icons.folder,
+                        color: Colors.blueAccent,
+                        size: 18)),
+                    Expanded(
+                      child: Visibility(
+                        visible: !editing,
+                        child: Text(
+                          widget.presetDir.name,
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300),
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400),
                         )
-                      :
-
-                      /* Editable name text */
-                      Container(
-                          width: 120,
-                          height: 26,
+                      )
+                    ),
+                    Expanded(
+                      child: Visibility(
+                        visible: editing,
+                        child: Container(
+                          height: 24,
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             color: MyTheme.grey50,
@@ -589,7 +599,7 @@ class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
                                 editingText = text;
                               },
                               onSubmitted: (text) {
-                                if (renameDirectory(presetDir.name, text)) {
+                                if (renameDirectory(widget.presetDir.name, text)) {
                                   setState(() {
                                     editing = false;
                                     editFailed = false;
@@ -608,109 +618,174 @@ class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
                               maxLines: 1,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: Colors.white,
-                                  decoration: TextDecoration.none)),
-                        ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: !editing
-                      ? Visibility(
-                          visible: hovering && !locked,
-                          child: Container(
-                            width: 80,
-                            child: Row(children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.white,
-                                iconSize: 16,
-                                onPressed: () {
-                                  setState(() {
-                                    editing = true;
-                                    editingText = presetDir.name;
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                color: Colors.white,
-                                iconSize: 16,
-                                onPressed: () {
-                                  removeDirectory(presetDir.name);
-
-                                  widget.notifier.notifyListeners();
-                                },
-                              )
-                            ]),
-                          ))
-                      : Container(
-                          width: 80,
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.save),
-                                color: Colors.white,
-                                iconSize: 16,
-                                onPressed: () {
-                                  if (renameDirectory(presetDir.name, editingText)) {
-                                    setState(() {
-                                      editing = false;
-                                      editFailed = false;
-                                    });
-                                  } else {
-                                    setState(() {
-                                      editFailed = true;
-                                    });
-                                  }
-
-                                  widget.notifier.notifyListeners();
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.cancel),
-                                color: Colors.white,
-                                iconSize: 16,
-                                onPressed: () {
-                                  setState(() {
-                                    editing = false;
-                                    editFailed = false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                                  decoration: TextDecoration.none))))),
+                  ]
                 )
-              ]),
-              decoration: BoxDecoration(
-                color: selected == presetDir.name
-                    ? MyTheme.grey70
-                    : (hovering ? MyTheme.grey60 : MyTheme.grey50),
-              ),
-            ),
-            Container(
-              height: 44,
-              width: 120,
-              child: DragTarget(
-                builder: (context, List<Object?> candidateData, rejectedData) {
-                  return Container();
-                },
-                onWillAccept: (data) {
-                  if (data.runtimeType == String) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                },
-                onAccept: (data) {
-                  movePreset(data as String, presetDir.name);
+              );
+              /*return Stack(children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                  height: 35,
+                  child: Stack(children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
 
-                  widget.notifier.notifyListeners();
-                },
-              ),
-            ),
-          ]),
+                      /* Static name text */
+                      child: !editing
+                          ? Text(
+                              widget.presetDir.name,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w300),
+                            )
+                          :
+
+                          /* Editable name text */
+                          Expanded(
+                            child: Container(
+                              width: 240,
+                              height: 24,
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: MyTheme.grey50,
+                                border: Border.all(
+                                  color: editFailed ? Colors.red : Colors.grey,
+                                  width: 1,
+                                ),
+                              ),
+                              child: EditableText(
+                                  controller: TextEditingController.fromValue(
+                                      TextEditingValue(text: editingText)),
+                                  onChanged: (text) {
+                                    editingText = text;
+                                  },
+                                  onSubmitted: (text) {
+                                    if (renameDirectory(widget.presetDir.name, text)) {
+                                      setState(() {
+                                        editing = false;
+                                        editFailed = false;
+                                      });
+                                    } else {
+                                      setState(() {
+                                        editFailed = true;
+                                      });
+                                    }
+
+                                    widget.notifier.notifyListeners();
+                                  },
+                                  focusNode: FocusNode(),
+                                  cursorColor: Colors.blue,
+                                  backgroundCursorColor: Colors.blue,
+                                  maxLines: 1,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      decoration: TextDecoration.none))))),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: !editing
+                          ? Visibility(
+                              visible: hovering && !widget.locked,
+                              child: Container(
+                                width: 80,
+                                child: Row(children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    color: Colors.white,
+                                    iconSize: 16,
+                                    onPressed: () {
+                                      setState(() {
+                                        editing = true;
+                                        editingText = widget.presetDir.name;
+                                      });
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    color: Colors.white,
+                                    iconSize: 16,
+                                    onPressed: () {
+                                      removeDirectory(widget.presetDir.name);
+
+                                      widget.notifier.notifyListeners();
+                                    },
+                                  )
+                                ]),
+                              ))
+                          : Container(
+                              width: 80,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.save),
+                                    color: Colors.white,
+                                    iconSize: 16,
+                                    onPressed: () {
+                                      if (renameDirectory(widget.presetDir.name, editingText)) {
+                                        setState(() {
+                                          editing = false;
+                                          editFailed = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          editFailed = true;
+                                        });
+                                      }
+
+                                      widget.notifier.notifyListeners();
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.cancel),
+                                    color: Colors.white,
+                                    iconSize: 16,
+                                    onPressed: () {
+                                      setState(() {
+                                        editing = false;
+                                        editFailed = false;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                    )
+                  ]),
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
+                    color: widget.selected == widget.presetDir.name
+                        ? const Color.fromRGBO(80, 80, 80, 1.0)
+                        : (hovering ? const Color.fromRGBO(70, 70, 70, 1.0): const Color.fromRGBO(60, 60, 60, 1.0)),
+                  ),
+                ),
+                Container(
+                  height: 44,
+                  width: 120,
+                  child: DragTarget(
+                    builder: (context, List<Object?> candidateData, rejectedData) {
+                      return Container();
+                    },
+                    onWillAccept: (data) {
+                      if (data.runtimeType == String) {
+                        return true;
+                      } else {
+                        return false;
+                      }
+                    },
+                    onAccept: (data) {
+                      movePreset(data as String, widget.presetDir.name);
+
+                      widget.notifier.notifyListeners();
+                    },
+                  ),
+                ),
+              ]);*/
+            },
+          ),
         ));
   }
 }
@@ -1300,12 +1375,12 @@ class _PresetEntryWidgetState extends State<PresetEntryWidget> {
           onTapDown: (event) {
             /*var time = DateTime.now().millisecondsSinceEpoch;
 
-          if (time - lastTapTime > 500) {
-            lastTapTime = time;
-            //onTap(); // Single tap
-          } else {
-            loadPreset(info.file);
-          }*/
+            if (time - lastTapTime > 500) {
+              lastTapTime = time;
+              //onTap(); // Single tap
+            } else {
+              loadPreset(info.file);
+            }*/
           },
           onDoubleTap: () {
             widget.host.loadPreset(widget.info.file);
@@ -1390,3 +1465,291 @@ class _PresetAddWidgetState extends State<PresetAddWidget> {
     );
   }
 }
+
+/*class PresetGroup extends StatefulWidget {
+  PresetGroup(
+      {required this.host,
+      required this.name,
+      required this.presets,
+      required this.index})
+      : super(key: UniqueKey());
+  String name;
+  List<PresetEntry> presets;
+  int index;
+  Host host;
+
+  @override
+  _PresetGroup createState() => _PresetGroup();
+}
+
+class _PresetGroup extends State<PresetGroup> {
+  bool hovering = false;
+  bool expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+        child: Column(children: [
+          Container(
+              height: 35,
+              decoration: BoxDecoration(
+                  color: hovering
+                      ? const Color.fromRGBO(70, 70, 70, 1.0)
+                      : const Color.fromRGBO(60, 60, 60, 1.0),
+                  borderRadius: const BorderRadius.all(Radius.circular(5))),
+              child: MouseRegion(
+                  onEnter: (e) {
+                    setState(() {
+                      hovering = true;
+                    });
+                  },
+                  onExit: (e) {
+                    setState(() {
+                      hovering = false;
+                    });
+                  },
+                  child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          expanded = !expanded;
+                        });
+                      },
+                      child: Row(children: [
+                        const SizedBox(
+                            width: 40,
+                            child: Icon(
+                              Icons.folder,
+                              color: Colors.blueAccent,
+                              size: 18,
+                            )),
+                        Expanded(
+                            child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child: Text(
+                                  widget.name,
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 15),
+                                ))),
+                        SizedBox(
+                            width: 40,
+                            child: ReorderableDragStartListener(
+                                index: widget.index,
+                                child: const Icon(
+                                  Icons.drag_handle,
+                                  color: Colors.grey,
+                                )))
+                      ])))),
+          AnimatedSize(
+              curve: Curves.fastLinearToSlowEaseIn,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                  height: expanded ? null : 0,
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: const Color.fromRGBO(60, 60, 60, 1.0),
+                      borderRadius: expanded
+                          ? const BorderRadius.vertical(
+                              bottom: Radius.circular(5))
+                          : const BorderRadius.all(Radius.circular(5))),
+                  child: SizedBox(
+                    height: widget.presets.length * 30 + 10,
+                    child: ReorderableListView(
+                        buildDefaultDragHandles: false,
+                        onReorder: (oldIndex, newIndex) {
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+
+                          var element = widget.presets.removeAt(oldIndex);
+                          if (newIndex >= widget.presets.length) {
+                            widget.presets.add(element);
+                          } else {
+                            widget.presets.insert(newIndex, element);
+                          }
+
+                          for (int i = 0; i < widget.presets.length; i++) {
+                            widget.presets[i].listIndex = i;
+                          }
+                        },
+                        children: widget.presets),
+                  )))
+        ]));
+  }
+}
+
+class PresetEntry extends StatefulWidget {
+  PresetEntry(
+      {required this.host,
+      required this.id,
+      required this.name,
+      required this.notifier,
+      required this.selectedVar,
+      required this.listIndex})
+      : super(key: UniqueKey());
+
+  Host host;
+  int id;
+  ValueNotifier<String> name;
+  ValueNotifier<dynamic> notifier;
+  ValueNotifier<PresetEntry?> selectedVar;
+  int listIndex;
+
+  @override
+  _PresetEntry createState() => _PresetEntry();
+}
+
+class _PresetEntry extends State<PresetEntry> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    String typeName = "Unknown";
+
+    if (widget.notifier.value.runtimeType == double) {
+      typeName = "double";
+    } else if (widget.notifier.value.runtimeType == bool) {
+      typeName = "bool";
+    }
+
+    var w = ValueListenableBuilder<PresetEntry?>(
+        valueListenable: widget.selectedVar,
+        builder: (context, selectedVar, child) {
+          return Container(
+            height: 35,
+            width: 300,
+            decoration: BoxDecoration(
+                color: selectedVar == widget
+                    ? (hovering
+                        ? const Color.fromRGBO(90, 90, 90, 1.0)
+                        : const Color.fromRGBO(80, 80, 80, 1.0))
+                    : (hovering
+                        ? const Color.fromRGBO(70, 70, 70, 1.0)
+                        : const Color.fromRGBO(60, 60, 60, 1.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(5))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                  ),
+                ),
+                Expanded(
+                    child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: ValueListenableBuilder<String>(
+                            valueListenable: widget.name,
+                            builder: ((context, name, child) {
+                              return Text(name,
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.white));
+                            })))),
+                Container(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: ValueListenableBuilder(
+                        valueListenable: widget.notifier,
+                        builder: (context, value, child) {
+                          return Text(formatValue(value),
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.normal,
+                                  fontWeight: FontWeight.w300));
+                        })),
+                ReorderableDragStartListener(
+                    index: widget.listIndex,
+                    child: const SizedBox(
+                      width: 40,
+                      child: Icon(
+                        Icons.drag_handle,
+                        color: Colors.grey,
+                      ),
+                    ))
+              ],
+            ),
+          );
+        });
+
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(5, 2, 5, 0),
+        child: MouseRegion(
+            onEnter: (e) {
+              setState(() {
+                hovering = true;
+              });
+            },
+            onExit: (e) {
+              setState(() {
+                hovering = false;
+              });
+            },
+            child: GestureDetector(
+                onTap: () {
+                  if (widget == widget.selectedVar.value) {
+                    widget.selectedVar.value = null;
+                  } else {
+                    widget.selectedVar.value = widget;
+                  }
+                },
+                child: Draggable<PresetEntry>(
+                    data: widget,
+                    feedback: Container(
+                        width: 180,
+                        height: 30,
+                        decoration: const BoxDecoration(
+                            color: Color.fromRGBO(80, 80, 80, 0.3),
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                  child: Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                        color: Colors.red.withOpacity(0.5),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(5))),
+                                  )),
+                              Expanded(
+                                  child: Container(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          10, 0, 10, 0),
+                                      child: ValueListenableBuilder<String>(
+                                          valueListenable: widget.name,
+                                          builder: ((context, name, child) {
+                                            return Text(name,
+                                                style: const TextStyle(
+                                                    decoration:
+                                                        TextDecoration.none,
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 13,
+                                                    color: Color.fromRGBO(
+                                                        255, 255, 255, 0.5)));
+                                          })))),
+                            ])),
+                    childWhenDragging: const SizedBox(width: 0, height: 0),
+                    child: w))));
+  }
+}
+
+String formatValue(dynamic value) {
+  var text = value.toString();
+
+  if (value is double) {
+    text = value.toStringAsFixed(2);
+  }
+
+  return text;
+}*/

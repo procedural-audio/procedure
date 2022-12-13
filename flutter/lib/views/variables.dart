@@ -194,7 +194,10 @@ class _Vars extends State<Vars> {
                                 );
                               } else {
                                 return SingleChildScrollView(
-                                    child: Column(children: [
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
                                   const Padding(
                                       padding: EdgeInsets.all(10),
                                       child: Text(
@@ -621,7 +624,7 @@ class _Var extends State<Var> {
         valueListenable: widget.selectedVar,
         builder: (context, selectedVar, child) {
           return Container(
-            height: 30,
+            height: 35,
             width: 300,
             decoration: BoxDecoration(
                 color: selectedVar == widget
@@ -654,7 +657,7 @@ class _Var extends State<Var> {
                             builder: ((context, name, child) {
                               return Text(name,
                                   style: const TextStyle(
-                                      fontSize: 13, color: Colors.white));
+                                      fontSize: 14, color: Colors.white));
                             })))),
                 Container(
                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -663,7 +666,7 @@ class _Var extends State<Var> {
                         builder: (context, value, child) {
                           return Text(formatValue(value),
                               style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   color: Colors.white,
                                   fontStyle: FontStyle.normal,
                                   fontWeight: FontWeight.w300));
