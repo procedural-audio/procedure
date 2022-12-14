@@ -110,14 +110,6 @@ impl Module for SawModule {
             );
 
             buffer.right.copy_from(&buffer.left);
-
-            for i in 0..buffer.left.len() {
-                if i % 16 == 0 {
-                    print!("{:.2} ", buffer.left[i]);
-                }
-            }
-
-            println!("Length is {}", buffer.left.len());
         }
     }
 }

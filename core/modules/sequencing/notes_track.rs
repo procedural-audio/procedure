@@ -9,7 +9,7 @@ pub struct NoteEvent {
 
 pub struct NotesTrack {
     notes: Vec<NoteEvent>,
-    beats: usize,
+    length: usize,
     beat: f64,
     max_voice: u32,
     queue: Vec<(u32, Event)>,
@@ -38,7 +38,7 @@ impl Module for NotesTrack {
     fn new() -> Self {
         Self {
             notes: Vec::with_capacity(256),
-            beats: 8 * 4,
+            length: 8 * 4,
             beat: 0.0,
             queue: Vec::with_capacity(64),
             output: Vec::with_capacity(64),
@@ -58,7 +58,7 @@ impl Module for NotesTrack {
             padding: (10, 35, 10, 10),
             child: _NotesTrack {
                 notes: &mut self.notes,
-                beats: &mut self.beats,
+                beats: &mut self.length,
                 beat: &self.beat,
             },
         });
@@ -69,12 +69,12 @@ impl Module for NotesTrack {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if *voice == 0 {
             let time = inputs.time[0];
-            self.beat = time.cycle(self.beats as f64).start();
+            self.beat = time.cycle(self.length as f64).start();
 
             self.queue.clear();
 
             for event in &self.notes {
-                if time.cycle(self.beats as f64).contains(event.start) {
+                if time.cycle(self.length as f64).contains(event.start) {
                     self.queue.push((
                         0,
                         Event::NoteOn {
@@ -86,7 +86,7 @@ impl Module for NotesTrack {
                 }
 
                 if time
-                    .cycle(self.beats as f64)
+                    .cycle(self.length as f64)
                     .contains(event.start + event.length)
                 {
                     self.queue.push((0, Event::NoteOff { id: event.note.id }));

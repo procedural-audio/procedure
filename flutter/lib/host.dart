@@ -566,6 +566,7 @@ class Host extends ChangeNotifier {
     for (var dir in dirs) {
       final File file = File(dir.path + "/info/info.json");
       if (await file.exists()) {
+        print("Parsing " + file.path);
         var json = jsonDecode(await file.readAsString());
         instruments.add(InstrumentInfo.fromJson(json, dir.path));
       } else {

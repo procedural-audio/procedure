@@ -48,6 +48,7 @@ public:
 
     void audioDeviceAboutToStart(AudioIODevice *device) {
         puts("Audio device about to start");
+        processor.prepareToPlay(device->getCurrentSampleRate(), device->getCurrentBufferSizeSamples());
     }
 
     void audioDeviceIOCallback(const float **inputChannelData, int numInputChannels, float **outputChannelData, int numOutputChannels, int numSamples) {

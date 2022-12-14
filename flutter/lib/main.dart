@@ -38,12 +38,12 @@ class Globals {
   ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
 
   InstrumentInfo instrument = InstrumentInfo("Untitled Instrument",
-      "/home/chase/github/metasampler/content/instruments/Untitled Instrument");
+      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument");
 
   PresetInfo preset = PresetInfo(
       "Untitled Instrument",
       File(
-          "/home/chase/github/metasampler/content/instruments/Untitled Instrument"));
+          "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
 
   List<InstrumentInfo> instruments2 = [];
   InstrumentInfo browserInstrument = InstrumentInfo("Untitled Instrument",
