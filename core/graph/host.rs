@@ -63,7 +63,6 @@ impl Host {
         self.graph.prepare(sample_rate, block_size);
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
-        println!("DELTA BEATS IS {}", delta_beats);
         self.time = Time::from(0.0, delta_beats);
     }
 

@@ -1,6 +1,21 @@
 use pa_dsp::*;
 use crate::*;
 
+pub struct NotePlayer {
+    max_voice: u32,
+    live: Vec<(u32, u32)>, // (Voice ID, Note ID)
+    queued: Vec<(u32, Note)> // (Note ID, Note)
+}
+
+impl NotePlayer {
+    fn play_note(id: u32, note: Note) {
+    }
+
+    fn stop_note(id: u32) {
+
+    }
+}
+
 pub struct NoteEvent {
     pub start: f64,  // Start in beats
     pub length: f64, // Length in beats
