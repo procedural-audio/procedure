@@ -15,7 +15,7 @@ pub struct SineModule {
 pub struct SineModuleVoice {
     sine: Sine,
     active: bool,
-    id: u16,
+    id: Id,
 }
 
 impl Module for SineModule {
@@ -46,7 +46,7 @@ impl Module for SineModule {
         Self::Voice {
             sine: Sine::new(),
             active: false,
-            id: 0,
+            id: Id::new(),
         }
     }
 
@@ -66,7 +66,7 @@ impl Module for SineModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = 0;
+        voice.id = Id::new();
         voice.sine.init(sample_rate as i32);
     }
 

@@ -10,7 +10,7 @@ pub struct SawModule {
 pub struct SawModuleVoice {
     saw: Saw,
     active: bool,
-    id: u16,
+    id: Id,
 }
 
 impl Module for SawModule {
@@ -44,7 +44,7 @@ impl Module for SawModule {
         Self::Voice {
             saw: Saw::new(),
             active: false,
-            id: 0,
+            id: Id::new(),
         }
     }
 
@@ -71,7 +71,7 @@ impl Module for SawModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = 0;
+        voice.id = Id::new();
         voice.saw.init(sample_rate as i32);
     }
 

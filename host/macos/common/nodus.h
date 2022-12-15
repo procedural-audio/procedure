@@ -3,17 +3,15 @@ enum class EventTag: uint32_t {
     NoteOff,
     Pitch,
     Pressure,
-    Timbre,
     Controller,
     ProgramChange,
     None
 };
 
 struct Note {
-    uint16_t id;
+    uint64_t id;
     float pitch;
     float pressure;
-    float timbre;
 };
 
 struct NoteOn {
@@ -22,31 +20,26 @@ struct NoteOn {
 };
 
 struct NoteOff {
-    uint16_t id;
+    uint64_t id;
 };
 
 struct Pitch {
-    uint16_t id;
+    uint64_t id;
     float freq;
 };
 
 struct Pressure {
-    uint16_t id;
+    uint64_t id;
     float pressure;
 };
 
-struct Timbre {
-    uint16_t id;
-    float timbre;
-};
-
 struct Controller {
-    uint16_t id;
+    uint64_t id;
     float value;
 };
 
 struct ProgramChange {
-    uint16_t id;
+    uint64_t id;
     uint8_t value;
 };
 
@@ -60,7 +53,6 @@ union EventValue {
     NoteOff noteOff;
     Pitch pitch;
     Pressure pressure;
-    Timbre timbre;
     Controller controller;
     ProgramChange programChange;
 };

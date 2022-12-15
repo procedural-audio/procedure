@@ -15,7 +15,7 @@ pub struct SquareModule {
 pub struct SquareModuleVoice {
     square: Square,
     active: bool,
-    id: u16,
+    id: Id,
 }
 
 impl Module for SquareModule {
@@ -46,7 +46,7 @@ impl Module for SquareModule {
         Self::Voice {
             square: Square::new(),
             active: false,
-            id: 0,
+            id: Id::new(),
         }
     }
 
@@ -66,7 +66,7 @@ impl Module for SquareModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = 0;
+        voice.id = Id::new();
         voice.square.init(sample_rate as i32);
     }
 

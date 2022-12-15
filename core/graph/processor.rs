@@ -35,8 +35,8 @@ enum CopyAction<T> {
         should_copy: bool,
     },
     TimeCopy {
-        src: Ptr<Bus<Box<Time>>>,
-        dest: Ptr<Bus<Box<Time>>>,
+        src: Ptr<Bus<Box<TimeRange>>>,
+        dest: Ptr<Bus<Box<TimeRange>>>,
         src_index: usize,
         dest_index: usize,
         should_copy: bool,
@@ -60,8 +60,8 @@ pub struct ProcessAction {
     events_outputs: Ptr<Bus<NoteBuffer>>,
     control_inputs: Ptr<Bus<Box<f32>>>,
     control_outputs: Ptr<Bus<Box<f32>>>,
-    time_inputs: Ptr<Bus<Box<Time>>>,
-    time_outputs: Ptr<Bus<Box<Time>>>,
+    time_inputs: Ptr<Bus<Box<TimeRange>>>,
+    time_outputs: Ptr<Bus<Box<TimeRange>>>,
     copy_actions: Vec<CopyAction<Stereo>>,
 }
 
@@ -93,7 +93,7 @@ pub struct GraphProcessor {
     pub audio_buffers: Vec<Box<Bus<Stereo>>>,
     pub events_buffers: Vec<Box<Bus<NoteBuffer>>>,
     pub control_buffers: Vec<Box<Bus<Box<f32>>>>,
-    pub time_buffers: Vec<Box<Bus<Box<Time>>>>,
+    pub time_buffers: Vec<Box<Bus<Box<TimeRange>>>>,
 
     pub nodes: Vec<Rc<Node>>,
     pub block_size: usize,
@@ -146,7 +146,7 @@ impl GraphProcessor {
         let mut audio_channels_buffers: Vec<Box<Bus<Stereo>>> = Vec::new();
         let mut events_channels_buffers: Vec<Box<Bus<NoteBuffer>>> = Vec::new();
         let mut control_channels_buffers: Vec<Box<Bus<Box<f32>>>> = Vec::new();
-        let mut time_channels_buffers: Vec<Box<Bus<Box<Time>>>> = Vec::new();
+        let mut time_channels_buffers: Vec<Box<Bus<Box<TimeRange>>>> = Vec::new();
         let mut process_actions: Vec<ProcessAction> = Vec::new();
 
         /* Allocate channel buffers */
@@ -281,7 +281,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_input_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
+                    time_input_bus.add_channel(Channel::new(Box::new(TimeRange::from(0.0, 0.0)), connected));
                 }
 
                 let mut time_output_bus = Box::new(Bus::new());
@@ -294,7 +294,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_output_bus.add_channel(Channel::new(Box::new(Time::from(0.0, 0.0)), connected));
+                    time_output_bus.add_channel(Channel::new(Box::new(TimeRange::from(0.0, 0.0)), connected));
                 }
 
                 unsafe {
@@ -645,7 +645,7 @@ impl GraphProcessor {
 
     pub fn process(
         &mut self,
-        time: &Time,
+        time: &TimeRange,
         audio: &mut [AudioBuffer],
         events: &mut NoteBuffer,
     ) {

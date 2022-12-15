@@ -189,7 +189,6 @@ impl Module for Arpeggiator {
                 Event::NoteOff { id } => self.arp.note_off(*id),
                 Event::Pitch { id, freq } => self.arp.note_pitch(*id, *freq),
                 Event::Pressure { id, pressure } => self.arp.note_pressure(*id, *pressure),
-                Event::Timbre { id, timbre } => self.arp.note_timbre(*id, *timbre),
                 _ => (),
             }
         }
@@ -300,11 +299,11 @@ impl Arp {
         self.inputs.push(note);
     }
 
-    pub fn note_off(&mut self, id: u16) {
+    pub fn note_off(&mut self, id: Id) {
         self.inputs.retain(|n| n.id != id)
     }
 
-    pub fn note_pitch(&mut self, id: u16, pitch: f32) {
+    pub fn note_pitch(&mut self, id: Id, pitch: f32) {
         for note in &mut self.inputs {
             if note.id == id {
                 note.pitch = pitch;
@@ -312,18 +311,10 @@ impl Arp {
         }
     }
 
-    pub fn note_pressure(&mut self, id: u16, pressure: f32) {
+    pub fn note_pressure(&mut self, id: Id, pressure: f32) {
         for note in &mut self.inputs {
             if note.id == id {
                 note.pressure = pressure;
-            }
-        }
-    }
-
-    pub fn note_timbre(&mut self, id: u16, timbre: f32) {
-        for note in &mut self.inputs {
-            if note.id == id {
-                note.timbre = timbre;
             }
         }
     }

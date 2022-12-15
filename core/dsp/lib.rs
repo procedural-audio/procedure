@@ -43,17 +43,16 @@ Set of simple user types, set of abstract backend types
 
 pub trait Voice: Source {
     fn play(&mut self);
-    fn note_on(&mut self, id: u16, offset: u16, note: Note, pressure: f32, timbre: f32);
+    fn note_on(&mut self, id: Id, offset: u16, note: Note, pressure: f32);
     fn note_off(&mut self);
 
     fn set_pitch(&mut self, freq: f32);
     fn set_pressure(&mut self, pressure: f32);
-    fn set_timbre(&mut self, timbre: f32);
 
     fn position(&self) -> usize;
 
     fn is_active(&self) -> bool;
-    fn id(&self) -> u16;
+    fn id(&self) -> Id;
 }
 
 pub trait Source {

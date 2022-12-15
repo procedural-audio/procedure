@@ -96,7 +96,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 
     modules.push(("Pitch", create_module::<crate::sequencing::Pitch>));
     modules.push(("Pressure", create_module::<Pressure>));
-    modules.push(("Timbre", create_module::<Timbre>));
 
     // modules.push(("Level Meter", create_module::<LevelMeter>));
 

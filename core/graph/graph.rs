@@ -429,7 +429,7 @@ impl Graph {
 
     pub fn process(
         &mut self,
-        time: &Time,
+        time: &TimeRange,
         audio: &mut [AudioBuffer],
         midi: &mut NoteBuffer,
     ) {

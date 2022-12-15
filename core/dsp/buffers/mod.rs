@@ -18,7 +18,7 @@ pub struct IO {
     pub audio: Bus<Stereo>,
     pub events: Bus<NoteBuffer>,
     pub control: Bus<Box<f32>>,
-    pub time: Bus<Box<Time>>,
+    pub time: Bus<Box<TimeRange>>,
 }
 
 /* Individual Buffer Types */

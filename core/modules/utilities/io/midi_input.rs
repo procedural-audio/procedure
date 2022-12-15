@@ -103,14 +103,6 @@ impl Processor for NoteListener {
                     }
                 }
             }
-            Event::Timbre { id, timbre: _ } => {
-                for voice in &mut self.voices {
-                    if voice.id == id && voice.active {
-                        voice.counter = self.counter;
-                        voice.queued.push(event);
-                    }
-                }
-            }
             Event::Controller { id: _, value: _ } => (),
             Event::ProgramChange { id: _, value: _ } => (),
             Event::None => (),
@@ -127,7 +119,7 @@ impl Processor for NoteListener {
 
 struct EventVoice {
     active: bool,
-    id: u16,
+    id: Id,
     counter: usize,
     queued: Vec<Event>,
 }
@@ -136,7 +128,7 @@ impl EventVoice {
     pub fn new() -> Self {
         Self {
             active: false,
-            id: 0,
+            id: Id::new(),
             counter: 0,
             queued: Vec::with_capacity(16),
         }
@@ -225,7 +217,6 @@ impl Module for MidiInput {
                     println!("Voice {}: Pitch event", voice.index);
                 }
                 Event::Pressure { id: _, pressure: _ } => {}
-                Event::Timbre { id: _, timbre: _ } => {}
                 Event::Controller { id: _, value: _ } => {}
                 Event::ProgramChange { id: _, value: _ } => {}
                 Event::None => {}

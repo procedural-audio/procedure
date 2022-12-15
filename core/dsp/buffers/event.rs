@@ -1,3 +1,7 @@
+use lazy_static::lazy_static;
+
+use crate::Time;
+
 const NOTE_NAMES: [&'static str; 120] = [
     "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0", "C1", "C#1", "D1",
     "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1", "C2", "C#2", "D2", "D#2", "E2", "F2",
@@ -12,35 +16,63 @@ const NOTE_NAMES: [&'static str; 120] = [
 
 // Size is 20 bytes
 
+use std::sync::{Arc, Mutex};
+
+lazy_static!(
+    static ref LAST_ID: Arc<Mutex<u64>> = Arc::new(Mutex::new(0));
+);
+
+#[repr(transparent)]
+#[derive(Copy, Clone, PartialEq)]
+pub struct Id(u64);
+
+impl Id {
+    pub fn new() -> Self {
+        let mut last_id = LAST_ID.lock().unwrap();
+        *last_id = *last_id + 1;
+        return Id(*last_id);
+    }
+}
+
+
 #[derive(Copy, Clone, PartialEq)]
 #[repr(C, u32)]
 pub enum Event {
     NoteOn { note: Note, offset: u16 },
-    NoteOff { id: u16 },
-    Pitch { id: u16, freq: f32 },
-    Pressure { id: u16, pressure: f32 },
-    Timbre { id: u16, timbre: f32 },
-    Controller { id: u16, value: f32 },
-    ProgramChange { id: u16, value: u8 },
+    NoteOff { id: Id },
+    Pitch { id: Id, freq: f32 },
+    Pressure { id: Id, pressure: f32 },
+    Controller { id: Id, value: f32 },
+    ProgramChange { id: Id, value: u8 },
     None,
 }
 
 #[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub struct Note {
-    pub id: u16,
+    pub id: Id,
     pub pitch: f32,
     pub pressure: f32,
-    pub timbre: f32,
+}
+
+#[derive(Copy, Clone)]
+pub struct NoteMessage {
+    pub offset: usize,
+    pub note: Note
+}
+
+#[derive(Copy, Clone)]
+pub struct NoteEvent {
+    pub time: Time,
+    pub note: Event
 }
 
 impl Note {
     pub fn from_pitch(hz: f32) -> Self {
         Self {
-            id: 0,
+            id: Id::new(),
             pitch: hz,
             pressure: 0.5,
-            timbre: 0.5,
         }
     }
 
@@ -54,19 +86,13 @@ impl Note {
         self
     }
 
-    pub fn with_timbre(mut self, timbre: f32) -> Self {
-        self.timbre = timbre;
-        self
-    }
-
     pub fn from_num(num: u32) -> Self {
         let hz = 440.0 * 2.0_f32.powf((num as f32 - 69.0) / 12.0);
 
         Self {
-            id: 0,
+            id: Id::new(),
             pitch: hz,
             pressure: 0.5,
-            timbre: 0.5,
         }
     }
 
@@ -103,10 +129,6 @@ impl Note {
 
     pub fn pressure(&self) -> f32 {
         self.pressure
-    }
-
-    pub fn timbre(&self) -> f32 {
-        self.timbre
     }
 
     pub fn sharp(&self) -> Note {

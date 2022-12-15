@@ -14,7 +14,7 @@ pub struct TriangleModule {
 pub struct TriangleModuleVoice {
     triangle: Triangle,
     active: bool,
-    id: u16,
+    id: Id,
 }
 
 impl Module for TriangleModule {
@@ -31,7 +31,6 @@ impl Module for TriangleModule {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self {
             wave_index: 0,
@@ -45,7 +44,7 @@ impl Module for TriangleModule {
         Self::Voice {
             triangle: Triangle::new(),
             active: false,
-            id: 0,
+            id: Id::new(),
         }
     }
 
@@ -65,7 +64,7 @@ impl Module for TriangleModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = 0;
+        voice.id = Id::new();
         voice.triangle.init(sample_rate as i32);
     }
 

@@ -66,7 +66,7 @@ pub struct SamplePlayer {
     index: usize,
     playback_pitch: f32,
     playback_rate: f32,
-    id: u16,
+    id: Id,
     sample_rate: u32,
     start: f32,
     end: f32,
@@ -138,7 +138,7 @@ impl Source for SamplePlayer {
             active: false,
             note_off: false,
             index: 0,
-            id: 0,
+            id: Id::new(),
             playback_rate: 1.0,
             playback_pitch: 195.0,
             sample_pitch: 195.0,
@@ -335,7 +335,7 @@ impl Voice for SamplePlayer {
         }
     }
 
-    fn note_on(&mut self, id: u16, _offset: u16, _note: Note, _pressure: f32, _timbre: f32) {
+    fn note_on(&mut self, id: Id, _offset: u16, _note: Note, _pressure: f32) {
         match &self.sample {
             Some(sample) => {
                 self.active = true;
@@ -366,13 +366,11 @@ impl Voice for SamplePlayer {
 
     fn set_pressure(&mut self, _pressure: f32) {}
 
-    fn set_timbre(&mut self, _timbre: f32) {}
-
     fn is_active(&self) -> bool {
         self.active
     }
 
-    fn id(&self) -> u16 {
+    fn id(&self) -> Id {
         self.id
     }
 

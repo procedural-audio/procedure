@@ -134,7 +134,6 @@ impl Module for MultiSampler {
                                         *offset,
                                         Note::from_pitch(note.pitch),
                                         note.pressure,
-                                        note.timbre,
                                     );
                                     found = true;
                                 }
@@ -161,7 +160,6 @@ impl Module for MultiSampler {
                                         *offset,
                                         Note::from_pitch(note.pitch),
                                         note.pressure,
-                                        note.timbre,
                                     );
                                 } else {
                                     println!("Failed to find available voice");
@@ -176,29 +174,22 @@ impl Module for MultiSampler {
                 }
                 Event::NoteOff { id } => {
                     voices.iter_mut().for_each(|voice| {
-                        if !voice.id() == *id {
+                        if voice.id() != *id {
                             voice.note_off();
                         }
                     });
                 }
                 Event::Pitch { id, freq } => {
                     voices.iter_mut().for_each(|voice| {
-                        if !voice.id() == *id {
+                        if voice.id() != *id {
                             voice.set_pitch(*freq);
                         }
                     });
                 }
                 Event::Pressure { id, pressure } => {
                     voices.iter_mut().for_each(|voice| {
-                        if !voice.id() == *id {
+                        if voice.id() != *id {
                             voice.set_pressure(*pressure);
-                        }
-                    });
-                }
-                Event::Timbre { id, timbre } => {
-                    voices.iter_mut().for_each(|voice| {
-                        if !voice.id() == *id {
-                            voice.set_timbre(*timbre);
                         }
                     });
                 }

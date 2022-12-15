@@ -270,7 +270,6 @@ impl Module for AnalogOscillator {
                 Event::NoteOff { id: _ } => {}
                 Event::Pitch { id: _, freq: _ } => {}
                 Event::Pressure { id: _, pressure: _ } => {}
-                Event::Timbre { id: _, timbre: _ } => {}
                 Event::Controller { id: _, value: _ } => {}
                 Event::ProgramChange { id: _, value: _ } => {}
                 Event::None => {}

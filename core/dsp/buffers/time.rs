@@ -1,16 +1,74 @@
-use std::ops::Add;
+type TimeRange2 = std::ops::Range<Time>;
+
+pub fn temp() {
+    let range = Time(0.0)..Time(0.5);
+}
+
 
 #[derive(Copy, Clone)]
-pub struct Time {
-    start: f64,
-    length: f64,
+pub struct Time(pub f64);
+
+impl Time {
+    pub fn beat(&self) -> f64 {
+        self.0
+    }
+}
+
+impl std::ops::Add for Time {
+    type Output = Time;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Time(self.0 + rhs.0)
+    }
+}
+
+impl std::ops::Sub for Time {
+    type Output = Time;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Time(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::Div for Time {
+    type Output = Time;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Time(self.0 / rhs.0)
+    }
+}
+
+impl std::ops::Rem for Time {
+    type Output = Time;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        Time(self.0 % rhs.0)
+    }
+}
+
+impl PartialEq for Time {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl PartialOrd for Time {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct TimeRange {
+    pub start: f64,
+    pub length: f64,
     cycle: Option<f64>,
 }
 
-impl Time {
+impl TimeRange {
     pub fn from(start: f64, end: f64) -> Self {
         Self {
-            start,
+            start, 
             length: end - start,
             cycle: None,
         }
@@ -76,14 +134,14 @@ impl Time {
         }
     }
 
-    pub fn rate(&self, rate: f64) -> Time {
+    pub fn rate(&self, rate: f64) -> TimeRange {
         match self.cycle {
-            Some(cycle) => Time {
+            Some(cycle) => TimeRange {
                 start: (self.start * rate) % cycle,
                 length: self.length * rate,
                 cycle: Some(cycle),
             },
-            None => Time {
+            None => TimeRange {
                 start: self.start * rate,
                 length: self.length * rate,
                 cycle: None,
@@ -91,15 +149,15 @@ impl Time {
         }
     }
 
-    pub fn shift(&self, beats: f64) -> Time {
-        Time::from(self.start + beats, self.start + beats + self.length)
+    pub fn shift(&self, beats: f64) -> TimeRange {
+        TimeRange::from(self.start + beats, self.start + beats + self.length)
     }
 
-    pub fn cycle(&self, beats: f64) -> Time {
+    pub fn cycle(&self, beats: f64) -> TimeRange {
         match self.cycle {
             Some(cycle) => {
                 if beats < cycle {
-                    Time {
+                    TimeRange {
                         start: self.start % beats,
                         length: self.length,
                         cycle: Some(beats),
@@ -108,7 +166,7 @@ impl Time {
                     *self
                 }
             }
-            None => Time {
+            None => TimeRange {
                 start: self.start % beats,
                 length: self.length,
                 cycle: Some(beats),
@@ -149,7 +207,7 @@ impl Time {
         }
     }
 
-    /*pub fn next(&self) -> Time {
+    /*pub fn next(&self) -> TimeRange {
       if self.start <= self.end {
         let delta = self.end - self.start;
         Time::from(self.end, self.end + delta)
@@ -160,8 +218,8 @@ impl Time {
     }*/
 }
 
-impl Add for Time {
-    type Output = Time;
+impl std::ops::Add for TimeRange {
+    type Output = TimeRange;
 
     fn add(self, _rhs: Self) -> Self::Output {
         panic!("Time add not implemented");
@@ -175,11 +233,11 @@ Control values should be a function of time
 
 Modules
  - Global Time
- - Time (pass it a BPM)
+ - TimeRange (pass it a BPM)
  - Rate (make time move twice as fast, etc)
  - Reverse
  - Random (can randomize measure, beat, 8th, 16th, etc)
- - On Time (output 1 if at certain time)
+ - On TimeRange (output 1 if at certain time)
 
 Graph level variables
  - Useful for file IO

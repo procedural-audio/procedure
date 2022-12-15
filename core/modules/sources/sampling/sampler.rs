@@ -139,7 +139,7 @@ impl Module for Sampler {
                     voice.player.set_pitch(note.pitch);
                     voice
                         .player
-                        .note_on(note.id, *offset, *note, note.pressure, note.timbre);
+                        .note_on(note.id, *offset, *note, note.pressure);
                     println!("Playing note");
                 }
                 Event::NoteOff { id } => {
@@ -149,7 +149,6 @@ impl Module for Sampler {
                 }
                 Event::Pitch { id: _, freq: _ } => {}
                 Event::Pressure { id: _, pressure: _ } => {}
-                Event::Timbre { id: _, timbre: _ } => {}
                 Event::Controller { id: _, value: _ } => {}
                 Event::ProgramChange { id: _, value: _ } => {}
                 Event::None => {}

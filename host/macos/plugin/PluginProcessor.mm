@@ -361,7 +361,6 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                     id: (unsigned short) message.getNoteNumber(),
                     pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
                     pressure: ((float) message.getVelocity()) / 127,
-                    timbre: 0
                 },
                 offset: (uint16_t) data.samplePosition,
             };

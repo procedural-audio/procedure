@@ -15,7 +15,7 @@ pub struct PulseModule {
 pub struct PulseModuleVoice {
     saw: Pulse,
     active: bool,
-    id: u16,
+    id: Id,
 }
 
 impl Module for PulseModule {
@@ -46,7 +46,7 @@ impl Module for PulseModule {
         Self::Voice {
             saw: Pulse::new(),
             active: false,
-            id: 0,
+            id: Id::new(),
         }
     }
 
@@ -66,7 +66,7 @@ impl Module for PulseModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = 0;
+        voice.id = Id::new();
         voice.saw.init(sample_rate as i32);
     }
 
