@@ -27,6 +27,12 @@ lazy_static!(
 pub struct Id(u64);
 
 impl Id {
+    pub fn num(&self) -> u64 {
+        self.0
+    }
+}
+
+impl Id {
     pub fn new() -> Self {
         let mut last_id = LAST_ID.lock().unwrap();
         *last_id = *last_id + 1;
