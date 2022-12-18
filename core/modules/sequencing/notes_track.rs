@@ -256,8 +256,18 @@ pub unsafe extern "C" fn ffi_notes_track_add_note(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_remove_note(w: &mut _NotesTrack, index: usize) {
-    w.notes.remove(index);
+pub unsafe extern "C" fn ffi_notes_track_id_remove_note(w: &mut _NotesTrack, id_num: u64) {
+    w.notes.retain(| n | {
+        match n.note {
+            Event::NoteOn { note, offset } => note.id.num() != id_num,
+            Event::NoteOff { id } => id.num() != id_num,
+            Event::Pitch { id, freq } => id.num() != id_num,
+            Event::Pressure { id, pressure } => id.num() != id_num,
+            Event::Controller { id, value } => id.num() != id_num,
+            Event::ProgramChange { id, value } => id.num() != id_num,
+            Event::None => false,
+        }
+    });
 }
 
 #[no_mangle]

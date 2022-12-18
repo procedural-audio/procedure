@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import '../host.dart';
 import 'widget.dart';
 
+import 'package:flutter/rendering.dart';
+
 int Function(FFIWidgetPointer) ffiNotesTrackGetEventCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_notes_track_get_event_count")
@@ -42,9 +44,9 @@ void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
             Void Function(FFIWidgetPointer, Double, Double,
                 Int32)>>("ffi_notes_track_add_note")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiNotesTrackRemoveNote = core
+void Function(FFIWidgetPointer, int) ffiNotesTrackIdRemoveNote = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
-        "ffi_notes_track_remove_note")
+        "ffi_notes_track_id_remove_note")
     .asFunction();
 int Function(FFIWidgetPointer) ffiNotesTrackGetLength = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -173,6 +175,7 @@ class PianoRollWidget extends ModuleWidget {
                   noteOnIndex: event.index,
                   noteOffIndex: event2.index,
                   end: event2.time,
+                  selectedRegion: selectedRegion,
                   num: ffiNotesTrackIndexGetNoteOnNum(
                       widgetRaw.pointer, event.index),
                   selectedIds: selectedIds,
@@ -227,24 +230,24 @@ class PianoRollWidget extends ModuleWidget {
     return KeyboardListener(
         focusNode: focusNode,
         onKeyEvent: (e) {
-          /*if (e.logicalKey == LogicalKeyboardKey.delete ||
-            e.logicalKey == LogicalKeyboardKey.backspace) {
-          selectedIds.value.sort((a, b) {
-            return a.compareTo(b);
-          });
+          if (e.logicalKey == LogicalKeyboardKey.delete ||
+              e.logicalKey == LogicalKeyboardKey.backspace) {
+            selectedIds.value.sort((a, b) {
+              return a.compareTo(b);
+            });
 
-          int removed = 0;
-          for (int i in selectedIds.value) {
-            ffiNotesTrackRemoveNote(widgetRaw.pointer, i - removed);
-            removed += 1;
+            int removed = 0;
+            for (int i in selectedIds.value) {
+              ffiNotesTrackIdRemoveNote(widgetRaw.pointer, i - removed);
+              removed += 1;
+            }
+
+            selectedIds.value.clear();
+            selectedIds.notifyListeners();
+
+            events.clear();
+            setState(() {});
           }
-
-          selectedIds.value.clear();
-          selectedIds.notifyListeners();
-          setState(() {
-            notes.clear();
-          });
-        }*/
         },
         child: NotesScrollWidget(
             draggingNote: draggingNote,
@@ -255,14 +258,10 @@ class PianoRollWidget extends ModuleWidget {
                   CustomPaint(
                     painter: PianoRollPainter(),
                   ),
-                  DragRegion(
-                    selectedRegion: selectedRegion,
-                  ),
                   GestureDetector(
                     onTapUp: (details) {
                       double x = details.localPosition.dx;
                       double y = details.localPosition.dy;
-
                       double start = x ~/ BEAT_WIDTH + 0;
                       int num = (STEP_COUNT - y ~/ STEP_HEIGHT).clamp(0, 127);
 
@@ -272,13 +271,59 @@ class PianoRollWidget extends ModuleWidget {
 
                       ffiNotesTrackAddNote(widgetRaw.pointer, start, 2.0, num);
                       events.clear();
-
                       selectedIds.value.clear();
                       selectedIds.notifyListeners();
 
                       setState(() {});
                     },
+                    onPanStart: (e) {
+                      selectedRegion.value = Rectangle(
+                          e.localPosition.dx, e.localPosition.dy, 0, 0);
+                      selectedIds.value.clear();
+                      selectedIds.notifyListeners();
+                    },
+                    onPanUpdate: (e) {
+                      double left = selectedRegion.value!.left.toDouble();
+                      double top = selectedRegion.value!.top.toDouble();
+                      double width = e.localPosition.dx - left;
+                      double height = e.localPosition.dy - top;
+
+                      selectedRegion.value =
+                          Rectangle(left, top, width, height);
+                    },
+                    onPanEnd: (e) {
+                      selectedRegion.value = null;
+                    },
+                    onPanCancel: () {
+                      selectedRegion.value = null;
+                    },
                   ),
+                  ValueListenableBuilder<Rectangle?>(
+                      valueListenable: selectedRegion,
+                      builder: (context, region, child) {
+                        if (region != null) {
+                          return Positioned(
+                              left: region.left.toDouble(),
+                              top: region.top.toDouble(),
+                              // right: region.right.toDouble(),
+                              // bottom: region.bottom.toDouble(),
+                              child: Container(
+                                width: region.width.toDouble(),
+                                height: region.height.toDouble(),
+                                decoration: BoxDecoration(
+                                    color: const Color.fromRGBO(
+                                        255, 255, 255, 0.25),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(5)),
+                                    border: Border.all(
+                                        width: 2.0,
+                                        color: const Color.fromRGBO(
+                                            255, 255, 255, 0.5))),
+                              ));
+                        } else {
+                          return Container();
+                        }
+                      }),
                   ValueListenableBuilder<double>(
                       valueListenable: beat,
                       builder: (context, value, parent) {
@@ -522,6 +567,7 @@ class NoteWidget extends StatefulWidget {
       required this.end,
       required this.num,
       required this.selectedIds,
+      required this.selectedRegion,
       required this.widgetRaw})
       : super(key: UniqueKey());
 
@@ -534,6 +580,7 @@ class NoteWidget extends StatefulWidget {
 
   FFIWidget widgetRaw;
 
+  ValueNotifier<Rectangle?> selectedRegion;
   ValueNotifier<List<int>> selectedIds;
 
   @override
@@ -560,105 +607,132 @@ class _NoteWidgetState extends State<NoteWidget> {
         builder: (context, selectedIds, widgets) {
           bool selected = selectedIds.contains(widget.id);
 
-          return Positioned(
-              left: x,
-              top: (y ~/ STEP_HEIGHT) * STEP_HEIGHT,
-              child: Container(
-                  width: width,
-                  height: STEP_HEIGHT,
-                  decoration: const BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.basic,
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(2),
-                          child: selected
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.green.shade100,
-                                      borderRadius: BorderRadius.circular(5)),
-                                )
-                              : null,
-                        ),
-                        GestureDetector(
-                          onTapDown: (details) {
-                            setState(() {
-                              if (selectedIds.contains(widget.id)) {
-                                selectedIds.clear();
-                                widget.selectedIds.notifyListeners();
-                              } else {
-                                selectedIds.clear();
-                                selectedIds.add(widget.id);
-                                widget.selectedIds.notifyListeners();
-                              }
-                            });
-                          },
-                          onPanStart: (details) {
-                            if (!selectedIds.contains(widget.id)) {
-                              selectedIds.clear();
-                              selectedIds.add(widget.id);
-                              widget.selectedIds.notifyListeners();
-                            }
-                          },
-                          onPanUpdate: (details) {
-                            setState(() {
-                              x += details.delta.dx;
-                              // y += details.delta.dy;
+          return ValueListenableBuilder<Rectangle?>(
+              valueListenable: widget.selectedRegion,
+              builder: ((context, selectedRegion, child) {
+                if (selectedRegion != null) {
+                  if (selectedRegion.intersects(Rectangle(
+                      x,
+                      (y ~/ STEP_HEIGHT) * STEP_HEIGHT,
+                      (widget.end - widget.start) * BEAT_WIDTH,
+                      STEP_HEIGHT))) {
+                    if (!widget.selectedIds.value.contains(widget.id)) {
+                      widget.selectedIds.value.add(widget.id);
+                      widget.selectedIds.notifyListeners();
+                    }
+                  } else {
+                    if (widget.selectedIds.value.contains(widget.id)) {
+                      widget.selectedIds.value.remove(widget.id);
+                      widget.selectedIds.notifyListeners();
+                    }
+                  }
+                }
 
-                              if (x < 0) {
-                                x = 0;
-                              }
+                return Positioned(
+                    left: x,
+                    top: (y ~/ STEP_HEIGHT) * STEP_HEIGHT,
+                    child: Container(
+                        width: width,
+                        height: STEP_HEIGHT,
+                        decoration: const BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.basic,
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: selected
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.green.shade100,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                      )
+                                    : null,
+                              ),
+                              GestureDetector(
+                                onTapDown: (details) {
+                                  setState(() {
+                                    if (selectedIds.contains(widget.id)) {
+                                      selectedIds.clear();
+                                      widget.selectedIds.notifyListeners();
+                                    } else {
+                                      selectedIds.clear();
+                                      selectedIds.add(widget.id);
+                                      widget.selectedIds.notifyListeners();
+                                    }
+                                  });
+                                },
+                                onPanStart: (details) {
+                                  if (!selectedIds.contains(widget.id)) {
+                                    selectedIds.clear();
+                                    selectedIds.add(widget.id);
+                                    widget.selectedIds.notifyListeners();
+                                  }
+                                },
+                                onPanUpdate: (details) {
+                                  setState(() {
+                                    x += details.delta.dx;
+                                    // y += details.delta.dy;
 
-                              // y = y.clamp(0, 127 * STEP_HEIGHT);
-                            });
+                                    if (x < 0) {
+                                      x = 0;
+                                    }
 
-                            print("Setting time to " +
-                                (x / BEAT_WIDTH).toString());
-                            ffiNotesTrackIndexSetTime(widget.widgetRaw.pointer,
-                                widget.noteOnIndex, x / BEAT_WIDTH);
-                            ffiNotesTrackIndexSetTime(
-                                widget.widgetRaw.pointer,
-                                widget.noteOffIndex,
-                                x / BEAT_WIDTH + (widget.end - widget.start));
-                            /*ffiNotesTrackSetNoteStart(widget.widgetRaw.pointer,
+                                    // y = y.clamp(0, 127 * STEP_HEIGHT);
+                                  });
+
+                                  print("Setting time to " +
+                                      (x / BEAT_WIDTH).toString());
+                                  ffiNotesTrackIndexSetTime(
+                                      widget.widgetRaw.pointer,
+                                      widget.noteOnIndex,
+                                      x / BEAT_WIDTH);
+                                  ffiNotesTrackIndexSetTime(
+                                      widget.widgetRaw.pointer,
+                                      widget.noteOffIndex,
+                                      x / BEAT_WIDTH +
+                                          (widget.end - widget.start));
+                                  /*ffiNotesTrackSetNoteStart(widget.widgetRaw.pointer,
                                 widget.index, x / BEAT_WIDTH);
                             ffiNotesTrackSetNoteLength(widget.widgetRaw.pointer,
                                 widget.index, width / BEAT_WIDTH);
                             ffiNotesTrackSetNoteNum(widget.widgetRaw.pointer,
                                 widget.index, y ~/ STEP_HEIGHT);*/
-                          },
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Container(
-                            width: 10,
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.resizeLeftRight,
-                              child: GestureDetector(
-                                onHorizontalDragUpdate: (details) {
-                                  setState(() {
-                                    width += details.delta.dx;
+                                },
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Container(
+                                  width: 10,
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.resizeLeftRight,
+                                    child: GestureDetector(
+                                      onHorizontalDragUpdate: (details) {
+                                        setState(() {
+                                          width += details.delta.dx;
 
-                                    /*ffiNotesTrackSetNoteLength(
+                                          /*ffiNotesTrackSetNoteLength(
                                         widget.widgetRaw.pointer,
                                         widget.index,
                                         width / BEAT_WIDTH);*/
-                                  });
-                                },
-                              ),
-                            ),
-                            decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(50),
-                                borderRadius: const BorderRadius.horizontal(
-                                    right: Radius.circular(5))),
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: Colors.black.withAlpha(50),
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                              right: Radius.circular(5))),
+                                ),
+                              )
+                            ],
                           ),
-                        )
-                      ],
-                    ),
-                  )));
+                        )));
+              }));
         });
   }
 }
