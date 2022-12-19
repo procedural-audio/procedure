@@ -3,44 +3,30 @@ enum class EventTag: uint32_t {
     NoteOff,
     Pitch,
     Pressure,
-    Controller,
-    ProgramChange,
-    None
 };
 
-struct Note {
+struct NoteOn {
     uint64_t id;
+    size_t offset;
     float pitch;
     float pressure;
 };
 
-struct NoteOn {
-    Note note;
-    uint16_t offset;
-};
-
 struct NoteOff {
     uint64_t id;
+    size_t offset;
 };
 
 struct Pitch {
     uint64_t id;
+    size_t offset;
     float freq;
 };
 
 struct Pressure {
     uint64_t id;
+    size_t offset;
     float pressure;
-};
-
-struct Controller {
-    uint64_t id;
-    float value;
-};
-
-struct ProgramChange {
-    uint64_t id;
-    uint8_t value;
 };
 
 struct FFIIOProcessor {
@@ -53,8 +39,6 @@ union EventValue {
     NoteOff noteOff;
     Pitch pitch;
     Pressure pressure;
-    Controller controller;
-    ProgramChange programChange;
 };
 
 struct Event {

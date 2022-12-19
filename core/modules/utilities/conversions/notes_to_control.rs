@@ -47,7 +47,7 @@ impl Module for NotesToControl {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.control[0] = 0.0; // Set gate to 0.0
+        /*outputs.control[0] = 0.0; // Set gate to 0.0
 
         for event in &inputs.events[0] {
             match event {
@@ -63,6 +63,6 @@ impl Module for NotesToControl {
                     break;
                 }
             }
-        }
+        }*/
     }
 }

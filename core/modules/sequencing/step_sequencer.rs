@@ -4,10 +4,10 @@ use crate::*;
 
 pub struct StepSequencer {
     grid: Vec<Vec<bool>>,
-    notes: Vec<Vec<Note>>,
+    notes: Vec<Vec<NoteEvent>>,
     used_voice: u32,
-    playing: Vec<(u32, Note)>,
-    queue: Vec<(u32, Event)>,
+    playing: Vec<NoteEvent>,
+    queue: Vec<NoteMessage>,
     step: usize,
 }
 
@@ -31,27 +31,28 @@ impl Module for StepSequencer {
 
     
     fn new() -> Self {
-        Self {
+        unimplemented!();
+        /*Self {
             grid: vec![vec![]],
             notes: vec![
-                vec![Note::from_name("C3").unwrap()],
-                vec![Note::from_name("C#3").unwrap()],
-                vec![Note::from_name("D3").unwrap()],
-                vec![Note::from_name("D#3").unwrap()],
-                vec![Note::from_name("E3").unwrap()],
-                vec![Note::from_name("F3").unwrap()],
-                vec![Note::from_name("F#3").unwrap()],
-                vec![Note::from_name("G3").unwrap()],
-                vec![Note::from_name("G#3").unwrap()],
-                vec![Note::from_name("A3").unwrap()],
-                vec![Note::from_name("A#3").unwrap()],
-                vec![Note::from_name("B3").unwrap()],
+                vec![NoteMessage::from_name("C3").unwrap()],
+                vec![NoteMessage::from_name("C#3").unwrap()],
+                vec![NoteMessage::from_name("D3").unwrap()],
+                vec![NoteMessage::from_name("D#3").unwrap()],
+                vec![NoteMessage::from_name("E3").unwrap()],
+                vec![NoteMessage::from_name("F3").unwrap()],
+                vec![NoteMessage::from_name("F#3").unwrap()],
+                vec![NoteMessage::from_name("G3").unwrap()],
+                vec![NoteMessage::from_name("G#3").unwrap()],
+                vec![NoteMessage::from_name("A3").unwrap()],
+                vec![NoteMessage::from_name("A#3").unwrap()],
+                vec![NoteMessage::from_name("B3").unwrap()],
             ],
             used_voice: 0,
             playing: Vec::with_capacity(32),
             queue: Vec::with_capacity(32),
             step: 0,
-        }
+        }*/
     }
 
     fn new_voice(index: u32) -> Self::Voice {
@@ -62,7 +63,8 @@ impl Module for StepSequencer {
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Padding {
+        panic!("Unimplementd");
+        /*return Box::new(Padding {
             padding: (10, 10, 10, 10),
             child: widget::StepSequencer {
                 grid: &mut self.grid,
@@ -71,7 +73,7 @@ impl Module for StepSequencer {
                 pad_radius: 10.0,
                 step: &self.step,
             },
-        });
+        });*/
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
@@ -79,7 +81,7 @@ impl Module for StepSequencer {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let _t = inputs.time[0].cycle(self.grid.len() as f64);
 
-        if voice.index == 0 && self.grid.len() > 0 {
+        /*if voice.index == 0 && self.grid.len() > 0 {
             inputs.time[0]
                 .cycle(self.grid.len() as f64)
                 .on_each(1.0, |step| {
@@ -121,8 +123,8 @@ impl Module for StepSequencer {
 
                 outputs.events[0].push(*event);
             }
-        }
+        }*/
 
-        self.queue.retain(|(i, _e)| *i != voice.index);
+        // self.queue.retain(|(i, _e)| *i != voice.index);
     }
 }

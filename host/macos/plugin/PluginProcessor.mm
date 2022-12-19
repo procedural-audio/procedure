@@ -357,15 +357,13 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
             EventValue value;
             value.noteOn = NoteOn {
-                note: Note {
-                    id: (unsigned short) message.getNoteNumber(),
-                    pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
-                    pressure: ((float) message.getVelocity()) / 127,
-                },
+                id: (unsigned short) message.getNoteNumber(),
                 offset: (uint16_t) data.samplePosition,
+                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
+                pressure: ((float) message.getVelocity()) / 127,
             };
-            event.value = value;
 
+            event.value = value;
             events.push_back(event);
         } else if (message.isNoteOff()) {
             // std::cout << message.getDescription() << std::endl;

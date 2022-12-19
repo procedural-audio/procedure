@@ -5,11 +5,12 @@ use pa_dsp::event::NoteEvent;
 pub struct NotePlayer {
     max_voice: u32,
     live: Vec<(u32, u32)>, // (Voice ID, Note ID)
-    queued: Vec<(u32, Note)> // (Note ID, Note)
+    queued: Vec<(u32, Event)> // (Note ID, Note)
 }
 
 impl NotePlayer {
-    fn play_note(id: u32, note: Note) {
+    fn play_note(id: u32, note: Event) {
+
     }
 
     fn stop_note(id: u32) {
@@ -23,7 +24,7 @@ pub struct NotesTrack {
     beat: f64,
     max_voice: u32,
     queue: Vec<(u32, Event)>, // (voice index, event)
-    output: Vec<Note>,
+    output: Vec<NoteMessage>,
 }
 
 impl Module for NotesTrack {
@@ -51,41 +52,33 @@ impl Module for NotesTrack {
         Self {
             events: vec![
                 NoteEvent {
+                    id: id_1,
                     time: Time(4.0),
                     note: Event::NoteOn {
-                        offset: 0,
-                        note: Note {
-                            id: id_1,
-                            pitch: 220.0,
-                            pressure: 0.5
-                        }
+                        pitch: 220.0,
+                        pressure: 0.3
                     }
                 },
                 NoteEvent {
+                    id: id_1,
                     time: Time(8.0),
-                    note: Event::NoteOff {
-                        id: id_1
-                    }
+                    note: Event::NoteOff
                 },
                 NoteEvent {
+                    id: id_2,
                     time: Time(6.0),
                     note: Event::NoteOn {
-                        offset: 0,
-                        note: Note {
-                            id: id_2,
-                            pitch: 220.0 * 1.5,
-                            pressure: 0.5
-                        }
+                        pitch: 220.0 * 1.5,
+                        pressure: 0.7
                     }
                 },
                 NoteEvent {
+                    id: id_2,
                     time: Time(10.0),
-                    note: Event::NoteOff {
-                        id: id_2
-                    }
+                    note: Event::NoteOff
                 }
             ],
-            length: 8 * 4,
+            length: 4 * 32,
             beat: 0.0,
             queue: Vec::with_capacity(64),
             output: Vec::with_capacity(64),
@@ -129,7 +122,14 @@ impl Module for NotesTrack {
 
         for (index, event) in &self.queue {
             if *index == *voice {
-                outputs.events[0].push(*event);
+                println!("Playing note");
+                outputs.events[0].push(
+                    NoteMessage {
+                        id: Id::new(),
+                        offset: 0,
+                        note: *event
+                    }
+                );
             }
         }
 
@@ -162,63 +162,142 @@ pub unsafe extern "C" fn ffi_notes_track_get_event_count(w: &mut _NotesTrack) ->
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn ffi_notes_track_index_get_id(w: &mut _NotesTrack, index: usize) -> u64 {
+    w.notes[index].id.num()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn ffi_notes_track_index_get_type(w: &mut _NotesTrack, index: usize) -> u32 {
     match w.notes[index].note {
-        Event::NoteOn { note, offset } => 0,
-        Event::NoteOff { id } => 1,
-        Event::Pitch { id, freq } => 2,
-        Event::Pressure { id, pressure } => 3,
-        Event::Controller { id, value } => 4,
-        Event::ProgramChange { id, value } => 5,
-        Event::None => todo!(),
+        Event::NoteOn { pitch, pressure } => 0,
+        Event::NoteOff => 1,
+        Event::Pitch(freq) => 2,
+        Event::Pressure(pressure) => 3,
+        Event::Other(name, value) => 5,
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_index_get_time(w: &mut _NotesTrack, index: usize) -> f64 {
-    w.notes[index].time.beat()
+pub unsafe extern "C" fn ffi_notes_track_id_get_time(w: &mut _NotesTrack, id: u64) -> f64 {
+    for note in w.notes.iter() {
+        if note.id.num() == id {
+            return note.time.beat()
+        }
+    }
+
+    unreachable!();
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_index_set_time(
+pub unsafe extern "C" fn ffi_notes_track_id_get_on_time(w: &mut _NotesTrack, id: u64) -> f64 {
+    for note in w.notes.iter() {
+        if note.id.num() == id {
+            match note.note {
+                Event::NoteOn { pitch, pressure } => {
+                    return note.time.beat();
+                },
+                _ => ()
+            }
+        }
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_notes_track_id_get_off_time(w: &mut _NotesTrack, id: u64) -> f64 {
+    for note in w.notes.iter() {
+        if note.id.num() == id {
+            match note.note {
+                Event::NoteOff => {
+                    return note.time.beat();
+                },
+                _ => ()
+            }
+        }
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_notes_track_id_set_time(
     w: &mut _NotesTrack,
-    index: usize,
+    id: u64,
     time: f64,
 ) {
-    w.notes[index].time = Time(time);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_index_get_id(w: &mut _NotesTrack, index: usize) -> u64 {
-    match w.notes[index].note {
-        Event::NoteOn { note, offset } => note.id.num(),
-        Event::NoteOff { id } => id.num(),
-        Event::Pitch { id, freq } => id.num(),
-        Event::Pressure { id, pressure } => id.num(),
-        Event::Controller { id, value } => id.num(),
-        Event::ProgramChange { id, value } => id.num(),
-        Event::None => todo!(),
+    for note in w.notes.iter_mut() {
+        if note.id.num() == id {
+            note.time = Time(time);
+        }
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_index_get_note_on_num(w: &mut _NotesTrack, index: usize) -> u32 {
-    match w.notes[index].note {
-        Event::NoteOn { note, offset } => note.num(),
-        _ => panic!("Can't get note num for not note_on")
+pub unsafe extern "C" fn ffi_notes_track_id_set_on_time(
+    w: &mut _NotesTrack,
+    id: u64,
+    time: f64,
+) {
+    for note in w.notes.iter_mut() {
+        if note.id.num() == id {
+            match note.note {
+                Event::NoteOn { pitch, pressure }=> {
+                    note.time = Time(time);
+                    return;
+                }
+                _ => ()
+            }
+        }
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_notes_track_index_set_note_on_num(w: &mut _NotesTrack, index: usize, num: u32) {
-    match w.notes[index].note {
-        Event::NoteOn { note, offset } => {
-            w.notes[index].note = Event::NoteOn {
-                note: note.with_pitch(Note::from_num(num).pitch),
-                offset: offset
-            };
-        },
-        _ => panic!("Setting num on wrong type")
+pub unsafe extern "C" fn ffi_notes_track_id_set_off_time(
+    w: &mut _NotesTrack,
+    id: u64,
+    time: f64,
+) {
+    for note in w.notes.iter_mut() {
+        if note.id.num() == id {
+            match note.note {
+                Event::NoteOff => {
+                    note.time = Time(time);
+                    return;
+                }
+                _ => ()
+            }
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_notes_track_id_get_note_on_num(w: &mut _NotesTrack, id: u64) -> u32 {
+    for note in w.notes.iter() {
+        if note.id.num() == id {
+            match note.note {
+                Event::NoteOn { pitch, pressure } => {
+                    return pitch_to_num(pitch);
+                }
+                _ => ()
+            }
+        }
+    }
+
+    unreachable!();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_notes_track_id_set_note_on_num(w: &mut _NotesTrack, id: u64, num: u32) {
+    for note in w.notes.iter_mut() {
+        if note.id.num() == id {
+            match &mut note.note {
+                Event::NoteOn { pitch, pressure } => {
+                    *pitch = num_to_pitch(num)
+                }
+                _ => ()
+            }
+        }
     }
 }
 
@@ -233,24 +312,20 @@ pub unsafe extern "C" fn ffi_notes_track_add_note(
 
     w.notes.push(
         NoteEvent {
+            id,
             time: Time(start),
             note: Event::NoteOn {
-                note: Note {
-                    id,
-                    pitch: Note::from_num(num).pitch,
-                    pressure: 0.5
-                },
-                offset: 0
+                pitch: num_to_pitch(num),
+                pressure: 0.5,
             }
         }
     );
 
     w.notes.push(
         NoteEvent {
+            id,
             time: Time(start + length),
-            note: Event::NoteOff {
-                id,
-            }
+            note: Event::NoteOff
         }
     );
 }
@@ -258,15 +333,7 @@ pub unsafe extern "C" fn ffi_notes_track_add_note(
 #[no_mangle]
 pub unsafe extern "C" fn ffi_notes_track_id_remove_note(w: &mut _NotesTrack, id_num: u64) {
     w.notes.retain(| n | {
-        match n.note {
-            Event::NoteOn { note, offset } => note.id.num() != id_num,
-            Event::NoteOff { id } => id.num() != id_num,
-            Event::Pitch { id, freq } => id.num() != id_num,
-            Event::Pressure { id, pressure } => id.num() != id_num,
-            Event::Controller { id, value } => id.num() != id_num,
-            Event::ProgramChange { id, value } => id.num() != id_num,
-            Event::None => false,
-        }
+        n.id.num() != id_num
     });
 }
 

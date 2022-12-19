@@ -100,7 +100,7 @@ impl<'a> IntoIterator for &'a mut Stereo {
 }
 
 pub type AudioBuffer = Buffer<f32>;
-pub type NoteBuffer = Buffer<Event>;
+pub type NoteBuffer = Buffer<NoteMessage>;
 
 pub struct Channels<T: Copy + Clone, const C: usize> {
     buffers: [Buffer<T>; C]

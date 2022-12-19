@@ -75,7 +75,7 @@ pub unsafe extern "C" fn ffi_host_process(
     buffer: *mut *mut f32,
     num_channels: u32,
     num_samples: u32,
-    events: *mut Event,
+    events: *mut NoteMessage,
     events_count: u32,
 ) {
     let mut events = NoteBuffer::from_raw_parts(events, events_count as usize, events_count as usize);

@@ -45,7 +45,7 @@ impl Module for Pressure {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let new_pressure = inputs.control[0];
 
-        for event in &inputs.events[0] {
+        /*for event in &inputs.events[0] {
             match event {
                 Event::NoteOn { note, offset } => {
                     outputs.events[0].push(Event::NoteOn {
@@ -61,6 +61,6 @@ impl Module for Pressure {
                 }
                 _ => outputs.events[0].push(*event),
             }
-        }
+        }*/
     }
 }

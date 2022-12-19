@@ -94,7 +94,7 @@ impl Module for MultiSampler {
     }
 
     fn process(&mut self, voices: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for note in &inputs.events[0] {
+        /*for note in &inputs.events[0] {
             match note {
                 Event::NoteOn { note, offset } => {
                     if let Ok(map) = self.map.try_read() {
@@ -158,7 +158,7 @@ impl Module for MultiSampler {
                                     voices[voice_index].note_on(
                                         note.id,
                                         *offset,
-                                        Note::from_pitch(note.pitch),
+                                        NoteMessage::from_pitch(note.pitch),
                                         note.pressure,
                                     );
                                 } else {
@@ -203,7 +203,7 @@ impl Module for MultiSampler {
             if voice.is_active() {
                 voice.process(&mut outputs.audio[0]);
             }
-        });
+        });*/
     }
 }
 

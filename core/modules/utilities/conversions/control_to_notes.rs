@@ -49,7 +49,7 @@ impl Module for ControlToNotes {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0] > 0.5 {
+        /*if inputs.control[0] > 0.5 {
             if !voice.note_on {
                 println!("Sending note with pitch {}", inputs.control[1]);
 
@@ -62,6 +62,6 @@ impl Module for ControlToNotes {
             }
         } else {
             voice.note_on = false;
-        }
+        }*/
     }
 }

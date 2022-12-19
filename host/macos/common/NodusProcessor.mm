@@ -330,12 +330,10 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
 
             EventValue value;
             value.noteOn = NoteOn {
-                note: Note {
-                    id: (unsigned short) message.getNoteNumber(),
-                    pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
-                    pressure: ((float) message.getVelocity()) / 127,
-                },
+                id: (unsigned short) message.getNoteNumber(),
                 offset: (uint16_t) data.samplePosition,
+                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
+                pressure: ((float) message.getVelocity()) / 127,
             };
             event.value = value;
 

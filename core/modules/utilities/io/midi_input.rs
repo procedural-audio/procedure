@@ -31,7 +31,8 @@ impl Processor for NoteListener {
 
     #[inline]
     fn process(&mut self, event: Self::Item) -> Self::Item {
-        match event {
+        unimplemented!();
+        /*match event {
             Event::NoteOn { note, offset: _ } => {
                 let mut next = None;
                 let mut min = usize::MAX;
@@ -114,6 +115,7 @@ impl Processor for NoteListener {
             .queued
             .pop()
             .unwrap_or(Event::None)
+            */
     }
 }
 
@@ -191,7 +193,7 @@ impl Module for MidiInput {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         self.listener.set_voice(voice.index as usize);
 
-        for i in 0..16 {
+        /*for i in 0..16 {
             if i < inputs.events[0].len() {
                 match self.listener.process(inputs.events[0][i]) {
                     Event::None => (),
@@ -221,6 +223,6 @@ impl Module for MidiInput {
                 Event::ProgramChange { id: _, value: _ } => {}
                 Event::None => {}
             }
-        }
+        }*/
     }
 }

@@ -335,7 +335,7 @@ impl Voice for SamplePlayer {
         }
     }
 
-    fn note_on(&mut self, id: Id, _offset: u16, _note: Note, _pressure: f32) {
+    fn note_on(&mut self, id: Id, _offset: u16, _note: NoteMessage, _pressure: f32) {
         match &self.sample {
             Some(sample) => {
                 self.active = true;

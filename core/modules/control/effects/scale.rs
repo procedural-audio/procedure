@@ -269,7 +269,7 @@ impl Module for Scale {
                 _ => (),
             }
 
-            let next = Note::from_num(i);
+            /*let next = Note::from_num(i);
 
             if next.pitch() > value {
                 let prev = next.flat();
@@ -284,7 +284,7 @@ impl Module for Scale {
                 }
 
                 break;
-            }
+            }*/
         }
 
         println!(

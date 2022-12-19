@@ -76,7 +76,7 @@ impl Module for AudioPluginModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.audio[0].copy_from(&inputs.audio[0]);
+        /*outputs.audio[0].copy_from(&inputs.audio[0]);
         outputs.events[0].copy_from(&inputs.events[0]);
 
         if let Some(f) = self.process {
@@ -88,6 +88,6 @@ impl Module for AudioPluginModule {
 
                 (f)(id, arr.as_ptr(), 2, outputs.audio[0].left.len() as u32, outputs.events[0].as_mut_ptr(), outputs.events[0].len() as u32);
             }
-        }
+        }*/
     }
 }

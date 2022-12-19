@@ -62,7 +62,7 @@ impl Module for Transpose {
         }
 
         for event in &inputs.events[0] {
-            match event {
+            /*match event {
                 Event::NoteOn { note, offset } => {
                     outputs.events[0].push(
                         Event::NoteOn {
@@ -80,7 +80,7 @@ impl Module for Transpose {
                     );
                 }
                 e => outputs.events[0].push(*e)
-            }
+            }*/
         }
     }
 }

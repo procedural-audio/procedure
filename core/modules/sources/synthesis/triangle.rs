@@ -69,7 +69,7 @@ impl Module for TriangleModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for note in &inputs.events[0] {
+        /*for note in &inputs.events[0] {
             match note {
                 Event::NoteOn { note, offset: _ } => {
                     voice.active = true;
@@ -99,7 +99,7 @@ impl Module for TriangleModule {
                 .compute(buffer.len() as i32, &[], &mut [buffer.left.as_slice_mut()]);
 
             buffer.right.copy_from(&buffer.left);
-        }
+        }*/
     }
 }
 

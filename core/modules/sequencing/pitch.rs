@@ -46,7 +46,7 @@ impl Module for Pitch {
         let new_pitch = inputs.control[0];
 
         for event in &inputs.events[0] {
-            match event {
+            /*match event {
                 Event::NoteOn { note, offset } => {
                     outputs.events[0].push(Event::NoteOn {
                         note: note.with_pitch(new_pitch),
@@ -60,7 +60,7 @@ impl Module for Pitch {
                     });
                 }
                 _ => outputs.events[0].push(*event),
-            }
+            }*/
         }
     }
 }

@@ -262,7 +262,7 @@ impl Module for AnalogOscillator {
             unison = 8.0;
         }
 
-        for event in &inputs.events[0] {
+        /*for event in &inputs.events[0] {
             match event {
                 Event::NoteOn { note, offset: _ } => {
                     voice.freq = note.pitch;
@@ -274,7 +274,7 @@ impl Module for AnalogOscillator {
                 Event::ProgramChange { id: _, value: _ } => {}
                 Event::None => {}
             }
-        }
+        }*/
 
         /*if self.wave_index == 0 {
             let osc_count = unison as usize;

@@ -44,39 +44,75 @@ impl Id {
 #[derive(Copy, Clone, PartialEq)]
 #[repr(C, u32)]
 pub enum Event {
-    NoteOn { note: Note, offset: u16 },
-    NoteOff { id: Id },
-    Pitch { id: Id, freq: f32 },
-    Pressure { id: Id, pressure: f32 },
-    Controller { id: Id, value: f32 },
-    ProgramChange { id: Id, value: u8 },
-    None,
+    NoteOn { pitch: f32, pressure: f32 },
+    NoteOff,
+    Pitch(f32),
+    Pressure(f32),
+    Other(&'static str, f32),
 }
 
-#[derive(Copy, Clone, PartialEq)]
+/*#[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub struct Note {
     pub id: Id,
     pub pitch: f32,
     pub pressure: f32,
-}
+}*/
 
 #[derive(Copy, Clone)]
+#[repr(C)]
 pub struct NoteMessage {
+    pub id: Id,
     pub offset: usize,
-    pub note: Note
+    pub note: Event
+}
+
+impl NoteMessage {
+    pub fn from_num(num: u32) -> Self {
+        let hz = 440.0 * 2.0_f32.powf((num as f32 - 69.0) / 12.0);
+
+        Self {
+            id: Id::new(),
+            offset: 0,
+            note: Event::NoteOn { 
+                pitch: hz,
+                pressure: 0.5,
+            }
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        let mut i = 12;
+        for n in NOTE_NAMES {
+            if n == name {
+                return Some(NoteMessage::from_num(i));
+            }
+
+            i += 1;
+        }
+
+        return None;
+    }
 }
 
 #[derive(Copy, Clone)]
 pub struct NoteEvent {
+    pub id: Id,
     pub time: Time,
     pub note: Event
 }
 
-impl Note {
+pub fn num_to_pitch(num: u32) -> f32 {
+    440.0 * 2.0_f32.powf((num as f32 - 69.0) / 12.0)
+}
+
+pub fn pitch_to_num(pitch: f32) -> u32 {
+    (f32::round(f32::log2(pitch / 440.0) * 12.0) + 69.0) as u32
+}
+
+/*impl Note {
     pub fn from_pitch(hz: f32) -> Self {
         Self {
-            id: Id::new(),
             pitch: hz,
             pressure: 0.5,
         }
@@ -148,13 +184,13 @@ impl Note {
     pub fn transpose(&self, steps: i32) -> Note {
         Note::from_num((self.num() as i32 + steps) as u32)
     }
-}
+}*/
 
-impl std::fmt::Display for Note {
+/*impl std::fmt::Display for Note {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name())
     }
-}
+}*/
 
 /* Iterator ideas */
 

@@ -131,7 +131,7 @@ impl Module for Sampler {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for event in &inputs.events[0] {
+        /*for event in &inputs.events[0] {
             match event {
                 Event::NoteOn { note, offset } => {
                     let sample = self.sample.read().unwrap().clone();
@@ -168,6 +168,6 @@ impl Module for Sampler {
 
             println!("PRocessing note");
             voice.player.process(&mut outputs.audio[0]);
-        }
+        }*/
     }
 }

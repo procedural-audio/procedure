@@ -377,7 +377,7 @@ pub unsafe extern "C" fn ffi_dynamic_line_get_width(w: &mut DynamicLine) -> f32 
 #[repr(C)]
 pub struct StepSequencer<'a> {
     pub grid: &'a mut Vec<Vec<bool>>,
-    pub row_notes: &'a mut Vec<Vec<crate::Note>>,
+    pub row_notes: &'a mut Vec<Vec<crate::NoteMessage>>,
     pub pad_size: (f32, f32),
     pub pad_radius: f32,
     pub step: &'a usize,
@@ -459,7 +459,8 @@ pub unsafe extern "C" fn ffi_step_sequencer_get_row_note_index(
     row: usize,
     index: usize,
 ) -> u32 {
-    w.row_notes[row][index].num()
+    unimplemented!();
+    // w.row_notes[row][index].num()
 }
 
 #[no_mangle]
@@ -470,11 +471,12 @@ pub unsafe extern "C" fn ffi_step_sequencer_set_row_note(
     selected: bool,
 ) {
     println!("Setting {} {} to {}", row, num, selected);
-    if selected {
+    unimplemented!();
+    /*if selected {
         if !w.row_notes[row].contains(&crate::Note::from_num(num)) {
             w.row_notes[row].push(crate::Note::from_num(num));
         }
     } else {
         w.row_notes[row].retain(|n| n.num() != num)
-    }
+    }*/
 }

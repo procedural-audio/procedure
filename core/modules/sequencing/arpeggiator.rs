@@ -183,7 +183,7 @@ impl Module for Arpeggiator {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         /* Arpeggiator Inputs */
 
-        for event in &inputs.events[0] {
+        /*for event in &inputs.events[0] {
             match event {
                 Event::NoteOn { note, offset: _ } => self.arp.note_on(*note),
                 Event::NoteOff { id } => self.arp.note_off(*id),
@@ -191,7 +191,7 @@ impl Module for Arpeggiator {
                 Event::Pressure { id, pressure } => self.arp.note_pressure(*id, *pressure),
                 _ => (),
             }
-        }
+        }*/
 
         /* Set Indicators */
 
@@ -249,7 +249,7 @@ impl Module for Arpeggiator {
 
         /* Arpeggiator Outputs */
 
-        for event in &mut outputs.events[0] {
+        /*for event in &mut outputs.events[0] {
             *event = match self.arp.gen() {
                 Event::NoteOn { note, offset } => {
                     println!("Pressure is {}", self.velocities[beat]);
@@ -260,7 +260,7 @@ impl Module for Arpeggiator {
                 }
                 e => e,
             }
-        }
+        }*/
     }
 }
 
@@ -275,8 +275,8 @@ pub enum ArpMode {
 }
 
 pub struct Arp {
-    inputs: Vec<Note>,
-    outputs: Vec<Note>,
+    inputs: Vec<NoteMessage>,
+    outputs: Vec<NoteMessage>,
     queue: Vec<Event>,
     mode: ArpMode,
     octaves: u32,
@@ -295,8 +295,8 @@ impl Arp {
         }
     }
 
-    pub fn note_on(&mut self, note: Note) {
-        self.inputs.push(note);
+    pub fn note_on(&mut self, pitch: f32, pressure: f32) {
+        // self.inputs.push(note);
     }
 
     pub fn note_off(&mut self, id: Id) {
@@ -306,7 +306,7 @@ impl Arp {
     pub fn note_pitch(&mut self, id: Id, pitch: f32) {
         for note in &mut self.inputs {
             if note.id == id {
-                note.pitch = pitch;
+                // note.pitch = pitch;
             }
         }
     }
@@ -314,7 +314,7 @@ impl Arp {
     pub fn note_pressure(&mut self, id: Id, pressure: f32) {
         for note in &mut self.inputs {
             if note.id == id {
-                note.pressure = pressure;
+                // note.pressure = pressure;
             }
         }
     }
@@ -329,11 +329,11 @@ impl Arp {
 
     /// Step the arpeggiator state. Fill the queue.
     pub fn set_step(&mut self, num: usize) {
-        use std::cmp::Ordering;
+        /*use std::cmp::Ordering;
 
         self.queue.clear();
 
-        let mut notes = [Note::from_num(0); 16];
+        let mut notes = [NoteMessage::from_num(0); 16];
         let mut count = 0;
 
         for octave in 1..(self.octaves + 1) {
@@ -456,7 +456,7 @@ impl Arp {
                 }),
                 None => (),
             },
-        }
+        }*/
     }
 }
 
@@ -468,7 +468,7 @@ impl Generator for Arp {
         self.queue.clear();
 
         for note in &self.outputs {
-            self.queue.push(Event::NoteOff { id: note.id });
+            // self.queue.push(Event::NoteOff { id: note.id });
         }
 
         self.outputs.clear();
@@ -477,7 +477,8 @@ impl Generator for Arp {
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn gen(&mut self) -> Self::Item {
-        let event = self.queue.pop();
+        panic!("Not implemented");
+        /*let event = self.queue.pop();
 
         match event {
             Some(event) => match event {
@@ -493,6 +494,6 @@ impl Generator for Arp {
                 _ => event,
             },
             None => Event::None,
-        }
+        }*/
     }
 }

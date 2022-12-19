@@ -11,8 +11,6 @@ pub use envelopes::*;
 pub use oscillator::*;
 pub use wavetable::*;
 
-use crate::buffers::*;
-
 /*
 
 Implement like https://github.com/RustAudio/dasp/blob/master/dasp_signal/src/lib.rs
