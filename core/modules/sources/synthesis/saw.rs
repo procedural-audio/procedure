@@ -76,24 +76,25 @@ impl Module for SawModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*for note in &inputs.events[0] {
-            match note {
-                Event::NoteOn { note, offset: _ } => {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure } => {
                     voice.active = true;
-                    voice.id = note.id;
+                    voice.id = msg.id;
 
-                    println!("Setting pitch to {}", note.pitch);
+                    println!("Setting pitch to {}", pitch);
 
-                    voice.saw.set_freq(note.pitch);
+                    voice.saw.set_freq(pitch);
                 }
-                Event::NoteOff { id } => {
-                    if voice.id == *id {
+                Event::NoteOff => {
+                    println!("Note off");
+                    if voice.id == msg.id {
                         voice.active = false;
                     }
                 }
-                Event::Pitch { id, freq } => {
-                    if voice.id == *id {
-                        voice.saw.set_freq(*freq);
+                Event::Pitch(freq) => {
+                    if voice.id == msg.id {
+                        voice.saw.set_freq(freq);
                     }
                 }
                 _ => (),
@@ -110,7 +111,7 @@ impl Module for SawModule {
             );
 
             buffer.right.copy_from(&buffer.left);
-        }*/
+        }
     }
 }
 
