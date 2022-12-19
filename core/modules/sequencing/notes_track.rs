@@ -3,18 +3,73 @@ use crate::*;
 use pa_dsp::event::NoteEvent;
 
 pub struct NotePlayer {
-    max_voice: u32,
-    live: Vec<(u32, u32)>, // (Voice ID, Note ID)
-    queued: Vec<(u32, Event)> // (Note ID, Note)
+    queue: Vec<(u32, NoteMessage)>, // Queue of notes to play
+    playing: Vec<(u32, Id)>, // Playing voice index
+    max_voice: u32 // Maximum playable voice
 }
 
 impl NotePlayer {
-    fn play_note(id: u32, note: Event) {
-
+    pub fn new() -> Self {
+        Self {
+            queue: Vec::with_capacity(64),
+            playing: Vec::with_capacity(64),
+            max_voice: 16
+        }
     }
 
-    fn stop_note(id: u32) {
+    pub fn message(&mut self, message: NoteMessage) {
+        match message.note {
+            Event::NoteOn { pitch, pressure } => {
+                for i in 0..self.max_voice {
+                    fn contains(playing: &Vec<(u32, Id)>, voice: u32) -> bool {
+                        for (voice2, id) in playing {
+                            if *voice2 == voice {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
 
+                    if !contains(&self.playing, i) {
+                        println!("Note on");
+                        self.playing.push((i, message.id));
+                        self.queue.push((i, message));
+                        break;
+                    }
+                }
+
+            },
+            Event::NoteOff => {
+                for (voice, id) in &self.playing {
+                    if *id == message.id {
+                        println!("Note off");
+                        self.queue.push((*voice, message));
+                    }
+                }
+
+                self.playing.retain(| (v2, id2) | {
+                   *id2 != message.id 
+                });
+            },
+            _ => {
+                for (voice, id) in &self.playing {
+                    if *id == message.id {
+                        println!("Other event");
+                        self.queue.push((*voice, message));
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn generate(&mut self, voice: u32, output: &mut Buffer<NoteMessage>) {
+        for (index, event) in &self.queue {
+            if *index == voice {
+                output.push(*event);
+            }
+        }
+
+        self.queue.retain(|(i, _e)| *i != voice);
     }
 }
 
@@ -22,9 +77,7 @@ pub struct NotesTrack {
     events: Vec<NoteEvent>,
     length: usize,
     beat: f64,
-    max_voice: u32,
-    queue: Vec<(u32, Event)>, // (voice index, event)
-    output: Vec<NoteMessage>,
+    player: NotePlayer
 }
 
 impl Module for NotesTrack {
@@ -80,9 +133,7 @@ impl Module for NotesTrack {
             ],
             length: 4 * 32,
             beat: 0.0,
-            queue: Vec::with_capacity(64),
-            output: Vec::with_capacity(64),
-            max_voice: 0,
+            player: NotePlayer::new()
         }
     }
 
@@ -111,29 +162,19 @@ impl Module for NotesTrack {
             let time = inputs.time[0];
             self.beat = time.cycle(self.length as f64).start();
 
-            self.queue.clear();
-
             for event in &self.events {
                 if time.cycle(self.length as f64).contains(event.time.beat()) {
-                    self.queue.push((0, event.note));
+                    self.player.message(NoteMessage {
+                        id: event.id,
+                        offset: 0,
+                        note: event.note
+                    });
                 }
             }
         }
 
-        for (index, event) in &self.queue {
-            if *index == *voice {
-                println!("Playing note");
-                outputs.events[0].push(
-                    NoteMessage {
-                        id: Id::new(),
-                        offset: 0,
-                        note: *event
-                    }
-                );
-            }
-        }
+        self.player.generate(*voice, &mut outputs.events[0]);
 
-        self.queue.retain(|(i, _e)| *i != *voice);
     }
 }
 

@@ -81,13 +81,9 @@ impl Module for SawModule {
                 Event::NoteOn { pitch, pressure } => {
                     voice.active = true;
                     voice.id = msg.id;
-
-                    println!("Setting pitch to {}", pitch);
-
                     voice.saw.set_freq(pitch);
                 }
                 Event::NoteOff => {
-                    println!("Note off");
                     if voice.id == msg.id {
                         voice.active = false;
                     }

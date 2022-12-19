@@ -300,8 +300,96 @@ class PianoRollWidget extends ModuleWidget {
                     DragRegion(selectedRegion)
                   ] +
                   noteWidgets),
-          Align(alignment: Alignment.topRight, child: ZoomWidget(zoom: zoom))
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: NotesWidgetSidebar(
+              zoom: zoom,
+            ),
+          )
         ]));
+  }
+}
+
+class NotesWidgetSidebar extends StatefulWidget {
+  NotesWidgetSidebar({required this.zoom});
+
+  ValueNotifier<Offset> zoom;
+
+  @override
+  State<StatefulWidget> createState() => _NotesWidgetSidebar();
+}
+
+class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
+  bool expanded = false;
+  final double width = 300.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return SizedBox(
+          width: width,
+          child: Stack(children: [
+            AnimatedPositioned(
+                left: expanded ? 0 : -width,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.fastLinearToSlowEaseIn,
+                child: Container(
+                  width: width,
+                  height: constraints.maxHeight,
+                  decoration: const BoxDecoration(
+                      color: Color.fromRGBO(20, 20, 20, 1.0)),
+                  child: Column(
+                    children: [
+                      Slider(
+                        value: (widget.zoom.value.dx - 0.1) / 0.9,
+                        onChanged: (v) {
+                          widget.zoom.value =
+                              Offset(v * 0.9 + 0.1, widget.zoom.value.dy);
+                          setState(() {});
+                        },
+                      ),
+                      Slider(
+                        value: (widget.zoom.value.dy - 0.1) / 0.9,
+                        onChanged: (v) {
+                          widget.zoom.value =
+                              Offset(widget.zoom.value.dx, v * 0.9 + 0.1);
+                          setState(() {});
+                        },
+                      )
+                    ],
+                  ),
+                )),
+            Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                    borderRadius: const BorderRadius.only(
+                        bottomRight: Radius.circular(5)),
+                    border: Border.all(
+                        color: const Color.fromRGBO(40, 40, 40, 1.0),
+                        width: 2.0)),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      expanded = !expanded;
+                    });
+                  },
+                  child: AnimatedRotation(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.fastLinearToSlowEaseIn,
+                    turns: expanded ? 0.5 : 1.0,
+                    child: const Icon(
+                      Icons.chevron_left,
+                      size: 18.0,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ))
+          ]));
+    });
   }
 }
 
@@ -325,7 +413,7 @@ class TimeIndicator extends StatelessWidget {
   }
 }
 
-class ZoomWidget extends StatelessWidget {
+/*class ZoomWidget extends StatelessWidget {
   ZoomWidget({required this.zoom});
 
   ValueNotifier<Offset> zoom;
@@ -358,7 +446,7 @@ class ZoomWidget extends StatelessWidget {
           );
         });
   }
-}
+}*/
 
 class NotesScrollWidget extends StatelessWidget {
   NotesScrollWidget(
