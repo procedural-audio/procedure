@@ -146,8 +146,6 @@ class PianoRollWidget extends ModuleWidget {
 
     /* Copy all notes from backend */
 
-    print("Build");
-
     for (int i = events.length; i < count; i++) {
       updatedEvents = true;
 
@@ -185,6 +183,11 @@ class PianoRollWidget extends ModuleWidget {
                 selectedRegion: selectedRegion,
                 selectedIds: selectedIds,
                 widgetRaw: widgetRaw,
+                refreshNotes: () {
+                  setState(() {
+                    events.clear();
+                  });
+                },
               ));
 
               break;
@@ -208,20 +211,16 @@ class PianoRollWidget extends ModuleWidget {
         onKeyEvent: (e) {
           if (e.logicalKey == LogicalKeyboardKey.delete ||
               e.logicalKey == LogicalKeyboardKey.backspace) {
-            selectedIds.value.sort((a, b) {
-              return a.compareTo(b);
-            });
+            events.clear();
+            noteWidgets.clear();
 
-            int removed = 0;
             for (int i in selectedIds.value) {
-              ffiNotesTrackIdRemoveNote(widgetRaw.pointer, i - removed);
-              removed += 1;
+              ffiNotesTrackIdRemoveNote(widgetRaw.pointer, i);
             }
 
             selectedIds.value.clear();
             selectedIds.notifyListeners();
 
-            events.clear();
             setState(() {});
           }
         },
@@ -480,6 +479,7 @@ class NoteWidget extends StatefulWidget {
       {required this.id,
       required this.selectedIds,
       required this.selectedRegion,
+      required this.refreshNotes,
       required this.widgetRaw})
       : super(key: UniqueKey());
 
@@ -489,6 +489,7 @@ class NoteWidget extends StatefulWidget {
 
   ValueNotifier<Rectangle?> selectedRegion;
   ValueNotifier<List<int>> selectedIds;
+  void Function() refreshNotes;
 
   @override
   State<NoteWidget> createState() => _NoteWidgetState();
@@ -537,26 +538,26 @@ class _NoteWidgetState extends State<NoteWidget> {
 
   @override
   Widget build(BuildContext context) {
-    double startTime =
-        ffiNotesTrackIdGetOnTime(widget.widgetRaw.pointer, widget.id);
-    double endTime =
-        ffiNotesTrackIdGetOffTime(widget.widgetRaw.pointer, widget.id);
-    int num = ffiNotesTrackIdGetNoteOnNum(widget.widgetRaw.pointer, widget.id);
-
-    double x = startTime * BEAT_WIDTH;
-    double y = (STEP_COUNT - num) * STEP_HEIGHT;
-    double width = (endTime - startTime) * BEAT_WIDTH;
-
-    print("x is " +
-        x.toString() +
-        ", y is " +
-        y.toString() +
-        ", width is " +
-        width.toString());
-
     return ValueListenableBuilder<List<int>>(
         valueListenable: widget.selectedIds,
         builder: (context, selectedIds, widgets) {
+          double startTime =
+              ffiNotesTrackIdGetOnTime(widget.widgetRaw.pointer, widget.id);
+          double endTime =
+              ffiNotesTrackIdGetOffTime(widget.widgetRaw.pointer, widget.id);
+          int num =
+              ffiNotesTrackIdGetNoteOnNum(widget.widgetRaw.pointer, widget.id);
+
+          double x = startTime * BEAT_WIDTH;
+          double y = (STEP_COUNT - num) * STEP_HEIGHT;
+          double width = (endTime - startTime) * BEAT_WIDTH;
+          print("x is " +
+              x.toString() +
+              ", y is " +
+              y.toString() +
+              ", width is " +
+              width.toString());
+
           bool selected = selectedIds.contains(widget.id);
 
           return Positioned(
@@ -599,7 +600,9 @@ class _NoteWidgetState extends State<NoteWidget> {
                             widget.selectedIds.notifyListeners();
                           }
                         }, onPanUpdate: (details) {
-                          x += details.delta.dx;
+                          double deltax = details.delta.dx;
+
+                          x += deltax;
                           // y += details.delta.dy;
 
                           if (x < 0) {
@@ -607,45 +610,114 @@ class _NoteWidgetState extends State<NoteWidget> {
                           }
 
                           // y = y.clamp(0, 127 * STEP_HEIGHT);
-
-                          print(
-                              "Setting time to " + (x / BEAT_WIDTH).toString());
                           ffiNotesTrackIdSetOnTime(widget.widgetRaw.pointer,
                               widget.id, x / BEAT_WIDTH);
                           ffiNotesTrackIdSetOffTime(widget.widgetRaw.pointer,
                               widget.id, x / BEAT_WIDTH + width / BEAT_WIDTH);
-                          /*ffiNotesTrackSetNoteStart(widget.widgetRaw.pointer,
-                                widget.index, x / BEAT_WIDTH);
-                            ffiNotesTrackSetNoteLength(widget.widgetRaw.pointer,
-                                widget.index, width / BEAT_WIDTH);
-                            ffiNotesTrackSetNoteNum(widget.widgetRaw.pointer,
-                                widget.index, y ~/ STEP_HEIGHT);*/
-                          setState(() {});
+
+                          bool shouldRefreshAll = false;
+                          for (var id in widget.selectedIds.value) {
+                            if (id == widget.id) {
+                              continue;
+                            } else {
+                              shouldRefreshAll = true;
+                            }
+
+                            double startTime = ffiNotesTrackIdGetOnTime(
+                                widget.widgetRaw.pointer, id);
+                            double endTime = ffiNotesTrackIdGetOffTime(
+                                widget.widgetRaw.pointer, id);
+                            double x = startTime * BEAT_WIDTH;
+                            double width = (endTime - startTime) * BEAT_WIDTH;
+
+                            x += deltax;
+
+                            ffiNotesTrackIdSetOnTime(
+                                widget.widgetRaw.pointer, id, x / BEAT_WIDTH);
+                            ffiNotesTrackIdSetOffTime(widget.widgetRaw.pointer,
+                                id, x / BEAT_WIDTH + width / BEAT_WIDTH);
+                          }
+
+                          if (shouldRefreshAll) {
+                            setState(() {});
+                            widget.selectedIds.notifyListeners();
+                          } else {
+                            setState(() {});
+                          }
                         }),
                         Align(
                             alignment: Alignment.centerRight,
                             child: Container(
-                              width: 10,
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.resizeLeftRight,
-                                child: GestureDetector(
-                                  onHorizontalDragUpdate: (details) {
-                                    /*setState(() {
-                                      width += details.delta.dx;
+                                width: 10,
+                                child: MouseRegion(
+                                    cursor: SystemMouseCursors.resizeLeftRight,
+                                    child: GestureDetector(
+                                        onHorizontalDragUpdate: (details) {
+                                      double deltax = details.delta.dx;
 
-                                      /*ffiNotesTrackSetNoteLength(
-                                        widget.widgetRaw.pointer,
-                                        widget.index,
-                                        width / BEAT_WIDTH);*/
-                                    });*/
-                                  },
-                                ),
-                              ),
-                              decoration: BoxDecoration(
-                                  color: Colors.black.withAlpha(50),
-                                  borderRadius: const BorderRadius.horizontal(
-                                      right: Radius.circular(5))),
-                            ))
+                                      /* Constrain deltax */
+                                      deltax =
+                                          deltax.clamp(-width + 10, deltax);
+
+                                      for (var id in widget.selectedIds.value) {
+                                        double startTime =
+                                            ffiNotesTrackIdGetOnTime(
+                                                widget.widgetRaw.pointer, id);
+                                        double endTime =
+                                            ffiNotesTrackIdGetOffTime(
+                                                widget.widgetRaw.pointer, id);
+                                        double width =
+                                            (endTime - startTime) * BEAT_WIDTH;
+
+                                        deltax =
+                                            deltax.clamp(-width + 10, deltax);
+                                      }
+
+                                      /* Update current note */
+
+                                      width += deltax;
+                                      ffiNotesTrackIdSetOffTime(
+                                          widget.widgetRaw.pointer,
+                                          widget.id,
+                                          x / BEAT_WIDTH + width / BEAT_WIDTH);
+
+                                      bool shouldRefreshAll = false;
+                                      for (var id in widget.selectedIds.value) {
+                                        if (id == widget.id) {
+                                          continue;
+                                        } else {
+                                          shouldRefreshAll = true;
+                                        }
+
+                                        double startTime =
+                                            ffiNotesTrackIdGetOnTime(
+                                                widget.widgetRaw.pointer, id);
+                                        double endTime =
+                                            ffiNotesTrackIdGetOffTime(
+                                                widget.widgetRaw.pointer, id);
+                                        double x = startTime * BEAT_WIDTH;
+                                        double width =
+                                            (endTime - startTime) * BEAT_WIDTH;
+
+                                        width += deltax;
+                                        ffiNotesTrackIdSetOffTime(
+                                            widget.widgetRaw.pointer,
+                                            id,
+                                            x / BEAT_WIDTH +
+                                                width / BEAT_WIDTH);
+                                      }
+
+                                      if (shouldRefreshAll) {
+                                        setState(() {});
+                                        widget.selectedIds.notifyListeners();
+                                      } else {
+                                        setState(() {});
+                                      }
+                                    })),
+                                decoration: BoxDecoration(
+                                    color: Colors.black.withAlpha(50),
+                                    borderRadius: const BorderRadius.horizontal(
+                                        right: Radius.circular(5)))))
                       ]))));
         });
   }
