@@ -24,16 +24,10 @@ impl NoteListener {
     pub fn set_voice(&mut self, index: usize) {
         self.current_voice = index;
     }
-}
 
-impl Processor for NoteListener {
-    type Item = Event;
-
-    #[inline]
-    fn process(&mut self, event: Self::Item) -> Self::Item {
-        unimplemented!();
-        /*match event {
-            Event::NoteOn { note, offset: _ } => {
+    fn push(&mut self, event: NoteMessage) {
+        match event.note {
+            Event::NoteOn { pitch, pressure } => {
                 let mut next = None;
                 let mut min = usize::MAX;
 
@@ -48,7 +42,7 @@ impl Processor for NoteListener {
                     Some(voice) => {
                         // println!("Added event");
                         // Found inactive voice
-                        voice.id = note.id;
+                        voice.id = event.id;
                         voice.active = true;
                         voice.counter = self.counter;
                         voice.queued.push(event);
@@ -68,7 +62,7 @@ impl Processor for NoteListener {
                         match next {
                             Some(voice) => {
                                 // println!("Stole voice for event");
-                                voice.id = note.id;
+                                voice.id = event.id;
                                 voice.active = true;
                                 voice.counter = self.counter;
                                 voice.queued.push(event);
@@ -80,42 +74,42 @@ impl Processor for NoteListener {
                     }
                 }
             }
-            Event::NoteOff { id } => {
+            Event::NoteOff => {
                 for voice in &mut self.voices {
-                    if voice.id == id && voice.active {
+                    if voice.id == event.id && voice.active {
                         voice.active = false;
                         voice.queued.push(event);
                     }
                 }
             }
-            Event::Pitch { id, freq: _ } => {
+            Event::Pitch(pitch) => {
                 for voice in &mut self.voices {
-                    if voice.id == id && voice.active {
+                    if voice.id == event.id && voice.active {
                         voice.counter = self.counter;
                         voice.queued.push(event);
                     }
                 }
             }
-            Event::Pressure { id, pressure: _ } => {
+            Event::Pressure(pressure) => {
                 for voice in &mut self.voices {
-                    if voice.id == id && voice.active {
+                    if voice.id == event.id && voice.active {
                         voice.counter = self.counter;
                         voice.queued.push(event);
                     }
                 }
             }
-            Event::Controller { id: _, value: _ } => (),
-            Event::ProgramChange { id: _, value: _ } => (),
-            Event::None => (),
+            Event::Other(name, value) => {
+
+            }
         }
 
         self.counter += 1;
+    }
 
+    fn gen(&mut self) -> Option<NoteMessage> {
         self.voices[self.current_voice]
             .queued
             .pop()
-            .unwrap_or(Event::None)
-            */
     }
 }
 
@@ -123,7 +117,7 @@ struct EventVoice {
     active: bool,
     id: Id,
     counter: usize,
-    queued: Vec<Event>,
+    queued: Vec<NoteMessage>,
 }
 
 impl EventVoice {
@@ -193,36 +187,13 @@ impl Module for MidiInput {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         self.listener.set_voice(voice.index as usize);
 
-        /*for i in 0..16 {
-            if i < inputs.events[0].len() {
-                match self.listener.process(inputs.events[0][i]) {
-                    Event::None => (),
-                    e => outputs.events[0].push(e)
-                }
-            } else {
-                match self.listener.process(Event::None) {
-                    Event::None => (),
-                    e => outputs.events[0].push(e)
-                }
-            }
+        for msg in &inputs.events[0] {
+            println!("NoteMessage: id: {}, offset: {}, note: {}", msg.id.num(), msg.offset, msg.note);
+            self.listener.push(*msg);
         }
 
-        for event in &outputs.events[0] {
-            match event {
-                Event::NoteOn { note: _, offset: _ } => {
-                    println!("Voice {}: Note on", voice.index);
-                }
-                Event::NoteOff { id: _ } => {
-                    println!("Voice {}: Note off", voice.index);
-                }
-                Event::Pitch { id: _, freq: _ } => {
-                    println!("Voice {}: Pitch event", voice.index);
-                }
-                Event::Pressure { id: _, pressure: _ } => {}
-                Event::Controller { id: _, value: _ } => {}
-                Event::ProgramChange { id: _, value: _ } => {}
-                Event::None => {}
-            }
-        }*/
+        while let Some(msg) = self.listener.gen() {
+            outputs.events[0].push(msg);
+        }
     }
 }

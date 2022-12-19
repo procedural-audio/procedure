@@ -45,7 +45,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
         ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
         ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
         ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
-        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t)) dlsym(handle, "ffi_host_process");
+        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, NoteMessage*, uint32_t)) dlsym(handle, "ffi_host_process");
 
         core = ffiCreateHost();
     } else {
@@ -352,13 +352,13 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         if (message.isNoteOn()) {
             // std::cout << message.getDescription() << std::endl;
 
-            Event event;
-            event.tag = EventTag::NoteOn;
+            NoteMessage event;
+            event.tag = NoteTag::NoteOn;
+            event.id = (unsigned short) message.getNoteNumber();
+            event.offset = (size_t) data.samplePosition;
 
-            EventValue value;
+            NoteValue value;
             value.noteOn = NoteOn {
-                id: (unsigned short) message.getNoteNumber(),
-                offset: (uint16_t) data.samplePosition,
                 pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
                 pressure: ((float) message.getVelocity()) / 127,
             };
@@ -368,12 +368,13 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         } else if (message.isNoteOff()) {
             // std::cout << message.getDescription() << std::endl;
 
-            auto event = Event {
-                tag: EventTag::NoteOff,
+            auto event = NoteMessage {
+                id: (unsigned short) message.getNoteNumber(),
+                offset: (size_t) data.samplePosition,
+                tag: NoteTag::NoteOff,
             };
 
             event.value.noteOff = NoteOff {
-                id: (unsigned short) message.getNoteNumber()
             };
 
             events.push_back(event);

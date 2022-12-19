@@ -55,14 +55,14 @@ public:
 private:
     FFIHost* core = nullptr;
     
-    std::vector<Event> events;
+    std::vector<NoteMessage> events;
 
     void * handle = nullptr;
 
     FFIHost* (*ffiCreateHost)() = nullptr;
     void (*ffiDestroyHost)(FFIHost*) = nullptr;
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
-    void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, Event*, uint32_t) = nullptr;
+    void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, NoteMessage*, uint32_t) = nullptr;
     
     void (^audioPluginsCallback)(id _Nullable, FlutterReply  _Nonnull) = ^(id _Nullable encoded, FlutterReply _Nonnull callback) {
         if (encoded) {

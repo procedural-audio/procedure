@@ -16,7 +16,7 @@ const NOTE_NAMES: [&'static str; 120] = [
 
 // Size is 20 bytes
 
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, fmt::Display};
 
 lazy_static!(
     static ref LAST_ID: Arc<Mutex<u64>> = Arc::new(Mutex::new(0));
@@ -49,6 +49,28 @@ pub enum Event {
     Pitch(f32),
     Pressure(f32),
     Other(&'static str, f32),
+}
+
+impl Display for Event {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Event::NoteOn { pitch, pressure } => {
+                write!(f, "Event::NoteOn {{ pitch: {:.2}, pressure: {:.2} }}", *pitch, *pressure)
+            },
+            Event::NoteOff => {
+                write!(f, "Event::NoteOff")
+            },
+            Event::Pitch(pitch) => {
+                write!(f, "Event::Pitch {{ pitch: {:.2} }}", *pitch)
+            },
+            Event::Pressure(pressure) => {
+                write!(f, "Event::Pressure {{ pressure: {:.2} }}", *pressure)
+            },
+            Event::Other(name, value) => {
+                write!(f, "Event::Other {{ name: {}, value: {:.2} }}", *name, *value)
+            },
+        }
+    }
 }
 
 /*#[derive(Copy, Clone, PartialEq)]
