@@ -71,7 +71,6 @@ class StepSequencerWidget extends ModuleWidget {
       ffiStepSequencerSetSize(widgetRaw.pointer, cols, rows);
 
       List<Row> rowWidgets = [];
-      List<NoteSelectorButton> selectors = [];
 
       for (int r = 0; r < rows; r++) {
         List<Widget> pads = [];
@@ -87,44 +86,25 @@ class StepSequencerWidget extends ModuleWidget {
         }
 
         rowWidgets.add(Row(children: pads));
-
-        selectors.add(NoteSelectorButton(
-          width: leftWidth,
-          height: 42,
-          row: r,
-          widgetRaw: widgetRaw,
-        ));
       }
 
       return Container(
-        decoration: BoxDecoration(
-            color: const Color.fromRGBO(20, 20, 20, 1.0),
-            borderRadius: BorderRadius.circular(10)),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
+          decoration: BoxDecoration(
+              color: const Color.fromRGBO(20, 20, 20, 1.0),
+              borderRadius: BorderRadius.circular(10)),
+          child: Stack(fit: StackFit.expand, children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(leftWidth, 20, 0, 0),
-              child: CustomPaint(
-                painter:
-                    SequencerHighlight(step: step, steps: cols, width: 42),
-              )),
+                padding: EdgeInsets.fromLTRB(leftWidth, 20, 0, 0),
+                child: CustomPaint(
+                  painter:
+                      SequencerHighlight(step: step, steps: cols, width: 42),
+                )),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-              child: Row(
-                children: [
-                  Column(
-                    children: selectors,
-                  ),
-                  Column(
-                    children: rowWidgets,
-                  ),
-                ],
-              )
-            ),
-          ],
-        ),
-      );
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                child: Column(
+                  children: rowWidgets,
+                ))
+          ]));
     });
   }
 }
@@ -221,7 +201,7 @@ class SequencerHighlight extends CustomPainter {
   }
 }
 
-class NoteSelectorButton extends StatefulWidget {
+/*class NoteSelectorButton extends StatefulWidget {
   NoteSelectorButton(
       {required this.width,
       required this.height,
@@ -566,3 +546,4 @@ class _Key extends State<Key> {
             )));
   }
 }
+*/

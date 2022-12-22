@@ -459,8 +459,8 @@ pub unsafe extern "C" fn ffi_step_sequencer_get_row_note_index(
     row: usize,
     index: usize,
 ) -> u32 {
-    unimplemented!();
-    // w.row_notes[row][index].num()
+    // w.row_notes[row][index].num();
+    return 0;
 }
 
 #[no_mangle]
@@ -471,7 +471,7 @@ pub unsafe extern "C" fn ffi_step_sequencer_set_row_note(
     selected: bool,
 ) {
     println!("Setting {} {} to {}", row, num, selected);
-    unimplemented!();
+    // unimplemented!();
     /*if selected {
         if !w.row_notes[row].contains(&crate::Note::from_num(num)) {
             w.row_notes[row].push(crate::Note::from_num(num));

@@ -2,13 +2,16 @@ use std::vec;
 
 use crate::*;
 
+use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
+
 pub struct StepSequencer {
     grid: Vec<Vec<bool>>,
-    notes: Vec<Vec<NoteEvent>>,
+    notes: Vec<Vec<NoteMessage>>,
     used_voice: u32,
     playing: Vec<NoteEvent>,
     queue: Vec<NoteMessage>,
     step: usize,
+    lua: Lua
 }
 
 pub struct StepSequencerVoice {
@@ -19,7 +22,7 @@ impl Module for StepSequencer {
     type Voice = StepSequencerVoice;
 
     const INFO: Info = Info {
-        title: "",
+        title: "Step Sequencer",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(20 + 80 + 42 * 16, 20 + 20 + 42 * 8),
@@ -28,11 +31,18 @@ impl Module for StepSequencer {
         outputs: &[Pin::Notes("Midi Output", 10)],
         path: "Category 1/Category 2/Module Name"
     };
-
     
     fn new() -> Self {
-        unimplemented!();
-        /*Self {
+        let lua = Lua::new();
+
+        lua.context( | ctx | {
+            let globals = ctx.globals();
+
+            let sum = ctx.load("1 + 1").eval::<i32>().unwrap();
+            println!("Sum of 1 + 1 is {}", sum);
+        });
+
+        Self {
             grid: vec![vec![]],
             notes: vec![
                 vec![NoteMessage::from_name("C3").unwrap()],
@@ -52,7 +62,8 @@ impl Module for StepSequencer {
             playing: Vec::with_capacity(32),
             queue: Vec::with_capacity(32),
             step: 0,
-        }*/
+            lua,
+        }
     }
 
     fn new_voice(index: u32) -> Self::Voice {
@@ -63,17 +74,16 @@ impl Module for StepSequencer {
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
-        panic!("Unimplementd");
-        /*return Box::new(Padding {
-            padding: (10, 10, 10, 10),
+        return Box::new(Padding {
+            padding: (10, 35, 10, 10),
             child: widget::StepSequencer {
                 grid: &mut self.grid,
                 row_notes: &mut self.notes,
                 pad_size: (40.0, 40.0),
                 pad_radius: 10.0,
                 step: &self.step,
-            },
-        });*/
+            }
+        });
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
