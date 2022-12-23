@@ -377,8 +377,6 @@ pub unsafe extern "C" fn ffi_dynamic_line_get_width(w: &mut DynamicLine) -> f32 
 #[repr(C)]
 pub struct StepSequencer<'a> {
     pub grid: &'a mut Vec<Vec<bool>>,
-    pub pad_size: (f32, f32),
-    pub pad_radius: f32,
     pub step: &'a usize,
 }
 

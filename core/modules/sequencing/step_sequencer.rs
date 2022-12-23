@@ -73,8 +73,6 @@ impl Module for StepSequencer {
                         },
                         child: widget::StepSequencer {
                             grid: &mut self.grid,
-                            pad_size: (40.0, 40.0),
-                            pad_radius: 10.0,
                             step: &self.step,
                         }
                     },
