@@ -22,7 +22,7 @@ impl Module for StepSequencer {
         title: "Step Sequencer",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(20 + 80 + 42 * 16, 20 + 20 + 42 * 8),
+        size: Size::Static(20 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Time("Time", 10)

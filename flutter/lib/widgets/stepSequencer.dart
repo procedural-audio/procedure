@@ -29,12 +29,7 @@ class StepSequencerWidget extends ModuleWidget {
     step = ffiStepSequencerGetStep(widgetRaw.pointer);
   }
 
-  int rows = 8;
-  int cols = 16;
-
   int step = 0;
-
-  double leftWidth = 80;
 
   @override
   void tick() {
@@ -50,8 +45,8 @@ class StepSequencerWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      rows = constraints.maxHeight ~/ 42;
-      cols = (constraints.maxWidth - leftWidth) ~/ 42;
+      int rows = constraints.maxHeight ~/ 42;
+      int cols = constraints.maxWidth ~/ 42;
 
       ffiStepSequencerSetSize(widgetRaw.pointer, cols, rows);
 
@@ -78,17 +73,12 @@ class StepSequencerWidget extends ModuleWidget {
               color: const Color.fromRGBO(20, 20, 20, 1.0),
               borderRadius: BorderRadius.circular(10)),
           child: Stack(fit: StackFit.expand, children: [
-            Padding(
-                padding: EdgeInsets.fromLTRB(leftWidth, 20, 0, 0),
-                child: CustomPaint(
-                  painter:
-                      SequencerHighlight(step: step, steps: cols, width: 42),
-                )),
-            Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                child: Column(
-                  children: rowWidgets,
-                ))
+            CustomPaint(
+              painter: SequencerHighlight(step: step, steps: cols, width: 42),
+            ),
+            Column(
+              children: rowWidgets,
+            )
           ]));
     });
   }
