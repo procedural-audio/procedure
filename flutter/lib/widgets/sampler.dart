@@ -174,17 +174,6 @@ class SampleEditorWidget extends ModuleWidget {
   }
 }
 
-class LuaEditorWidget extends ModuleWidget {
-  LuaEditorWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(color: Colors.blue),
-    );
-  }
-}
-
 class SampleMapperWidget extends ModuleWidget {
   SampleMapperWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
     refreshMap();

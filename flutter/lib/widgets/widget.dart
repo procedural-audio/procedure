@@ -37,6 +37,7 @@ import 'display.dart';
 import 'audioPlugin.dart';
 import 'buttonGrid.dart';
 import 'searchableDropdown.dart';
+import 'luaEditor.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = api.ffiWidgetGetName(widgetRaw);

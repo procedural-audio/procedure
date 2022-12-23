@@ -413,17 +413,42 @@ impl<A: WidgetNew, B: WidgetNew, C: WidgetNew, D: WidgetNew> TabsTuple
 }
 
 #[repr(C)]
-pub struct Tabs {
-    pub tabs: Box<dyn TabsTuple>,
+pub struct Tabs<T: TabsTuple> {
+    pub tabs: T
 }
 
-impl WidgetNew for Tabs {
+pub trait TabsTrait {
+    fn get_tab_count(&self) -> usize;
+    fn get_child(&self, index: usize) -> &dyn WidgetNew;
+    fn get_icon(&self, index: usize) -> Icon;
+}
+
+impl<T: TabsTuple> TabsTrait for Tabs<T> {
+    fn get_tab_count(&self) -> usize {
+        self.tabs.len()
+    }
+
+    fn get_child(&self, index: usize) -> &dyn WidgetNew {
+        self.tabs.get(index).unwrap()
+    }
+
+    fn get_icon(&self, index: usize) -> Icon {
+        self.tabs.get_icon(index).unwrap()
+    }
+
+}
+
+impl<T: TabsTuple> WidgetNew for Tabs<T> {
     fn get_name(&self) -> &'static str {
         "Tabs"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
+    }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn TabsTrait) }
     }
 }
 
@@ -434,18 +459,18 @@ pub struct Tab<T: WidgetNew> {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_tabs_get_tab_child(tabs: &mut Tabs, index: usize) -> &dyn WidgetNew {
-    tabs.tabs.get(index).unwrap()
+pub unsafe extern "C" fn ffi_tabs_get_tab_child(tabs: &dyn TabsTrait, index: usize) -> &dyn WidgetNew {
+    tabs.get_child(index)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_tabs_get_tab_icon(tabs: &mut Tabs, index: usize) -> Icon {
-    tabs.tabs.get_icon(index).unwrap()
-}
+/*#[no_mangle]
+pub unsafe extern "C" fn ffi_tabs_get_tab_icon(tabs: &dyn TabsTrait, index: usize) -> Icon {
+    tabs.get_icon(index)
+}*/
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_tabs_get_tab_count(tabs: &mut Tabs) -> usize {
-    tabs.tabs.len()
+pub unsafe extern "C" fn ffi_tabs_get_tab_count(tabs: &dyn TabsTrait) -> usize {
+    tabs.get_tab_count()
 }
 
 /* ========== Icon ========== */

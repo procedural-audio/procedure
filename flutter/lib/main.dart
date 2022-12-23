@@ -199,7 +199,7 @@ class _PatchingView extends State<PatchingView> {
 
     return RawKeyboardListener(
         focusNode: focusNode,
-        onKey: (event) {
+        /*onKey: (event) {
           if (rightClickVisible) {
             return;
           }
@@ -245,7 +245,7 @@ class _PatchingView extends State<PatchingView> {
               });
             }
           }
-        },
+        },*/
         child: Stack(fit: StackFit.loose, children: [
           InteractiveViewer(
             transformationController: controller,

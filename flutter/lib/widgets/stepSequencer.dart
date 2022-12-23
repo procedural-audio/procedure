@@ -23,21 +23,6 @@ void Function(FFIWidgetPointer, int, int, bool) ffiStepSequencerSetPad = core
             Void Function(FFIWidgetPointer, Int64, Int64,
                 Bool)>>("ffi_step_sequencer_set_pad")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiStepSequencerGetRowNoteCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
-        "ffi_step_sequencer_get_row_note_count")
-    .asFunction();
-int Function(FFIWidgetPointer, int, int) ffiStepSequencerGetRowNoteIndex = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64, Int64)>>(
-        "ffi_step_sequencer_get_row_note_index")
-    .asFunction();
-void Function(FFIWidgetPointer, int, int, bool) ffiStepSequencerSetRowNote =
-    core
-        .lookup<
-            NativeFunction<
-                Void Function(FFIWidgetPointer, Int64, Int32,
-                    Bool)>>("ffi_step_sequencer_set_row_note")
-        .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
   StepSequencerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {

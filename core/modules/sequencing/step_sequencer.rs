@@ -1,17 +1,14 @@
-use std::vec;
-
 use crate::*;
 
-use rlua::{Function, Lua, MetaMethod, Result, UserData, UserDataMethods, Variadic};
+use rlua::{Function, Lua, Result};
+use std::sync::RwLock;
 
 pub struct StepSequencer {
     grid: Vec<Vec<bool>>,
-    notes: Vec<Vec<NoteMessage>>,
-    used_voice: u32,
-    playing: Vec<NoteEvent>,
+    playing: Vec<(u32, Id)>,
     queue: Vec<NoteMessage>,
     step: usize,
-    lua: Lua
+    lua: RwLock<Lua>,
 }
 
 pub struct StepSequencerVoice {
@@ -27,8 +24,12 @@ impl Module for StepSequencer {
         color: Color::GREEN,
         size: Size::Static(20 + 80 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
-        inputs: &[Pin::Time("Time", 10)],
-        outputs: &[Pin::Notes("Midi Output", 10)],
+        inputs: &[
+            Pin::Time("Time", 10)
+        ],
+        outputs: &[
+            Pin::Notes("Midi Output", 10)
+        ],
         path: "Category 1/Category 2/Module Name"
     };
     
@@ -36,33 +37,20 @@ impl Module for StepSequencer {
         let lua = Lua::new();
 
         lua.context( | ctx | {
-            let globals = ctx.globals();
-
-            let sum = ctx.load("1 + 1").eval::<i32>().unwrap();
-            println!("Sum of 1 + 1 is {}", sum);
+            ctx.load(r#"
+                function onNote(num)
+                    print("LUA recieved note num", num)
+                    return num
+                end
+            "#).eval::<()>().unwrap();
         });
 
         Self {
             grid: vec![vec![]],
-            notes: vec![
-                vec![NoteMessage::from_name("C3").unwrap()],
-                vec![NoteMessage::from_name("C#3").unwrap()],
-                vec![NoteMessage::from_name("D3").unwrap()],
-                vec![NoteMessage::from_name("D#3").unwrap()],
-                vec![NoteMessage::from_name("E3").unwrap()],
-                vec![NoteMessage::from_name("F3").unwrap()],
-                vec![NoteMessage::from_name("F#3").unwrap()],
-                vec![NoteMessage::from_name("G3").unwrap()],
-                vec![NoteMessage::from_name("G#3").unwrap()],
-                vec![NoteMessage::from_name("A3").unwrap()],
-                vec![NoteMessage::from_name("A#3").unwrap()],
-                vec![NoteMessage::from_name("B3").unwrap()],
-            ],
-            used_voice: 0,
             playing: Vec::with_capacity(32),
             queue: Vec::with_capacity(32),
             step: 0,
-            lua,
+            lua: RwLock::new(lua),
         }
     }
 
@@ -76,12 +64,28 @@ impl Module for StepSequencer {
     fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (10, 35, 10, 10),
-            child: widget::StepSequencer {
-                grid: &mut self.grid,
-                row_notes: &mut self.notes,
-                pad_size: (40.0, 40.0),
-                pad_radius: 10.0,
-                step: &self.step,
+            child: Tabs {
+                tabs: (
+                    Tab {
+                        icon: Icon {
+                            path: "logos/audio.svg",
+                            color: Color::BLUE
+                        },
+                        child: widget::StepSequencer {
+                            grid: &mut self.grid,
+                            pad_size: (40.0, 40.0),
+                            pad_radius: 10.0,
+                            step: &self.step,
+                        }
+                    },
+                    Tab {
+                        icon: Icon {
+                            path: "logos/audio.svg",
+                            color: Color::BLUE,
+                        },
+                        child: LuaEditor {},
+                    },
+                )
             }
         });
     }
@@ -89,52 +93,61 @@ impl Module for StepSequencer {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let _t = inputs.time[0].cycle(self.grid.len() as f64);
+        inputs.time[0]
+            .cycle(self.grid.len() as f64)
+            .on_each(1.0, | step | {
 
-        /*if voice.index == 0 && self.grid.len() > 0 {
-            inputs.time[0]
-                .cycle(self.grid.len() as f64)
-                .on_each(1.0, |step| {
-                    self.step = step;
-
-                    for (v, note) in &self.playing {
-                        self.queue.push((*v, Event::NoteOff { id: note.id }));
+                for (index, id) in &self.playing {
+                    if *index == voice.index {
+                        outputs.events[0].push(NoteMessage {
+                            id: *id,
+                            offset: 0,
+                            note: Event::NoteOff
+                        })
                     }
+                }
 
-                    self.playing.clear();
+                self.playing.retain(| (index, _id) | {
+                    *index != voice.index
+                });
 
-                    // For each row at step
-                    for row in 0..self.grid[step].len() {
-                        // If row active
-                        if self.grid[self.step][row] {
-                            // Add each (step,row) note
-                            for note in &self.notes[row] {
-                                self.queue.push((
-                                    self.used_voice,
-                                    Event::NoteOn {
-                                        note: *note,
-                                        offset: 0,
-                                    },
-                                ));
-
-                                self.used_voice += 1;
+                if voice.index == 0 {
+                    self.step = step;
+                    for (index, down) in self.grid[step].iter().enumerate() {
+                        if *down {
+                            if let Ok(lua) = self.lua.try_read() {
+                                lua.context( | ctx | {
+                                    let globals = ctx.globals();
+                                    let on_note: Result<Function> = globals.get("onNote");
+                                    match on_note {
+                                        Ok(on_note) => {
+                                            match on_note.call::<usize, u32>(index) {
+                                                Ok(num) => self.queue.push(
+                                                    NoteMessage {
+                                                        id: Id::new(),
+                                                        offset: 0,
+                                                        note: Event::NoteOn {
+                                                            pitch: num_to_pitch(num),
+                                                            pressure: 0.5
+                                                        }
+                                                    },
+                                                ),
+                                                Err(_) => ()
+                                            }
+                                        },
+                                        Err(_) => (),
+                                    }
+                                });
                             }
                         }
                     }
-                });
-        }
-
-        for (index, event) in &self.queue {
-            if voice.index == *index {
-                match event {
-                    Event::NoteOn { note, offset: _ } => self.playing.push((voice.index, *note)),
-                    _ => (),
                 }
-
-                outputs.events[0].push(*event);
             }
-        }*/
+        );
 
-        // self.queue.retain(|(i, _e)| *i != voice.index);
+        if let Some(msg) = self.queue.pop() {
+            outputs.events[0].push(msg);
+            self.playing.push((voice.index, msg.id));
+        }
     }
 }

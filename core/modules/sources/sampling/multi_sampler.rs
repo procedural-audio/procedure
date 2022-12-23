@@ -56,7 +56,7 @@ impl Module for MultiSampler {
             position: (35, 35),
             size: (600 - 35 * 2, 400 - 35 - 20),
             child: Tabs {
-                tabs: Box::new((
+                tabs: (
                     Tab {
                         icon: Icon {
                             path: "logos/audio.svg",
@@ -80,7 +80,7 @@ impl Module for MultiSampler {
                         },
                         child: LuaEditor {},
                     },
-                )),
+                ),
             },
         });
     }
