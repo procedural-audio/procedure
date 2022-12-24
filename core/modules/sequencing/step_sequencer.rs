@@ -1,6 +1,6 @@
 use crate::*;
 
-use rlua::{Function, Lua, Result};
+use rlua::{Function, Lua, Result, Table, TablePairs, prelude::LuaTable, Nil};
 use std::sync::RwLock;
 
 pub struct StepSequencer {
@@ -9,6 +9,55 @@ pub struct StepSequencer {
     queue: Vec<NoteMessage>,
     step: usize,
     lua: RwLock<Lua>,
+}
+
+impl StepSequencer {
+    fn step(&mut self, index: usize) {
+        if let Ok(lua) = self.lua.try_read() {
+            lua.context( | ctx | {
+                let globals = ctx.globals();
+                let grid: Table = globals.get("grid").unwrap();
+
+                let on_step: Result<Function> = globals.get("onStep");
+                match on_step {
+                    Ok(on_step) => {
+                        // on_step.call::<(usize, LuaTable<'_>), _>((index, grid));
+                        // CALL RLUA HERE
+                    },
+                    Err(_) => (),
+                }
+            });
+        }
+    }
+
+    fn update_outlines(&mut self) {
+        if let Ok(lua) = self.lua.try_read() {
+            lua.context( | ctx | {
+                let globals = ctx.globals();
+                let grid: Table = globals.get("grid").unwrap();
+                let cols: TablePairs<u32, Table> = grid.pairs();
+
+                for col in cols {
+                    match col {
+                        Ok((i, col)) => {
+                            let pads: TablePairs<u32, Table> = col.pairs();
+
+                            for pad in pads {
+                                match pad {
+                                    Ok((j, pad)) => {
+                                        // SET PAD OUTLINE/COLOR HERE
+                                    },
+                                    _ => ()
+                                }
+                            }
+                        }
+                        _ => ()
+                    }
+                }
+            });
+        }
+
+    }
 }
 
 pub struct StepSequencerVoice {
@@ -37,10 +86,57 @@ impl Module for StepSequencer {
         let lua = Lua::new();
 
         lua.context( | ctx | {
+            /*let grid = ctx.create_table().unwrap();
+
+            for i in 0..16 {
+                let column = ctx.create_table().unwrap();
+                for j in 0..8 {
+                    let pad = ctx.create_table().unwrap();
+                    pad.set("", value)
+                    column.set(0, value);
+                }
+                grid.set(key, value)
+            }
+            grid.set(0, value)*/
+
             ctx.load(r#"
-                function onNote(num)
-                    print("LUA recieved note num", num)
-                    return num
+                grid = {}
+
+                ncol = 0
+                while ncol < 16 do
+                    nrow = 0
+                    grid[ncol] = {}
+                    while nrow < 8 do
+                        note = {}
+                        note.pressed = false
+                        note.outlined = false
+
+                        grid[ncol][nrow] = note
+
+                        nrow = nrow + 1
+                    end
+                    ncol = ncol + 1
+                end
+
+                function playNote(num)
+                    print("Playing note", num)
+                end
+
+                function onStep(num, grid)
+                    print("Stepping from lua")
+
+                    for i,pads in pairs(grid) do
+                        for j,pad in pairs(pads) do
+                            pad.outlined = false
+                        end
+                    end
+
+                    for i,pad in pairs(grid[num]) do
+                        pad.outlined = true
+                        if pad.pressed then
+                            playNote(i)
+                        end
+                    end
                 end
             "#).eval::<()>().unwrap();
         });
@@ -94,6 +190,8 @@ impl Module for StepSequencer {
         inputs.time[0]
             .cycle(self.grid.len() as f64)
             .on_each(1.0, | step | {
+                self.step(step);
+                self.update_outlines();
 
                 for (index, id) in &self.playing {
                     if *index == voice.index {
@@ -111,34 +209,8 @@ impl Module for StepSequencer {
 
                 if voice.index == 0 {
                     self.step = step;
-                    for (index, down) in self.grid[step].iter().enumerate() {
-                        if *down {
-                            if let Ok(lua) = self.lua.try_read() {
-                                lua.context( | ctx | {
-                                    let globals = ctx.globals();
-                                    let on_note: Result<Function> = globals.get("onNote");
-                                    match on_note {
-                                        Ok(on_note) => {
-                                            match on_note.call::<usize, u32>(index) {
-                                                Ok(num) => self.queue.push(
-                                                    NoteMessage {
-                                                        id: Id::new(),
-                                                        offset: 0,
-                                                        note: Event::NoteOn {
-                                                            pitch: num_to_pitch(num),
-                                                            pressure: 0.5
-                                                        }
-                                                    },
-                                                ),
-                                                Err(_) => ()
-                                            }
-                                        },
-                                        Err(_) => (),
-                                    }
-                                });
-                            }
-                        }
-                    }
+
+                    
                 }
             }
         );
