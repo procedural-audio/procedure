@@ -174,7 +174,9 @@ abstract class ModuleWidget extends StatefulWidget {
   Widget build(BuildContext context);
 
   void setState(void Function() f) {
-    state.setState(f);
+    if (state.mounted) {
+      state.setState(f);
+    }
   }
 
   void refresh() {
