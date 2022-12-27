@@ -70,6 +70,13 @@ impl Module for StepSequencer {
     const INFO: Info = Info {
         title: "Step Sequencer",
         version: "0.0.0",
+
+        // Show module info and tutorial in a popup window
+        // Presets are automatically enabled
+
+        /*tutorial: Tutorial {
+            summary: "Summary of how the module works goes here",`
+        },*/
         color: Color::GREEN,
         size: Size::Static(20 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
