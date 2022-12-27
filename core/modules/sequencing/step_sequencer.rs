@@ -17,12 +17,10 @@ impl StepSequencer {
             lua.context( | ctx | {
                 let globals = ctx.globals();
                 let grid: Table = globals.get("grid").unwrap();
-
                 let on_step: Result<Function> = globals.get("onStep");
                 match on_step {
                     Ok(on_step) => {
-                        // on_step.call::<(usize, LuaTable<'_>), _>((index, grid));
-                        // CALL RLUA HERE
+                        let _ = on_step.call::<(usize, LuaTable<'_>), ()>((index, grid));
                     },
                     Err(_) => (),
                 }
@@ -56,7 +54,18 @@ impl StepSequencer {
                 }
             });
         }
+    }
 
+    fn is_outlined(&self) -> bool {
+        if let Ok(lua) = self.lua.try_read() {
+            lua.context( | ctx | {
+                let globals = ctx.globals();
+                let grid: Table = globals.get("grid").unwrap();
+                let cols: TablePairs<u32, Table> = grid.pairs();
+            });
+        }
+
+        false
     }
 }
 
@@ -70,13 +79,6 @@ impl Module for StepSequencer {
     const INFO: Info = Info {
         title: "Step Sequencer",
         version: "0.0.0",
-
-        // Show module info and tutorial in a popup window
-        // Presets are automatically enabled
-
-        /*tutorial: Tutorial {
-            summary: "Summary of how the module works goes here",`
-        },*/
         color: Color::GREEN,
         size: Size::Static(20 + 42 * 16, 20 + 20 + 42 * 8),
         voicing: Voicing::Polyphonic,
@@ -130,7 +132,7 @@ impl Module for StepSequencer {
                 end
 
                 function onStep(num, grid)
-                    print("Stepping from lua")
+                    print("Stepping from lua:", num)
 
                     for i,pads in pairs(grid) do
                         for j,pad in pairs(pads) do
@@ -184,7 +186,9 @@ impl Module for StepSequencer {
                             path: "logos/audio.svg",
                             color: Color::BLUE,
                         },
-                        child: LuaEditor {},
+                        child: LuaEditor {
+                            dir: "~/temp.lua"
+                        },
                     },
                 )
             }
@@ -197,9 +201,6 @@ impl Module for StepSequencer {
         inputs.time[0]
             .cycle(self.grid.len() as f64)
             .on_each(1.0, | step | {
-                self.step(step);
-                self.update_outlines();
-
                 for (index, id) in &self.playing {
                     if *index == voice.index {
                         outputs.events[0].push(NoteMessage {
@@ -216,8 +217,8 @@ impl Module for StepSequencer {
 
                 if voice.index == 0 {
                     self.step = step;
-
-                    
+                    self.step(step);
+                    self.update_outlines();
                 }
             }
         );

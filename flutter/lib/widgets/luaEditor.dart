@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import 'package:flutter_highlight/themes/monokai-sublime.dart';
+import 'package:highlight/languages/lua.dart';
+import 'package:metasampler/ui/code_editor/code_text_field.dart';
 import '../host.dart';
 import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
-import '../ui/code_editor/editor.dart';
 
 /*double Function(FFIWidgetPointer) ffiSliderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -27,8 +29,22 @@ int Function(FFIWidgetPointer) ffiSliderGetColor = core
 class LuaEditorWidget extends ModuleWidget {
   LuaEditorWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
+  final controller = CodeController(
+    language: lua,
+    stringMap: {
+      "function":
+          const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      "if": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      "do": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      "end": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+      "while": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
-    return Editor();
+    return CodeField(
+        controller: controller,
+        textStyle: const TextStyle(fontFamily: "SourceCode"));
   }
 }

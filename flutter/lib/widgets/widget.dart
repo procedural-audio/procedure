@@ -150,7 +150,7 @@ abstract class ModuleWidget extends StatefulWidget {
   final Host host;
 
   late List<ModuleWidget> children = [];
-  final _ModuleWidgetState state = _ModuleWidgetState();
+  _ModuleWidgetState state = _ModuleWidgetState();
 
   ModuleWidget(this.host, this.moduleRaw, this.widgetRaw) {
     int childCount = api.ffiWidgetGetChildCount(widgetRaw);
@@ -229,7 +229,9 @@ abstract class ModuleWidget extends StatefulWidget {
   }
 
   @override
-  _ModuleWidgetState createState() => state;
+  _ModuleWidgetState createState() {
+    return state = _ModuleWidgetState();
+  }
 }
 
 class _ModuleWidgetState extends State<ModuleWidget> {

@@ -78,7 +78,9 @@ impl Module for MultiSampler {
                             path: "logos/audio.svg",
                             color: Color::BLUE,
                         },
-                        child: LuaEditor {},
+                        child: LuaEditor {
+                            dir: "~/temp.lua"
+                        },
                     },
                 ),
             },
@@ -417,7 +419,9 @@ impl WidgetNew for SampleEditor {
     }
 }
 
-pub struct LuaEditor {}
+pub struct LuaEditor {
+    pub dir: &'static str
+}
 
 impl WidgetNew for LuaEditor {
     fn get_name(&self) -> &'static str {
