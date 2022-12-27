@@ -30,7 +30,6 @@ impl Module for Arpeggiator {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self {
             indicators: [Color::GREEN; 16],
