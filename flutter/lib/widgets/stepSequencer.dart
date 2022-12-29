@@ -5,35 +5,40 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 import 'widget.dart';
 
-int Function(FFIWidgetPointer) ffiStepSequencerGetStep = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(FFIWidgetTrait) ffiStepSequencerGetStep = core
+    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
         "ffi_step_sequencer_get_step")
     .asFunction();
-void Function(FFIWidgetPointer, int, int) ffiStepSequencerSetSize = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int64)>>(
-        "ffi_step_sequencer_set_size")
-    .asFunction();
-bool Function(FFIWidgetPointer, int, int) ffiStepSequencerGetPad = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetPointer, Int64, Int64)>>(
+bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPad = core
+    .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
         "ffi_step_sequencer_get_pad")
     .asFunction();
-void Function(FFIWidgetPointer, int, int, bool) ffiStepSequencerSetPad = core
-    .lookup<
-        NativeFunction<
-            Void Function(FFIWidgetPointer, Int64, Int64,
-                Bool)>>("ffi_step_sequencer_set_pad")
+void Function(FFIWidgetTrait, int, int, bool) ffiStepSequencerSetPad = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64, Bool)>>(
+        "ffi_step_sequencer_set_pad")
+    .asFunction();
+int Function(FFIWidgetTrait) ffiStepSequencerGetRows = core
+    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+        "ffi_step_sequencer_get_rows")
+    .asFunction();
+int Function(FFIWidgetTrait) ffiStepSequencerGetCols = core
+    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+        "ffi_step_sequencer_get_cols")
     .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
   StepSequencerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    step = ffiStepSequencerGetStep(widgetRaw.pointer);
+    step = ffiStepSequencerGetStep(widgetRaw.getTrait());
   }
+
+  final ScrollController horizontal = ScrollController();
+  final ScrollController vertical = ScrollController();
 
   int step = 0;
 
   @override
   void tick() {
-    int stepNew = ffiStepSequencerGetStep(widgetRaw.pointer);
+    int stepNew = ffiStepSequencerGetStep(widgetRaw.getTrait());
 
     if (stepNew != step) {
       setState(() {
@@ -44,36 +49,37 @@ class StepSequencerWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      int rows = constraints.maxHeight ~/ 42;
-      int cols = constraints.maxWidth ~/ 42;
+    int rows = ffiStepSequencerGetRows(widgetRaw.getTrait());
+    int cols = ffiStepSequencerGetCols(widgetRaw.getTrait());
 
-      ffiStepSequencerSetSize(widgetRaw.pointer, cols, rows);
+    List<Row> rowWidgets = [];
 
-      List<Row> rowWidgets = [];
+    for (int r = 0; r < rows; r++) {
+      List<Widget> pads = [];
 
-      for (int r = 0; r < rows; r++) {
-        List<Widget> pads = [];
-
-        for (int c = 0; c < cols; c++) {
-          pads.add(SequencerPad(
-            color: Colors.green,
-            pressed: ffiStepSequencerGetPad(widgetRaw.pointer, c, r),
-            outlined: c == step,
-            x: c,
-            y: r,
-            widgetRaw: widgetRaw,
-          ));
-        }
-
-        rowWidgets.add(Row(children: pads));
+      for (int c = 0; c < cols; c++) {
+        pads.add(SequencerPad(
+          color: Colors.green,
+          pressed: ffiStepSequencerGetPad(widgetRaw.getTrait(), c, r),
+          outlined: c == step,
+          x: c,
+          y: r,
+          widgetRaw: widgetRaw,
+        ));
       }
 
+      rowWidgets.add(Row(mainAxisSize: MainAxisSize.max, children: pads));
+    }
+
+    return LayoutBuilder(builder: (context, constraints) {
       return Container(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
           decoration: BoxDecoration(
               color: const Color.fromRGBO(20, 20, 20, 1.0),
               borderRadius: BorderRadius.circular(10)),
           child: Column(
+            mainAxisSize: MainAxisSize.max,
             children: rowWidgets,
           ));
     });
@@ -102,6 +108,7 @@ class SequencerPad extends StatefulWidget {
 
 class _SequencerPadState extends State<SequencerPad> {
   int pressed = -1;
+  double pressure = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -114,13 +121,13 @@ class _SequencerPadState extends State<SequencerPad> {
     }
 
     ffiStepSequencerSetPad(
-        widget.widgetRaw.pointer, widget.x, widget.y, pressed == 1);
+        widget.widgetRaw.getTrait(), widget.x, widget.y, pressed == 1);
 
     return Padding(
         padding: const EdgeInsets.all(1),
         child: Container(
-          width: 40,
-          height: 40,
+          width: 39.5,
+          height: 39.5,
           decoration: BoxDecoration(
               color: pressed == 1 ? widget.color : widget.color.withAlpha(50),
               borderRadius: BorderRadius.circular(5),

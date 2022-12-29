@@ -375,12 +375,12 @@ pub unsafe extern "C" fn ffi_dynamic_line_get_width(w: &mut DynamicLine) -> f32 
 }
 
 #[repr(C)]
-pub struct StepSequencer<'a> {
-    pub grid: &'a mut Vec<Vec<bool>>,
+pub struct StepSequencer<'a, const X: usize, const Y: usize> {
+    pub grid: &'a mut [[bool; Y]; X],
     pub step: &'a usize,
 }
 
-impl<'a> WidgetNew for StepSequencer<'a> {
+impl<'a, const X: usize, const Y: usize> WidgetNew for StepSequencer<'a, X, Y> {
     fn get_name(&self) -> &'static str {
         "StepSequencer"
     }
@@ -388,56 +388,78 @@ impl<'a> WidgetNew for StepSequencer<'a> {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn StepSequencerTrait) }
+    }
+}
+
+pub trait StepSequencerTrait {
+    fn get_pad(&self, x: usize, y: usize) -> bool;
+    fn set_pad(&mut self, x: usize, y: usize, value: bool);
+    fn get_step(&self) -> usize;
+    fn get_rows(&self) -> usize;
+    fn get_cols(&self) -> usize;
+}
+
+impl<'a, const X: usize, const Y: usize> StepSequencerTrait for StepSequencer<'a, X, Y> {
+    fn get_pad(&self, x: usize, y: usize) -> bool {
+        self.grid[x][y]
+    }
+
+    fn set_pad(&mut self, x: usize, y: usize, value: bool) {
+        self.grid[x][y] = value;
+    }
+
+    fn get_step(&self) -> usize {
+        *self.step
+    }
+
+    fn get_rows(&self) -> usize {
+        Y
+    }
+
+    fn get_cols(&self) -> usize {
+        X
+    }
 }
 
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_step_sequencer_get_step(w: &mut StepSequencer) -> usize {
-    *w.step
+pub unsafe extern "C" fn ffi_step_sequencer_get_step(w: &mut dyn StepSequencerTrait) -> usize {
+    w.get_step()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_step_sequencer_get_rows(
+    w: &mut dyn StepSequencerTrait,
+) -> usize {
+    w.get_rows()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_step_sequencer_get_cols(
+    w: &mut dyn StepSequencerTrait,
+) -> usize {
+    w.get_cols()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_step_sequencer_get_pad(
-    w: &mut StepSequencer,
+    w: &mut dyn StepSequencerTrait,
     x: usize,
     y: usize,
 ) -> bool {
-    w.grid[x][y]
+    w.get_pad(x, y)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_step_sequencer_set_pad(
-    w: &mut StepSequencer,
+    w: &mut dyn StepSequencerTrait,
     x: usize,
     y: usize,
     value: bool,
 ) {
-    w.grid[x][y] = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_step_sequencer_set_size(
-    w: &mut StepSequencer,
-    rows: usize,
-    cols: usize,
-) {
-    while w.grid.len() < rows {
-        w.grid.push(Vec::with_capacity(cols));
-    }
-
-    while w.grid.len() > rows {
-        w.grid.pop();
-    }
-
-    for row in w.grid.iter_mut() {
-        while row.len() < cols {
-            row.push(false);
-        }
-
-        // Delete stored notes
-        /*while row.len() > cols {
-            row.pop();
-        }*/
-    }
+    w.set_pad(x, y, value)
 }
