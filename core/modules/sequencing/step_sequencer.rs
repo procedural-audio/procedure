@@ -98,7 +98,6 @@ impl Module for StepSequencer {
         );
 
         if let Some(msg) = self.queue.pop() {
-            println!("Playing pad");
             outputs.events[0].push(msg);
             self.playing.push((voice.index, msg.id));
         }
