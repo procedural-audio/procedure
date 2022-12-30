@@ -314,6 +314,8 @@ class _RightClickView extends State<RightClickView> {
             Colors.grey,
             30,
             widget.addPosition));
+        subCategory.add(RightClickElement(widget.host, "Keyboard",
+            MaterialCommunityIcons.piano, Colors.grey, 30, widget.addPosition));
 
         category.add(RightClickCategory("Sources", 20, subCategory));
       }

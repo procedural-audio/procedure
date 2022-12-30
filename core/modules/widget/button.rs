@@ -538,3 +538,82 @@ pub unsafe extern "C" fn ffi_display_get_text(widget: &mut dyn DisplayTrait) -> 
         None => std::ptr::null(),
     }
 }
+
+/* Keyboard */
+
+#[derive(Copy, Clone)]
+pub struct Key {
+    pub down: bool
+}
+
+pub enum KeyEvent {
+    KeyPress(usize),
+    KeyRelease(usize)
+}
+
+#[repr(C)]
+pub struct Keyboard<'a, const X: usize, F: FnMut(KeyEvent, &mut [Key; X])> {
+    pub keys: &'a mut [Key; X],
+    pub on_event: F,
+}
+
+impl<'a, const X: usize, F: FnMut(KeyEvent, &mut [Key; X])> WidgetNew for Keyboard<'a, X, F> {
+    fn get_name(&self) -> &'static str {
+        "Keyboard"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn KeyboardTrait) }
+    }
+}
+
+pub trait KeyboardTrait {
+    fn get_key_count(&self) -> usize;
+    fn key_get_down(&self, index: usize) -> bool;
+    fn key_press(&mut self, index: usize);
+    fn key_release(&mut self, index: usize);
+}
+
+impl<'a, const X: usize, F: FnMut(KeyEvent, &mut [Key; X])> KeyboardTrait for Keyboard<'a, X, F> {
+    fn get_key_count(&self) -> usize {
+        X
+    }
+
+    fn key_get_down(&self, index: usize) -> bool {
+        self.keys[index].down
+    }
+
+    fn key_press(&mut self, index: usize) {
+        (self.on_event)(KeyEvent::KeyPress(index), &mut self.keys)
+    }
+
+    fn key_release(&mut self, index: usize) {
+        (self.on_event)(KeyEvent::KeyRelease(index), &mut self.keys)
+    }
+}
+
+/* ========== FFI ========== */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_keyboard_get_key_count(widget: &mut dyn KeyboardTrait) -> usize {
+    widget.get_key_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_keyboard_key_get_down(widget: &mut dyn KeyboardTrait, index: usize) -> bool {
+    widget.key_get_down(index)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_keyboard_key_press(widget: &mut dyn KeyboardTrait, index: usize) {
+    widget.key_press(index)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_keyboard_key_release(widget: &mut dyn KeyboardTrait, index: usize) {
+    widget.key_release(index)
+}

@@ -118,6 +118,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 
     modules.push(("Notes Track", create_module::<NotesTrack>));
     modules.push(("Step Sequencer", create_module::<crate::sequencing::StepSequencer>));
+    modules.push(("Keyboard", create_module::<crate::sequencing::Keyboard>));
 
     modules.push(("Transpose", create_module::<Transpose>));
 
