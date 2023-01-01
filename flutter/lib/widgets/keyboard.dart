@@ -27,74 +27,79 @@ class KeyboardWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double KEY_WIDTH = 25;
-    const double KEY_SPACING = 1.0;
-    const double KEY_HEIGHT = 60;
+    return LayoutBuilder(builder: (context, constraints) {
+      const double KEY_WIDTH = 25;
+      const double KEY_SPACING = 1.0;
+      double KEY_HEIGHT = constraints.maxHeight;
 
-    List<Widget> whiteKeys = [];
-    List<Widget> blackKeys = [];
+      List<Widget> whiteKeys = [];
+      List<Widget> blackKeys = [];
 
-    int keyCount = ffiKeyboardGetKeyCount(widgetRaw.getTrait());
+      int keyCount = ffiKeyboardGetKeyCount(widgetRaw.getTrait());
 
-    double x = 0.0;
-    for (int i = 1; i < keyCount; i++) {
-      int j = i % 12;
-      if (j == 1 || j == 3 || j == 6 || j == 8 || j == 10) {
-        blackKeys.add(Positioned(
-            left: x + KEY_WIDTH * 4 / 6,
-            top: 0,
-            child: KeyWidget(
-              index: i,
-              onPress: (i) {
-                setState(() {
-                  ffiKeyboardKeyPress(widgetRaw.getTrait(), i);
-                });
-              },
-              onRelease: (i) {
-                setState(() {
-                  ffiKeyboardKeyRelease(widgetRaw.getTrait(), i);
-                });
-              },
-              color: Colors.black,
-              down: ffiKeyboardKeyGetDown(widgetRaw.getTrait(), i),
-              width: KEY_WIDTH * 2 / 3,
-              spacing: KEY_SPACING,
-              height: KEY_HEIGHT * 2 / 3,
-            )));
-      } else {
-        whiteKeys.add(Positioned(
-            left: x,
-            top: 0,
-            child: KeyWidget(
-              index: i,
-              onPress: (i) {
-                setState(() {
-                  ffiKeyboardKeyPress(widgetRaw.getTrait(), i);
-                });
-              },
-              onRelease: (i) {
-                setState(() {
-                  ffiKeyboardKeyRelease(widgetRaw.getTrait(), i);
-                });
-              },
-              color: Colors.white,
-              down: ffiKeyboardKeyGetDown(widgetRaw.getTrait(), i),
-              width: KEY_WIDTH,
-              spacing: KEY_SPACING,
-              height: KEY_HEIGHT,
-            )));
+      double x = 0.0;
+      for (int i = 1; i < keyCount; i++) {
+        int j = i % 12;
+        if (j == 1 || j == 3 || j == 6 || j == 8 || j == 10) {
+          blackKeys.add(Positioned(
+              left: x + KEY_WIDTH * 4 / 6,
+              top: 0,
+              child: KeyWidget(
+                index: i,
+                onPress: (i) {
+                  setState(() {
+                    print("Playing note " + i.toString());
+                    ffiKeyboardKeyPress(widgetRaw.getTrait(), i);
+                  });
+                },
+                onRelease: (i) {
+                  setState(() {
+                    ffiKeyboardKeyRelease(widgetRaw.getTrait(), i);
+                  });
+                },
+                color: Colors.black,
+                down: ffiKeyboardKeyGetDown(widgetRaw.getTrait(), i),
+                width: KEY_WIDTH * 2 / 3,
+                spacing: KEY_SPACING,
+                height: KEY_HEIGHT * 2 / 3,
+              )));
+        } else {
+          whiteKeys.add(Positioned(
+              left: x,
+              top: 0,
+              child: KeyWidget(
+                index: i,
+                onPress: (i) {
+                  setState(() {
+                    print("Playing note " + i.toString());
+                    ffiKeyboardKeyPress(widgetRaw.getTrait(), i);
+                  });
+                },
+                onRelease: (i) {
+                  setState(() {
+                    ffiKeyboardKeyRelease(widgetRaw.getTrait(), i);
+                  });
+                },
+                color: Colors.white,
+                down: ffiKeyboardKeyGetDown(widgetRaw.getTrait(), i),
+                width: KEY_WIDTH,
+                spacing: KEY_SPACING,
+                height: KEY_HEIGHT,
+              )));
 
-        x += KEY_WIDTH;
+          x += KEY_WIDTH;
+        }
       }
-    }
 
-    return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-            width: x,
-            child: Stack(
-              children: whiteKeys + blackKeys,
-            )));
+      return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Container(
+              width: x,
+              height: KEY_HEIGHT,
+              child: Stack(
+                children: whiteKeys + blackKeys,
+              )));
+    });
 
     /*return Padding(
         padding: const EdgeInsets.all(10),

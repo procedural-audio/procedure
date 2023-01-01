@@ -374,13 +374,25 @@ pub unsafe extern "C" fn ffi_dynamic_line_get_width(w: &mut DynamicLine) -> f32 
     w.width
 }
 
-#[repr(C)]
-pub struct StepSequencer<'a, const X: usize, const Y: usize> {
-    pub grid: &'a mut [[bool; Y]; X],
-    pub step: &'a usize,
+pub enum PadEvent {
+    Press(usize, usize),
+    Release(usize, usize)
 }
 
-impl<'a, const X: usize, const Y: usize> WidgetNew for StepSequencer<'a, X, Y> {
+#[derive(Copy, Clone)]
+pub struct Pad {
+    pub down: bool,
+    pub outlined: bool,
+    pub color: Color,
+}
+
+#[repr(C)]
+pub struct Pads<'a, const X: usize, const Y: usize, F: FnMut(PadEvent, &mut [[Pad; Y]; X])> {
+    pub pads: &'a mut [[Pad; Y]; X],
+    pub on_event: F
+}
+
+impl<'a, const X: usize, const Y: usize, F: FnMut(PadEvent, &mut [[Pad; Y]; X])> WidgetNew for Pads<'a, X, Y, F> {
     fn get_name(&self) -> &'static str {
         "StepSequencer"
     }
@@ -390,29 +402,34 @@ impl<'a, const X: usize, const Y: usize> WidgetNew for StepSequencer<'a, X, Y> {
     }
 
     fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
-        unsafe { std::mem::transmute(self as &dyn StepSequencerTrait) }
+        unsafe { std::mem::transmute(self as &dyn PadsTrait) }
     }
 }
 
-pub trait StepSequencerTrait {
-    fn get_pad(&self, x: usize, y: usize) -> bool;
-    fn set_pad(&mut self, x: usize, y: usize, value: bool);
-    fn get_step(&self) -> usize;
+pub trait PadsTrait {
+    fn get_pad_down(&self, x: usize, y: usize) -> bool;
+    fn get_pad_outlined(&self, x: usize, y: usize) -> bool;
+    fn on_pad_pressed(&mut self, x: usize, y: usize);
+    fn on_pad_release(&mut self, x: usize, y: usize);
     fn get_rows(&self) -> usize;
     fn get_cols(&self) -> usize;
 }
 
-impl<'a, const X: usize, const Y: usize> StepSequencerTrait for StepSequencer<'a, X, Y> {
-    fn get_pad(&self, x: usize, y: usize) -> bool {
-        self.grid[x][y]
+impl<'a, const X: usize, const Y: usize, F: FnMut(PadEvent, &mut [[Pad; Y]; X])> PadsTrait for Pads<'a, X, Y, F> {
+    fn get_pad_down(&self, x: usize, y: usize) -> bool {
+        self.pads[x][y].down
     }
 
-    fn set_pad(&mut self, x: usize, y: usize, value: bool) {
-        self.grid[x][y] = value;
+    fn get_pad_outlined(&self, x: usize, y: usize) -> bool {
+        self.pads[x][y].outlined
     }
 
-    fn get_step(&self) -> usize {
-        *self.step
+    fn on_pad_pressed(&mut self, x: usize, y: usize) {
+        (self.on_event)(PadEvent::Press(x, y), &mut self.pads);
+    }
+
+    fn on_pad_release(&mut self, x: usize, y: usize) {
+        (self.on_event)(PadEvent::Release(x, y), &mut self.pads);
     }
 
     fn get_rows(&self) -> usize {
@@ -427,39 +444,51 @@ impl<'a, const X: usize, const Y: usize> StepSequencerTrait for StepSequencer<'a
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_step_sequencer_get_step(w: &mut dyn StepSequencerTrait) -> usize {
-    w.get_step()
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn ffi_step_sequencer_get_rows(
-    w: &mut dyn StepSequencerTrait,
+    w: &mut dyn PadsTrait,
 ) -> usize {
     w.get_rows()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_step_sequencer_get_cols(
-    w: &mut dyn StepSequencerTrait,
+    w: &mut dyn PadsTrait,
 ) -> usize {
     w.get_cols()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_step_sequencer_get_pad(
-    w: &mut dyn StepSequencerTrait,
+pub unsafe extern "C" fn ffi_step_sequencer_get_pad_down(
+    w: &mut dyn PadsTrait,
     x: usize,
     y: usize,
 ) -> bool {
-    w.get_pad(x, y)
+    w.get_pad_down(x, y)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_step_sequencer_set_pad(
-    w: &mut dyn StepSequencerTrait,
+pub unsafe extern "C" fn ffi_step_sequencer_get_pad_outlined(
+    w: &mut dyn PadsTrait,
     x: usize,
     y: usize,
-    value: bool,
+) -> bool {
+    w.get_pad_outlined(x, y)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_step_sequencer_on_pad_press(
+    w: &mut dyn PadsTrait,
+    x: usize,
+    y: usize,
 ) {
-    w.set_pad(x, y, value)
+    w.on_pad_pressed(x, y)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_step_sequencer_on_pad_release(
+    w: &mut dyn PadsTrait,
+    x: usize,
+    y: usize,
+) {
+    w.on_pad_release(x, y)
 }

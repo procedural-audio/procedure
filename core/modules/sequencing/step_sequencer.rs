@@ -4,10 +4,11 @@ use crate::*;
 // use std::sync::RwLock;
 
 pub struct StepSequencer {
-    grid: [[bool; 7]; 16],
+    pads: [[Pad; 7]; 16],
     playing: Vec<(u32, Id)>,
     queue: Vec<NoteMessage>,
     step: usize,
+    callback: Callback
 }
 
 pub struct StepSequencerVoice {
@@ -34,10 +35,16 @@ impl Module for StepSequencer {
     
     fn new() -> Self {
         Self {
-            grid: [[false; 7]; 16],
+            pads: [[
+                Pad {
+                    down: false,
+                    outlined: false,
+                    color: Color::GREEN,
+                }; 7]; 16],
             playing: Vec::with_capacity(32),
             queue: Vec::with_capacity(32),
             step: 0,
+            callback: Callback::new()
         }
     }
 
@@ -51,9 +58,22 @@ impl Module for StepSequencer {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (10, 35, 10, 10),
-            child: widget::StepSequencer {
-                grid: &mut self.grid,
-                step: &self.step,
+            child: Refresh {
+                callback: &mut self.callback,
+                child: widget::Pads {
+                    pads: &mut self.pads,
+                    on_event: | event, pads | {
+                        match event {
+                            PadEvent::Press(x, y) => {
+                                println!("Pad pressed");
+                                pads[x][y].down = !pads[x][y].down;
+                            },
+                            PadEvent::Release(x, y) => {
+                                println!("Pad released");
+                            },
+                        }
+                    }
+                }
             }
         });
     }
@@ -62,13 +82,21 @@ impl Module for StepSequencer {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         inputs.time[0]
-            .cycle(self.grid.len() as f64)
+            .cycle(self.pads.len() as f64)
             .on_each(1.0, | step | {
                 if voice.index == 0 {
                     self.step = step;
 
-                    for (index, pad) in self.grid[step].iter().enumerate() {
-                        if *pad {
+                    for (i, col) in &mut self.pads.iter_mut().enumerate() {
+                        for pad in col {
+                            pad.outlined = i == step;
+                        }
+                    }
+
+                    self.callback.trigger();
+
+                    for (index, pad) in self.pads[step].iter().enumerate() {
+                        if pad.down {
                             self.queue.push(NoteMessage {
                                 id: Id::new(),
                                 offset: 0,
@@ -94,6 +122,7 @@ impl Module for StepSequencer {
                 self.playing.retain(| (index, _id) | {
                     *index != voice.index
                 });
+
             }
         );
 

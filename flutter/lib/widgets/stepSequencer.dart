@@ -5,17 +5,21 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 import 'widget.dart';
 
-int Function(FFIWidgetTrait) ffiStepSequencerGetStep = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
-        "ffi_step_sequencer_get_step")
-    .asFunction();
-bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPad = core
+bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPadDown = core
     .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
-        "ffi_step_sequencer_get_pad")
+        "ffi_step_sequencer_get_pad_down")
     .asFunction();
-void Function(FFIWidgetTrait, int, int, bool) ffiStepSequencerSetPad = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64, Bool)>>(
-        "ffi_step_sequencer_set_pad")
+bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPadOutlined = core
+    .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
+        "ffi_step_sequencer_get_pad_outlined")
+    .asFunction();
+void Function(FFIWidgetTrait, int, int) ffiStepSequencerOnPadPress = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64)>>(
+        "ffi_step_sequencer_on_pad_press")
+    .asFunction();
+void Function(FFIWidgetTrait, int, int) ffiStepSequencerOnPadRelease = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64)>>(
+        "ffi_step_sequencer_on_pad_release")
     .asFunction();
 int Function(FFIWidgetTrait) ffiStepSequencerGetRows = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
@@ -27,25 +31,10 @@ int Function(FFIWidgetTrait) ffiStepSequencerGetCols = core
     .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
-  StepSequencerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    step = ffiStepSequencerGetStep(widgetRaw.getTrait());
-  }
+  StepSequencerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController();
-
-  int step = 0;
-
-  @override
-  void tick() {
-    int stepNew = ffiStepSequencerGetStep(widgetRaw.getTrait());
-
-    if (stepNew != step) {
-      setState(() {
-        step = stepNew;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +49,20 @@ class StepSequencerWidget extends ModuleWidget {
       for (int c = 0; c < cols; c++) {
         pads.add(SequencerPad(
           color: Colors.green,
-          pressed: ffiStepSequencerGetPad(widgetRaw.getTrait(), c, r),
-          outlined: c == step,
+          pressed: ffiStepSequencerGetPadDown(widgetRaw.getTrait(), c, r),
+          outlined: ffiStepSequencerGetPadOutlined(widgetRaw.getTrait(), c, r),
           x: c,
           y: r,
-          widgetRaw: widgetRaw,
+          onPress: (x, y) {
+            setState(() {
+              ffiStepSequencerOnPadPress(widgetRaw.getTrait(), c, r);
+            });
+          },
+          onRelease: (x, y) {
+            setState(() {
+              ffiStepSequencerOnPadRelease(widgetRaw.getTrait(), c, r);
+            });
+          },
         ));
       }
 
@@ -86,68 +84,44 @@ class StepSequencerWidget extends ModuleWidget {
   }
 }
 
-class SequencerPad extends StatefulWidget {
+class SequencerPad extends StatelessWidget {
   SequencerPad(
       {required this.color,
       required this.pressed,
       required this.x,
       required this.y,
       required this.outlined,
-      required this.widgetRaw});
+      required this.onPress,
+      required this.onRelease});
 
   Color color;
   bool pressed;
   bool outlined;
   int x;
   int y;
-  FFIWidget widgetRaw;
-
-  @override
-  State<SequencerPad> createState() => _SequencerPadState();
-}
-
-class _SequencerPadState extends State<SequencerPad> {
-  int pressed = -1;
-  double pressure = 1.0;
+  void Function(int, int) onPress;
+  void Function(int, int) onRelease;
 
   @override
   Widget build(BuildContext context) {
-    if (pressed == -1) {
-      if (widget.pressed) {
-        pressed = 1;
-      } else {
-        pressed = 0;
-      }
-    }
-
-    ffiStepSequencerSetPad(
-        widget.widgetRaw.getTrait(), widget.x, widget.y, pressed == 1);
-
     return Padding(
         padding: const EdgeInsets.all(1),
         child: Container(
           width: 39.5,
           height: 39.5,
           decoration: BoxDecoration(
-              color: pressed == 1 ? widget.color : widget.color.withAlpha(50),
+              color: pressed ? color : color.withAlpha(50),
               borderRadius: BorderRadius.circular(5),
-              border: widget.outlined
+              border: outlined
                   ? Border.all(
-                      color: widget.pressed
+                      color: pressed
                           ? Colors.white.withOpacity(0.5)
                           : Colors.grey.withOpacity(0.5),
                       width: 2.0)
                   : null),
           child: GestureDetector(
-            onTap: () {
-              setState(() {
-                if (pressed == 0) {
-                  pressed = 1;
-                } else {
-                  pressed = 0;
-                }
-              });
-            },
+            onTapDown: (details) => onPress(x, y),
+            onTapUp: (details) => onRelease(x, y),
           ),
         ));
   }

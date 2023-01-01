@@ -267,12 +267,6 @@ impl JSON {
     }
 }
 
-/*impl std::ops::IndexMut<&'static str> for JSON {
-    fn index_mut(&mut self, name: &'static str) -> &mut Self::Output {
-        self.map.get_mut(name).unwrap()
-    }
-}*/
-
 pub struct Info {
     pub title: &'static str,
     pub version: &'static str,
@@ -403,22 +397,16 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
 
         let module_ptr = (&mut *module) as *mut T;
 
-        //let voices_ptr = &mut voices as *mut T::Voice;
-
         unsafe {
             let w = (&mut *module_ptr).build();
-            // let w_main = (&mut *module_ptr).build_ui(&*ui_ptr);
 
             ModuleManager {
                 module,
                 voices,
                 connected: vec,
-                voicing: voicing,
+                voicing,
                 widgets: w,
-                module_size,
-                // ui_position: (100.0, 100.0),
-                // ui_size: (100.0, 100.0),
-                // ui,
+                module_size
             }
         }
     }
@@ -447,7 +435,6 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
     }
 
     fn should_refresh(&self) -> bool {
-        // self.ui.should_refresh()
         false
     }
 

@@ -1,20 +1,21 @@
 use crate::*;
 
 pub struct Keyboard {
+    player: NotePlayer,
     keys: [Key; 88]
 }
 
 impl Module for Keyboard {
-    type Voice = ();
+    type Voice = u32;
 
     const INFO: Info = Info {
         title: "Keyboard",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Reisizable {
-            default: (400, 100),
-            min: (200, 100),
-            max: (800, 200)
+            default: (600, 110),
+            min: (200, 110),
+            max: (1200, 110)
         },
         voicing: Voicing::Polyphonic,
         inputs: &[],
@@ -26,13 +27,14 @@ impl Module for Keyboard {
     
     fn new() -> Self {
         Self {
+            player: NotePlayer::new(),
             keys: [
                 Key { down: false }; 88
             ]
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice { () }
+    fn new_voice(index: u32) -> Self::Voice { index }
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
@@ -46,9 +48,11 @@ impl Module for Keyboard {
                         match event {
                             KeyEvent::KeyPress(i) => {
                                 keys[i].down = true;
+                                self.player.note_num_on(i as u32 + 10, 0.5);
                             },
                             KeyEvent::KeyRelease(i) => {
                                 keys[i].down = false;
+                                self.player.note_num_off(i as u32 + 10);
                             }
                         }
                     }
@@ -59,7 +63,7 @@ impl Module for Keyboard {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+       self.player.generate(*voice, &mut outputs.events[0]);
     }
 }

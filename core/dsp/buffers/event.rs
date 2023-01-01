@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 
-use crate::Time;
+use crate::{Time, Buffer};
 
 const NOTE_NAMES: [&'static str; 120] = [
     "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0", "C1", "C#1", "D1",
@@ -222,3 +222,171 @@ pub fn pitch_to_num(pitch: f32) -> u32 {
 // Filter by interval
 
 /* Implement operations */
+
+pub struct NoteQueued {
+    voice_index: u32,
+    message: NoteMessage
+}
+
+pub struct NotePlaying {
+    voice_index: u32,
+    id: Id,
+    pitch: f32
+}
+
+pub struct NotePlayer {
+    queue: Vec<NoteQueued>, // Queue of notes to play
+    playing: Vec<NotePlaying>, // Playing voice index
+    max_voice: u32 // Maximum playable voice
+}
+
+impl NotePlayer {
+    pub fn new() -> Self {
+        Self {
+            queue: Vec::with_capacity(64),
+            playing: Vec::with_capacity(64),
+            max_voice: 16
+        }
+    }
+
+    pub fn note_on(&mut self, id: Id, pitch: f32, pressure: f32) {
+        for i in 0..self.max_voice {
+            fn contains(playing: &Vec<NotePlaying>, voice: u32) -> bool {
+                for e in playing {
+                    if e.voice_index == voice {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if !contains(&self.playing, i) {
+                // println!("Note on voice {} pitch {}", i, pitch);
+                self.queue.push(
+                    NoteQueued {
+                        voice_index: i,
+                        message: NoteMessage {
+                            id,
+                            offset: 0,
+                            note: Event::NoteOn {
+                                pitch,
+                                pressure
+                            }
+                        }
+                    }
+                );
+
+                break;
+            }
+        }
+    }
+
+    pub fn note_num_on(&mut self, num: u32, pressure: f32) {
+        self.note_on(Id::new(), num_to_pitch(num), pressure);
+    }
+
+    pub fn note_off(&mut self, id: Id) {
+        for playing in &self.playing {
+            if playing.id == id {
+                // println!("Note off");
+                self.queue.push(
+                    NoteQueued {
+                        voice_index: playing.voice_index,
+                        message: NoteMessage {
+                            id,
+                            offset: 0,
+                            note: Event::NoteOff
+                        }
+                    }
+                );
+            }
+        }
+
+        self.playing.retain(| playing | {
+            playing.id != id
+        });
+    }
+
+    pub fn note_num_off(&mut self, num: u32) {
+        for i in 0..self.playing.len() {
+            // println!("Comparing to num {} to playing num {}", num, pitch_to_num(self.playing[i].pitch));
+            if pitch_to_num(self.playing[i].pitch) == num {
+                self.note_off(self.playing[i].id);
+            }
+        }
+
+        self.queue.retain( | queued | {
+            match queued.message.note {
+                Event::NoteOn { pitch, pressure: _ } => {
+                    if pitch_to_num(pitch) == num {
+                        // println!("Removing queued note");
+                        false
+                    } else {
+                        true
+                    }
+                },
+                _ => true
+            }
+        });
+    }
+
+    pub fn message(&mut self, message: NoteMessage) {
+        match message.note {
+            Event::NoteOn { pitch, pressure } => {
+                self.note_on(message.id, pitch, pressure);
+            },
+            Event::NoteOff => {
+                self.note_off(message.id);
+            },
+            _ => {
+                for playing in &self.playing {
+                    if playing.id == message.id {
+                        self.queue.push(
+                            NoteQueued {
+                                voice_index: playing.voice_index,
+                                message
+                            }
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn generate(&mut self, voice: u32, output: &mut Buffer<NoteMessage>) {
+        for queued in &self.queue {
+            if queued.voice_index == voice {
+                let message = queued.message;
+
+                match message.note {
+                    Event::NoteOn { pitch, pressure: _ } => {
+                        self.playing.push(
+                            NotePlaying {
+                                voice_index: queued.voice_index,
+                                id: message.id,
+                                pitch: pitch
+                            }
+                        );
+                    },
+                    Event::NoteOff => {
+                        self.playing.retain( | playing | {
+                            playing.id != message.id
+                        });
+                    },
+                    Event::Pitch(pitch) => {
+                        for playing in &mut self.playing {
+                            if playing.id == message.id {
+                                playing.pitch = pitch;
+                            }
+                        }
+                    },
+                    _ => ()
+                }
+
+                output.push(queued.message);
+            }
+        }
+
+        self.queue.retain(| queued | queued.voice_index != voice);
+    }
+}
