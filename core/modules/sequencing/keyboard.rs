@@ -32,14 +32,11 @@ impl Module for Keyboard {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
-        ()
-    }
-
+    fn new_voice(_index: u32) -> Self::Voice { () }
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(
             Padding {
                 padding: (10, 35, 10, 10),

@@ -58,7 +58,7 @@ impl Module for SawModule {
         json.insert("wave_index", self.wave_index);
     }
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),

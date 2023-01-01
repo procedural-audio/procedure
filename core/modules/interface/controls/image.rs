@@ -30,7 +30,7 @@ impl Module for Image {
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (35, 30),
             size: (50, 70),
@@ -41,7 +41,7 @@ impl Module for Image {
         })
     }
 
-    fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build_ui<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(_Image {
             path: "/home/chase/github/metasampler/content/assets/images/background.jpeg",
         })

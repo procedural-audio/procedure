@@ -29,7 +29,7 @@ impl Module for Pitch {
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),

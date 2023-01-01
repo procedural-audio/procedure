@@ -30,7 +30,7 @@ impl Module for SimpleSwitch {
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (35, 30),
             size: (50, 70),
@@ -41,7 +41,7 @@ impl Module for SimpleSwitch {
         })
     }
 
-    fn build_ui<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build_ui<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(_SimpleSwitch {
             text: "Gain",
             value: false,

@@ -41,7 +41,7 @@ impl Module for Chorus {
 
     fn save(&self, _json: &mut JSON) {}
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         let _size = 50;
 
         return Box::new(Stack {

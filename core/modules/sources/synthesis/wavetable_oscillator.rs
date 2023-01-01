@@ -62,7 +62,7 @@ impl Module for WavetableOscillator {
 
     // Make it look like pigments: https://youtu.be/8DjnDVWKaEs?t=141
 
-    fn build<'w>(&'w mut self, _ui: &'w UI) -> Box<dyn WidgetNew + 'w> {
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Transform {
             position: (40, 40),
             size: (350, 220),

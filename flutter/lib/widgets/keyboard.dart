@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../host.dart';
 import 'widget.dart';
 import 'dart:ffi';

@@ -298,7 +298,7 @@ pub trait Module {
     fn new() -> Self;
     fn new_voice(index: u32) -> Self::Voice;
 
-    fn build<'w>(&'w mut self, ui: &'w UI) -> Box<dyn WidgetNew + 'w>;
+    fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w>;
 
     fn is_active(_voice: &Self::Voice) -> bool {
         true
@@ -403,13 +403,10 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
 
         let module_ptr = (&mut *module) as *mut T;
 
-        let mut ui = UI::new();
-        let ui_ptr = &mut ui as *mut UI;
-
         //let voices_ptr = &mut voices as *mut T::Voice;
 
         unsafe {
-            let w = (&mut *module_ptr).build(&*ui_ptr);
+            let w = (&mut *module_ptr).build();
             // let w_main = (&mut *module_ptr).build_ui(&*ui_ptr);
 
             ModuleManager {
