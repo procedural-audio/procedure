@@ -1,11 +1,12 @@
 use crate::*;
 
 pub struct Scale {
-    keys: [Key; 13]
+    keys: [Key; 12]
 }
 
 impl Scale {
     fn quantize(&self, pitch: f32) -> f32 {
+        // TODO: Implement pitch quantization
         pitch
     }
 }
@@ -17,7 +18,7 @@ impl Module for Scale {
         title: "Scale",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(200, 115),
+        size: Size::Static(200, 120),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10),
@@ -31,7 +32,7 @@ impl Module for Scale {
     fn new() -> Self {
         Self {
             keys: [
-                Key { down: false }; 13
+                Key { down: false }; 12
             ]
         }
     }

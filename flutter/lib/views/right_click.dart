@@ -316,6 +316,13 @@ class _RightClickView extends State<RightClickView> {
             widget.addPosition));
         subCategory.add(RightClickElement(widget.host, "Keyboard",
             MaterialCommunityIcons.piano, Colors.grey, 30, widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Random Notes",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Sources", 20, subCategory));
       }
@@ -347,13 +354,6 @@ class _RightClickView extends State<RightClickView> {
         subCategory.add(RightClickElement(
             widget.host,
             "Pressure",
-            MaterialCommunityIcons.view_sequential,
-            Colors.green,
-            30,
-            widget.addPosition));
-        subCategory.add(RightClickElement(
-            widget.host,
-            "Timbre",
             MaterialCommunityIcons.view_sequential,
             Colors.green,
             30,

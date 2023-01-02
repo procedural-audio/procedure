@@ -13,7 +13,7 @@ impl Module for Keyboard {
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Reisizable {
-            default: (600, 110),
+            default: (600, 120),
             min: (200, 110),
             max: (1200, 110)
         },
@@ -48,11 +48,11 @@ impl Module for Keyboard {
                         match event {
                             KeyEvent::Press(i) => {
                                 keys[i].down = true;
-                                self.player.note_num_on(i as u32 + 10, 0.5);
+                                self.player.note_num_on(i as u32 + 24, 0.5);
                             },
                             KeyEvent::Release(i) => {
                                 keys[i].down = false;
-                                self.player.note_num_off(i as u32 + 10);
+                                self.player.note_num_off(i as u32 + 24);
                             }
                         }
                     }

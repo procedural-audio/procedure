@@ -25,12 +25,14 @@ class KeyboardWidget extends ModuleWidget {
     // color = Color(ffiKeyboardGetColor(widgetRaw.pointer));
   }
 
+  ScrollController controller = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       const double KEY_WIDTH = 25;
       const double KEY_SPACING = 1.0;
-      double KEY_HEIGHT = constraints.maxHeight;
+      double KEY_HEIGHT = constraints.maxHeight - 8;
 
       List<Widget> whiteKeys = [];
       List<Widget> blackKeys = [];
@@ -38,11 +40,11 @@ class KeyboardWidget extends ModuleWidget {
       int keyCount = ffiKeyboardGetKeyCount(widgetRaw.getTrait());
 
       double x = 0.0;
-      for (int i = 1; i < keyCount; i++) {
+      for (int i = 0; i < keyCount; i++) {
         int j = i % 12;
         if (j == 1 || j == 3 || j == 6 || j == 8 || j == 10) {
           blackKeys.add(Positioned(
-              left: x + KEY_WIDTH * 4 / 6,
+              left: x - KEY_WIDTH * 1 / 3,
               top: 0,
               child: KeyWidget(
                 index: i,
@@ -91,26 +93,25 @@ class KeyboardWidget extends ModuleWidget {
         }
       }
 
-      return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Container(
-              width: x,
-              height: KEY_HEIGHT,
-              child: Stack(
-                children: whiteKeys + blackKeys,
-              )));
+      return Scrollbar(
+          thumbVisibility: true,
+          trackVisibility: true,
+          thickness: 4,
+          controller: controller,
+          scrollbarOrientation: ScrollbarOrientation.bottom,
+          child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              controller: controller,
+              child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                  child: Container(
+                      width: x,
+                      height: KEY_HEIGHT,
+                      color: const Color.fromRGBO(20, 20, 20, 1.0),
+                      child: Stack(
+                        children: whiteKeys + blackKeys,
+                      )))));
     });
-
-    /*return Padding(
-        padding: const EdgeInsets.all(10),
-        child: Container(
-          decoration: BoxDecoration(
-              //color: Colors.grey,
-              borderRadius: BorderRadius.circular(10)),
-          child: LayoutBuilder(builder: (context, constraints) {
-            
-          }),
-        ));*/
   }
 }
 

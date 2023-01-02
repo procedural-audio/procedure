@@ -106,6 +106,10 @@ impl Module for SawModule {
                 &mut [buffer.left.as_slice_mut()]
             );
 
+            for s in &mut buffer.left {
+                *s = *s * 0.1;
+            }
+
             buffer.right.copy_from(&buffer.left);
         }
     }
