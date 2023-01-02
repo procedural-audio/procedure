@@ -1,14 +1,15 @@
 use crate::*;
 
-// use rlua::{Function, Lua, Result, Table, TablePairs, prelude::LuaTable, Nil};
-// use std::sync::RwLock;
+use rlua::{Function, Lua, Result, UserData, MetaMethod, prelude::LuaUserData, Table, TablePairs, prelude::LuaTable, Nil};
+use std::sync::Mutex;
 
 pub struct StepSequencer {
     pads: [[Pad; 7]; 16],
     playing: Vec<(u32, Id)>,
     queue: Vec<NoteMessage>,
     step: usize,
-    callback: Callback
+    callback: Callback,
+    lua: Mutex<Lua>
 }
 
 pub struct StepSequencerVoice {
@@ -34,6 +35,20 @@ impl Module for StepSequencer {
     };
     
     fn new() -> Self {
+        let lua = Lua::new();
+
+        lua.context( | context | {
+            match context.load(r#"
+                function onStep(i, pads)
+                    print("Step num", i, ", outlined: ", tostring(pads:down()))
+                end
+            "#).eval::<()>() {
+                Ok(_) => println!("Evaluated lua"),
+                Err(_) => println!("Failed to evaluate lua")
+
+            }
+        });
+
         Self {
             pads: [[
                 Pad {
@@ -44,7 +59,8 @@ impl Module for StepSequencer {
             playing: Vec::with_capacity(32),
             queue: Vec::with_capacity(32),
             step: 0,
-            callback: Callback::new()
+            callback: Callback::new(),
+            lua: Mutex::new(lua)
         }
     }
 
@@ -93,6 +109,26 @@ impl Module for StepSequencer {
                         }
                     }
 
+                    if let Ok(lua) = self.lua.try_lock() {
+                        lua.context( | context | {
+                            let globals = context.globals();
+                            let on_step: Result<Function> = globals.get("onStep");
+
+                            if let Ok(on_step) = on_step {
+                                // Maybe can do context.scope(| scope | ) here to borrow pads value?
+                                match on_step.call::<(usize, LuaPads<16, 7>), ()>((step, LuaPads(self.pads))) {
+                                    Ok(_) => {
+                                       // println!("Got onStep return value");
+                                    },
+                                    Err(e) => {
+                                        println!("Error calling onStep {}", e);
+                                    }
+                                }
+                            }
+
+                        });
+                    }
+
                     self.callback.trigger();
 
                     for (index, pad) in self.pads[step].iter().enumerate() {
@@ -130,5 +166,24 @@ impl Module for StepSequencer {
             outputs.events[0].push(msg);
             self.playing.push((voice.index, msg.id));
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+struct LuaPads<const X: usize, const Y: usize>(pub [[Pad; Y]; X]);
+
+impl<const X: usize, const Y: usize> UserData for LuaPads<X, Y> {
+    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+        /*methods.add_meta_function(MetaMethod::Index, | context, pads: LuaPads<X, Y> | {
+            Ok(pads[0])
+        });*/
+
+        methods.add_method("down", | context, pads, () | {
+            Ok(pads.0[0][0].down)
+        });
+    }
+
+    fn get_uvalues_count(&self) -> std::os::raw::c_int {
+        1
     }
 }
