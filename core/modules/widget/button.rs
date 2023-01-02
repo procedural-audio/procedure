@@ -547,8 +547,8 @@ pub struct Key {
 }
 
 pub enum KeyEvent {
-    KeyPress(usize),
-    KeyRelease(usize)
+    Press(usize),
+    Release(usize)
 }
 
 #[repr(C)]
@@ -588,11 +588,11 @@ impl<'a, const X: usize, F: FnMut(KeyEvent, &mut [Key; X])> KeyboardTrait for Ke
     }
 
     fn key_press(&mut self, index: usize) {
-        (self.on_event)(KeyEvent::KeyPress(index), &mut self.keys)
+        (self.on_event)(KeyEvent::Press(index), &mut self.keys)
     }
 
     fn key_release(&mut self, index: usize) {
-        (self.on_event)(KeyEvent::KeyRelease(index), &mut self.keys)
+        (self.on_event)(KeyEvent::Release(index), &mut self.keys)
     }
 }
 

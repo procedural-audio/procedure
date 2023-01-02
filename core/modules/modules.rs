@@ -90,7 +90,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 
     modules.push(("Display", create_module::<crate::control::Display>));
     modules.push(("Bend", create_module::<Bend>));
-    modules.push(("Scale", create_module::<Scale>));
+    modules.push(("Scale", create_module::<sequencing::Scale>));
     modules.push(("Hold", create_module::<Hold>));
     modules.push(("Slew", create_module::<Slew>));
 

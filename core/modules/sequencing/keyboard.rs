@@ -46,11 +46,11 @@ impl Module for Keyboard {
                     keys: &mut self.keys,
                     on_event: | event, keys | {
                         match event {
-                            KeyEvent::KeyPress(i) => {
+                            KeyEvent::Press(i) => {
                                 keys[i].down = true;
                                 self.player.note_num_on(i as u32 + 10, 0.5);
                             },
-                            KeyEvent::KeyRelease(i) => {
+                            KeyEvent::Release(i) => {
                                 keys[i].down = false;
                                 self.player.note_num_off(i as u32 + 10);
                             }
