@@ -54,6 +54,8 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Compressor", create_module::<Compressor>));
     modules.push(("Crossover", create_module::<Crossover>));
 
+    modules.push(("Analog Filter", create_module::<AnalogFilter>));
+
     modules.push(("Chorus", create_module::<Chorus>));
     modules.push(("Flanger", create_module::<Flanger>));
     modules.push(("Phaser", create_module::<Phaser>));
@@ -122,6 +124,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Random Notes", create_module::<crate::sequencing::RandomNotes>));
 
     modules.push(("Transpose", create_module::<Transpose>));
+    modules.push(("Detune", create_module::<Detune>));
 
     modules.push(("Arpeggiator", create_module::<Arpeggiator>));
 

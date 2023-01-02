@@ -7,6 +7,8 @@ mod transpose;
 mod keyboard;
 mod scale;
 mod random_notes;
+mod detune;
+mod drift;
 
 pub use arpeggiator::*;
 pub use notes_track::*;
@@ -17,3 +19,5 @@ pub use transpose::*;
 pub use keyboard::*;
 pub use scale::*;
 pub use random_notes::*;
+pub use detune::*;
+pub use drift::*;

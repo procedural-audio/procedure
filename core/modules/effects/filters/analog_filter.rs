@@ -9,8 +9,8 @@ pub struct AnalogFilter {
 }
 
 pub struct AnalogFilterVoice {
-    /*korg: Korg35LPF,
-    diode: DiodeLPF,
+    korg: [Korg35LPF; 2],
+    /*diode: DiodeLPF,
     oberheim: OberheimLPF,
     ladder: LadderLPF,
     half_ladder: HalfLadderLPF,
@@ -42,15 +42,15 @@ impl Module for AnalogFilter {
     fn new() -> Self {
         Self {
             selected: 0,
-            cutoff: 10000.0,
+            cutoff: 1.0,
             resonance: 0.0,
         }
     }
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            /*korg: Korg35LPF::new(),
-            diode: DiodeLPF::new(),
+            korg: [Korg35LPF::new(), Korg35LPF::new()],
+            /*diode: DiodeLPF::new(),
             oberheim: OberheimLPF::new(),
             ladder: LadderLPF::new(),
             half_ladder: HalfLadderLPF::new(),
@@ -107,8 +107,9 @@ impl Module for AnalogFilter {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        /*voice.korg.prepare(sample_rate, block_size);
-        voice.diode.prepare(sample_rate, block_size);
+        voice.korg[0].init(sample_rate as i32);
+        voice.korg[1].init(sample_rate as i32);
+        /*voice.diode.prepare(sample_rate, block_size);
         voice.oberheim.prepare(sample_rate, block_size);
         voice.ladder.prepare(sample_rate, block_size);
         voice.half_ladder.prepare(sample_rate, block_size);
@@ -118,15 +119,21 @@ impl Module for AnalogFilter {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let input = inputs.audio[0].as_array();
-        let mut output = outputs.audio[0].as_array_mut();
+        let output = outputs.audio[0].as_array_mut();
 
-        /*match self.selected {
-            0 => {
-                voice.korg.set_param(0, self.cutoff);
-                voice.korg.set_param(1, self.resonance);
-                voice.korg.process(&input, &mut output);
+        let cutoff = inputs.control[0];
+
+        match self.selected {
+            _ => {
+                voice.korg[0].set_param(0, cutoff);
+                voice.korg[0].set_param(1, self.resonance);
+                voice.korg[0].compute(input[0].len() as i32, &[input[0]], &mut [output[0]]);
+
+                voice.korg[1].set_param(0, cutoff);
+                voice.korg[1].set_param(1, self.resonance);
+                voice.korg[1].compute(input[1].len() as i32, &[input[1]], &mut [output[1]]);
             }
-            1 => {
+            /*1 => {
                 voice.diode.set_param(0, self.cutoff);
                 voice.diode.set_param(1, self.resonance);
                 voice.diode.process(&input, &mut output);
@@ -156,8 +163,8 @@ impl Module for AnalogFilter {
                 voice.sallen_key.set_param(1, self.resonance);
                 voice.sallen_key.process(&input, &mut output);
             }
-            _ => panic!("Dropdown value out of range"),
-        }*/
+            _ => ()*/
+        }
     }
 }
 
@@ -202,3 +209,133 @@ faust!(SallenKeyLPF,
     res = hslider("res",1,0.5,10,0.01);
     process = _,_ : ve.sallenKeyOnePoleLPF(freq), ve.sallenKeyOnePoleLPF(freq);
 );*/
+
+pub struct Korg35LPF {
+	fSampleRate: i32,
+	fConst1: f32,
+	fConst2: f32,
+	fHslider0: f32,
+	fConst3: f32,
+	fRec4: [f32;2],
+	fHslider1: f32,
+	fRec1: [f32;2],
+	fRec2: [f32;2],
+	fRec3: [f32;2],
+}
+
+impl Korg35LPF {
+	fn new() -> Korg35LPF {
+		Korg35LPF {
+			fSampleRate: 0,
+			fConst1: 0.0,
+			fConst2: 0.0,
+			fHslider0: 0.0,
+			fConst3: 0.0,
+			fRec4: [0.0;2],
+			fHslider1: 0.0,
+			fRec1: [0.0;2],
+			fRec2: [0.0;2],
+			fRec3: [0.0;2],
+		}
+	}
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn class_init(sample_rate: i32) {
+	}
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec4[(l0) as usize] = 0.0;
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = 0.0;
+		}
+		for l2 in 0..2 {
+			self.fRec2[(l2) as usize] = 0.0;
+		}
+		for l3 in 0..2 {
+			self.fRec3[(l3) as usize] = 0.0;
+		}
+	}
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		let mut fConst0: f32 = f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+		self.fConst1 = 6.28318548 / fConst0;
+		self.fConst2 = 44.0999985 / fConst0;
+		self.fConst3 = 1.0 - self.fConst2;
+	}
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+	fn init(&mut self, sample_rate: i32) {
+		Korg35LPF::class_init(sample_rate);
+		self.instance_init(sample_rate);
+	}
+
+	fn get_param(&self, param: usize) -> Option<f32> {
+		match param {
+			0 => Some(self.fHslider0),
+			1 => Some(self.fHslider1),
+			_ => None,
+		}
+	}
+
+	fn set_param(&mut self, param: usize, value: f32) {
+		match param {
+			0 => { self.fHslider0 = value }
+			1 => { self.fHslider1 = value }
+			_ => {}
+		}
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut[&mut[f32]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = self.fConst2 * ((self.fHslider0) as f32);
+		let mut fSlow1: f32 = 0.215215757 * (((self.fHslider1) as f32) + -0.707000017);
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			self.fRec4[0] = fSlow0 + self.fConst3 * self.fRec4[1];
+			let mut fTemp0: f32 = f32::tan(self.fConst1 * f32::powf(10.0, 3.0 * self.fRec4[0] + 1.0));
+			let mut fTemp1: f32 = (((*input0) as f32) - self.fRec3[1]) * fTemp0;
+			let mut fTemp2: f32 = fTemp0 + 1.0;
+			let mut fTemp3: f32 = 1.0 - fTemp0 / fTemp2;
+			let mut fTemp4: f32 = (fTemp0 * ((self.fRec3[1] + (fTemp1 + fSlow1 * self.fRec1[1] * fTemp3) / fTemp2 + self.fRec2[1] * (0.0 - 1.0 / fTemp2)) / (1.0 - fSlow1 * (fTemp0 * fTemp3) / fTemp2) - self.fRec1[1])) / fTemp2;
+			let mut fTemp5: f32 = self.fRec1[1] + fTemp4;
+			let mut fRec0: f32 = fTemp5;
+			self.fRec1[0] = self.fRec1[1] + 2.0 * fTemp4;
+			self.fRec2[0] = self.fRec2[1] + 2.0 * (fTemp0 * (fSlow1 * fTemp5 - self.fRec2[1])) / fTemp2;
+			self.fRec3[0] = self.fRec3[1] + 2.0 * fTemp1 / fTemp2;
+			*output0 = ((fRec0) as f32);
+			self.fRec4[1] = self.fRec4[0];
+			self.fRec1[1] = self.fRec1[0];
+			self.fRec2[1] = self.fRec2[0];
+			self.fRec3[1] = self.fRec3[0];
+		}
+	}
+
+}

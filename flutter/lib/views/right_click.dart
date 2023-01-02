@@ -358,6 +358,20 @@ class _RightClickView extends State<RightClickView> {
             Colors.green,
             30,
             widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Detune",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Drift",
+            MaterialCommunityIcons.view_sequential,
+            Colors.green,
+            30,
+            widget.addPosition));
 
         category.add(RightClickCategory("Effects", 20, subCategory));
       }
