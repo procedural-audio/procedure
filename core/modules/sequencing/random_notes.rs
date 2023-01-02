@@ -7,7 +7,8 @@ pub struct RandomNotes {
     control: f32,
     keys: [Key; 12],
     min: f32,
-    max: f32
+    max: f32,
+    last_id: Option<Id>
 }
 
 impl Module for RandomNotes {
@@ -38,7 +39,8 @@ impl Module for RandomNotes {
                 Key { down: false }; 12
             ],
             min: 0.0,
-            max: 1.0
+            max: 1.0,
+            last_id: None
         }
     }
 
@@ -51,7 +53,7 @@ impl Module for RandomNotes {
         Box::new(Stack {
             children: (
                 Transform {
-                    position: (35, 30),
+                    position: (35, 35),
                     size: (180, 120-35),
                     child: widget::Keyboard {
                         keys: &mut self.keys,
@@ -102,10 +104,22 @@ impl Module for RandomNotes {
                     }
                 }
 
-                if quantized_step != u32::MAX {
+                if let Some(last_id) = self.last_id {
                     outputs.events[0].push(
                         NoteMessage {
-                            id: Id::new(),
+                            id: last_id,
+                            offset: 0,
+                            note: Event::NoteOff
+                        }
+                    );
+                }
+
+                if quantized_step != u32::MAX {
+                    let id = Id::new();
+                    self.last_id = Some(id);
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id,
                             offset: 0,
                             note: Event::NoteOn {
                                 pitch: num_to_pitch(octave * 12 + quantized_step),
