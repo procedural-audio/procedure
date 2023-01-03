@@ -121,7 +121,7 @@ impl Module for AnalogFilter {
         let input = inputs.audio[0].as_array();
         let output = outputs.audio[0].as_array_mut();
 
-        let cutoff = inputs.control[0];
+        let cutoff = f32::clamp(inputs.control[0], 0.0, 1.0);
 
         match self.selected {
             _ => {
