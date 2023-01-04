@@ -132,9 +132,9 @@ impl Module for Sampler {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*for event in &inputs.events[0] {
-            match event {
-                Event::NoteOn { note, offset } => {
+        /*for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure } => {
                     let sample = self.sample.read().unwrap().clone();
                     voice.player.set_sample(sample);
                     voice.player.set_pitch(note.pitch);
@@ -143,8 +143,8 @@ impl Module for Sampler {
                         .note_on(note.id, *offset, *note, note.pressure);
                     println!("Playing note");
                 }
-                Event::NoteOff { id } => {
-                    if voice.player.id() == *id {
+                Event::NoteOff => {
+                    if voice.player.id() == msg.id {
                         voice.player.note_off();
                     }
                 }

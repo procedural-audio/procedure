@@ -18,14 +18,14 @@ use dasp_interpolate::linear::Linear;
 use dasp_signal::{interpolate::Converter, Signal};
 
 #[derive(Clone)]
-pub struct SampleFile<const C: usize> {
-    buffer: Arc<Buffer<Stereo2>>,
+pub struct SampleFile<T: SampleTrait> {
+    buffer: Arc<Buffer<T>>,
     path: String,
     pitch: f32,
     sample_rate: u32,
 }
 
-impl SampleFile<2> {
+impl SampleFile<Stereo2> {
     pub fn from(buffer: Arc<Buffer<Stereo2>>, pitch: f32, sample_rate: u32, path: String) -> Self {
         return Self {
             buffer,
@@ -64,8 +64,8 @@ impl SampleFile<2> {
 
 /* ===== Sample Voice ===== */
 
-pub struct SamplePlayer {
-    sample: Option<SampleFile<2>>,
+pub struct SamplePlayer<T: SampleTrait> {
+    sample: Option<SampleFile<T>>,
     sample_pitch: f32,
     active: bool,
     note_off: bool,
@@ -92,7 +92,7 @@ struct Playhead<A> {
     buffer: A,
 }
 
-impl SamplePlayer {
+impl<T: SampleTrait> SamplePlayer<T> {
     pub fn new() -> Self {
         Self {
             sample: None,
@@ -160,8 +160,8 @@ impl SamplePlayer {
     }
 }
 
-/*impl Source for SamplePlayer {
-    type Output = Stereo2;
+impl<T: SampleTrait> Source for SamplePlayer<T> {
+    type Output = StereoBuffer;
 
     fn new() -> Self {
         Self {
@@ -196,9 +196,8 @@ impl SamplePlayer {
         self.sample_rate = sample_rate;
     }
 
-    fn process(&mut self, buffer: &mut Stereo2) {
-        let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
-
+    fn process(&mut self, buffer: &mut StereoBuffer) {
+        /*let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
         if let Some(sample) = &self.sample {
             if self.should_loop == false {
                 /* Shouldn't loop */
@@ -348,9 +347,9 @@ impl SamplePlayer {
                     }
                 }
             }
-        }
+        }*/
     }
-}*/
+}
 
 /*impl Voice for SamplePlayer {
     fn play(&mut self) {
