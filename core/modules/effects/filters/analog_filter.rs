@@ -118,8 +118,8 @@ impl Module for AnalogFilter {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let input = inputs.audio[0].as_array();
-        let output = outputs.audio[0].as_array_mut();
+        let input = inputs.audio[0].as_slice();
+        let output = outputs.audio[0].as_slice_mut();
 
         let cutoff = f32::clamp(inputs.control[0], 0.0, 1.0);
 
@@ -127,11 +127,11 @@ impl Module for AnalogFilter {
             _ => {
                 voice.korg[0].set_param(0, cutoff);
                 voice.korg[0].set_param(1, self.resonance);
-                voice.korg[0].compute(input[0].len() as i32, &[input[0]], &mut [output[0]]);
+                voice.korg[0].compute(input.len() as i32, &[input], &mut [output], true);
 
                 voice.korg[1].set_param(0, cutoff);
                 voice.korg[1].set_param(1, self.resonance);
-                voice.korg[1].compute(input[1].len() as i32, &[input[1]], &mut [output[1]]);
+                voice.korg[1].compute(input.len() as i32, &[input], &mut [output], false);
             }
             /*1 => {
                 voice.diode.set_param(0, self.cutoff);
@@ -302,7 +302,7 @@ impl Korg35LPF {
 		}
 	}
 
-	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut[&mut[f32]]) {
+	fn compute(&mut self, count: i32, inputs: &[&[Stereo2]], outputs: &mut[&mut[Stereo2]], left: bool) {
 		let (inputs0) = if let [inputs0, ..] = inputs {
 			let inputs0 = inputs0[..count as usize].iter();
 			(inputs0)
@@ -321,7 +321,12 @@ impl Korg35LPF {
 		for (input0, output0) in zipped_iterators {
 			self.fRec4[0] = fSlow0 + self.fConst3 * self.fRec4[1];
 			let mut fTemp0: f32 = f32::tan(self.fConst1 * f32::powf(10.0, 3.0 * self.fRec4[0] + 1.0));
-			let mut fTemp1: f32 = (((*input0) as f32) - self.fRec3[1]) * fTemp0;
+			let mut fTemp1: f32 = if left {
+                (((input0.left) as f32) - self.fRec3[1]) * fTemp0
+            } else {
+                (((input0.right) as f32) - self.fRec3[1]) * fTemp0
+            };
+
 			let mut fTemp2: f32 = fTemp0 + 1.0;
 			let mut fTemp3: f32 = 1.0 - fTemp0 / fTemp2;
 			let mut fTemp4: f32 = (fTemp0 * ((self.fRec3[1] + (fTemp1 + fSlow1 * self.fRec1[1] * fTemp3) / fTemp2 + self.fRec2[1] * (0.0 - 1.0 / fTemp2)) / (1.0 - fSlow1 * (fTemp0 * fTemp3) / fTemp2) - self.fRec1[1])) / fTemp2;
@@ -330,7 +335,11 @@ impl Korg35LPF {
 			self.fRec1[0] = self.fRec1[1] + 2.0 * fTemp4;
 			self.fRec2[0] = self.fRec2[1] + 2.0 * (fTemp0 * (fSlow1 * fTemp5 - self.fRec2[1])) / fTemp2;
 			self.fRec3[0] = self.fRec3[1] + 2.0 * fTemp1 / fTemp2;
-			*output0 = ((fRec0) as f32);
+            if left {
+			    output0.left = ((fRec0) as f32);
+            } else {
+                output0.right = ((fRec0) as f32);
+            };
 			self.fRec4[1] = self.fRec4[0];
 			self.fRec1[1] = self.fRec1[0];
 			self.fRec2[1] = self.fRec2[0];

@@ -54,15 +54,15 @@ pub struct ProcessAction {
     module: *mut dyn PolyphonicModule,
     voice_index: usize,
     node: Rc<Node>,
-    audio_inputs: Ptr<Bus<Stereo>>,
-    audio_outputs: Ptr<Bus<Stereo>>,
+    audio_inputs: Ptr<Bus<StereoBuffer>>,
+    audio_outputs: Ptr<Bus<StereoBuffer>>,
     events_inputs: Ptr<Bus<NoteBuffer>>,
     events_outputs: Ptr<Bus<NoteBuffer>>,
     control_inputs: Ptr<Bus<Box<f32>>>,
     control_outputs: Ptr<Bus<Box<f32>>>,
     time_inputs: Ptr<Bus<Box<TimeRange>>>,
     time_outputs: Ptr<Bus<Box<TimeRange>>>,
-    copy_actions: Vec<CopyAction<Stereo>>,
+    copy_actions: Vec<CopyAction<StereoBuffer>>,
 }
 
 impl Clone for ProcessAction {
@@ -90,7 +90,7 @@ impl Clone for ProcessAction {
 pub struct GraphProcessor {
     pub actions: Vec<ProcessAction>,
 
-    pub audio_buffers: Vec<Box<Bus<Stereo>>>,
+    pub audio_buffers: Vec<Box<Bus<StereoBuffer>>>,
     pub events_buffers: Vec<Box<Bus<NoteBuffer>>>,
     pub control_buffers: Vec<Box<Bus<Box<f32>>>>,
     pub time_buffers: Vec<Box<Bus<Box<TimeRange>>>>,
@@ -143,7 +143,7 @@ impl GraphProcessor {
             );
         }
 
-        let mut audio_channels_buffers: Vec<Box<Bus<Stereo>>> = Vec::new();
+        let mut audio_channels_buffers: Vec<Box<Bus<StereoBuffer>>> = Vec::new();
         let mut events_channels_buffers: Vec<Box<Bus<NoteBuffer>>> = Vec::new();
         let mut control_channels_buffers: Vec<Box<Bus<Box<f32>>>> = Vec::new();
         let mut time_channels_buffers: Vec<Box<Bus<Box<TimeRange>>>> = Vec::new();
@@ -203,7 +203,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    audio_input_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
+                    audio_input_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut audio_output_bus = Box::new(Bus::new());
@@ -216,7 +216,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    audio_output_bus.add_channel(Channel::new(Stereo::init(0.0, block_size), connected));
+                    audio_output_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut events_input_bus = Box::new(Bus::new());
@@ -652,8 +652,7 @@ impl GraphProcessor {
         /* Zero all audio buffers */
         for bus in &mut self.audio_buffers {
             for i in 0..bus.num_channels() {
-                bus.channel_mut(i).left.zero();
-                bus.channel_mut(i).right.zero();
+                bus.channel_mut(i).zero();
             }
         }
 
@@ -702,13 +701,19 @@ impl GraphProcessor {
                         Pin::Control(_, _) => (),
                         Pin::Time(_, _) => (),
                         Pin::ExternalAudio(i) => {
-                            inputs.audio[audio_index].left.copy_from(&audio[*i * 2]);
-                            inputs.audio[audio_index].right.copy_from(&audio[*i * 2 + 1]);
+                            for (sample, src) in inputs.audio[audio_index].as_slice_mut().iter_mut().zip(&audio[*i * 2]) {
+                                sample.left = *src;
+                            }
+
+                            for (sample, src) in inputs.audio[audio_index].as_slice_mut().iter_mut().zip(&audio[*i * 2 + 1]) {
+                                sample.right = *src;
+                            }
+
                             audio_index += 1;
                         },
                         Pin::ExternalNotes(_) => {
                             if action.voice_index == 0 {
-                                inputs.events[events_index].copy_from(events);
+                                inputs.events[events_index].replace(events);
                             }
 
                             events_index += 1;
@@ -732,12 +737,20 @@ impl GraphProcessor {
                         Pin::Control(_, _) => (),
                         Pin::Time(_, _) => (),
                         Pin::ExternalAudio(i) => {
-                            audio[*i * 2].copy_from(&outputs.audio[audio_index].left);
-                            audio[*i * 2 + 1].copy_from(&outputs.audio[audio_index].right);
+                            for (src, sample) in outputs.audio[audio_index].as_slice_mut().iter().zip(audio[*i * 2].as_slice_mut()) {
+                                *sample = src.left;
+                            }
+
+                            for (src, sample) in outputs.audio[audio_index].into_iter().zip(audio[*i * 2 + 1].as_slice_mut()) {
+                                *sample = src.right;
+                            }
+
+                            // audio[*i * 2].copy_from(&outputs.audio[audio_index].left);
+                            // audio[*i * 2 + 1].copy_from(&outputs.audio[audio_index].right);
                             audio_index += 1;
                         },
                         Pin::ExternalNotes(_) => {
-                            events.copy_from(&outputs.events[events_index]);
+                            events.replace(&outputs.events[events_index]);
                             events_index += 1;
                         },
                     }
@@ -770,9 +783,9 @@ impl GraphProcessor {
                         should_copy,
                     } => {
                         if should_copy {
-                            dest[dest_index].copy_from(&src[src_index]);
+                            dest[dest_index].replace(&src[src_index]);
                         } else {
-                            dest[dest_index].append_from(&src[src_index]);
+                            dest[dest_index].append(&src[src_index]);
                         }
                     }
                     CopyAction::ControlCopy {

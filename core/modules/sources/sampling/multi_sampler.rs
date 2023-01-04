@@ -91,7 +91,7 @@ impl Module for MultiSampler {
         println!("Sample rate is {}", sample_rate);
 
         for voice in voices {
-            voice.prepare(sample_rate, block_size);
+            // voice.prepare(sample_rate, block_size);
         }
     }
 
@@ -240,7 +240,7 @@ pub extern "C" fn ffi_sample_mapper_add_region(
 ) {
     (*widget.map.write().unwrap())
         .regions
-        .push(SoundRegion::<Sample<2>> {
+        .push(SoundRegion::<SampleFile<2>> {
             low_note,
             high_note,
             low_velocity,
@@ -351,10 +351,12 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_left(
     index: usize,
     sample_index: usize,
 ) -> FFIBuffer {
-    let mut buffer_new = Vec::new();
+    // let mut buffer_new = Vec::new();
     let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
 
-    let skip = sample.as_array()[0].len() / 300;
+    todo!();
+
+    /*let skip = sample.as_array()[0].len() / 300;
 
     for sample in sample.as_array()[0].iter().step_by(skip) {
         buffer_new.push(*sample);
@@ -367,7 +369,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_left(
 
     std::mem::forget(buffer_new);
 
-    return buffer_ret;
+    return buffer_ret;*/
 }
 
 #[no_mangle]
@@ -376,10 +378,12 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_right(
     index: usize,
     sample_index: usize,
 ) -> FFIBuffer {
-    let mut buffer_new = Vec::new();
+    // let mut buffer_new = Vec::new();
     let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
 
-    let skip = sample.as_array()[1].len() / 300;
+    todo!();
+
+    /*let skip = sample.as_array()[1].len() / 300;
 
     for sample in sample.as_array()[1].iter().step_by(skip) {
         buffer_new.push(*sample);
@@ -392,7 +396,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_right(
 
     std::mem::forget(buffer_new);
 
-    return buffer_ret;
+    return buffer_ret;*/
 }
 
 #[no_mangle]
@@ -446,7 +450,7 @@ impl MySampler {
 }
 
 pub struct SampleMap {
-    regions: Vec<SoundRegion<Sample<2>>>,
+    regions: Vec<SoundRegion<SampleFile<2>>>,
 }
 
 impl SampleMap {
@@ -471,7 +475,7 @@ impl SampleMap {
         use std::io::BufReader;
         use xml::reader::{EventReader, XmlEvent};
 
-        let mut regions: Vec<SoundRegion<Sample<2>>> = Vec::new();
+        let mut regions: Vec<SoundRegion<SampleFile<2>>> = Vec::new();
 
         match File::open(path) {
             Ok(file) => {
@@ -534,7 +538,7 @@ impl SampleMap {
                                                         "sample" => {
                                                             println!("Found sample");
                                                             let mut region =
-                                                                SoundRegion::<Sample<2>> {
+                                                                SoundRegion::<SampleFile<2>> {
                                                                     low_note: 0,
                                                                     high_note: 127,
                                                                     low_velocity: 0.0,
@@ -575,7 +579,7 @@ impl SampleMap {
                                                                 {
                                                                     println!("Adding sample to existing region");
                                                                     found = true;
-                                                                    r.sounds.push(Sample::load(
+                                                                    r.sounds.push(SampleFile::load(
                                                                         &sample_path,
                                                                     ));
                                                                 }
@@ -585,7 +589,7 @@ impl SampleMap {
                                                                 println!(
                                                                     "Adding sample to new region"
                                                                 );
-                                                                region.sounds.push(Sample::load(
+                                                                region.sounds.push(SampleFile::load(
                                                                     &sample_path,
                                                                 ));
                                                                 regions.push(region);

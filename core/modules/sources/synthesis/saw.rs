@@ -103,14 +103,10 @@ impl Module for SawModule {
             voice.saw.compute(
                 buffer.len() as i32,
                 &[],
-                &mut [buffer.left.as_slice_mut()]
+                &mut [buffer.as_slice_mut()]
             );
 
-            for s in &mut buffer.left {
-                *s = *s * 0.1;
-            }
-
-            buffer.right.copy_from(&buffer.left);
+            buffer.gain(0.1);
         }
     }
 }
@@ -218,7 +214,7 @@ impl Saw {
         self.fHslider0 = hz;
 	}
 
-	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut [&mut [f32]]) {
+	fn compute(&mut self, count: i32, inputs: &[&[Stereo2]], outputs: &mut [&mut [Stereo2]]) {
 		let (outputs0) = if let [outputs0, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			(outputs0)
@@ -236,7 +232,7 @@ impl Saw {
 			self.fRec0[0] = if (iTemp3 as i32 != 0) { fTemp1 } else { fTemp2 };
 			let mut fThen1: f32 = fTemp1 + (1.0 - self.fConst0 / fTemp0) * fTemp2;
 			let mut fRec1: f32 = if (iTemp3 as i32 != 0) { fTemp1 } else { fThen1 };
-			*output0 = ((2.0 * fRec1 + -1.0) as f32);
+			*output0 = ((Stereo2{left: 2.0, right: 2.0} * Stereo2{left: fRec1, right: fRec1} + Stereo2{left: -1.0, right: -1.0}));
 			self.fRec2[1] = self.fRec2[0];
 			self.fRec0[1] = self.fRec0[0];
 		}

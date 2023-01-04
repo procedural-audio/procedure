@@ -4,12 +4,12 @@ use crate::sample::sample::*;
 
 //use crate::AudioChannel;
 //use crate::AudioChannels;
-use crate::Stereo;
+use crate::buffers::*;
 
 use lazy_static::*;
 
 lazy_static! {
-    static ref SAMPLE_CACHE: RwLock<Vec<(String, Arc<Stereo>)>> = RwLock::new(Vec::new());
+    static ref SAMPLE_CACHE: RwLock<Vec<(String, Arc<Buffer<Stereo2>>)>> = RwLock::new(Vec::new());
 }
 
 use std::sync::Arc;
@@ -25,12 +25,14 @@ Sample Cache
 
 */
 
-pub fn load_sample(path: &str) -> Sample<2> {
+pub fn load_sample(path: &str) -> SampleFile<2> {
     /* Load sample from cache */
+
+    todo!();
 
     for (p, buffer) in &*SAMPLE_CACHE.read().unwrap() {
         if p.as_str() == path {
-            return Sample::from(buffer.clone(), 440.0, 44100, path.to_string());
+            return SampleFile::from(buffer.clone(), 440.0, 44100, path.to_string());
         }
     }
 
@@ -66,9 +68,9 @@ pub fn load_sample(path: &str) -> Sample<2> {
         //println!("Loaded sample {}", path);
     });*/
 
-    let spec = reader.spec();
+    /*let spec = reader.spec();
     let size = reader.samples::<i16>().len();
-    let mut buffer_new = Stereo::with_capacity(size / spec.channels as usize);
+    let mut buffer_new = StereoBuffer::with_capacity(size / spec.channels as usize);
     // ^^^ SIZE OF SINGLE CHANNEL
 
     println!("{:?}", spec);
@@ -133,5 +135,5 @@ pub fn load_sample(path: &str) -> Sample<2> {
     // let buffer_new = samplerate::convert(reader.spec().sample_rate, 44100, 1, samplerate::ConverterType::SincFastest, buffer_new.as_slice()).unwrap();
     // let buffer_new = AudioBuffer::from(buffer_new);
 
-    return Sample::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());
+    return Sample::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());*/
 }

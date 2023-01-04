@@ -113,7 +113,9 @@ pub unsafe extern "C" fn api_host_process(
     events: &mut NoteBuffer,
 ) {
     for buffer in audio.iter_mut() {
-        buffer.zero();
+        for sample in buffer {
+            *sample = 0.0;
+        }
     }
 
     host.process(audio, events);

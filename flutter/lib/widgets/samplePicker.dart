@@ -8,17 +8,6 @@ import '../host.dart';
 
 import 'dart:ui' as ui;
 
-/*
-
-Features
- - Sample fade in and fade out
- - Loop
- - Loop crossfade
- - Root Pitch
- - Playback speed
-
-*/
-
 FFIBuffer Function(FFIWidgetPointer) ffiSamplePickerGetBuffer = core
     .lookup<NativeFunction<FFIBuffer Function(FFIWidgetPointer)>>(
         "ffi_sample_picker_get_buffer")
@@ -157,8 +146,6 @@ class SamplePickerWidget extends ModuleWidget {
   Widget build(BuildContext context) {
     List<double> bufferLeft = [];
     List<double> bufferRight = [];
-
-    return Container();
 
     double start = ffiSamplePickerGetStart(widgetRaw.pointer);
     double end = ffiSamplePickerGetEnd(widgetRaw.pointer);

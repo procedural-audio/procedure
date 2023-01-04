@@ -9,7 +9,6 @@ pub mod voice;
 // pub use crate::buffers::event::*;
 // pub use crate::buffers::control::*;
 
-pub use crate::buffers::Stereo;
 pub use crate::buffers::*;
 
 pub use crate::math::*;

@@ -37,11 +37,8 @@ class _SamplesView extends State<SamplesView> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: ConstrainedBox (
-        constraints: const BoxConstraints(
-          maxWidth: 1100,
-          maxHeight: 1000
-        ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 1000),
         child: Padding(
           padding: const EdgeInsets.all(50),
           child: Container(
@@ -56,7 +53,9 @@ class _SamplesView extends State<SamplesView> {
                         top: 2.5,
                         left: 5,
                         child: IconButton(
-                          color: currentDir.path == contentPath + "/samples" ? MyTheme.grey70 : Colors.white,
+                          color: currentDir.path == contentPath + "/samples"
+                              ? MyTheme.grey70
+                              : Colors.white,
                           icon: const Icon(Icons.arrow_back),
                           iconSize: 25,
                           onPressed: () {
@@ -69,75 +68,72 @@ class _SamplesView extends State<SamplesView> {
                         ),
                       ),
                       Positioned(
-                        top: 10,
-                        left: 60,
-                        child: Container(
-                          width: 180,
-                          height: 28,
-                          child: TextField(
-                            maxLines: 1,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
+                          top: 10,
+                          left: 60,
+                          child: Container(
+                            width: 180,
+                            height: 28,
+                            child: TextField(
+                              maxLines: 1,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              decoration: const InputDecoration(
+                                  fillColor: Color.fromARGB(255, 112, 35, 30),
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.all(10)),
+                              onChanged: (data) {
+                                setState(() {
+                                  searchText = data;
+                                });
+                              },
                             ),
-                            decoration: const InputDecoration(
-                              fillColor: Color.fromARGB(255, 112, 35, 30),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.all(10)
-                            ),
-                            onChanged: (data) {
-                              setState(() {
-                                searchText = data;
-                              });
-                            },
-                          ),
-                          decoration: BoxDecoration(
-                            color: MyTheme.grey40
-                          ),
-                          foregroundDecoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color.fromRGBO(100, 100, 100, 1.0),
-                              width: 2.0
-                            ),
-                            borderRadius: const BorderRadius.all(Radius.circular(4))
-                          ),
-                        )
-                      ),
-
+                            decoration: BoxDecoration(color: MyTheme.grey40),
+                            foregroundDecoration: BoxDecoration(
+                                border: Border.all(
+                                    color: const Color.fromRGBO(
+                                        100, 100, 100, 1.0),
+                                    width: 2.0),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(4))),
+                          )),
                       Positioned(
-                        left: 260,
-                        top: 10,
-                        child: Container(
-                          height: 30,
-                          width: 690,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                TagWidget("Kick", Colors.red),
-                                TagWidget("Snare", Colors.blue),
-                                TagWidget("Piano", Colors.green),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Kick", Colors.red),
-                                TagWidget("Snare", Colors.blue),
-                                TagWidget("Piano", Colors.green),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Strings", Colors.purple),
-                                TagWidget("Strings", Colors.purple),
-                              ],
-                            ),
-                          )
-                        )
-                      ),
+                          left: 260,
+                          top: 10,
+                          child: Container(
+                              height: 30,
+                              width: 690,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    TagWidget("Kick", Colors.red),
+                                    TagWidget("Snare", Colors.blue),
+                                    TagWidget("Piano", Colors.green),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Kick", Colors.red),
+                                    TagWidget("Snare", Colors.blue),
+                                    TagWidget("Piano", Colors.green),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Strings", Colors.purple),
+                                    TagWidget("Strings", Colors.purple),
+                                  ],
+                                ),
+                              ))),
                       Positioned(
                         top: 2.5,
                         right: 5,
                         child: IconButton(
-                          color: currentDir.path == contentPath + "/samples" ? MyTheme.grey70 : Colors.white,
-                          icon: fileView ? const Icon(Icons.poll_outlined) : const Icon(Icons.folder),
+                          color: currentDir.path == contentPath + "/samples"
+                              ? MyTheme.grey70
+                              : Colors.white,
+                          icon: fileView
+                              ? const Icon(Icons.poll_outlined)
+                              : const Icon(Icons.folder),
                           iconSize: 25,
                           onPressed: () {
                             setState(() {
@@ -166,12 +162,12 @@ class _SamplesView extends State<SamplesView> {
               borderRadius: BorderRadius.circular(10.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
-                  spreadRadius: 5,
-                  blurRadius: 10,
-                  offset: const Offset(0, 5)
-                ),
-                const BoxShadow(color: Color.fromRGBO(200, 200, 200, 0.3), spreadRadius: 1),
+                    color: Colors.black.withOpacity(0.4),
+                    spreadRadius: 5,
+                    blurRadius: 10,
+                    offset: const Offset(0, 5)),
+                const BoxShadow(
+                    color: Color.fromRGBO(200, 200, 200, 0.3), spreadRadius: 1),
               ],
             ),
           ),
@@ -226,49 +222,45 @@ class _SamplesBrowserWidgetState extends State<SamplesBrowserWidget> {
       var description = "Description here";
 
       if (searchText != "") {
-        if (!file.name.contains(searchText)
-            && !file.path.contains(searchText)
-            && !description.contains(searchText)) {
+        if (!file.name.contains(searchText) &&
+            !file.path.contains(searchText) &&
+            !description.contains(searchText)) {
           continue;
         }
       }
 
       if (file.existsSync()) {
-        rows.add(
-          FileRow(
-            icon: Icons.audiotrack,
-            name: entry.name,
-            description: description,
-            color: Colors.deepPurpleAccent,
-            onTap: () {},
-            onDoubleTap: () {
-              setState(() {
-                print("Selected file");
-              });
-            },
-            onPanStart: (details) {},
-            onPanUpdate: (details) {},
-            onPanEnd: (details) {},
-          )
-        );
+        rows.add(FileRow(
+          icon: Icons.audiotrack,
+          name: entry.name,
+          description: description,
+          color: Colors.deepPurpleAccent,
+          onTap: () {},
+          onDoubleTap: () {
+            setState(() {
+              print("Selected file");
+            });
+          },
+          onPanStart: (details) {},
+          onPanUpdate: (details) {},
+          onPanEnd: (details) {},
+        ));
       } else if (directory.existsSync()) {
-        rows.add(
-          FileRow(
-            icon: Icons.folder,
-            name: entry.name,
-            description: description,
-            color: Colors.blueAccent,
-            onTap: () {},
-            onDoubleTap: () {
-              setState(() {
-                currentDir = Directory(entry.path);
-              });
-            },
-            onPanStart: (details) {},
-            onPanUpdate: (details) {},
-            onPanEnd: (details) {},
-          )
-        );
+        rows.add(FileRow(
+          icon: Icons.folder,
+          name: entry.name,
+          description: description,
+          color: Colors.blueAccent,
+          onTap: () {},
+          onDoubleTap: () {
+            setState(() {
+              currentDir = Directory(entry.path);
+            });
+          },
+          onPanStart: (details) {},
+          onPanUpdate: (details) {},
+          onPanEnd: (details) {},
+        ));
       }
     }
 
@@ -276,10 +268,9 @@ class _SamplesBrowserWidgetState extends State<SamplesBrowserWidget> {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            child: Column(
-              children: rows,
-            )
-          ),
+              child: Column(
+            children: rows,
+          )),
         )
       ],
     );
@@ -306,41 +297,46 @@ class _TagWidgetState extends State<TagWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-      child: MouseRegion(
-        onEnter: (event) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (event) {
-          setState(() {
-            hovering = false;
-          });
-
-        },
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          height: 40,
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-            ),
-          ),
-          decoration: BoxDecoration(
-            color: hovering ? color : color.withAlpha(200),
-            borderRadius: const BorderRadius.all(Radius.circular(5))
-          ),
-        )
-      )
-    );
+        padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+        child: MouseRegion(
+            onEnter: (event) {
+              setState(() {
+                hovering = true;
+              });
+            },
+            onExit: (event) {
+              setState(() {
+                hovering = false;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              height: 40,
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              decoration: BoxDecoration(
+                  color: hovering ? color : color.withAlpha(200),
+                  borderRadius: const BorderRadius.all(Radius.circular(5))),
+            )));
   }
 }
 
-
 class FileRow extends StatefulWidget {
-  FileRow({required this.icon, required this.name, required this.description, required this.color, required this.onTap, required this.onDoubleTap, required this.onPanStart, required this.onPanUpdate, required this.onPanEnd}) : super(key: UniqueKey());
+  FileRow(
+      {required this.icon,
+      required this.name,
+      required this.description,
+      required this.color,
+      required this.onTap,
+      required this.onDoubleTap,
+      required this.onPanStart,
+      required this.onPanUpdate,
+      required this.onPanEnd})
+      : super(key: UniqueKey());
 
   final IconData icon;
   final String name;
@@ -354,11 +350,29 @@ class FileRow extends StatefulWidget {
   final void Function(DragEndDetails) onPanEnd;
 
   @override
-  State<FileRow> createState() => _FileRowState(icon: icon, name: name, description: description, color: color, onTap: onTap, onDoubleTap: onDoubleTap, onPanStart: onPanStart, onPanUpdate: onPanUpdate, onPanEnd: onPanEnd);
+  State<FileRow> createState() => _FileRowState(
+      icon: icon,
+      name: name,
+      description: description,
+      color: color,
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      onPanStart: onPanStart,
+      onPanUpdate: onPanUpdate,
+      onPanEnd: onPanEnd);
 }
 
 class _FileRowState extends State<FileRow> {
-  _FileRowState({required this.icon, required this.name, required this.description, required this.color, required this.onTap, required this.onDoubleTap, required this.onPanStart, required this.onPanUpdate, required this.onPanEnd});
+  _FileRowState(
+      {required this.icon,
+      required this.name,
+      required this.description,
+      required this.color,
+      required this.onTap,
+      required this.onDoubleTap,
+      required this.onPanStart,
+      required this.onPanUpdate,
+      required this.onPanEnd});
 
   final IconData icon;
   final String name;
@@ -376,7 +390,7 @@ class _FileRowState extends State<FileRow> {
   @override
   Widget build(BuildContext context) {
     var textColor = hovering ? Colors.white : Colors.white.withAlpha(180);
-    var iconColor = hovering ? color: color.withAlpha(180);
+    var iconColor = hovering ? color : color.withAlpha(180);
 
     return MouseRegion(
       onEnter: (event) {
@@ -400,25 +414,17 @@ class _FileRowState extends State<FileRow> {
             Container(width: 0, height: 50),
             Container(width: 50, child: Icon(icon, color: iconColor)),
             Container(
-              width: 400,
-              child: Text(
-                name,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 16
-                ),
-              )
-            ),
+                width: 400,
+                child: Text(
+                  name,
+                  style: TextStyle(color: textColor, fontSize: 16),
+                )),
             Container(
-              width: 300,
-              child: Text(
-                description,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 16
-                ),
-              )
-            ),
+                width: 300,
+                child: Text(
+                  description,
+                  style: TextStyle(color: textColor, fontSize: 16),
+                )),
             Container(
               alignment: Alignment.topRight,
               width: 200,
@@ -438,7 +444,10 @@ class _FileRowState extends State<FileRow> {
 }
 
 class RatingWidget extends StatelessWidget {
-  RatingWidget({required this.rating, required this.color, required this.onRatingChange});
+  RatingWidget(
+      {required this.rating,
+      required this.color,
+      required this.onRatingChange});
 
   final int rating;
   final void Function(int) onRatingChange;
@@ -450,73 +459,82 @@ class RatingWidget extends StatelessWidget {
     const double spacing = 25;
 
     return Container(
-      width: 130,
-      height: 50,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 5,
-            left: spacing * 0,
-            child: IconButton(
-              icon: rating >= 1 ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
-              iconSize: iconSize,
-              color: color,
-              onPressed: () {
-                onRatingChange(1);
-              },
+        width: 130,
+        height: 50,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 5,
+              left: spacing * 0,
+              child: IconButton(
+                icon: rating >= 1
+                    ? const Icon(Icons.circle)
+                    : const Icon(Icons.circle_outlined),
+                iconSize: iconSize,
+                color: color,
+                onPressed: () {
+                  onRatingChange(1);
+                },
+              ),
             ),
-          ),
-          Positioned(
-            top: 5,
-            left: spacing * 1,
-            child: IconButton(
-              icon: rating >= 2 ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
-              iconSize: iconSize,
-              color: color,
-              onPressed: () {
-                onRatingChange(2);
-              },
+            Positioned(
+              top: 5,
+              left: spacing * 1,
+              child: IconButton(
+                icon: rating >= 2
+                    ? const Icon(Icons.circle)
+                    : const Icon(Icons.circle_outlined),
+                iconSize: iconSize,
+                color: color,
+                onPressed: () {
+                  onRatingChange(2);
+                },
+              ),
             ),
-          ),
-          Positioned(
-            top: 5,
-            left: spacing * 2,
-            child: IconButton(
-              icon: rating >= 3 ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
-              iconSize: iconSize,
-              color: color,
-              onPressed: () {
-                onRatingChange(3);
-              },
+            Positioned(
+              top: 5,
+              left: spacing * 2,
+              child: IconButton(
+                icon: rating >= 3
+                    ? const Icon(Icons.circle)
+                    : const Icon(Icons.circle_outlined),
+                iconSize: iconSize,
+                color: color,
+                onPressed: () {
+                  onRatingChange(3);
+                },
+              ),
             ),
-          ),
-          Positioned(
-            top: 5,
-            left: spacing * 3,
-            child: IconButton(
-              icon: rating >= 4 ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
-              iconSize: iconSize,
-              color: color,
-              onPressed: () {
-                onRatingChange(4);
-              },
+            Positioned(
+              top: 5,
+              left: spacing * 3,
+              child: IconButton(
+                icon: rating >= 4
+                    ? const Icon(Icons.circle)
+                    : const Icon(Icons.circle_outlined),
+                iconSize: iconSize,
+                color: color,
+                onPressed: () {
+                  onRatingChange(4);
+                },
+              ),
             ),
-          ),
-          Positioned(
-            top: 5,
-            left: spacing * 4,
-            child: IconButton(
-              icon: rating >= 5 ? const Icon(Icons.circle) : const Icon(Icons.circle_outlined),
-              iconSize: iconSize,
-              color: color,
-              onPressed: () {
-                onRatingChange(5);
-              },
+            Positioned(
+              top: 5,
+              left: spacing * 4,
+              child: IconButton(
+                icon: rating >= 5
+                    ? const Icon(Icons.circle)
+                    : const Icon(Icons.circle_outlined),
+                iconSize: iconSize,
+                color: color,
+                onPressed: () {
+                  onRatingChange(5);
+                },
+              ),
             ),
-          ),
-        ],
-      )
-    );
+          ],
+        ));
   }
 }
 
@@ -553,30 +571,24 @@ class SamplesCloudPainter extends CustomPainter {
 
     if (redPoints.length < 2) {
       for (double i = 0; i < 1000; i++) {
-        redPoints.add(
-          Offset(
-            rng.nextDouble() * size.width + 5, 
-            rng.nextDouble() * size.height + 5,
-          )
-        );
+        redPoints.add(Offset(
+          rng.nextDouble() * size.width + 5,
+          rng.nextDouble() * size.height + 5,
+        ));
       }
 
       for (double i = 0; i < 1000; i++) {
-        greenPoints.add(
-          Offset(
-            rng.nextDouble() * size.width + 5, 
-            rng.nextDouble() * size.height + 5,
-          )
-        );
+        greenPoints.add(Offset(
+          rng.nextDouble() * size.width + 5,
+          rng.nextDouble() * size.height + 5,
+        ));
       }
 
       for (double i = 0; i < 1000; i++) {
-        bluePoints.add(
-          Offset(
-            rng.nextDouble() * size.width + 5, 
-            rng.nextDouble() * size.height + 5,
-          )
-        );
+        bluePoints.add(Offset(
+          rng.nextDouble() * size.width + 5,
+          rng.nextDouble() * size.height + 5,
+        ));
       }
     }
   }
@@ -584,32 +596,24 @@ class SamplesCloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     populateLists(size);
-    
+
     final paintRed = Paint()
       ..color = MyTheme.control
       ..strokeWidth = 2;
-    
+
     final paintGreen = Paint()
       ..color = MyTheme.midi
       ..strokeWidth = 3;
-    
+
     final paintBlue = Paint()
       ..color = MyTheme.audio
       ..strokeWidth = 5;
 
     /* Size points based on popularity or rating */
 
-    canvas.drawPoints(
-      PointMode.points,
-      redPoints,
-      paintRed
-    );
+    canvas.drawPoints(PointMode.points, redPoints, paintRed);
 
-    canvas.drawPoints(
-      PointMode.points,
-      greenPoints,
-      paintGreen
-    );
+    canvas.drawPoints(PointMode.points, greenPoints, paintGreen);
 
     canvas.drawPoints(
       PointMode.points,

@@ -1,9 +1,11 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Mul};
 use std::slice;
 
 // pub mod audio;
 pub mod event;
 pub mod time;
+
+use hound::Sample;
 
 // pub use crate::buffers::audio::*;
 pub use crate::buffers::event::*;
@@ -15,7 +17,7 @@ use std::borrow::BorrowMut;
 use std::ops::{Index, IndexMut};
 
 pub struct IO {
-    pub audio: Bus<Stereo>,
+    pub audio: Bus<StereoBuffer>,
     pub events: Bus<NoteBuffer>,
     pub control: Bus<Box<f32>>,
     pub time: Bus<Box<TimeRange>>,
@@ -23,7 +25,93 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
-pub struct Stereo {
+pub trait SampleTrait {
+    type Output;
+
+    fn zero(&mut self);
+    // fn fill(&mut self, value: Self);
+    fn gain(&mut self, db: f32);
+}
+
+#[derive(Copy, Clone)]
+pub struct Stereo2 {
+    pub left: f32,
+    pub right: f32
+}
+
+impl SampleTrait for f32 {
+    type Output = f32;
+
+    fn zero(&mut self) {
+        *self = 0.0;
+    }
+
+    fn gain(&mut self, db: f32) {
+        *self = *self * db;
+    }
+}
+
+impl SampleTrait for Stereo2 {
+    type Output = Stereo2;
+
+    fn zero(&mut self) {
+        self.left = 0.0;
+        self.right = 0.0;
+    }
+
+    fn gain(&mut self, db: f32) {
+        self.left = self.left * db;
+        self.right = self.right * db;
+    }
+}
+
+impl std::ops::Add for Stereo2 {
+    type Output = Stereo2;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Stereo2 {
+            left: self.left + rhs.left,
+            right: self.right + rhs.right
+        }
+    }
+}
+
+impl std::ops::Sub for Stereo2 {
+    type Output = Stereo2;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Stereo2 {
+            left: self.left - rhs.left,
+            right: self.right - rhs.right
+        }
+    }
+}
+
+impl std::ops::Mul for Stereo2 {
+    type Output = Stereo2;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Stereo2 {
+            left: self.left * rhs.left,
+            right: self.right * rhs.right
+        }
+    }
+}
+
+impl std::ops::Div for Stereo2 {
+    type Output = Stereo2;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Stereo2 {
+            left: self.left / rhs.left,
+            right: self.right / rhs.right
+        }
+    }
+}
+
+// type Stereo = Buffer<Stereo2>;
+
+/*pub struct Stereo {
     pub left: AudioBuffer,
     pub right: AudioBuffer,
 }
@@ -76,9 +164,9 @@ impl Stereo {
         self.left.gain(db);
         self.right.gain(db);
     }
-}
+}*/
 
-impl<'a> IntoIterator for &'a Stereo {
+/*impl<'a, T> IntoIterator for &'a Stereo {
     type Item = (&'a f32, &'a f32);
     type IntoIter = std::iter::Zip<std::slice::Iter<'a, f32>, std::slice::Iter<'a, f32>>;
 
@@ -97,9 +185,10 @@ impl<'a> IntoIterator for &'a mut Stereo {
             .iter_mut()
             .zip(self.right.as_slice_mut())
     }
-}
+}*/
 
 pub type AudioBuffer = Buffer<f32>;
+pub type StereoBuffer = Buffer<Stereo2>;
 pub type NoteBuffer = Buffer<NoteMessage>;
 
 pub struct Channels<T: Copy + Clone, const C: usize> {
@@ -118,17 +207,11 @@ impl<T: Copy + Clone, const C: usize> Channels<T, C> {
 
 /* Buffer Type */
 
-pub struct Buffer<T: Copy + Clone> {
+pub struct Buffer<T> {
     items: Vec<T>,
 }
 
-impl<T: Copy + Clone> Buffer<T> {
-    pub fn new() -> Self {
-        Self {
-            items: Vec::new()
-        }
-    }
-
+impl<T: SampleTrait + Copy> Buffer<T> {
     pub fn init(value: T, size: usize) -> Self {
         let mut items = Vec::with_capacity(size);
 
@@ -139,12 +222,21 @@ impl<T: Copy + Clone> Buffer<T> {
         Self { items }
     }
 
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            items: Vec::with_capacity(capacity)
-        }
-    }
+    pub fn copy_from(&mut self, src: &Buffer<T>) {
+        // self.items.as_mut_slice().copy_from_slice(src.as_slice())
 
+        if self.len() == src.len() {
+            for (dest, src) in self.into_iter().zip(src.into_iter()) {
+                *dest = *src;
+            }
+        } else {
+            panic!("Copying from buffers of different sizes, self: {}, src: {}", self.len(), src.len());
+        }
+
+    }
+}
+
+impl<T> Buffer<T> {
     pub fn from(items: Vec<T>) -> Self {
         Self { items }
     }
@@ -203,29 +295,13 @@ impl<T: Copy + Clone> Buffer<T> {
         }
     }
 
-    pub fn copy_from(&mut self, src: &Buffer<T>) {
-        // self.items.as_mut_slice().copy_from_slice(src.as_slice())
-
-        self.items.clear();
-        
-        for item in src {
-            self.items.push(*item);
-        }
-    }
-
-    pub fn append_from(&mut self, src: &Buffer<T>) {
-        for s in src.as_slice() {
-            self.items.push(*s);
-        }
-    }
-
-    pub fn process<P: Processor<Item = T>>(&mut self, src: &mut P) {
+    /*pub fn process<P: Processor<Item = T>>(&mut self, src: &mut P) {
         for d in &mut self.items {
             *d = src.process(*d);
         }
-    }
+    }*/
 
-    // REMOVE THIS METHOD
+    /*// REMOVE THIS METHOD
     pub fn as_array<'a>(&'a self) -> [&'a [T]; 1] {
         [self.as_slice()]
     }
@@ -233,10 +309,54 @@ impl<T: Copy + Clone> Buffer<T> {
     // REMOVE THIS METHOD
     pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [T]; 1] {
         [self.as_slice_mut()]
+    }*/
+}
+
+impl NoteBuffer {
+    pub fn new() -> Self {
+        Self {
+            items: Vec::new()
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            items: Vec::with_capacity(capacity)
+        }
+    }
+
+    pub fn replace(&mut self, src: &Buffer<NoteMessage>) {
+        self.items.clear();
+
+        for s in src.as_slice() {
+            self.items.push(*s);
+        }
+    }
+
+    pub fn append(&mut self, src: &Buffer<NoteMessage>) {
+        for s in src.as_slice() {
+            self.items.push(*s);
+        }
     }
 }
 
-impl Buffer<f32> {
+impl<T: SampleTrait> SampleTrait for Buffer<T> {
+    type Output = Buffer<T>;
+
+    fn zero(&mut self) {
+        for sample in &mut self.items {
+            sample.zero();
+        }
+    }
+
+    fn gain(&mut self, db: f32) {
+        for sample in &mut self.items {
+            sample.gain(db);
+        }
+    }
+}
+
+/*impl<T: Sample> Buffer<T> {
     pub fn zero(&mut self) {
         self.fill(&mut 0.0);
     }
@@ -246,17 +366,11 @@ impl Buffer<f32> {
             *v = *v * db;
         }
     }
-}
+}*/
 
 impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
     pub fn add_from(&mut self, src: &Buffer<T>) {
         for (d, s) in self.items.iter_mut().zip(src.as_slice()) {
-            *d = *d + *s;
-        }
-    }
-
-    pub fn add_from2(&mut self, src: &[T]) {
-        for (d, s) in self.items.iter_mut().zip(src) {
             *d = *d + *s;
         }
     }
@@ -276,21 +390,21 @@ impl<T: Copy + Clone> IndexMut<usize> for Buffer<T> {
     }
 }
 
-impl<'a, T: Copy + Clone> IntoIterator for &'a Buffer<T> {
+impl<'a, T> IntoIterator for &'a Buffer<T> {
     type Item = &'a T;
     type IntoIter = slice::Iter<'a, T>;
 
     fn into_iter(self) -> slice::Iter<'a, T> {
-        self.as_ref().into_iter()
+        self.as_slice().into_iter()
     }
 }
 
-impl<'a, T: Copy + Clone> IntoIterator for &'a mut Buffer<T> {
+impl<'a, T> IntoIterator for &'a mut Buffer<T> {
     type Item = &'a mut T;
     type IntoIter = slice::IterMut<'a, T>;
 
-    fn into_iter(mut self) -> slice::IterMut<'a, T> {
-        self.as_mut().into_iter()
+    fn into_iter(self) -> slice::IterMut<'a, T> {
+        self.as_slice_mut().into_iter()
     }
 }
 
@@ -326,21 +440,21 @@ impl<T> Bus<T> {
     }
 }
 
-impl Index<usize> for Bus<Stereo> {
-    type Output = Stereo;
+/*impl Index<usize> for Bus<StereoBuffer> {
+    type Output = StereoBuffer;
 
     fn index(&self, index: usize) -> &Self::Output {
         self.channel(index).deref()
     }
 }
 
-impl IndexMut<usize> for Bus<Stereo> {
+impl IndexMut<usize> for Bus<StereoBuffer> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.channel_mut(index).deref_mut()
     }
-}
+}*/
 
-impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
+impl<T> Index<usize> for Bus<Buffer<T>> {
     type Output = Buffer<T>;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -348,7 +462,7 @@ impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
     }
 }
 
-impl<T: Copy + Clone> IndexMut<usize> for Bus<Buffer<T>> {
+impl<T> IndexMut<usize> for Bus<Buffer<T>> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.channel_mut(index).deref_mut()
     }

@@ -88,7 +88,7 @@ impl Module for Detune {
                 }
             }
         } else {
-            outputs.events[0].copy_from(&inputs.events[0]);
+            outputs.events[0].replace(&inputs.events[0]);
         }
     }
 }

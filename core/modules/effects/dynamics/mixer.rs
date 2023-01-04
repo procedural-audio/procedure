@@ -12,7 +12,7 @@ pub struct Mixer {
 }
 
 pub struct MixerVoice {
-    buffer: Stereo,
+    buffer: StereoBuffer,
 }
 
 impl Module for Mixer {
@@ -64,7 +64,7 @@ impl Module for Mixer {
 
     fn new_voice(_index: u32) -> Self::Voice {
         Self::Voice {
-            buffer: Stereo::init(0.0, 256),
+            buffer: StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, 256),
         }
     }
 
@@ -162,11 +162,11 @@ impl Module for Mixer {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
-        voice.buffer = Stereo::init(0.0, block_size);
+        voice.buffer = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        voice.buffer.copy_from(&inputs.audio[0]);
+        /*voice.buffer.copy_from(&inputs.audio[0]);
         voice.buffer.gain(self.value_1);
         outputs.audio[0].copy_from(&voice.buffer);
 
@@ -180,6 +180,6 @@ impl Module for Mixer {
 
         voice.buffer.copy_from(&inputs.audio[4]);
         voice.buffer.gain(self.value_4);
-        outputs.audio[0].add_from(&voice.buffer);
+        outputs.audio[0].add_from(&voice.buffer);*/
     }
 }

@@ -12,19 +12,21 @@ use dasp_signal;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::buffers::*;
+
 use dasp_interpolate::linear::Linear;
 use dasp_signal::{interpolate::Converter, Signal};
 
 #[derive(Clone)]
-pub struct Sample<const C: usize> {
-    buffer: Arc<Stereo>,
+pub struct SampleFile<const C: usize> {
+    buffer: Arc<Buffer<Stereo2>>,
     path: String,
     pitch: f32,
     sample_rate: u32,
 }
 
-impl Sample<2> {
-    pub fn from(buffer: Arc<Stereo>, pitch: f32, sample_rate: u32, path: String) -> Self {
+impl SampleFile<2> {
+    pub fn from(buffer: Arc<Buffer<Stereo2>>, pitch: f32, sample_rate: u32, path: String) -> Self {
         return Self {
             buffer,
             path,
@@ -46,20 +48,24 @@ impl Sample<2> {
     }
 
     pub fn duration(&self) -> Duration {
-        Duration::from_millis(self.buffer.left.len() as u64 / self.sample_rate as u64 * 1000)
+        Duration::from_millis(self.len() as u64 / self.sample_rate as u64 * 1000)
+    }
+
+    pub fn len(&self) -> usize {
+        self.buffer.len()
     }
 }
 
-impl AudioChannel<2> for Sample<2> {
+/*impl AudioChannel<2> for Sample<2> {
     fn as_array<'a>(&'a self) -> [&'a [f32]; 2] {
-        [self.buffer.left.as_slice(), self.buffer.right.as_slice()]
+        [self.buffer.as_slice(), self.buffer.right.as_slice()]
     }
-}
+}*/
 
 /* ===== Sample Voice ===== */
 
 pub struct SamplePlayer {
-    sample: Option<Sample<2>>,
+    sample: Option<SampleFile<2>>,
     sample_pitch: f32,
     active: bool,
     note_off: bool,
@@ -87,7 +93,32 @@ struct Playhead<A> {
 }
 
 impl SamplePlayer {
-    pub fn set_sample(&mut self, sample: Sample<2>) {
+    pub fn new() -> Self {
+        Self {
+            sample: None,
+            active: false,
+            note_off: false,
+            index: 0,
+            id: Id::new(),
+            playback_rate: 1.0,
+            playback_pitch: 195.0,
+            sample_pitch: 195.0,
+            sample_rate: 44100,
+            start: 0.0,
+            end: 1.0,
+            attack: 0.0,
+            release: 0.0,
+            should_loop: false,
+            loop_start: 0.2,
+            loop_end: 0.8,
+            one_shot: false,
+            reverse: false,
+            attack_sample: 0,
+            release_sample: 0,
+        }
+    }
+
+    pub fn set_sample(&mut self, sample: SampleFile<2>) {
         self.index = f64::round(sample.len() as f64 * self.start as f64) as usize;
         self.sample = Some(sample);
     }
@@ -129,8 +160,8 @@ impl SamplePlayer {
     }
 }
 
-impl Source for SamplePlayer {
-    type Output = Stereo;
+/*impl Source for SamplePlayer {
+    type Output = Stereo2;
 
     fn new() -> Self {
         Self {
@@ -165,7 +196,7 @@ impl Source for SamplePlayer {
         self.sample_rate = sample_rate;
     }
 
-    fn process(&mut self, buffer: &mut Stereo) {
+    fn process(&mut self, buffer: &mut Stereo2) {
         let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
 
         if let Some(sample) = &self.sample {
@@ -319,9 +350,9 @@ impl Source for SamplePlayer {
             }
         }
     }
-}
+}*/
 
-impl Voice for SamplePlayer {
+/*impl Voice for SamplePlayer {
     fn play(&mut self) {
         match &self.sample {
             Some(sample) => {
@@ -377,4 +408,4 @@ impl Voice for SamplePlayer {
     fn position(&self) -> usize {
         self.index
     }
-}
+}*/

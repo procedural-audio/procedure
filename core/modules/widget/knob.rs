@@ -129,7 +129,7 @@ pub struct FFIBuffer {
 
 #[repr(C)]
 pub struct SamplePicker<'a> {
-    pub sample: std::sync::Arc<std::sync::RwLock<crate::Sample<2>>>,
+    pub sample: std::sync::Arc<std::sync::RwLock<crate::SampleFile<2>>>,
     pub color: Color,
     pub start: &'a mut f32,
     pub end: &'a mut f32,
@@ -157,12 +157,14 @@ impl<'a> WidgetNew for SamplePicker<'a> {
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_sample_picker_get_buffer(widget: &mut SamplePicker) -> FFIBuffer {
-    let mut buffer_new = Vec::new();
+    // let mut buffer_new = Vec::new();
     let sample = &*widget.sample.read().unwrap();
+
+    todo!()
 
     // let skip = sample.as_array()[0].len() / 300;
 
-    for sample in sample.as_array()[0].iter() { // .step_by(skip) {
+    /*for sample in sample.as_array()[0].iter() { // .step_by(skip) {
         buffer_new.push(*sample);
     }
 
@@ -173,7 +175,7 @@ pub unsafe extern "C" fn ffi_sample_picker_get_buffer(widget: &mut SamplePicker)
 
     std::mem::forget(buffer_new);
 
-    return buffer_ret;
+    return buffer_ret;*/
 
     // ^^^ Change this?
 }

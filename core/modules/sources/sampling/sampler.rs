@@ -18,7 +18,7 @@ Todo
 */
 
 pub struct Sampler {
-    sample: Arc<RwLock<Sample<2>>>,
+    sample: Arc<RwLock<SampleFile<2>>>,
     start: f32,
     end: f32,
     attack: f32,
@@ -58,7 +58,7 @@ impl Module for Sampler {
     fn new() -> Self {
         if cfg!(target_os = "macos") {
             return Self {
-                sample: Arc::new(RwLock::new(Sample::load(
+                sample: Arc::new(RwLock::new(SampleFile::load(
                     "/Users/chasekanipe/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
                 ))),
                 start: 0.0,
@@ -74,7 +74,7 @@ impl Module for Sampler {
             };
         } else {
             return Self {
-                sample: Arc::new(RwLock::new(Sample::load(
+                sample: Arc::new(RwLock::new(SampleFile::load(
                     "/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
                 ))),
                 start: 0.0,
@@ -99,7 +99,8 @@ impl Module for Sampler {
     }
 
     fn is_active(voice: &Self::Voice) -> bool {
-        voice.player.is_active()
+        // voice.player.is_active()
+        false
     }
 
     fn load(&mut self, _json: &JSON) {}

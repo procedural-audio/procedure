@@ -35,7 +35,7 @@ Slicer
 */
 
 pub struct Slicer {
-    sample: Arc<RwLock<Sample<2>>>,
+    sample: Arc<RwLock<SampleFile<2>>>,
     slice_points: Vec<f32>,
     selected_slice: usize,
     window_start: f32,
@@ -68,15 +68,15 @@ impl Module for Slicer {
 
     
     fn new() -> Self {
-        let sample: Sample<2>;
+        let sample: SampleFile<2>;
 
         if cfg!(target_os = "macos") {
-            sample = Sample::load(
+            sample = SampleFile::load(
                 "/Users/chasekanipe/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
             );
         } else {
             sample =
-                Sample::load("/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav");
+                SampleFile::load("/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav");
         }
 
         Self {
@@ -167,7 +167,7 @@ impl Module for Slicer {
             }
         }
 
-        if let Ok(sample) = self.sample.try_read() {
+        /*if let Ok(sample) = self.sample.try_read() {
             println!("Getting slices");
 
             let dest_slice = outputs.audio[0].left.as_slice_mut();
@@ -233,6 +233,6 @@ impl Module for Slicer {
             }
 
             self.current_sample = current_sample;
-        }
+        }*/
     }
 }
