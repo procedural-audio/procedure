@@ -49,7 +49,7 @@ impl Module for Tube {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             /*tube1_l: Tube1::new(),
             tube1_r: Tube1::new(),

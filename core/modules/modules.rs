@@ -294,13 +294,9 @@ pub trait Module {
     }
 
     fn new() -> Self;
-    fn new_voice(index: u32) -> Self::Voice;
+    fn new_voice(&self, index: u32) -> Self::Voice;
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w>;
-
-    fn is_active(_voice: &Self::Voice) -> bool {
-        true
-    }
 
     fn load(&mut self, state: &JSON);
     fn save(&self, state2: &mut JSON);
@@ -350,16 +346,8 @@ pub struct ModuleManager<T: Module> {
     voices: [T::Voice; 16],
     connected: Vec<bool>,
     voicing: Voicing,
-
-    /* Module */
     widgets: Box<dyn WidgetNew>,
     module_size: (f32, f32),
-
-    /* UI  */
-    /*ui_widgets: T::Widgets<'w>,
-    ui_position: (f32, f32),
-    ui_size: (f32, f32),
-    ui: UI,*/
 }
 
 impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
@@ -368,22 +356,22 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         let voicing = module.info().voicing;
 
         let voices = [
-            T::new_voice(0),
-            T::new_voice(1),
-            T::new_voice(2),
-            T::new_voice(3),
-            T::new_voice(4),
-            T::new_voice(5),
-            T::new_voice(6),
-            T::new_voice(7),
-            T::new_voice(8),
-            T::new_voice(9),
-            T::new_voice(10),
-            T::new_voice(11),
-            T::new_voice(12),
-            T::new_voice(13),
-            T::new_voice(14),
-            T::new_voice(15),
+            T::new_voice(&*module, 0),
+            T::new_voice(&*module, 1),
+            T::new_voice(&*module, 2),
+            T::new_voice(&*module, 3),
+            T::new_voice(&*module, 4),
+            T::new_voice(&*module, 5),
+            T::new_voice(&*module, 6),
+            T::new_voice(&*module, 7),
+            T::new_voice(&*module, 8),
+            T::new_voice(&*module, 9),
+            T::new_voice(&*module, 10),
+            T::new_voice(&*module, 11),
+            T::new_voice(&*module, 12),
+            T::new_voice(&*module, 13),
+            T::new_voice(&*module, 14),
+            T::new_voice(&*module, 15),
         ];
 
         let info = module.info();

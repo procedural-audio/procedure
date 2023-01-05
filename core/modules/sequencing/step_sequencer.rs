@@ -64,7 +64,7 @@ impl Module for StepSequencer {
         }
     }
 
-    fn new_voice(index: u32) -> Self::Voice {
+    fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice { index }
     }
 

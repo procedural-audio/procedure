@@ -23,7 +23,7 @@ impl Wavetable {
     }
 }
 
-impl Playable for Wavetable {
+/*impl Playable for Wavetable {
     type Player = WavetablePlayer;
 
     fn player(self) -> Self::Player {
@@ -32,7 +32,7 @@ impl Playable for Wavetable {
             pitch: 440.0,
         }
     }
-}
+}*/
 
 pub struct WavetablePlayer {
     wavetable: Wavetable,

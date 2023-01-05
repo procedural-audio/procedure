@@ -11,6 +11,10 @@ pub use envelopes::*;
 pub use oscillator::*;
 pub use wavetable::*;
 
+use crate::buffers::Buffer;
+
+use crate::SampleTrait;
+
 /*
 
 Implement like https://github.com/RustAudio/dasp/blob/master/dasp_signal/src/lib.rs
@@ -79,17 +83,29 @@ impl Frame for f32 {
 */
 
 pub trait Generator {
-    type Item;
+    type Item: Copy + Clone;
 
     fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn gen(&mut self) -> Self::Item;
+
+    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+        for item in output.as_slice_mut().iter_mut() {
+            *item = self.gen();
+        }
+    }
 }
 
 pub trait Processor {
-    type Item;
+    type Item: Copy + Clone;
 
-    fn process(&mut self, v: Self::Item) -> Self::Item;
+    fn process(&mut self, input: Self::Item) -> Self::Item;
+
+    fn process_block(&mut self, input: &Buffer<Self::Item>, output: &mut Buffer<Self::Item>) {
+        for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
+            *dest = self.process(*src);
+        }
+    }
 
     /*#[inline]
     fn clip(self, db: f32) -> Clipper<Self> where Self: Sized {
@@ -108,19 +124,97 @@ pub trait Processor {
     }*/
 }
 
-pub struct GeneratorIterator {}
-
-pub trait Player: Generator {
-    fn play(&mut self);
-    fn pause(&mut self);
-    fn stop(&mut self);
+/*pub trait Playable {
+    fn player<T: Generator>(&self) -> Player<T>;
 }
 
-pub trait Playable {
-    type Player: Generator;
+impl<T: Generator> Playable for T {
+    fn player(&self) -> Player<T> {
+        Player {
 
-    fn player(self) -> Self::Player;
-    // fn at(sample: usize) -> f32;
+        }
+    }
+}*/
+
+pub struct Player<T> {
+    source: T,
+    playing: bool
+}
+
+impl<T: Generator> Player<T> {
+    pub fn from(source: T) -> Self {
+        Player {
+            source,
+            playing: false
+        }
+    }
+
+    pub fn play(&mut self) {
+        self.playing = true;
+    }
+
+    pub fn pause(&mut self) {
+        self.playing = false;
+    }
+
+    pub fn stop(&mut self) {
+        self.source.reset();
+        self.playing = false;
+    }
+}
+
+impl<T: Generator> Generator for Player<T> {
+    type Item = T::Item;
+
+    fn reset(&mut self) {
+        self.source.reset();
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.source.prepare(sample_rate, block_size);
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        self.source.gen()
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+        self.source.generate_block(output);
+    }
+}
+
+pub struct Playhead<T: SampleTrait> {
+    index: usize,
+    src: Buffer<T>
+} // impl this for all generators also?
+
+impl<T: SampleTrait> Playhead<T> {
+    // Add transport methods here???    
+}
+
+impl<T: SampleTrait> Generator for Playhead<T> {
+    type Item = T;
+
+    fn reset(&mut self) {
+        self.index = 0;
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
+
+    fn gen(&mut self) -> Self::Item {
+        let item = self.src[self.index];
+        self.index += 1;
+        return item;
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+        if self.index + output.len() < self.src.len() {
+            let end = usize::min(self.index + output.len(), self.src.len());
+            for (buf, out) in self.src.into_iter().zip(&mut output.as_slice_mut()[self.index..end]) {
+                *out = *buf;
+            }
+        } // WON'T GET LAST BLOCK OF THE SAMPLE
+    }
 }
 
 /* ========== Pitch ========== */

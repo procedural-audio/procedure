@@ -40,7 +40,7 @@ impl Module for SawModule {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             saw: Saw::new(),
             active: false,
@@ -106,7 +106,9 @@ impl Module for SawModule {
                 &mut [buffer.as_slice_mut()]
             );
 
-            buffer.gain(0.1);
+            for sample in buffer.into_iter() {
+                sample.gain(0.1);
+            }
         }
     }
 }

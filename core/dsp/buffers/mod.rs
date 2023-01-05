@@ -1,19 +1,14 @@
 use std::ops::{Deref, DerefMut, Mul};
 use std::slice;
 
-// pub mod audio;
 pub mod event;
 pub mod time;
 
-use hound::Sample;
-
-// pub use crate::buffers::audio::*;
 pub use crate::buffers::event::*;
 pub use crate::buffers::time::*;
 
 use crate::dsp::{Generator, Processor};
 
-use std::borrow::BorrowMut;
 use std::ops::{Index, IndexMut};
 
 pub struct IO {
@@ -25,7 +20,7 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
-pub trait SampleTrait {
+pub trait SampleTrait: Copy {
     type Output;
 
     fn zero(&mut self);
@@ -207,7 +202,7 @@ impl<T: Copy + Clone, const C: usize> Channels<T, C> {
 
 /* Buffer Type */
 
-pub struct Buffer<T> {
+pub struct Buffer<T: Copy + Clone> {
     items: Vec<T>,
 }
 
@@ -236,7 +231,7 @@ impl<T: SampleTrait + Copy> Buffer<T> {
     }
 }
 
-impl<T> Buffer<T> {
+impl<T: Copy + Clone> Buffer<T> {
     pub fn from(items: Vec<T>) -> Self {
         Self { items }
     }
@@ -340,7 +335,7 @@ impl NoteBuffer {
     }
 }
 
-impl<T: SampleTrait> SampleTrait for Buffer<T> {
+/*impl<T: SampleTrait> SampleTrait for Buffer<T> {
     type Output = Buffer<T>;
 
     fn zero(&mut self) {
@@ -354,7 +349,7 @@ impl<T: SampleTrait> SampleTrait for Buffer<T> {
             sample.gain(db);
         }
     }
-}
+}*/
 
 /*impl<T: Sample> Buffer<T> {
     pub fn zero(&mut self) {
@@ -390,7 +385,7 @@ impl<T: Copy + Clone> IndexMut<usize> for Buffer<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a Buffer<T> {
+impl<'a, T: Copy + Clone> IntoIterator for &'a Buffer<T> {
     type Item = &'a T;
     type IntoIter = slice::Iter<'a, T>;
 
@@ -399,7 +394,7 @@ impl<'a, T> IntoIterator for &'a Buffer<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a mut Buffer<T> {
+impl<'a, T: Copy + Clone> IntoIterator for &'a mut Buffer<T> {
     type Item = &'a mut T;
     type IntoIter = slice::IterMut<'a, T>;
 
@@ -454,7 +449,7 @@ impl IndexMut<usize> for Bus<StereoBuffer> {
     }
 }*/
 
-impl<T> Index<usize> for Bus<Buffer<T>> {
+impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
     type Output = Buffer<T>;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -462,7 +457,7 @@ impl<T> Index<usize> for Bus<Buffer<T>> {
     }
 }
 
-impl<T> IndexMut<usize> for Bus<Buffer<T>> {
+impl<T: Copy + Clone> IndexMut<usize> for Bus<Buffer<T>> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.channel_mut(index).deref_mut()
     }

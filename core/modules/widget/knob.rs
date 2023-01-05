@@ -128,22 +128,11 @@ pub struct FFIBuffer {
 }
 
 #[repr(C)]
-pub struct SamplePicker<'a> {
-    pub sample: std::sync::Arc<std::sync::RwLock<crate::SampleFile<2>>>,
-    pub color: Color,
-    pub start: &'a mut f32,
-    pub end: &'a mut f32,
-    pub attack: &'a mut f32,
-    pub release: &'a mut f32,
-    pub should_loop: &'a mut bool,
-    pub loop_start: &'a mut f32,
-    pub loop_end: &'a mut f32,
-    pub loop_crossfade: &'a mut f32,
-    pub one_shot: &'a mut bool,
-    pub reverse: &'a mut bool,
+pub struct SampleFilePicker {
+    pub sample: std::sync::Arc<std::sync::RwLock<crate::SampleFile<crate::Stereo2>>>,
 }
 
-impl<'a> WidgetNew for SamplePicker<'a> {
+impl WidgetNew for SampleFilePicker {
     fn get_name(&self) -> &'static str {
         "SamplePicker"
     }
@@ -156,131 +145,18 @@ impl<'a> WidgetNew for SamplePicker<'a> {
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_buffer(widget: &mut SamplePicker) -> FFIBuffer {
-    // let mut buffer_new = Vec::new();
-    let sample = &*widget.sample.read().unwrap();
-
-    todo!()
-
-    // let skip = sample.as_array()[0].len() / 300;
-
-    /*for sample in sample.as_array()[0].iter() { // .step_by(skip) {
-        buffer_new.push(*sample);
-    }
-
-    let buffer_ret = FFIBuffer {
-        data: buffer_new.as_mut_ptr(),
-        length: buffer_new.len(),
-    };
-
-    std::mem::forget(buffer_new);
-
-    return buffer_ret;*/
-
-    // ^^^ Change this?
+pub unsafe extern "C" fn ffi_sample_file_picker_get_buffer_length(widget: &mut SampleFilePicker) -> usize {
+    widget.sample.read().unwrap().len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_start(widget: &mut SamplePicker) -> f32 {
-    *widget.start
+pub unsafe extern "C" fn ffi_sample_file_picker_get_sample_left(widget: &mut SampleFilePicker, index: usize) -> f32 {
+    (*widget.sample.read().unwrap()).as_slice()[index].left
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_start(widget: &mut SamplePicker, value: f32) {
-    *widget.start = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_end(widget: &mut SamplePicker) -> f32 {
-    *widget.end
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_end(widget: &mut SamplePicker, value: f32) {
-    *widget.end = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_attack(widget: &mut SamplePicker) -> f32 {
-    *widget.attack
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_attack(widget: &mut SamplePicker, value: f32) {
-    *widget.attack = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_release(widget: &mut SamplePicker) -> f32 {
-    *widget.release
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_release(widget: &mut SamplePicker, value: f32) {
-    *widget.release = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_should_loop(widget: &mut SamplePicker) -> bool {
-    *widget.should_loop
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_should_loop(widget: &mut SamplePicker, value: bool) {
-    *widget.should_loop = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_loop_start(widget: &mut SamplePicker) -> f32 {
-    *widget.loop_start
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_loop_start(widget: &mut SamplePicker, value: f32) {
-    *widget.loop_start = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_loop_end(widget: &mut SamplePicker) -> f32 {
-    *widget.loop_end
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_loop_end(widget: &mut SamplePicker, value: f32) {
-    *widget.loop_end = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_loop_crossfade(widget: &mut SamplePicker) -> f32 {
-    *widget.loop_crossfade
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_loop_crossfade(
-    widget: &mut SamplePicker,
-    value: f32,
-) {
-    *widget.loop_crossfade = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_one_shot(widget: &mut SamplePicker) -> bool {
-    return *widget.one_shot;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_one_shot(widget: &mut SamplePicker, value: bool) {
-    *widget.one_shot = value;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_get_reverse(widget: &mut SamplePicker) -> bool {
-    return *widget.reverse;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_sample_picker_set_reverse(widget: &mut SamplePicker, value: bool) {
-    *widget.reverse = value;
+pub unsafe extern "C" fn ffi_sample_file_picker_get_sample_right(widget: &mut SampleFilePicker, index: usize) -> f32 {
+    (*widget.sample.read().unwrap()).as_slice()[index].right
 }
 
 #[repr(C)]

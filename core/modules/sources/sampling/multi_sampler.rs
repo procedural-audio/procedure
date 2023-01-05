@@ -7,7 +7,7 @@ pub struct MultiSampler {
 }
 
 impl Module for MultiSampler {
-    type Voice = Vec<SamplePlayer>;
+    type Voice = Vec<SamplePlayer<Stereo2>>;
 
     const INFO: Info = Info {
         title: "Multi-Sampler",
@@ -27,7 +27,7 @@ impl Module for MultiSampler {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         vec![
             SamplePlayer::new(),
             SamplePlayer::new(),
@@ -240,7 +240,7 @@ pub extern "C" fn ffi_sample_mapper_add_region(
 ) {
     (*widget.map.write().unwrap())
         .regions
-        .push(SoundRegion::<SampleFile<2>> {
+        .push(SoundRegion::<SampleFile<Stereo2>> {
             low_note,
             high_note,
             low_velocity,
@@ -450,7 +450,7 @@ impl MySampler {
 }
 
 pub struct SampleMap {
-    regions: Vec<SoundRegion<SampleFile<2>>>,
+    regions: Vec<SoundRegion<SampleFile<Stereo2>>>,
 }
 
 impl SampleMap {
@@ -475,7 +475,7 @@ impl SampleMap {
         use std::io::BufReader;
         use xml::reader::{EventReader, XmlEvent};
 
-        let mut regions: Vec<SoundRegion<SampleFile<2>>> = Vec::new();
+        let mut regions: Vec<SoundRegion<SampleFile<Stereo2>>> = Vec::new();
 
         match File::open(path) {
             Ok(file) => {
@@ -538,7 +538,7 @@ impl SampleMap {
                                                         "sample" => {
                                                             println!("Found sample");
                                                             let mut region =
-                                                                SoundRegion::<SampleFile<2>> {
+                                                                SoundRegion::<SampleFile<Stereo2>> {
                                                                     low_note: 0,
                                                                     high_note: 127,
                                                                     low_velocity: 0.0,

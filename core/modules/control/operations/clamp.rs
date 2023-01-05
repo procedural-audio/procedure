@@ -26,7 +26,7 @@ impl Module for Clamp {
         Self
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
 

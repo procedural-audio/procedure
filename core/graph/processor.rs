@@ -652,7 +652,9 @@ impl GraphProcessor {
         /* Zero all audio buffers */
         for bus in &mut self.audio_buffers {
             for i in 0..bus.num_channels() {
-                bus.channel_mut(i).zero();
+                for sample in bus.channel_mut(i).as_slice_mut() {
+                   sample.zero(); 
+                }
             }
         }
 
@@ -897,8 +899,15 @@ impl GraphProcessor {
         let mut seq = Vec::new();
 
         for node in nodes.iter() {
-            if node.info().title == "Audio Output" {
-                GraphProcessor::sort_nodes_rec(&mut seq, node.clone(), nodes, connectors);
+            for pin in node.info().outputs {
+                match pin {
+                    Pin::ExternalAudio(_) => {
+                        GraphProcessor::sort_nodes_rec(&mut seq, node.clone(), nodes, connectors);
+
+                        break;
+                    },
+                    _ => ()
+                }
             }
         }
 

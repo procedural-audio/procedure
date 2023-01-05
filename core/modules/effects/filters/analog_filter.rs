@@ -47,7 +47,7 @@ impl Module for AnalogFilter {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             korg: [Korg35LPF::new(), Korg35LPF::new()],
             /*diode: DiodeLPF::new(),

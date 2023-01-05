@@ -37,7 +37,7 @@ impl Module for Scale {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice { () }
+    fn new_voice(&self, _index: u32) -> Self::Voice { () }
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 

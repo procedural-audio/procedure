@@ -62,7 +62,7 @@ impl Module for Mixer {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             buffer: StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, 256),
         }

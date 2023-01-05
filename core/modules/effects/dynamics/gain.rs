@@ -1,6 +1,5 @@
 use crate::*;
 
-
 pub struct Gain {
     value: f32,
 }
@@ -29,7 +28,7 @@ impl Module for Gain {
         Self { value: 0.5 }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
 
@@ -59,6 +58,9 @@ impl Module for Gain {
         }
 
         outputs.audio[0].copy_from(&inputs.audio[0]);
-        outputs.audio[0].gain(value);
+
+        for sample in &mut outputs.audio[0] {
+            sample.gain(value);
+        }
     }
 }

@@ -18,7 +18,7 @@ Todo
 */
 
 pub struct AudioTrack {
-    sample: Arc<RwLock<SampleFile<2>>>,
+    sample: Arc<RwLock<SampleFile<Stereo2>>>,
     start: f32,
     end: f32,
     attack: f32,
@@ -33,7 +33,7 @@ pub struct AudioTrack {
 
 pub struct AudioTrackVoice {
     index: u32,
-    player: SamplePlayer,
+    player: SamplePlayer<Stereo2>,
 }
 
 impl Module for AudioTrack {
@@ -90,23 +90,19 @@ impl Module for AudioTrack {
         }
     }
 
-    fn new_voice(index: u32) -> Self::Voice {
+    fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice {
             index,
             player: SamplePlayer::new(),
         }
     }
 
-    fn is_active(voice: &Self::Voice) -> bool {
-        // voice.player.is_active()
-        false
-    }
-
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Stack {
+        todo!()
+        /*Box::new(Stack {
             children: (Transform {
                 position: (35, 35),
                 size: (320, 150),
@@ -125,7 +121,7 @@ impl Module for AudioTrack {
                     reverse: &mut self.reverse,
                 },
             }),
-        })
+        })*/
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}

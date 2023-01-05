@@ -42,7 +42,7 @@ impl Module for SineModule {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             sine: Sine::new(),
             active: false,

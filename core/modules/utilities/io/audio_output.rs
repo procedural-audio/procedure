@@ -6,13 +6,13 @@ impl Module for AudioOutput {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "Audio Output",
+        title: "",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(130, 80),
+        size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[
-            Pin::Audio("Audio Output", 30)
+            Pin::Audio("Audio Output", 22)
         ],
         outputs: &[
             Pin::ExternalAudio(0)
@@ -24,7 +24,7 @@ impl Module for AudioOutput {
         Self
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
 
@@ -33,7 +33,7 @@ impl Module for AudioOutput {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (50, 30),
+            position: (40, 15),
             size: (30, 30),
             child: Svg {
                 path: "logos/audio.svg",

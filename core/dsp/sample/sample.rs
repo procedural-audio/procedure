@@ -1,21 +1,12 @@
 use crate::buffers::*;
 
-use crate::AudioChannel;
-
-use crate::sample::cache::*;
-use crate::Source;
-use crate::Voice;
-
-use dasp_interpolate;
-use dasp_signal;
-
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::buffers::*;
-
-use dasp_interpolate::linear::Linear;
-use dasp_signal::{interpolate::Converter, Signal};
+pub use crate::cache::FileLoad;
+use crate::Player;
+use crate::Generator;
+use crate::Pitched;
 
 #[derive(Clone)]
 pub struct SampleFile<T: SampleTrait> {
@@ -25,8 +16,8 @@ pub struct SampleFile<T: SampleTrait> {
     sample_rate: u32,
 }
 
-impl SampleFile<Stereo2> {
-    pub fn from(buffer: Arc<Buffer<Stereo2>>, pitch: f32, sample_rate: u32, path: String) -> Self {
+impl<T: SampleTrait> SampleFile<T> {
+    pub fn from(buffer: Arc<Buffer<T>>, pitch: f32, sample_rate: u32, path: String) -> Self {
         return Self {
             buffer,
             path,
@@ -35,16 +26,16 @@ impl SampleFile<Stereo2> {
         };
     }
 
-    pub fn load(path: &str) -> Self {
-        load_sample(path)
-    }
-
     pub fn path(&self) -> &str {
         &self.path
     }
 
     pub fn sample_rate(&self) -> u32 {
         self.sample_rate
+    }
+
+    pub fn as_slice(&self) -> &[T] {
+        self.buffer.as_slice()
     }
 
     pub fn duration(&self) -> Duration {
@@ -56,147 +47,129 @@ impl SampleFile<Stereo2> {
     }
 }
 
-/*impl AudioChannel<2> for Sample<2> {
-    fn as_array<'a>(&'a self) -> [&'a [f32]; 2] {
-        [self.buffer.as_slice(), self.buffer.right.as_slice()]
+/*impl<T: SampleTrait> Playable for SampleFile<T> {
+    type Player = SamplePlayer<T>;
+
+    fn player(self) -> Self::Player {
+        SamplePlayer::new()
     }
 }*/
+
+/*impl<T: SampleTrait> Player for SamplePlayer<T> {
+    fn play(&mut self) {
+        self.playing = true;
+    }
+
+    fn pause(&mut self) {
+        self.playing = false;
+    }
+
+    fn stop(&mut self) {
+        self.playing = false;
+        self.index = 0;
+    }
+}*/
+
+/*impl<T: SampleTrait> Generator for SamplePlayer<T> {
+    type Item = T;
+
+    fn reset(&mut self) {
+        todo!()
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        todo!()
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        
+    }
+}*/
+
+impl<T: SampleTrait> Pitched for SamplePlayer<T> {
+    fn get_pitch(&self) -> f32 {
+        self.pitch
+    }
+
+    fn set_pitch(&mut self, hz: f32) {
+        self.pitch = hz;
+    }
+}
+
+impl<T: SampleTrait> Generator for SamplePlayer<T> {
+    type Item = T;
+
+    fn reset(&mut self) {
+        todo!()
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.sample_rate = sample_rate;
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        todo!()
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<T>) {
+        if self.playing {
+            if let Some(sample) = &self.sample {
+                if self.index + output.len() < sample.buffer.len() {
+                    let end = self.index + output.len();
+                    for (buf, out) in sample.buffer.as_slice()[self.index..end].iter().zip(&mut output.into_iter()) {
+                        *out = *buf;
+                    }
+
+                    self.index += output.len();
+                } else {
+                    self.playing = false;
+                }
+            }
+        }
+    }
+}
 
 /* ===== Sample Voice ===== */
 
 pub struct SamplePlayer<T: SampleTrait> {
     sample: Option<SampleFile<T>>,
-    sample_pitch: f32,
-    active: bool,
-    note_off: bool,
+    playing: bool,
     index: usize,
-    playback_pitch: f32,
-    playback_rate: f32,
-    id: Id,
-    sample_rate: u32,
-    start: f32,
-    end: f32,
-    attack: f32,
-    release: f32,
-    should_loop: bool,
-    loop_start: f32,
-    loop_end: f32,
-    one_shot: bool,
-    reverse: bool,
-    attack_sample: usize,
-    release_sample: usize,
-}
-
-struct Playhead<A> {
-    pub index: usize,
-    buffer: A,
+    pitch: f32,
+    sample_rate: u32
 }
 
 impl<T: SampleTrait> SamplePlayer<T> {
     pub fn new() -> Self {
         Self {
             sample: None,
-            active: false,
-            note_off: false,
+            playing: false,
             index: 0,
-            id: Id::new(),
-            playback_rate: 1.0,
-            playback_pitch: 195.0,
-            sample_pitch: 195.0,
-            sample_rate: 44100,
-            start: 0.0,
-            end: 1.0,
-            attack: 0.0,
-            release: 0.0,
-            should_loop: false,
-            loop_start: 0.2,
-            loop_end: 0.8,
-            one_shot: false,
-            reverse: false,
-            attack_sample: 0,
-            release_sample: 0,
+            pitch: 440.0,
+            sample_rate: 44100
         }
     }
 
-    pub fn set_sample(&mut self, sample: SampleFile<2>) {
-        self.index = f64::round(sample.len() as f64 * self.start as f64) as usize;
+    pub fn set_sample(&mut self, sample: SampleFile<T>) {
+        // self.index = f64::round(sample.len() as f64 * self.start as f64) as usize;
+        self.index = 0;
         self.sample = Some(sample);
     }
 
-    pub fn set_start(&mut self, start: f32) {
-        self.start = start;
+    pub fn play(&mut self) {
+        self.playing = true;
     }
 
-    pub fn set_end(&mut self, end: f32) {
-        self.end = end;
+    pub fn pause(&mut self) {
+        self.playing = false;
     }
 
-    pub fn set_attack(&mut self, attack: f32) {
-        self.attack = attack;
+    pub fn stop(&mut self) {
+        self.playing = false;
+        self.index = 0;
     }
 
-    pub fn set_release(&mut self, release: f32) {
-        self.release = release;
-    }
-
-    pub fn set_loop(&mut self, should_loop: bool) {
-        self.should_loop = should_loop;
-    }
-
-    pub fn set_loop_start(&mut self, loop_start: f32) {
-        self.loop_start = loop_start;
-    }
-
-    pub fn set_loop_end(&mut self, loop_end: f32) {
-        self.loop_end = loop_end;
-    }
-
-    pub fn set_one_shot(&mut self, one_shot: bool) {
-        self.one_shot = one_shot;
-    }
-
-    pub fn set_reverse(&mut self, reverse: bool) {
-        self.reverse = reverse;
-    }
-}
-
-impl<T: SampleTrait> Source for SamplePlayer<T> {
-    type Output = StereoBuffer;
-
-    fn new() -> Self {
-        Self {
-            sample: None,
-            active: false,
-            note_off: false,
-            index: 0,
-            id: Id::new(),
-            playback_rate: 1.0,
-            playback_pitch: 195.0,
-            sample_pitch: 195.0,
-            sample_rate: 44100,
-            start: 0.0,
-            end: 1.0,
-            attack: 0.0,
-            release: 0.0,
-            should_loop: false,
-            loop_start: 0.2,
-            loop_end: 0.8,
-            one_shot: false,
-            reverse: false,
-            attack_sample: 0,
-            release_sample: 0,
-        }
-    }
-
-    fn reset(&mut self) {
-        println!("Should reset voice here");
-    }
-
-    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
-        self.sample_rate = sample_rate;
-    }
-
-    fn process(&mut self, buffer: &mut StereoBuffer) {
+    fn process_old(&mut self, buffer: &mut Buffer<T>) {
         /*let pitch_scale = self.playback_pitch as f64 / self.sample_pitch as f64;
         if let Some(sample) = &self.sample {
             if self.should_loop == false {

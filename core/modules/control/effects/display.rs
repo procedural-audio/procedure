@@ -29,7 +29,7 @@ impl Module for Display {
         }
     }
 
-    fn new_voice(index: u32) -> Self::Voice {
+    fn new_voice(&self, index: u32) -> Self::Voice {
         index
     }
 

@@ -39,7 +39,7 @@ impl Module for LfoModule {
         }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         use std::f32::consts::PI;
 
         Self::Voice {

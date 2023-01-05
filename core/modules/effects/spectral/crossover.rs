@@ -27,7 +27,7 @@ impl Module for Crossover {
         Self { value: 0.5 }
     }
 
-    fn new_voice(_index: u32) -> Self::Voice {
+    fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
 
