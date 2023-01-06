@@ -424,6 +424,7 @@ dependencies = [
 name = "pa-dsp"
 version = "0.1.0"
 dependencies = [
+ "dasp_frame",
  "dasp_interpolate",
  "dasp_signal",
  "hound",

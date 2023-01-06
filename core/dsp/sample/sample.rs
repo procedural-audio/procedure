@@ -9,6 +9,7 @@ pub use crate::cache::FileLoad;
 use crate::Player;
 use crate::Generator;
 use crate::Pitched;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Clone)]
 pub struct SampleFile<T: SampleTrait> {
@@ -173,6 +174,7 @@ impl<T: SampleTrait> Interpolator for Linear<T> {
     }
 
     fn interpolate(&self, x: f32) -> Self::Item {
+        // println!("Interpolation x {}", x);
         ((self.prev - self.last) * Self::Item::from(x)) + self.last
     }
 }
@@ -266,9 +268,7 @@ impl<T: SampleTrait> Pitched for SamplePlayer<T> {
 impl<T: SampleTrait> Generator for SamplePlayer<T> {
     type Item = T;
 
-    fn reset(&mut self) {
-        todo!()
-    }
+    fn reset(&mut self) {}
 
     fn prepare(&mut self, sample_rate: u32, _: usize) {
         self.sample_rate = sample_rate;
@@ -300,5 +300,161 @@ impl<T: SampleTrait> Generator for SamplePlayer<T> {
                 }
             }
         }
+    }
+}
+
+pub struct PitchedSamplePlayer<S: SampleTrait> {
+    player: Converter<SamplePlayer<S>, Linear<S>>,
+    pitch: f32
+}
+
+impl<T: SampleTrait> PitchedSamplePlayer<T> {
+    pub fn new() -> Self {
+        let player = Converter::from(SamplePlayer::new());
+        
+        Self {
+            player,
+            pitch: 440.0
+        }
+    }
+}
+
+impl<T: SampleTrait> Generator for PitchedSamplePlayer<T> {
+    type Item = T;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.player.prepare(sample_rate, block_size);
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        self.player.gen()
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<T>) {
+        self.player.generate_block(output);
+    }
+}
+
+impl<T: SampleTrait> Pitched for PitchedSamplePlayer<T> {
+    fn get_pitch(&self) -> f32 {
+        self.pitch
+    }
+
+    fn set_pitch(&mut self, hz: f32) {
+        self.player.set_ratio(hz / 440.0);
+        self.pitch = hz;
+    }
+}
+
+impl<T: SampleTrait> Deref for PitchedSamplePlayer<T> {
+    type Target = SamplePlayer<T>;
+
+    fn deref(&self) -> &Self::Target {
+        self.player.deref()
+    }
+}
+
+impl<T: SampleTrait> DerefMut for PitchedSamplePlayer<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.player.deref_mut()
+    }
+}
+
+type MyConverter<'a> = dasp_signal::interpolate::Converter<dasp_signal::FromIterator<std::iter::Cloned<std::slice::Iter<'a, [f32; 2]>>>, dasp_interpolate::linear::Linear<[f32; 2]>>;
+
+pub struct PitchedSamplePlayer2<S: SampleTrait> {
+    player: SamplePlayer<S>,
+    // converter: MyConverter<'a>,
+    pitch: f32
+}
+
+impl PitchedSamplePlayer2<Stereo2> {
+    pub fn new() -> Self {
+        Self {
+            player: SamplePlayer::new(),
+            pitch: 440.0
+        }
+    }
+}
+
+impl Generator for PitchedSamplePlayer2<Stereo2> {
+    type Item = Stereo2;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.player.prepare(sample_rate, block_size);
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        panic!("Don't use this");
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<Stereo2>) {
+        if self.player.playing {
+            if let Some(sample) = &self.player.sample {
+                let pitch_scale = self.pitch / sample.pitch;
+
+                if self.player.index + output.len() < sample.len() {
+                    let slice = sample.buffer.as_slice();
+                    unsafe {
+                        let buffer: &[[f32; 2]] = std::mem::transmute(slice);
+
+                        let mut source =
+                            dasp_signal::from_iter(buffer.into_iter().cloned());
+                        
+                        let last = source.next();
+                        let prev = source.next();
+
+                        let interp = 
+                            dasp_interpolate::linear::Linear::new(last, prev);
+                        let mut conv: MyConverter =
+                            dasp_signal::interpolate::Converter::scale_playback_hz(source, interp, pitch_scale as f64);
+                        
+                        for _ in 0..self.player.index {
+                            conv.next();
+                        }
+
+                        for dest in output.as_slice_mut() {
+                            let sample = conv.next();
+                            dest.left = sample[0];
+                            dest.right = sample[1];
+                        }
+
+                        self.player.index += output.len();
+                    }
+                } else {
+                    self.player.index = 0;
+                    self.player.playing = false;
+                }
+            }
+        }
+    }
+}
+
+impl Pitched for PitchedSamplePlayer2<Stereo2> {
+    fn get_pitch(&self) -> f32 {
+        self.pitch
+    }
+
+    fn set_pitch(&mut self, hz: f32) {
+        // self.player.set_ratio(hz / 440.0);
+        self.pitch = hz;
+    }
+}
+
+impl<T: SampleTrait> Deref for PitchedSamplePlayer2<T> {
+    type Target = SamplePlayer<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.player
+    }
+}
+
+impl<T: SampleTrait> DerefMut for PitchedSamplePlayer2<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.player
     }
 }

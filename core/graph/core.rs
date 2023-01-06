@@ -29,7 +29,32 @@ pub extern "C" fn api_io_test() {}
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
-    println!("CREATING NEW HOST");
+    println!("Testing a thing");
+
+    /*let vec = vec![0.0, 0.1, 0.2, 0.3, 0.4, 0.3, 0.2, 0.1, 0.0, 0.5, 1.0, 0.5, 0.1];
+    let buffer = Buffer::from(vec);
+    for sample in &buffer {
+        println!("Buffer {}", *sample);
+    }
+
+    let sample = SampleFile::from(
+        std::sync::Arc::new(buffer), 
+        440.0,
+        44100,
+        String::from("temp"));
+
+    let mut player: Converter<SamplePlayer<f32>, Linear<f32>> = Converter::from(SamplePlayer::new());
+    player.play();
+    player.set_ratio(0.5);
+    player.set_sample(sample);
+
+    for _ in 0..64 {
+        println!("Sample {}", player.gen());
+    }*/
+
+    // let mut player = SamplePlayer::new();
+    // player.set_sample(sample);
+
     Box::into_raw(api_create_host())
 }
 
