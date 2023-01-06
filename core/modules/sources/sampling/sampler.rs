@@ -82,7 +82,7 @@ impl Module for Sampler {
                     voice.player.play();
                 },
                 Event::NoteOff => voice.player.stop(),
-                Event::Pitch(pitch) => voice.player.set_pitch(pitch),
+                Event::Pitch(pitch) => voice.player.set_pitch(pitch / 440.0),
                 _ => ()
             }
         }
