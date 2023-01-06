@@ -1,5 +1,6 @@
-use std::ops::{Deref, DerefMut, Mul};
+use std::ops::{Deref, DerefMut};
 use std::slice;
+use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
 pub mod event;
 pub mod time;
@@ -20,9 +21,10 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
-pub trait SampleTrait: Copy {
+pub trait SampleTrait: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
 
+    fn from(value: f32) -> Self;
     fn zero(&mut self);
     // fn fill(&mut self, value: Self);
     fn gain(&mut self, db: f32);
@@ -37,6 +39,10 @@ pub struct Stereo2 {
 impl SampleTrait for f32 {
     type Output = f32;
 
+    fn from(value: f32) -> Self {
+        value
+    }
+
     fn zero(&mut self) {
         *self = 0.0;
     }
@@ -49,6 +55,13 @@ impl SampleTrait for f32 {
 impl SampleTrait for Stereo2 {
     type Output = Stereo2;
 
+    fn from(value: f32) -> Self {
+        Stereo2 {
+            left: value,
+            right: value
+        }
+    }
+
     fn zero(&mut self) {
         self.left = 0.0;
         self.right = 0.0;
@@ -60,7 +73,7 @@ impl SampleTrait for Stereo2 {
     }
 }
 
-impl std::ops::Add for Stereo2 {
+impl Add for Stereo2 {
     type Output = Stereo2;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -71,7 +84,7 @@ impl std::ops::Add for Stereo2 {
     }
 }
 
-impl std::ops::Sub for Stereo2 {
+impl Sub for Stereo2 {
     type Output = Stereo2;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -82,7 +95,7 @@ impl std::ops::Sub for Stereo2 {
     }
 }
 
-impl std::ops::Mul for Stereo2 {
+impl Mul for Stereo2 {
     type Output = Stereo2;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -93,7 +106,7 @@ impl std::ops::Mul for Stereo2 {
     }
 }
 
-impl std::ops::Div for Stereo2 {
+impl Div for Stereo2 {
     type Output = Stereo2;
 
     fn div(self, rhs: Self) -> Self::Output {
@@ -101,6 +114,34 @@ impl std::ops::Div for Stereo2 {
             left: self.left / rhs.left,
             right: self.right / rhs.right
         }
+    }
+}
+
+impl AddAssign for Stereo2 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.left = self.left + rhs.left;
+        self.right = self.right + rhs.right;
+    }
+}
+
+impl SubAssign for Stereo2 {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.left = self.left - rhs.left;
+        self.right = self.right - rhs.right;
+    }
+}
+
+impl MulAssign for Stereo2 {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.left = self.left * rhs.left;
+        self.right = self.right * rhs.right;
+    }
+}
+
+impl DivAssign for Stereo2 {
+    fn div_assign(&mut self, rhs: Self) {
+        self.left = self.left / rhs.left;
+        self.right = self.right / rhs.right;
     }
 }
 

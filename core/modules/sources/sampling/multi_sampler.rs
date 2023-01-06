@@ -405,8 +405,9 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_time_ms(
     index: usize,
     sample_index: usize,
 ) -> f64 {
-    let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
-    return sample.len() as f64 / sample.sample_rate() as f64 * 1000.0;
+    // let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
+    // return sample.len() as f64 / sample.sample_rate() as f64 * 1000.0;
+    todo!()
 }
 
 /* ===== Sample Editor ===== */

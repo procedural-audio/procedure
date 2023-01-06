@@ -8,7 +8,7 @@ pub struct Sampler {
 
 pub struct SamplerVoice {
     index: u32,
-    player: SamplePlayer<Stereo2>,
+    player: Converter<SamplePlayer<Stereo2>, Linear<Stereo2>>
 }
 
 impl Module for Sampler {
@@ -44,7 +44,7 @@ impl Module for Sampler {
     }
 
     fn new_voice(&self, index: u32) -> Self::Voice {
-        let player = SamplePlayer::new();
+        let player = Converter::from(SamplePlayer::new());
 
         Self::Voice {
             index,
@@ -78,7 +78,7 @@ impl Module for Sampler {
                         println!("Couldn't update sample");
                     }
 
-                    voice.player.set_pitch(pitch);
+                    voice.player.set_ratio(pitch / 440.0);
                     voice.player.play();
                 },
                 Event::NoteOff => voice.player.stop(),
