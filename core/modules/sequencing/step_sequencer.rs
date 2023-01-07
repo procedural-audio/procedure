@@ -73,7 +73,7 @@ impl Module for StepSequencer {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
-            padding: (10, 35, 10, 10),
+            padding: (5, 35, 5, 5),
             child: Refresh {
                 callback: &mut self.callback,
                 child: widget::Pads {
