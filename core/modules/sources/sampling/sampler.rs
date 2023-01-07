@@ -6,13 +6,8 @@ pub struct Sampler {
     sample: Arc<RwLock<SampleFile<Stereo2>>>,
 }
 
-pub struct SamplerVoice {
-    index: u32,
-    player: PitchedSamplePlayer<Stereo2>,
-}
-
 impl Module for Sampler {
-    type Voice = SamplerVoice;
+    type Voice = PitchedSamplePlayer<Stereo2>;
 
     const INFO: Info = Info {
         title: "Sampler",
@@ -43,13 +38,8 @@ impl Module for Sampler {
         };
     }
 
-    fn new_voice(&self, index: u32) -> Self::Voice {
-        let player = PitchedSamplePlayer::new();
-
-        Self::Voice {
-            index,
-            player,
-        }
+    fn new_voice(&self, _index: u32) -> Self::Voice {
+        PitchedSamplePlayer::new()
     }
 
     fn load(&mut self, _json: &JSON) {}
@@ -66,27 +56,27 @@ impl Module for Sampler {
         })
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {}
+    fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
                     if let Ok(sample) = self.sample.try_read() {
-                        voice.player.set_sample(sample.clone());
+                        voice.set_sample(sample.clone());
                     } else {
                         println!("Couldn't update sample");
                     }
 
-                    voice.player.set_pitch(pitch);
-                    voice.player.play();
+                    voice.set_pitch(pitch);
+                    voice.play();
                 },
-                Event::NoteOff => voice.player.stop(),
-                Event::Pitch(pitch) => voice.player.set_pitch(pitch / 440.0),
+                Event::NoteOff => voice.stop(),
+                Event::Pitch(pitch) => voice.set_pitch(pitch / 440.0),
                 _ => ()
             }
         }
 
-        voice.player.generate_block(&mut outputs.audio[0]);
+        voice.generate_block(&mut outputs.audio[0]);
     }
 }
