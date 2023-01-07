@@ -35,13 +35,10 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
 
         println!("Loading {}", path);
 
-        // let buffer = Arc::new(AudioBuffer::new(0));
-        // let buffer_ret = buffer.clone();
-
         let mut reader = hound::WavReader::open(path.to_string()).unwrap();
+        let spec = reader.spec();
         let sample_rate = reader.spec().sample_rate;
 
-        // let _handle = std::thread::spawn(move || {
         {
             let size = reader.samples::<i16>().len();
             println!("Size is {}", size);
@@ -51,8 +48,12 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
             reader.samples::<i16>()
                 .fold(0.0, |_, v| {
                     let sample = v.unwrap() as f32 * (1.0/32768.0);
-                    buffer_new.as_slice_mut()[i].left = sample;
-                    buffer_new.as_slice_mut()[i].right = sample;
+                    if i % 2 == 0 {
+                        buffer_new.as_slice_mut()[i / spec.channels as usize].left = sample;
+                    } else {
+                        buffer_new.as_slice_mut()[i / spec.channels as usize].right = sample;
+                    }
+
                     i += 1;
                     0.0
                 }
@@ -62,77 +63,5 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
 
             return SampleFile::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());
         }
-
-            //println!("Loaded sample {}", path);
-        // });
-
-        /*let spec = reader.spec();
-        let size = reader.samples::<i16>().len();
-        let mut buffer_new = StereoBuffer::with_capacity(size / spec.channels as usize);
-        // ^^^ SIZE OF SINGLE CHANNEL
-
-        println!("{:?}", spec);
-
-        match spec.bits_per_sample {
-            16 => {
-                let mut i = 0;
-                reader.samples::<i16>().for_each(|s| {
-                    unsafe {
-                        let sample = s.unwrap() as f32 * (1.0 / 32768.0);
-                        if i % 2 == 0 {
-                            *buffer_new
-                                .left
-                                .as_mut_ptr()
-                                .offset(i / spec.channels as isize) = sample;
-                        } else {
-                            *buffer_new
-                                .right
-                                .as_mut_ptr()
-                                .offset(i / spec.channels as isize) = sample;
-                        }
-                        // ^^^ Takes only left channel
-                        i += 1;
-                    }
-                });
-            }
-            24 => {
-                let mut i = 0;
-                reader.samples::<i32>().for_each(|s| {
-                    unsafe {
-                        let sample = s.unwrap() as f32 * (1.0 / 32768.0);
-                        *buffer_new.left.as_mut_ptr().offset(i / spec.channels as isize) = sample;
-                        // ^^^ Takes only left channel
-                        i += 1;
-                    }
-                });
-            }
-            _ => {
-                panic!("Unsupported wave file bit width");
-            }
-        }
-
-        /*println!("    {:?}", &buffer_new.as_slice()[64+4*0..64+4*1]);
-        println!("    {:?}", &buffer_new.as_slice()[64+4*1..64+4*2]);
-        println!("    {:?}", &buffer_new.as_slice()[64+4*2..64+4*3]);
-        println!("    {:?}", &buffer_new.as_slice()[64+4*3..64+4*4]);*/
-
-        let seconds = size as f64 / spec.sample_rate as f64;
-        println!(
-            "    rate: {}, format: {:?}, bits: {}, channels: {}",
-            spec.sample_rate, spec.sample_format, spec.bits_per_sample, spec.channels
-        );
-        /*println!(
-            "    rms: {}, peak: {}",
-            &buffer_new.rms(),
-            &buffer_new.peak()
-        );*/
-        println!("    length: {} seconds", seconds / spec.channels as f64);
-        println!("");
-
-        // println!("Converting {} to 44100", reader.spec().sample_rate);
-        // let buffer_new = samplerate::convert(reader.spec().sample_rate, 44100, 1, samplerate::ConverterType::SincFastest, buffer_new.as_slice()).unwrap();
-        // let buffer_new = AudioBuffer::from(buffer_new);
-
-        return Sample::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());*/
     }
 }

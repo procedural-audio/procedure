@@ -7,16 +7,16 @@ pub struct MultiSampler {
 }
 
 impl Module for MultiSampler {
-    type Voice = Vec<SamplePlayer<Stereo2>>;
+    type Voice = SamplePlayer<Stereo2>;
 
     const INFO: Info = Info {
         title: "Multi-Sampler",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(600, 400),
-        voicing: Voicing::Monophonic,
-        inputs: &[Pin::Notes("Midi Input", 20)],
-        outputs: &[Pin::Audio("Audio Output", 20)],
+        voicing: Voicing::Polyphonic,
+        inputs: &[Pin::Notes("Midi Input", 10)],
+        outputs: &[Pin::Audio("Audio Output", 10)],
         path: "Category 1/Category 2/Module Name"
     };
 
@@ -28,33 +28,15 @@ impl Module for MultiSampler {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        vec![
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-            SamplePlayer::new(),
-        ]
+            SamplePlayer::new()
     }
 
     fn load(&mut self, _json: &JSON) {}
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Transform {
-            position: (35, 35),
-            size: (600 - 35 * 2, 400 - 35 - 20),
+        return Box::new(Padding {
+            padding: (5, 35, 5, 5),
             child: Tabs {
                 tabs: (
                     Tab {
@@ -87,15 +69,34 @@ impl Module for MultiSampler {
         });
     }
 
-    fn prepare(&self, voices: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        println!("Sample rate is {}", sample_rate);
-
-        for voice in voices {
-            // voice.prepare(sample_rate, block_size);
-        }
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
+        voice.prepare(sample_rate, block_size);
     }
 
-    fn process(&mut self, voices: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure: _ } => {
+                    if let Ok(map) = self.map.try_read() {
+                        for region in &map.regions {
+                            let num = pitch_to_num(pitch);
+                            if region.low_note <= num && region.high_note >= num {
+                                println!("Playing note {}", num);
+                                voice.set_sample(region.sounds[0].clone());
+                                voice.play();
+                                break;
+                            }
+                        }
+                    }
+                },
+                Event::NoteOff => voice.stop(),
+                Event::Pitch(_) => (),
+                _ => ()
+            }
+        }
+
+        voice.generate_block(&mut outputs.audio[0]);
+
         /*for note in &inputs.events[0] {
             match note {
                 Event::NoteOn { note, offset } => {
