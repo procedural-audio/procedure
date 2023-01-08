@@ -241,6 +241,14 @@ impl<T: SampleTrait> SamplePlayer<T> {
         self.sample = Some(sample);
     }
 
+    /*pub fn set_time(&mut self, time: TimeRange) {
+        time.start
+    }*/
+
+    pub fn set_playback_sample(&mut self, index: usize) {
+        self.index = index;
+    }
+
     pub fn play(&mut self) {
         self.playing = true;
     }

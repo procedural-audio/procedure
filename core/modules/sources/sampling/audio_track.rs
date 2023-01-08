@@ -1,39 +1,16 @@
 use std::sync::{Arc, RwLock};
 
-
-use pa_dsp::{Source, Voice};
-
 use crate::*;
-
-/*
-
-Todo
- - Stop/play button
- - Double scrolling view like serato sample
- - Mono/polyphonic button (same as global version)
- - ADSR can be another module. Keep fade in and fade out.
- - Separate audio track module? Uses time input for playback.
- - Rename piano roll to midi track
-
-*/
 
 pub struct AudioTrack {
     sample: Arc<RwLock<SampleFile<Stereo2>>>,
-    start: f32,
-    end: f32,
-    attack: f32,
-    release: f32,
-    should_loop: bool,
-    loop_start: f32,
-    loop_end: f32,
-    loop_crossfade: f32,
-    one_shot: bool,
-    reverse: bool,
+    player: SamplePlayer<Stereo2>,
+    rate: u32
 }
 
 pub struct AudioTrackVoice {
     index: u32,
-    player: SamplePlayer<Stereo2>,
+    rate: u32
 }
 
 impl Module for AudioTrack {
@@ -43,57 +20,42 @@ impl Module for AudioTrack {
         title: "Audio Track",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(390, 200),
+        size: Size::Static(500, 150),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Audio Input", 15 + 30 * 0),
-            Pin::Time("Time Input", 15 + 30 * 2),
+            Pin::Time("Time", 10)
         ],
-        outputs: &[Pin::Audio("Audio Output", 15)],
+        outputs: &[
+            Pin::Audio("Audio Output", 10)
+        ],
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
-        if cfg!(target_os = "macos") {
-            return Self {
-                sample: Arc::new(RwLock::new(SampleFile::load(
-                    "/Users/chasekanipe/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
-                ))),
-                start: 0.0,
-                end: 1.0,
-                attack: 0.0,
-                release: 0.0,
-                should_loop: false,
-                loop_start: 0.2,
-                loop_end: 0.8,
-                loop_crossfade: 0.1,
-                one_shot: false,
-                reverse: false,
-            };
+        let path = if cfg!(target_os = "macos") {
+            "/Users/chasekanipe/Desktop/Iris.wav"
+        } else if cfg!(target_os = "linux") {
+            todo!()
         } else {
-            return Self {
-                sample: Arc::new(RwLock::new(SampleFile::load(
-                    "/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
-                ))),
-                start: 0.0,
-                end: 1.0,
-                attack: 0.0,
-                release: 0.0,
-                should_loop: false,
-                loop_start: 0.2,
-                loop_end: 0.8,
-                loop_crossfade: 0.1,
-                one_shot: false,
-                reverse: false,
-            };
-        }
+            todo!()
+        };
+
+        let sample = SampleFile::load(path);
+        let mut player = SamplePlayer::new();
+
+        player.set_sample(sample.clone());
+        player.play();
+        let rate = 0;
+
+        let sample = Arc::new(RwLock::new(sample));
+
+        return Self { player, sample, rate };
     }
 
     fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice {
             index,
-            player: SamplePlayer::new(),
+            rate: 0
         }
     }
 
@@ -101,30 +63,25 @@ impl Module for AudioTrack {
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        todo!()
-        /*Box::new(Stack {
-            children: (Transform {
-                position: (35, 35),
-                size: (320, 150),
-                child: SamplePicker {
-                    sample: self.sample.clone(),
-                    color: Color::BLUE,
-                    start: &mut self.start,
-                    end: &mut self.end,
-                    attack: &mut self.attack,
-                    release: &mut self.release,
-                    should_loop: &mut self.should_loop,
-                    loop_start: &mut self.loop_start,
-                    loop_end: &mut self.loop_end,
-                    loop_crossfade: &mut self.loop_crossfade,
-                    one_shot: &mut self.one_shot,
-                    reverse: &mut self.reverse,
-                },
-            }),
-        })*/
+        Box::new(Stack {
+            children: (Padding {
+                padding: (5, 35, 5, 5),
+                child: SampleFilePicker {
+                    sample: self.sample.clone()
+                }
+            })
+        })
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {}
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        if voice.index == 0 {
+            inputs.time[0].on_each(64.0 * 8.0, | beat | {
+                self.player.set_playback_sample(0);
+            });
+
+            self.player.generate_block(&mut outputs.audio[0]);
+        }
+    }
 }
