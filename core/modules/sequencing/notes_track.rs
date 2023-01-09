@@ -89,10 +89,10 @@ impl Module for NotesTrack {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if *voice == 0 {
             let time = inputs.time[0];
-            self.beat = time.cycle(self.length as f64).start();
+            self.beat = time.cycle(self.length as f64).start().0;
 
             for event in &self.events {
-                if time.cycle(self.length as f64).contains(event.time.beat()) {
+                if time.cycle(self.length as f64).contains(event.time) {
                     self.player.message(NoteMessage {
                         id: event.id,
                         offset: 0,

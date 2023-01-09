@@ -30,6 +30,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
 
     modules.push(("Analog Oscillator", create_module::<AnalogOscillator>));
     modules.push(("Wavetable Oscillator", create_module::<WavetableOscillator>));
+    modules.push(("Pluck", create_module::<Pluck>));
     modules.push(("Noise", create_module::<crate::sources::Noise>));
     modules.push(("Saw", create_module::<SawModule>));
     modules.push(("Square", create_module::<SquareModule>));

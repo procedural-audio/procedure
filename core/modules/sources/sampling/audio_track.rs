@@ -4,7 +4,7 @@ use crate::*;
 
 pub struct AudioTrack {
     sample: Arc<RwLock<SampleFile<Stereo2>>>,
-    player: SamplePlayer<Stereo2>,
+    player: PitchedSamplePlayer<Stereo2>,
     rate: u32
 }
 
@@ -41,7 +41,7 @@ impl Module for AudioTrack {
         };
 
         let sample = SampleFile::load(path);
-        let mut player = SamplePlayer::new();
+        let mut player = PitchedSamplePlayer::new();
 
         player.set_sample(sample.clone());
         player.play();
@@ -77,10 +77,11 @@ impl Module for AudioTrack {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if voice.index == 0 {
-            inputs.time[0].on_each(64.0 * 8.0, | beat | {
+            inputs.time[0].on_each(64.0 * 4.0, | beat | {
                 self.player.set_playback_sample(0);
             });
 
+            self.player.set_speed(inputs.time[0].get_rate());
             self.player.generate_block(&mut outputs.audio[0]);
         }
     }

@@ -325,6 +325,10 @@ impl<T: SampleTrait> PitchedSamplePlayer<T> {
             pitch: 440.0
         }
     }
+
+    pub fn set_speed(&mut self, speed: f32) {
+        self.player.set_ratio(speed);
+    }
 }
 
 impl<T: SampleTrait> Generator for PitchedSamplePlayer<T> {
