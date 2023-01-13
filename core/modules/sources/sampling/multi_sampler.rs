@@ -328,8 +328,6 @@ impl SampleMap {
         };
 
         if cfg!(target_os = "macos") {
-            println!("Loading piano preset");
-            // temp.load_dspreset("/Users/chasekanipe/piano_samples/piano.dspreset");
             temp.load_dspreset("/Users/chasekanipe/guitar_samples/guitar.dspreset");
         } else {
             temp.load_dspreset("/home/chase/guitar_samples/guitar.dspreset");
