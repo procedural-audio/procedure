@@ -282,7 +282,7 @@ class _PluginListCategory extends State<PluginListCategory> {
                       });
                     },
                     child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           print("Tapped");
                           setState(() {

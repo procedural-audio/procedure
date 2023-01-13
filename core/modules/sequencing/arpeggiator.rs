@@ -217,7 +217,7 @@ impl Module for Arpeggiator {
         if max == min {
             beat = min; // Freeze if they're equal
         } else {
-            beat = (((inputs.time[0].start().0 * rate).round() as usize) % (max - min)) + min;
+            beat = (((inputs.time[0].start() * rate).round() as usize) % (max - min)) + min;
         }
 
         if self.beat != beat {

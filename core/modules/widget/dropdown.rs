@@ -118,15 +118,15 @@ pub struct Path {}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct Paint {
-    color: Color,
-    width: f32,
+    pub color: Color,
+    pub width: f32,
 }
 
 impl Paint {
     pub fn new() -> Self {
         return Self {
-            color: Color::BLUE,
-            width: 1.0,
+            color: Color::GREY,
+            width: 2.0,
         };
     }
 
@@ -162,9 +162,10 @@ pub struct PaintAction<'a> {
     points: &'a [(f32, f32)],
 }
 
-#[repr(transparent)]
 pub struct Canvas<'a> {
     actions: Vec<PaintAction<'a>>,
+    pub width: f32,
+    pub height: f32,
 }
 
 impl<'a> Canvas<'a> {
@@ -262,11 +263,11 @@ impl<'a> Canvas<'a> {
     //pub fn draw_image(&mut self) {}
 }
 
-pub struct Painter<'a> {
-    pub painter: Box<dyn FnMut(&mut Canvas) + 'a>,
+pub struct Painter<F: Fn(&mut Canvas)> {
+    pub paint: F
 }
 
-impl<'a> WidgetNew for Painter<'a> {
+impl<F: Fn(&mut Canvas)> WidgetNew for Painter<F> {
     fn get_name(&self) -> &'static str {
         "Painter"
     }
@@ -274,16 +275,30 @@ impl<'a> WidgetNew for Painter<'a> {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn PainterTrait) }
+    }
+}
+
+pub trait PainterTrait {
+    fn paint(&self, canvas: &mut Canvas);
+}
+
+impl<F: Fn(&mut Canvas)> PainterTrait for Painter<F> {
+    fn paint(&self, canvas: &mut Canvas) {
+        (self.paint)(canvas);
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_painter_paint(painter: &mut Painter, canvas: &mut Canvas) {
+pub unsafe extern "C" fn ffi_painter_paint(painter: &mut dyn PainterTrait, canvas: &mut Canvas) {
     canvas.clear();
-    (painter.painter)(canvas);
+    painter.paint(canvas);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_painter_should_paint(_painter: &mut Painter) -> bool {
+pub unsafe extern "C" fn ffi_painter_should_paint(_painter: &mut dyn PainterTrait) -> bool {
     println!("Always returns true (shouldn't)");
     true
 }
@@ -292,6 +307,8 @@ pub unsafe extern "C" fn ffi_painter_should_paint(_painter: &mut Painter) -> boo
 pub unsafe extern "C" fn ffi_new_canvas() -> *mut Canvas<'static> {
     return Box::into_raw(Box::new(Canvas {
         actions: Vec::new(),
+        width: 0.0,
+        height: 0.0
     }));
 }
 

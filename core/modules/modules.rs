@@ -136,6 +136,7 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     // modules.push(("Time", create_module::<LocalTime>));
     modules.push(("Reverse", create_module::<Reverse>));
     modules.push(("Rate", create_module::<Rate>));
+    modules.push(("Accumulate", create_module::<Accumulator>));
 
     modules.push(("Audio Plugin", create_module::<AudioPluginModule>));
 

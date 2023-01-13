@@ -21,7 +21,7 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
-pub trait SampleTrait: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
+pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
 
     fn from(value: f32) -> Self;
@@ -36,7 +36,7 @@ pub struct Stereo2 {
     pub right: f32
 }
 
-impl SampleTrait for f32 {
+impl Frame for f32 {
     type Output = f32;
 
     fn from(value: f32) -> Self {
@@ -52,7 +52,7 @@ impl SampleTrait for f32 {
     }
 }
 
-impl SampleTrait for Stereo2 {
+impl Frame for Stereo2 {
     type Output = Stereo2;
 
     fn from(value: f32) -> Self {
@@ -247,7 +247,7 @@ pub struct Buffer<T: Copy + Clone> {
     items: Vec<T>,
 }
 
-impl<T: SampleTrait + Copy> Buffer<T> {
+impl<T: Frame + Copy> Buffer<T> {
     pub fn init(value: T, size: usize) -> Self {
         let mut items = Vec::with_capacity(size);
 
@@ -376,7 +376,7 @@ impl NoteBuffer {
     }
 }
 
-/*impl<T: SampleTrait> SampleTrait for Buffer<T> {
+/*impl<T: Frame> Frame for Buffer<T> {
     type Output = Buffer<T>;
 
     fn zero(&mut self) {

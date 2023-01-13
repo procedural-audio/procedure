@@ -12,26 +12,29 @@ int Function(FFIWidgetPointer) ffiSampleFilePickerGetBufferLength = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_sample_file_picker_get_buffer_length")
     .asFunction();
-
 double Function(FFIWidgetPointer, int) ffiSampleFilePickerGetSampleLeft = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
         "ffi_sample_file_picker_get_sample_left")
     .asFunction();
-
 double Function(FFIWidgetPointer, int) ffiSampleFilePickerGetSampleRight = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
         "ffi_sample_file_picker_get_sample_right")
     .asFunction();
+void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleFilePickerSetSample =
+    core
+        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Pointer<Utf8>)>>(
+            "ffi_sample_file_picker_set_sample")
+        .asFunction();
 
 class SamplePickerWidget extends ModuleWidget {
   SamplePickerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    refreshBuffers();
+    refreshBuffer();
   }
 
   List<double> leftBuffer = [0.0];
   List<double> rightBuffer = [0.0];
 
-  void refreshBuffers() {
+  void refreshBuffer() {
     leftBuffer.clear();
     rightBuffer.clear();
 
@@ -53,60 +56,40 @@ class SamplePickerWidget extends ModuleWidget {
   void browseForSample() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      // path = result.files.single.path;
-      // setString("path", path!);
-      // updateWaveformPath();
-      refresh();
+      var path = result.files.single.path;
+      if (path != null) {
+        var pathRaw = path.toNativeUtf8();
+        ffiSampleFilePickerSetSample(widgetRaw.pointer, pathRaw);
+        calloc.free(pathRaw);
+      }
+
+      refreshBuffer();
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(children: [
-        Expanded(
-            child: Container(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight,
-                decoration: const BoxDecoration(
-                    color: Color.fromRGBO(20, 20, 20, 1.0),
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(5))),
-                child: CustomPaint(
-                    painter: SamplePainter(
-                        leftBuffer: leftBuffer, rightBuffer: rightBuffer)))),
-        Container(
-            height: 30,
-            decoration: const BoxDecoration(
-                color: Color.fromRGBO(30, 30, 30, 1.0),
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(5))),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
+    return Container(
+        decoration: const BoxDecoration(
+            color: Color.fromRGBO(20, 20, 20, 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        child: Stack(fit: StackFit.expand, children: [
+          CustomPaint(
+              painter: SamplePainter(
+                  leftBuffer: leftBuffer, rightBuffer: rightBuffer)),
+          Align(
+              alignment: Alignment.bottomRight,
+              child: IconButton(
                   icon: const Icon(Icons.folder),
                   iconSize: 18,
                   color: Colors.blue,
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   onPressed: () {
-                    print("Pressed a button");
-                  },
-                ),
-                IconButton(
-                    icon: const Icon(Icons.folder),
-                    iconSize: 18,
-                    color: Colors.blue,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      print("Pressed a button");
-                    })
-              ],
-            ))
-      ]);
-    });
+                    browseForSample();
+                  }))
+        ]));
   }
 }
 

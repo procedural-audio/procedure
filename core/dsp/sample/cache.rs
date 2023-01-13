@@ -42,7 +42,7 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
         {
             let size = reader.samples::<i16>().len();
             println!("Size is {}", size);
-            let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size);
+            let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
 
             let mut i = 0;
             reader.samples::<i16>()

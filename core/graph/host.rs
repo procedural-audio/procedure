@@ -21,7 +21,7 @@ impl Host {
             graph: Graph::new(),
             block_size: 128,
             sample_rate: 44100,
-            time: TimeMessage::from(Time(0.0), Time(0.0)),
+            time: TimeMessage::from(0.0, 0.0),
             bpm: 120.0,
             io_manager: None,
             plugin_manager: Arc::new(AudioPluginManager::new())
@@ -63,12 +63,12 @@ impl Host {
         self.graph.prepare(sample_rate, block_size);
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
-        self.time = TimeMessage::from(Time(0.0), Time(delta_beats));
+        self.time = TimeMessage::from(0.0, delta_beats);
     }
 
     pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
         self.graph.process(&self.time, audio, midi);
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
-        self.time = self.time.shift(Time(delta_beats));
+        self.time = self.time.shift(delta_beats);
     }
 }

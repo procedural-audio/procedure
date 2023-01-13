@@ -1,4 +1,6 @@
-use crate::{widget::*, AudioChannel};
+use pa_dsp::{SampleFile, FileLoad};
+
+use crate::widget::*;
 
 #[repr(C)]
 pub struct Knob<'a> {
@@ -159,6 +161,18 @@ pub unsafe extern "C" fn ffi_sample_file_picker_get_sample_right(widget: &mut Sa
     (*widget.sample.read().unwrap()).as_slice()[index].right
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn ffi_sample_file_picker_set_sample(widget: &mut SampleFilePicker, path: &i8) {
+    let path= str_from_char(path);
+    let sample = SampleFile::load(path);
+    match widget.sample.write() {
+        Ok(mut old) => {
+            *old = sample.clone();
+        },
+        _ => ()
+    }
+}
+
 #[repr(C)]
 pub struct Text {
     pub text: &'static str,
@@ -182,7 +196,7 @@ impl WidgetNew for Text {
 pub unsafe extern "C" fn ffi_text_get_text(w: &mut Text) -> *const i8 {
     let s = match CString::new(w.text) {
         Ok(s) => s,
-        Err(e) => {
+        Err(_) => {
             CString::new("Error").unwrap()
         }
     };

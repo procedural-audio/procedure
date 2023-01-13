@@ -323,6 +323,7 @@ impl Color {
     pub const GREEN: Color = Color(0xff4caf50);
     pub const RED: Color = Color(0xfff44336);
     pub const PURPLE: Color = Color(0xff7c4dff);
+    pub const GREY: Color = Color(0xff9e9e9e);
 
     pub const fn rgb(_r: u32, _b: u32, _g: u32) {
         panic!("From RGB not implemented");

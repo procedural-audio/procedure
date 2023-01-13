@@ -5,7 +5,8 @@ use crate::*;
 pub struct AudioTrack {
     sample: Arc<RwLock<SampleFile<Stereo2>>>,
     player: PitchedSamplePlayer<Stereo2>,
-    rate: u32
+    rate: u32,
+    position: f32
 }
 
 pub struct AudioTrackVoice {
@@ -20,7 +21,7 @@ impl Module for AudioTrack {
         title: "Audio Track",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(500, 150),
+        size: Size::Static(600, 150),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Time("Time", 10)
@@ -46,10 +47,11 @@ impl Module for AudioTrack {
         player.set_sample(sample.clone());
         player.play();
         let rate = 0;
+        let position = 0.0;
 
         let sample = Arc::new(RwLock::new(sample));
 
-        return Self { player, sample, rate };
+        return Self { player, sample, rate, position };
     }
 
     fn new_voice(&self, index: u32) -> Self::Voice {
@@ -63,13 +65,23 @@ impl Module for AudioTrack {
     fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Stack {
-            children: (Padding {
-                padding: (5, 35, 5, 5),
-                child: SampleFilePicker {
-                    sample: self.sample.clone()
-                }
-            })
+        Box::new(Padding {
+            padding: (5, 35, 5, 5),
+            child: Stack {
+                children: (
+                    SampleFilePicker {
+                        sample: self.sample.clone()
+                    },
+                    Painter {
+                        paint: | canvas | {
+                            canvas.draw_line(
+                                (canvas.width * self.position, 0.0),
+                                (canvas.width * self.position, canvas.height),
+                                Paint::new());
+                        }
+                    }
+                )
+            }
         })
     }
 
@@ -77,9 +89,13 @@ impl Module for AudioTrack {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if voice.index == 0 {
-            inputs.time[0].on_each(64.0 * 4.0, | beat | {
-                self.player.set_playback_sample(0);
-            });
+            let time = inputs.time[0];
+            let start = time.start_sample(120.0, 44100);
+            self.player.set_position(start);
+
+            if self.player.playing() {
+                self.position = self.player.progress();
+            }
 
             self.player.set_speed(inputs.time[0].get_rate());
             self.player.generate_block(&mut outputs.audio[0]);

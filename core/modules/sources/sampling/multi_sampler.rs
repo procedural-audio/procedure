@@ -15,11 +15,14 @@ impl Module for MultiSampler {
         color: Color::BLUE,
         size: Size::Static(600, 400),
         voicing: Voicing::Polyphonic,
-        inputs: &[Pin::Notes("Midi Input", 10)],
-        outputs: &[Pin::Audio("Audio Output", 10)],
+        inputs: &[
+            Pin::Notes("Midi Input", 10)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 10)
+        ],
         path: "Category 1/Category 2/Module Name"
     };
-
     
     fn new() -> Self {
         Self {
@@ -37,35 +40,9 @@ impl Module for MultiSampler {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: Tabs {
-                tabs: (
-                    Tab {
-                        icon: Icon {
-                            path: "logos/audio.svg",
-                            color: Color::BLUE,
-                        },
-                        child: SampleMapper {
-                            map: self.map.clone(),
-                        },
-                    },
-                    Tab {
-                        icon: Icon {
-                            path: "logos/audio.svg",
-                            color: Color::BLUE,
-                        },
-                        child: SampleEditor {},
-                    },
-                    Tab {
-                        icon: Icon {
-                            path: "logos/audio.svg",
-                            color: Color::BLUE,
-                        },
-                        child: LuaEditor {
-                            dir: "~/temp.lua"
-                        },
-                    },
-                ),
-            },
+            child: SampleMapper {
+                map: self.map.clone(),
+            }
         });
     }
 
@@ -90,123 +67,12 @@ impl Module for MultiSampler {
                     }
                 },
                 Event::NoteOff => voice.stop(),
-                Event::Pitch(_) => (),
+                Event::Pitch(pitch) => voice.set_pitch(pitch),
                 _ => ()
             }
         }
 
         voice.generate_block(&mut outputs.audio[0]);
-
-        /*for note in &inputs.events[0] {
-            match note {
-                Event::NoteOn { note, offset } => {
-                    if let Ok(map) = self.map.try_read() {
-                        let mut sample = None;
-                        let note = Note::from_pitch(note.pitch);
-
-                        /* Find sample to play */
-
-                        for region in &map.regions {
-                            if region.low_note <= note.num() && region.high_note >= note.num() {
-                                let low = Note::from_num(region.low_note);
-                                let high = Note::from_num(region.high_note);
-
-                                println!("Region {} {}", low.pitch(), high.pitch());
-
-                                if region.sounds.len() > 0 {
-                                    sample = Some(region.sounds[0].clone());
-                                }
-
-                                break;
-                            }
-                        }
-
-                        // sample = Some(map.regions[0].sounds[0].clone()); // COMMENT THIS LINE OUT !!!!!!!!!!
-
-                        if let Some(sample) = sample {
-                            /* Find voice to play note */
-
-                            let mut found = false;
-                            let mut i = 0;
-                            voices.iter_mut().for_each(|voice| {
-                                if !voice.is_active() && !found {
-                                    println!("Playing note {}", note.name());
-                                    voice.set_sample(sample.clone());
-                                    voice.note_on(
-                                        note.id,
-                                        *offset,
-                                        Note::from_pitch(note.pitch),
-                                        note.pressure,
-                                    );
-                                    found = true;
-                                }
-
-                                i += 1;
-                            });
-
-                            /* Steal voice to play note */
-
-                            let mut voice_index = 0;
-                            let mut sample_index = usize::MAX;
-                            if !found {
-                                for i in 0..voices.len() {
-                                    if voices[i].position() < sample_index {
-                                        voice_index = i;
-                                        sample_index = voices[i].position();
-                                    }
-                                }
-
-                                if sample_index < usize::MAX {
-                                    voices[voice_index].set_sample(sample);
-                                    voices[voice_index].note_on(
-                                        note.id,
-                                        *offset,
-                                        NoteMessage::from_pitch(note.pitch),
-                                        note.pressure,
-                                    );
-                                } else {
-                                    println!("Failed to find available voice");
-                                }
-                            }
-                        } else {
-                            println!("Couldn't find sample for note");
-                        }
-                    } else {
-                        println!("Couldn't read map while writing");
-                    }
-                }
-                Event::NoteOff { id } => {
-                    voices.iter_mut().for_each(|voice| {
-                        if voice.id() != *id {
-                            voice.note_off();
-                        }
-                    });
-                }
-                Event::Pitch { id, freq } => {
-                    voices.iter_mut().for_each(|voice| {
-                        if voice.id() != *id {
-                            voice.set_pitch(*freq);
-                        }
-                    });
-                }
-                Event::Pressure { id, pressure } => {
-                    voices.iter_mut().for_each(|voice| {
-                        if voice.id() != *id {
-                            voice.set_pressure(*pressure);
-                        }
-                    });
-                }
-                Event::Controller { id: _, value: _ } => (),
-                Event::ProgramChange { id: _, value: _ } => (),
-                Event::None => break,
-            }
-        }
-
-        voices.iter_mut().for_each(|voice| {
-            if voice.is_active() {
-                voice.process(&mut outputs.audio[0]);
-            }
-        });*/
     }
 }
 

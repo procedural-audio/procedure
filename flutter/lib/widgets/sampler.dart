@@ -114,7 +114,7 @@ const double COLUMNS_HEIGHT = 120;
 const double COLUMNS_WIDTH = 600;
 const double COLUMN_WIDTH = 265;
 
-const double KEYBOARD_HEIGHT = 40;
+const double KEYBOARD_HEIGHT = 50;
 const double BAND_HEIGHT = 20;
 
 const double KEY_WIDTH = 24;
@@ -132,12 +132,9 @@ class _SampleAreaItem extends State<SampleAreaItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        widget.text,
-        style: const TextStyle(color: Colors.white, fontSize: 12),
-      ),
-    );
+        alignment: Alignment.centerLeft,
+        child: Text(widget.text,
+            style: const TextStyle(color: Colors.white, fontSize: 12)));
   }
 }
 
@@ -147,30 +144,23 @@ class SampleEditorWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Row(children: [
-        Container(
-          width: 200,
-          color: Colors.grey,
-        ),
-        Expanded(
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  color: const Color.fromRGBO(30, 30, 30, 1.0),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  color: const Color.fromRGBO(20, 20, 20, 1.0),
-                ),
-              ),
-            ],
+        child: Row(children: [
+          Container(
+            width: 200,
+            color: Colors.grey,
           ),
-        )
-      ]),
-      decoration: const BoxDecoration(color: Color.fromRGBO(20, 20, 20, 1.0)),
-    );
+          Expanded(
+              child: Column(children: [
+            Expanded(
+                child: Container(color: const Color.fromRGBO(30, 30, 30, 1.0))),
+            Expanded(
+                child: Container(
+              color: const Color.fromRGBO(20, 20, 20, 1.0),
+            ))
+          ]))
+        ]),
+        decoration:
+            const BoxDecoration(color: Color.fromRGBO(20, 20, 20, 1.0)));
   }
 }
 
@@ -263,248 +253,120 @@ class SampleMapperWidget extends ModuleWidget {
             }
           }
         },
-        child: Stack(children: [
-          Column(children: [
-            Expanded(
-                child: SingleChildScrollView(
-                    primary: false,
-                    scrollDirection: Axis.horizontal,
-                    controller: controller,
-                    child: ValueListenableBuilder<double>(
-                        valueListenable: zoom,
-                        builder: (context, value, widget) {
-                          return Transform.scale(
-                              scaleX: value,
-                              child: Container(
-                                  color: Colors.black,
-                                  child: Column(
-                                    children: [
-                                      Expanded(
-                                          child: Container(
-                                        width: MAP_WIDTH,
-                                        height:
-                                            MAP_HEIGHT - 50 - KEYBOARD_HEIGHT,
-                                        child: CustomPaint(
-                                            painter: SamplerGrid(),
-                                            child: Stack(
-                                                children: <Widget>[
-                                                      GestureDetector(
-                                                        onTapDown: (details) {
-                                                          selected.value = -1;
-                                                          ffiSampleMapperAddRegion(
-                                                              widgetRaw.pointer,
-                                                              details.localPosition
-                                                                      .dx ~/
-                                                                  (KEY_WIDTH /
-                                                                      2),
-                                                              details.localPosition
-                                                                      .dx ~/
-                                                                  (KEY_WIDTH /
-                                                                      2),
-                                                              0.0,
-                                                              1.0);
-                                                          refreshMap();
-                                                          setState(() {});
-                                                        },
-                                                      )
-                                                    ] +
-                                                    sampleMaps)),
-                                        color: const Color.fromRGBO(
-                                            20, 20, 20, 1.0),
-                                      )),
-                                      SizedBox(
-                                        height: KEYBOARD_HEIGHT,
-                                        width: MAP_WIDTH,
-                                        child: Keyboard(),
-                                      ),
-                                    ],
-                                  )));
-                        }))),
-            CustomScrollbar(
-              controller: controller,
-              zoom: zoom,
-            ),
-          ]),
-          ValueListenableBuilder(
-              valueListenable: selected,
-              builder: (context, value, w) {
-                return AnimatedPositioned(
-                    curve: Curves.fastLinearToSlowEaseIn,
-                    top: value == -1 ? -30 : 0,
-                    left: 0,
-                    right: 0,
-                    duration: const Duration(milliseconds: 800),
-                    child: Container(
-                      height: BAND_HEIGHT,
-                      color: const Color.fromRGBO(30, 30, 30, 1.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
-                            child: const Text(
-                              "Range: D#3 - G3",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 12),
-                            ),
+        child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(5)),
+            child: Stack(children: [
+              Scrollbar(
+                  thickness: 8,
+                  thumbVisibility: true,
+                  controller: controller,
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      controller: controller,
+                      child: Container(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                          color: const Color.fromRGBO(20, 20, 20, 1.0),
+                          child: Column(children: [
+                            Expanded(
+                                child: Container(
+                              width: MAP_WIDTH,
+                              height: MAP_HEIGHT - 50 - KEYBOARD_HEIGHT,
+                              child: CustomPaint(
+                                  painter: SamplerGrid(),
+                                  child: Stack(
+                                      children: <Widget>[
+                                            GestureDetector(
+                                                onTapDown: (details) {
+                                              selected.value = -1;
+                                              ffiSampleMapperAddRegion(
+                                                  widgetRaw.pointer,
+                                                  details.localPosition.dx ~/
+                                                      (KEY_WIDTH / 2),
+                                                  details.localPosition.dx ~/
+                                                      (KEY_WIDTH / 2),
+                                                  0.0,
+                                                  1.0);
+                                              refreshMap();
+                                              setState(() {});
+                                            })
+                                          ] +
+                                          sampleMaps)),
+                              color: const Color.fromRGBO(20, 20, 20, 1.0),
+                            )),
+                            SizedBox(
+                              height: KEYBOARD_HEIGHT,
+                              width: MAP_WIDTH,
+                              child: Keyboard(),
+                            )
+                          ])))),
+              SampleMapTopBar(selected),
+              ValueListenableBuilder<int>(
+                  valueListenable: selected,
+                  builder: (context, value, w) {
+                    refreshSamples();
+
+                    const double width = 180;
+                    return AnimatedPositioned(
+                        curve: Curves.fastLinearToSlowEaseIn,
+                        duration: const Duration(milliseconds: 800),
+                        top: 0,
+                        bottom: 0,
+                        right: value == -1 ? -width : 0,
+                        child: Container(
+                          width: width,
+                          height: 200,
+                          decoration: const BoxDecoration(
+                            color: Color.fromRGBO(30, 30, 30, 1.0),
                           ),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
-                            child: const Text(
-                              "Velocity: 1 - 127",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
-                            child: const Text(
-                              "Velocity: 1 - 127",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 12),
-                            ),
-                          ),
-                        ],
+                          child: Column(children: samples),
+                        ));
+                  })
+            ])));
+  }
+}
+
+class SampleMapTopBar extends StatelessWidget {
+  SampleMapTopBar(this.selected);
+
+  ValueNotifier<int> selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: selected,
+        builder: (context, value, w) {
+          return AnimatedPositioned(
+              curve: Curves.fastLinearToSlowEaseIn,
+              top: value == -1 ? -30 : 0,
+              left: 0,
+              right: 0,
+              duration: const Duration(milliseconds: 800),
+              child: Container(
+                  height: BAND_HEIGHT,
+                  color: const Color.fromRGBO(30, 30, 30, 1.0),
+                  child: Row(children: [
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
+                      child: const Text(
+                        "Range: D#3 - G3",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
-                    ));
-              }),
-          ValueListenableBuilder<int>(
-              valueListenable: selected,
-              builder: (context, value, w) {
-                refreshSamples();
-
-                const double width = 180;
-                return AnimatedPositioned(
-                  curve: Curves.fastLinearToSlowEaseIn,
-                  duration: const Duration(milliseconds: 800),
-                  top: 0,
-                  bottom: 0,
-                  right: value == -1 ? -width : 0,
-                  child: Container(
-                    width: width,
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      color: Color.fromRGBO(30, 30, 30, 1.0),
                     ),
-                    child: Column(children: samples),
-                  ),
-                );
-              }),
-          ValueListenableBuilder<List<int>>(
-              valueListenable: selectedSamples,
-              builder: (context, valueList, w) {
-                const double height = 295;
-
-                List<List<double>> buffersLeft = [];
-                List<List<double>> buffersRight = [];
-
-                double time = 0.0;
-
-                parameters.value.clear();
-
-                if (valueList.isNotEmpty) {
-                  for (var value in valueList) {
-                    var parameter = SampleParameters();
-
-                    // Set values here
-
-                    parameters.value.add(parameter);
-
-                    List<double> bufferLeft = [];
-                    List<double> bufferRight = [];
-
-                    FFIBuffer bufferRawLeft =
-                        ffiSampleMapperGetRegionSampleBufferLeft(
-                            widgetRaw.pointer, selected.value, value);
-                    FFIBuffer bufferRawRight =
-                        ffiSampleMapperGetRegionSampleBufferRight(
-                            widgetRaw.pointer, selected.value, value);
-
-                    time = ffiSampleMapperGetRegionSampleBufferTimeMs(
-                        widgetRaw.pointer, selected.value, value);
-
-                    var listLeft =
-                        bufferRawLeft.pointer.asTypedList(bufferRawLeft.length);
-                    for (double value in listLeft) {
-                      bufferLeft.add(value);
-                    }
-
-                    var listRight = bufferRawRight.pointer
-                        .asTypedList(bufferRawLeft.length);
-                    for (double value in listRight) {
-                      bufferRight.add(value);
-                    }
-
-                    calloc.free(bufferRawLeft.pointer);
-                    calloc.free(bufferRawRight.pointer);
-
-                    buffersLeft.add(bufferLeft);
-                    buffersRight.add(bufferRight);
-                  }
-                }
-
-                return AnimatedPositioned(
-                  curve: Curves.fastLinearToSlowEaseIn,
-                  duration: const Duration(milliseconds: 800),
-                  bottom: valueList.isEmpty ? -height : 0,
-                  left: 0,
-                  right: 180,
-                  child: Container(
-                    height: height,
-                    decoration: const BoxDecoration(
-                      color: Color.fromRGBO(30, 30, 30, 1.0),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
+                      child: const Text(
+                        "Velocity: 1 - 127",
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: SampleDisplay(
-                            buffersLeft: buffersLeft,
-                            buffersRight: buffersRight,
-                            parameters: parameters,
-                          ),
-                        ),
-                        Expanded(
-                            child: Container(
-                          padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                          color: const Color.fromRGBO(30, 30, 30, 1.0),
-                          child: Column(
-                            children: [
-                              Row(children: [
-                                SampleEditorParameter("Start (ms)"),
-                                SampleEditorParameter("End (ms)"),
-                                SampleEditorParameter("Transpose"),
-                                SampleEditorParameter("Gain"),
-                              ]),
-                              Container(height: 10),
-                              Row(children: [
-                                SampleEditorCheckbox(
-                                  text: "One-shot",
-                                  checked: oneshot,
-                                ),
-                                SampleEditorParameter("Attack (ms)"),
-                                SampleEditorParameter("Decay (ms)"),
-                                //SampleEditorParameter("Sustain (ms)"),
-                                SampleEditorParameter("Release (ms)"),
-                              ]),
-                              Container(height: 10),
-                              Row(children: [
-                                SampleEditorCheckbox(
-                                  text: "Loop",
-                                  checked: loop,
-                                ),
-                                SampleEditorParameter("Loop Start (ms)"),
-                                SampleEditorParameter("Loop End (ms)"),
-                                SampleEditorParameter("Crossfade (ms)"),
-                              ]),
-                            ],
-                          ),
-                        )),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-        ]));
+                    Container(
+                        padding: const EdgeInsets.fromLTRB(5, 0, 10, 0),
+                        child: const Text(
+                          "Velocity: 1 - 127",
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ))
+                  ])));
+        });
   }
 }
 

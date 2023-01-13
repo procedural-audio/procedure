@@ -93,12 +93,12 @@ impl Module for Gate {
                                         color: Color(0xffb4b4b4),
                                     },
                                     Painter {
-                                        painter: Box::new(|canvas| {
+                                        paint: | canvas | {
                                             let mut paint = Paint::new();
                                             paint.set_color(Color::BLUE);
 
                                             canvas.draw_rect((0.0, 50.0), (150.0, 3.0), paint);
-                                        }),
+                                        },
                                     },
                                 ),
                             },

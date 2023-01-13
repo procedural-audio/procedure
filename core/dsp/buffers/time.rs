@@ -1,50 +1,43 @@
-use std::ops::Range;
-
 #[derive(Copy, Clone)]
 pub struct TimeMessage {
-    start: Time,
-    end: Time,
-    rate: f64,
-    cycle: Option<TimeCycle>,
+    pub start: f64,
+    pub length: f64,
+    pub rate: f64,
+    pub cycle: Option<TimeCycle>,
 }
 
 #[derive(Copy, Clone)]
 pub struct TimeCycle {
-    start: Time,
-    end: Time
+    start: f64,
+    end: f64
 }
 
 impl TimeMessage {
-    pub fn from(start: Time, end: Time) -> Self {
+    pub fn from(start: f64, end: f64) -> Self {
         Self {
             start,
-            end,
+            length: end - start,
             rate: 1.0,
             cycle: None
         }
     }
 
-    pub fn start(&self) -> Time {
+    pub fn start(&self) -> f64 {
         self.start
     }
 
-    pub fn end(&self) -> Time {
-        self.end
+    pub fn end(&self) -> f64 {
+        self.start + self.length
     }
 
-    pub fn length(&self) -> Time {
-        match &self.cycle {
-            Some(_cycle) => {
-                todo!()
-            },
-            None => self.end - self.start
-        }
+    pub fn length(&self) -> f64 {
+        self.length
     }
 
-    pub fn shift(&self, beats: Time) -> TimeMessage {
+    pub fn shift(&self, beats: f64) -> TimeMessage {
         TimeMessage {
             start: self.start + beats,
-            end: self.end + beats,
+            length: self.length,
             rate: self.rate,
             cycle: match &self.cycle {
                 Some(cycle) => Some(
@@ -58,14 +51,14 @@ impl TimeMessage {
         }
     }
 
-    pub fn contains(&self, beat: Time) -> bool {
+    pub fn contains(&self, beat: f64) -> bool {
         match self.cycle {
             Some(cycle) => {
-                if self.length().0 >= 0.0 {
+                if self.length() >= 0.0 {
                     if (self.start <= beat
                         && self.start + self.length() >= beat
-                        && self.length().0 != 0.0)
-                        || (0.0 >= beat.0 && (cycle.end.0 - self.start.0) >= beat.0 && self.length().0 != 0.0)
+                        && self.length() != 0.0)
+                        || (0.0 >= beat && (cycle.end - self.start) >= beat && self.length() != 0.0)
                     {
                         true
                     } else {
@@ -74,8 +67,8 @@ impl TimeMessage {
                 } else {
                     if (self.start >= beat
                         && self.start + self.length() <= beat
-                        && self.length().0 != 0.0)
-                        || (0.0 >= beat.0 && (cycle.end.0 - self.start.0) <= beat.0 && self.length().0 != 0.0)
+                        && self.length() != 0.0)
+                        || (0.0 >= beat && (cycle.end - self.start) <= beat && self.length() != 0.0)
                     {
                         true
                     } else {
@@ -84,15 +77,15 @@ impl TimeMessage {
                 }
             }
             None => {
-                if self.length().0 >= 0.0 {
-                    if self.start <= beat && self.start + self.length() >= beat && self.length().0 != 0.0
+                if self.length() >= 0.0 {
+                    if self.start <= beat && self.start + self.length() >= beat && self.length() != 0.0
                     {
                         true
                     } else {
                         false
                     }
                 } else {
-                    if self.start >= beat && self.start + self.length() <= beat && self.length().0 != 0.0
+                    if self.start >= beat && self.start + self.length() <= beat && self.length() != 0.0
                     {
                         true
                     } else {
@@ -110,14 +103,14 @@ impl TimeMessage {
     pub fn rate(&self, rate: f64) -> TimeMessage {
         match self.cycle {
             Some(cycle) => TimeMessage {
-                start: Time((self.start.0 * rate) % cycle.start.0),
-                end: Time(self.start().0 + self.length().0 * rate),
+                start: (self.start * rate) % cycle.start,
+                length: self.length * rate,
                 rate: self.rate * rate,
                 cycle: Some(cycle),
             },
             None => TimeMessage {
-                start: Time(self.start.0 * rate),
-                end: Time(self.start.0 + self.length().0 * rate),
+                start: self.start * rate,
+                length: self.length * rate,
                 rate: self.rate * rate,
                 cycle: None,
             },
@@ -127,10 +120,10 @@ impl TimeMessage {
     pub fn cycle(&self, beats: f64) -> TimeMessage {
         match self.cycle {
             Some(cycle) => {
-                if beats < cycle.end.0 {
+                if beats < cycle.end {
                     TimeMessage {
-                        start: Time(self.start.0 % beats),
-                        end: Time(self.end.0 % beats),
+                        start: self.start % beats,
+                        length: self.length,
                         rate: self.rate,
                         cycle: Some(cycle),
                     }
@@ -139,12 +132,12 @@ impl TimeMessage {
                 }
             }
             None => TimeMessage {
-                start: Time(self.start.0 % beats),
-                end: Time(self.end.0 % beats),
+                start: self.start % beats,
+                length: self.length,
                 rate: self.rate,
                 cycle: Some(TimeCycle {
-                    start: Time(0.0),
-                    end: Time(beats)
+                    start: 0.0,
+                    end: beats
                 })
             },
         }
@@ -153,222 +146,19 @@ impl TimeMessage {
     pub fn on_each<F: FnMut(usize)>(&self, rate: f64, mut f: F) {
         let end = self.start + self.length();
 
-        if self.length().0 > 0.0 {
+        if self.length() > 0.0 {
             match &self.cycle {
                 Some(cycle) => {
                     if self.start + self.length() <= cycle.end {
-                        if self.start % Time(rate) > end % Time(rate) {
-                            (f)(((end.0 - (end.0 % rate)) / rate).round() as usize - 1);
-                        }
-                    } else {
-                        if self.start.0 % rate > cycle.end.0 % rate {
-                            (f)(((cycle.end.0 - (cycle.end.0 % rate)) / rate).round() as usize - 1);
-                        }
-
-                        if 0.0 % rate > (self.start.0 + self.length().0 - cycle.end.0) % rate {
-                            (f)(0)
-                        }
-                    }
-                }
-                None => {
-                    if self.start.0 % rate > end.0 % rate {
-                        (f)(((end.0 - (end.0 % rate)) / rate).round() as usize - 1);
-                    }
-                }
-            }
-        } else if self.length().0 < 0.0 {
-            if self.start.0 % rate < end.0 % rate {
-                (f)(((self.start.0 - (self.start.0 % rate)) / rate).round() as usize - 1);
-            }
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Time(pub f64);
-
-impl Time {
-    pub fn beat(&self) -> f64 {
-        self.0
-    }
-}
-
-impl std::ops::Add for Time {
-    type Output = Time;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Time(self.0 + rhs.0)
-    }
-}
-
-impl std::ops::Sub for Time {
-    type Output = Time;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Time(self.0 - rhs.0)
-    }
-}
-
-impl std::ops::Div for Time {
-    type Output = Time;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Time(self.0 / rhs.0)
-    }
-}
-
-impl std::ops::Rem for Time {
-    type Output = Time;
-
-    fn rem(self, rhs: Self) -> Self::Output {
-        Time(self.0 % rhs.0)
-    }
-}
-
-impl PartialEq for Time {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl PartialOrd for Time {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(&other.0)
-    }
-}
-
-/*#[derive(Copy, Clone)]
-pub struct TimeRange {
-    pub start: f64,
-    pub length: f64,
-    cycle: Option<f64>,
-}
-
-impl TimeRange {
-    pub fn from(start: f64, end: f64) -> Self {
-        Self {
-            start, 
-            length: end - start,
-            cycle: None,
-        }
-    }
-
-    pub fn start(&self) -> f64 {
-        self.start
-    }
-
-    pub fn length(&self) -> f64 {
-        self.length
-    }
-
-    pub fn end(&self) -> f64 {
-        match self.cycle {
-            Some(cycle) => (self.start + self.length) % cycle,
-            None => self.start + self.length,
-        }
-    }
-
-    pub fn contains(&self, beat: f64) -> bool {
-        match self.cycle {
-            Some(cycle) => {
-                if self.length >= 0.0 {
-                    if (self.start <= beat
-                        && self.start + self.length >= beat
-                        && self.length != 0.0)
-                        || (0.0 >= beat && (cycle - self.start) >= beat && self.length != 0.0)
-                    {
-                        true
-                    } else {
-                        false
-                    }
-                } else {
-                    if (self.start >= beat
-                        && self.start + self.length <= beat
-                        && self.length != 0.0)
-                        || (0.0 >= beat && (cycle - self.start) <= beat && self.length != 0.0)
-                    {
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
-            None => {
-                if self.length >= 0.0 {
-                    if self.start <= beat && self.start + self.length >= beat && self.length != 0.0
-                    {
-                        true
-                    } else {
-                        false
-                    }
-                } else {
-                    if self.start >= beat && self.start + self.length <= beat && self.length != 0.0
-                    {
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
-        }
-    }
-
-    pub fn rate(&self, rate: f64) -> TimeRange {
-        match self.cycle {
-            Some(cycle) => TimeRange {
-                start: (self.start * rate) % cycle,
-                length: self.length * rate,
-                cycle: Some(cycle),
-            },
-            None => TimeRange {
-                start: self.start * rate,
-                length: self.length * rate,
-                cycle: None,
-            },
-        }
-    }
-
-    pub fn shift(&self, beats: f64) -> TimeRange {
-        TimeRange::from(self.start + beats, self.start + beats + self.length)
-    }
-
-    pub fn cycle(&self, beats: f64) -> TimeRange {
-        match self.cycle {
-            Some(cycle) => {
-                if beats < cycle {
-                    TimeRange {
-                        start: self.start % beats,
-                        length: self.length,
-                        cycle: Some(beats),
-                    }
-                } else {
-                    *self
-                }
-            }
-            None => TimeRange {
-                start: self.start % beats,
-                length: self.length,
-                cycle: Some(beats),
-            },
-        }
-    }
-
-    pub fn on_each<F: FnMut(usize)>(&self, rate: f64, mut f: F) {
-        let end = self.start + self.length;
-
-        if self.length > 0.0 {
-            match self.cycle {
-                Some(cycle) => {
-                    if self.start + self.length <= cycle {
                         if self.start % rate > end % rate {
                             (f)(((end - (end % rate)) / rate).round() as usize - 1);
                         }
                     } else {
-                        if self.start % rate > cycle % rate {
-                            (f)(((cycle - (cycle % rate)) / rate).round() as usize - 1);
+                        if self.start % rate > cycle.end % rate {
+                            (f)(((cycle.end - (cycle.end % rate)) / rate).round() as usize - 1);
                         }
 
-                        if 0.0 % rate > (self.start + self.length - cycle) % rate {
+                        if 0.0 % rate > (self.start + self.length() - cycle.end) % rate {
                             (f)(0)
                         }
                     }
@@ -379,36 +169,24 @@ impl TimeRange {
                     }
                 }
             }
-        } else if self.length < 0.0 {
+        } else if self.length() < 0.0 {
             if self.start % rate < end % rate {
                 (f)(((self.start - (self.start % rate)) / rate).round() as usize - 1);
             }
         }
     }
-}
 
-impl std::ops::Add for TimeRange {
-    type Output = TimeRange;
-
-    fn add(self, _rhs: Self) -> Self::Output {
-        panic!("Time add not implemented");
+    pub fn start_sample(&self, bpm: f64, sample_rate: u32) -> usize {
+        let beat = self.start;
+        let secs = beat * (1.0 / (bpm / 60.0));
+        let sample = secs * sample_rate as f64;
+        return f64::floor(sample) as usize;
     }
-}*/
 
-/*
-
-Time only affects phase of note and control modules
-Control values should be a function of time
-
-Modules
- - Global Time
- - TimeRange (pass it a BPM)
- - Rate (make time move twice as fast, etc)
- - Reverse
- - Random (can randomize measure, beat, 8th, 16th, etc)
- - On TimeRange (output 1 if at certain time)
-
-Graph level variables
- - Useful for file IO
-
-*/
+    pub fn end_sample(&self, bpm: f64, sample_rate: u32) -> usize {
+        let beat = self.start + self.length;
+        let secs = beat * (1.0 / (bpm / 60.0));
+        let sample = secs * sample_rate as f64;
+        return f64::floor(sample) as usize;
+    }
+}

@@ -13,7 +13,7 @@ pub use wavetable::*;
 
 use crate::buffers::Buffer;
 
-use crate::SampleTrait;
+use crate::Frame;
 
 /*
 
@@ -183,16 +183,16 @@ impl<T: Generator> Generator for Player<T> {
     }
 }
 
-pub struct Playhead<T: SampleTrait> {
+pub struct Playhead<T: Frame> {
     index: usize,
     src: Buffer<T>
 } // impl this for all generators also?
 
-impl<T: SampleTrait> Playhead<T> {
+impl<T: Frame> Playhead<T> {
     // Add transport methods here???    
 }
 
-impl<T: SampleTrait> Generator for Playhead<T> {
+impl<T: Frame> Generator for Playhead<T> {
     type Item = T;
 
     fn reset(&mut self) {

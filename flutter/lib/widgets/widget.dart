@@ -38,6 +38,7 @@ import 'audioPlugin.dart';
 import 'buttonGrid.dart';
 import 'searchableDropdown.dart';
 import 'luaEditor.dart';
+import 'painter.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = api.ffiWidgetGetName(widgetRaw);
@@ -126,6 +127,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return SearchableDropdownWidget(host, moduleRaw, widgetRaw);
   } else if (name == "AudioPlugin") {
     return AudioPluginWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "Painter") {
+    return PainterWidget(host, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
     //return EmptyWidget(moduleRaw, widgetRaw);
     return null;

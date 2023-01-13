@@ -281,7 +281,8 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_input_bus.add_channel(Channel::new(Box::new(TimeMessage::from(Time(0.0), Time(0.0))), connected));
+                    time_input_bus.add_channel(Channel::new(Box::new(TimeMessage::from(0.0, 0.0)), connected));
+
                 }
 
                 let mut time_output_bus = Box::new(Bus::new());
@@ -294,7 +295,7 @@ impl GraphProcessor {
                         }
                     });
 
-                    time_output_bus.add_channel(Channel::new(Box::new(TimeMessage::from(Time(0.0), Time(0.0))), connected));
+                    time_output_bus.add_channel(Channel::new(Box::new(TimeMessage::from(0.0, 0.0)), connected));
                 }
 
                 unsafe {

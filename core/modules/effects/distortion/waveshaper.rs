@@ -66,7 +66,7 @@ impl Module for Waveshaper {
                     position: (40, 40),
                     size: (100, 60),
                     child: Painter {
-                        painter: Box::new(|_canvas| {
+                        paint: | _canvas | {
                             let mut paint = Paint::new();
 
                             paint.set_color(Color::BLUE);
@@ -90,7 +90,7 @@ impl Module for Waveshaper {
 
                                 canvas.draw_points(&points, paint);
                             }*/
-                        }),
+                        },
                     },
                 },
                 Transform {

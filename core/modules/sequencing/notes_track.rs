@@ -35,7 +35,7 @@ impl Module for NotesTrack {
             events: vec![
                 NoteEvent {
                     id: id_1,
-                    time: Time(4.0),
+                    time: 4.0,
                     note: Event::NoteOn {
                         pitch: 220.0,
                         pressure: 0.3
@@ -43,12 +43,12 @@ impl Module for NotesTrack {
                 },
                 NoteEvent {
                     id: id_1,
-                    time: Time(8.0),
+                    time: 8.0,
                     note: Event::NoteOff
                 },
                 NoteEvent {
                     id: id_2,
-                    time: Time(6.0),
+                    time: 6.0,
                     note: Event::NoteOn {
                         pitch: 220.0 * 1.5,
                         pressure: 0.7
@@ -56,7 +56,7 @@ impl Module for NotesTrack {
                 },
                 NoteEvent {
                     id: id_2,
-                    time: Time(10.0),
+                    time: 10.0,
                     note: Event::NoteOff
                 }
             ],
@@ -89,7 +89,7 @@ impl Module for NotesTrack {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if *voice == 0 {
             let time = inputs.time[0];
-            self.beat = time.cycle(self.length as f64).start().0;
+            self.beat = time.cycle(self.length as f64).start();
 
             for event in &self.events {
                 if time.cycle(self.length as f64).contains(event.time) {
@@ -151,7 +151,7 @@ pub unsafe extern "C" fn ffi_notes_track_index_get_type(w: &mut _NotesTrack, ind
 pub unsafe extern "C" fn ffi_notes_track_id_get_time(w: &mut _NotesTrack, id: u64) -> f64 {
     for note in w.notes.iter() {
         if note.id.num() == id {
-            return note.time.beat()
+            return note.time
         }
     }
 
@@ -164,7 +164,7 @@ pub unsafe extern "C" fn ffi_notes_track_id_get_on_time(w: &mut _NotesTrack, id:
         if note.id.num() == id {
             match note.note {
                 Event::NoteOn { pitch, pressure } => {
-                    return note.time.beat();
+                    return note.time;
                 },
                 _ => ()
             }
@@ -180,7 +180,7 @@ pub unsafe extern "C" fn ffi_notes_track_id_get_off_time(w: &mut _NotesTrack, id
         if note.id.num() == id {
             match note.note {
                 Event::NoteOff => {
-                    return note.time.beat();
+                    return note.time;
                 },
                 _ => ()
             }
@@ -198,7 +198,7 @@ pub unsafe extern "C" fn ffi_notes_track_id_set_time(
 ) {
     for note in w.notes.iter_mut() {
         if note.id.num() == id {
-            note.time = Time(time);
+            note.time = time;
         }
     }
 }
@@ -213,7 +213,7 @@ pub unsafe extern "C" fn ffi_notes_track_id_set_on_time(
         if note.id.num() == id {
             match note.note {
                 Event::NoteOn { pitch, pressure }=> {
-                    note.time = Time(time);
+                    note.time = time;
                     return;
                 }
                 _ => ()
@@ -232,7 +232,7 @@ pub unsafe extern "C" fn ffi_notes_track_id_set_off_time(
         if note.id.num() == id {
             match note.note {
                 Event::NoteOff => {
-                    note.time = Time(time);
+                    note.time = time;
                     return;
                 }
                 _ => ()
@@ -283,7 +283,7 @@ pub unsafe extern "C" fn ffi_notes_track_add_note(
     w.notes.push(
         NoteEvent {
             id,
-            time: Time(start),
+            time: start,
             note: Event::NoteOn {
                 pitch: num_to_pitch(num),
                 pressure: 0.5,
@@ -294,7 +294,7 @@ pub unsafe extern "C" fn ffi_notes_track_add_note(
     w.notes.push(
         NoteEvent {
             id,
-            time: Time(start + length),
+            time: start + length,
             note: Event::NoteOff
         }
     );

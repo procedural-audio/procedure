@@ -49,7 +49,7 @@ impl Module for Bend {
                     position: (40, 40),
                     size: (100, 60),
                     child: Painter {
-                        painter: Box::new(|canvas| {
+                        paint: | canvas | {
                             let mut paint = Paint::new();
 
                             paint.set_color(Color::RED);
@@ -65,8 +65,8 @@ impl Module for Bend {
 
                                 canvas.draw_points(&POINTS, paint);
                             }
-                        }),
-                    },
+                        }
+                    }
                 },
                 Transform {
                     position: (40 + 70 + 40, 40),

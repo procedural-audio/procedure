@@ -657,6 +657,13 @@ class _RightClickView extends State<RightClickView> {
             Colors.deepPurpleAccent,
             30,
             widget.addPosition));
+        subCategory.add(RightClickElement(
+            widget.host,
+            "Accumulate",
+            MaterialCommunityIcons.minus,
+            Colors.deepPurpleAccent,
+            30,
+            widget.addPosition));
         subCategory.add(RightClickElement(widget.host, "Loop", Icons.loop,
             Colors.grey, 30, widget.addPosition));
         subCategory.add(RightClickElement(widget.host, "Seek/Shift/Offset",

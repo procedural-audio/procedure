@@ -1,24 +1,20 @@
-use dasp_signal::Signal;
-
 use crate::buffers::*;
 
 use std::sync::Arc;
-use std::time::Duration;
 
 pub use crate::cache::FileLoad;
-use crate::Player;
 use crate::Generator;
 use crate::Pitched;
 use std::ops::{Deref, DerefMut};
 
 #[derive(Clone)]
-pub struct SampleFile<T: SampleTrait> {
+pub struct SampleFile<T: Frame> {
     buffer: Arc<Buffer<T>>,
     path: String,
     pitch: f32,
 }
 
-impl<T: SampleTrait> SampleFile<T> {
+impl<T: Frame> SampleFile<T> {
     pub fn from(buffer: Arc<Buffer<T>>, pitch: f32, sample_rate: u32, path: String) -> Self {
         return Self {
             buffer,
@@ -40,7 +36,7 @@ impl<T: SampleTrait> SampleFile<T> {
     }
 }
 
-/*impl<T: SampleTrait> Playable for SampleFile<T> {
+/*impl<T: Frame> Playable for SampleFile<T> {
     type Player = SamplePlayer<T>;
 
     fn player(self) -> Self::Player {
@@ -48,7 +44,7 @@ impl<T: SampleTrait> SampleFile<T> {
     }
 }*/
 
-/*impl<T: SampleTrait> Player for SamplePlayer<T> {
+/*impl<T: Frame> Player for SamplePlayer<T> {
     fn play(&mut self) {
         self.playing = true;
     }
@@ -63,7 +59,7 @@ impl<T: SampleTrait> SampleFile<T> {
     }
 }*/
 
-/*impl<T: SampleTrait> Generator for SamplePlayer<T> {
+/*impl<T: Frame> Generator for SamplePlayer<T> {
     type Item = T;
 
     fn reset(&mut self) {
@@ -148,12 +144,12 @@ pub trait Interpolator {
     fn interpolate(&self, x: f32) -> Self::Item;
 }
 
-pub struct Linear<T: SampleTrait> {
+pub struct Linear<T: Frame> {
     last: T,
     prev: T
 }
 
-impl<T: SampleTrait> Interpolator for Linear<T> {
+impl<T: Frame> Interpolator for Linear<T> {
     type Item = T;
 
     fn new() -> Self {
@@ -217,7 +213,7 @@ impl<G: Generator<Item = Stereo2>> Generator for Pitcher<G> {
     }
 }*/
 
-pub struct SamplePlayer<T: SampleTrait> {
+pub struct SamplePlayer<T: Frame> {
     sample: Option<SampleFile<T>>,
     playing: bool,
     index: usize,
@@ -225,7 +221,7 @@ pub struct SamplePlayer<T: SampleTrait> {
     sample_rate: u32
 }
 
-impl<T: SampleTrait> SamplePlayer<T> {
+impl<T: Frame> SamplePlayer<T> {
     pub fn new() -> Self {
         Self {
             sample: None,
@@ -241,13 +237,37 @@ impl<T: SampleTrait> SamplePlayer<T> {
         self.sample = Some(sample);
     }
 
+    pub fn position(&self) -> usize {
+        self.index
+    }
+
+    pub fn set_position(&mut self, position: usize) {
+        self.index = position;
+    }
+
+    pub fn progress(&self) -> f32 {
+        let length = self.len() as f32;
+        if length > 0.0 {
+            self.index as f32 / length
+        } else {
+            0.0
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match &self.sample {
+            Some(sample) => sample.len(),
+            None => 0
+        }
+    }
+
+    pub fn playing(&self) -> bool {
+        self.playing
+    }
+
     /*pub fn set_time(&mut self, time: TimeRange) {
         time.start
     }*/
-
-    pub fn set_playback_sample(&mut self, index: usize) {
-        self.index = index;
-    }
 
     pub fn play(&mut self) {
         self.playing = true;
@@ -263,7 +283,7 @@ impl<T: SampleTrait> SamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> Pitched for SamplePlayer<T> {
+impl<T: Frame> Pitched for SamplePlayer<T> {
     fn get_pitch(&self) -> f32 {
         self.pitch
     }
@@ -273,7 +293,7 @@ impl<T: SampleTrait> Pitched for SamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> Generator for SamplePlayer<T> {
+impl<T: Frame> Generator for SamplePlayer<T> {
     type Item = T;
 
     fn reset(&mut self) {}
@@ -311,12 +331,12 @@ impl<T: SampleTrait> Generator for SamplePlayer<T> {
     }
 }
 
-pub struct PitchedSamplePlayer<S: SampleTrait> {
-    player: Converter<SamplePlayer<S>, Linear<S>>,
+pub struct PitchedSamplePlayer<S: Frame> {
+    pub player: Converter<SamplePlayer<S>, Linear<S>>,
     pitch: f32
 }
 
-impl<T: SampleTrait> PitchedSamplePlayer<T> {
+impl<T: Frame> PitchedSamplePlayer<T> {
     pub fn new() -> Self {
         let player = Converter::from(SamplePlayer::new());
         
@@ -331,7 +351,7 @@ impl<T: SampleTrait> PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> Generator for PitchedSamplePlayer<T> {
+impl<T: Frame> Generator for PitchedSamplePlayer<T> {
     type Item = T;
 
     fn reset(&mut self) {}
@@ -349,7 +369,7 @@ impl<T: SampleTrait> Generator for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> Pitched for PitchedSamplePlayer<T> {
+impl<T: Frame> Pitched for PitchedSamplePlayer<T> {
     fn get_pitch(&self) -> f32 {
         self.pitch
     }
@@ -360,7 +380,7 @@ impl<T: SampleTrait> Pitched for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> Deref for PitchedSamplePlayer<T> {
+impl<T: Frame> Deref for PitchedSamplePlayer<T> {
     type Target = SamplePlayer<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -368,14 +388,8 @@ impl<T: SampleTrait> Deref for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: SampleTrait> DerefMut for PitchedSamplePlayer<T> {
+impl<T: Frame> DerefMut for PitchedSamplePlayer<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.player.deref_mut()
     }
-}
-
-// TODO: Finish this. Use in pitchedsampleplayer
-pub struct Pitcher<G: Generator> {
-    src: G,
-    pitch: f32
 }
