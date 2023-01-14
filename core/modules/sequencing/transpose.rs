@@ -61,26 +61,31 @@ impl Module for Transpose {
             steps = steps / 2.0;
         }
 
-        for event in &inputs.events[0] {
-            /*match event {
-                Event::NoteOn { note, offset } => {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure } => {
                     outputs.events[0].push(
-                        Event::NoteOn {
-                            note: note.with_pitch(note.pitch * (1.0 + steps / 12.0)),
-                            offset: *offset,
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::NoteOn {
+                                pitch: pitch * (1.0 + steps / 12.0),
+                                pressure
+                            }
                         }
                     );
-                }
-                Event::Pitch { id, freq } => {
+                },
+                Event::Pitch(pitch) => {
                     outputs.events[0].push(
-                    Event::Pitch {
-                            id: *id,
-                            freq: freq * (1.0 + steps / 12.0)
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::Pitch(pitch * (1.0 + steps / 12.0))
                         }
                     );
-                }
-                e => outputs.events[0].push(*e)
-            }*/
+                },
+                _ => outputs.events[0].push(*msg)
+            }
         }
     }
 }
