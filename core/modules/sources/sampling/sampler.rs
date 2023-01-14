@@ -4,7 +4,7 @@ use crate::*;
 
 pub struct Sampler {
     sample: Arc<RwLock<SampleFile<Stereo2>>>,
-    position: f32
+    positions: [f32; 32]
 }
 
 pub struct SamplerVoice {
@@ -32,7 +32,7 @@ impl Module for Sampler {
 
     fn new() -> Self {
         let path = if cfg!(target_os = "macos") {
-            "/Users/chasekanipe/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav"
+            "/Users/chasekanipe/Music/Decent Samples/Flamenco Dreams Guitar/Samples/FlamencoDreams_55_C2_G_2.wav"
         } else if cfg!(target_os = "linux") {
             "/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav"
         } else {
@@ -41,7 +41,7 @@ impl Module for Sampler {
 
         return Self {
             sample: Arc::new(RwLock::new(SampleFile::load(path))),
-            position: 0.0
+            positions: [0.0; 32]
         };
     }
 
@@ -65,10 +65,14 @@ impl Module for Sampler {
                     },
                     Painter {
                         paint: | canvas | {
-                            canvas.draw_line(
-                                (canvas.width * self.position, 0.0),
-                                (canvas.width * self.position, canvas.height),
-                                Paint::new());
+                            for position in self.positions {
+                                if position != 0.0 {
+                                    canvas.draw_line(
+                                        (canvas.width * position, 0.0),
+                                        (canvas.width * position, canvas.height),
+                                        Paint::new());
+                                }
+                            }
                         }
                     }
                 )
@@ -97,8 +101,9 @@ impl Module for Sampler {
             }
         }
 
-        if voice.player.playing() {
-            self.position = voice.player.progress();
+        let i = voice.index as usize;
+        if i < self.positions.len() {
+            self.positions[i] = voice.player.progress();
         }
 
         voice.player.generate_block(&mut outputs.audio[0]);

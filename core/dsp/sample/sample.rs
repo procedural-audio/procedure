@@ -11,13 +11,20 @@ use std::ops::{Deref, DerefMut};
 pub struct SampleFile<T: Frame> {
     buffer: Arc<Buffer<T>>,
     path: String,
-    pitch: f32,
+    pub start: usize,
+    pub end: usize,
+    pub pitch: Option<f32>
 }
 
 impl<T: Frame> SampleFile<T> {
-    pub fn from(buffer: Arc<Buffer<T>>, pitch: f32, sample_rate: u32, path: String) -> Self {
+    pub fn from(buffer: Arc<Buffer<T>>, pitch: Option<f32>, sample_rate: u32, path: String) -> Self {
+        let start = 0;
+        let end = buffer.len();
+
         return Self {
             buffer,
+            start,
+            end,
             path,
             pitch,
         };
@@ -217,7 +224,6 @@ pub struct SamplePlayer<T: Frame> {
     sample: Option<SampleFile<T>>,
     playing: bool,
     index: usize,
-    pitch: f32,
     sample_rate: u32
 }
 
@@ -227,39 +233,46 @@ impl<T: Frame> SamplePlayer<T> {
             sample: None,
             playing: false,
             index: 0,
-            pitch: 440.0,
             sample_rate: 44100
         }
     }
 
     pub fn set_sample(&mut self, sample: SampleFile<T>) {
-        self.index = 0;
+        self.index = sample.start;
         self.sample = Some(sample);
     }
 
     pub fn position(&self) -> usize {
-        self.index
+        match &self.sample {
+            Some(sample) => self.index - sample.start,
+            None => self.index
+        }
     }
 
     pub fn set_position(&mut self, position: usize) {
-        self.index = position;
+        match &self.sample {
+            Some(sample) => self.index = position + sample.start,
+            None => self.index = position
+        }
     }
 
     pub fn progress(&self) -> f32 {
-        let length = self.len() as f32;
-        if length > 0.0 {
-            self.index as f32 / length
-        } else {
-            0.0
+        match &self.sample {
+            Some(sample) => {
+                (self.index - sample.start) as f32 / (sample.end - sample.start) as f32
+            },
+            None => {
+                0.0
+            }
         }
     }
 
-    pub fn len(&self) -> usize {
+    /*pub fn play_length(&self) -> usize {
         match &self.sample {
-            Some(sample) => sample.len(),
+            Some(sample) => sample.end - sample.start,
             None => 0
         }
-    }
+    }*/
 
     pub fn playing(&self) -> bool {
         self.playing
@@ -271,6 +284,7 @@ impl<T: Frame> SamplePlayer<T> {
 
     pub fn play(&mut self) {
         self.playing = true;
+        println!("Playing from index {}", self.index);
     }
 
     pub fn pause(&mut self) {
@@ -279,17 +293,11 @@ impl<T: Frame> SamplePlayer<T> {
 
     pub fn stop(&mut self) {
         self.playing = false;
-        self.index = 0;
-    }
-}
 
-impl<T: Frame> Pitched for SamplePlayer<T> {
-    fn get_pitch(&self) -> f32 {
-        self.pitch
-    }
-
-    fn set_pitch(&mut self, hz: f32) {
-        self.pitch = hz;
+        match &self.sample {
+            Some(sample) => self.index = sample.start,
+            None => self.index = 0
+        }
     }
 }
 
@@ -305,7 +313,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     fn gen(&mut self) -> Self::Item {
         if self.playing {
             if let Some(sample) = &self.sample {
-                if self.index < sample.buffer.len() {
+                if self.index < sample.end {
                     self.index += 1;
                     return sample.buffer[self.index - 1];
                 }
@@ -318,7 +326,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     fn generate_block(&mut self, output: &mut Buffer<T>) {
         if self.playing {
             if let Some(sample) = &self.sample {
-                if self.index + output.len() < sample.buffer.len() {
+                if self.index + output.len() < sample.end {
                     let end = self.index + output.len();
                     for (buf, out) in sample.buffer.as_slice()[self.index..end].iter().zip(&mut output.into_iter()) {
                         *out = *buf;
@@ -375,8 +383,15 @@ impl<T: Frame> Pitched for PitchedSamplePlayer<T> {
     }
 
     fn set_pitch(&mut self, hz: f32) {
-        self.player.set_ratio(hz / 440.0);
-        self.pitch = hz;
+        match &self.sample {
+            Some(sample) => {
+                match sample.pitch {
+                    Some(pitch) => self.player.set_ratio(hz / pitch),
+                    None => self.player.set_ratio(1.0)
+                }
+            }
+            None => ()
+        }
     }
 }
 

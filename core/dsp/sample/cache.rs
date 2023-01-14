@@ -6,17 +6,20 @@ use crate::sample::sample::*;
 //use crate::AudioChannels;
 use crate::buffers::*;
 
-use hound::Sample;
+use hound::{Sample, WavReader};
+use std::io::BufReader;
+use std::fs::File;
+
 use lazy_static::*;
 
 lazy_static! {
-    static ref SAMPLE_CACHE_STEREO: RwLock<Vec<(String, Arc<Buffer<Stereo2>>)>> = RwLock::new(Vec::new());
+    static ref SAMPLE_CACHE_STEREO: RwLock<Vec<SampleFile<Stereo2>>> = RwLock::new(Vec::new());
 }
 
 use std::sync::Arc;
 
 pub trait FileLoad<T> {
-    fn load(path: &str) -> T {
+    fn load(_path: &str) -> T {
         panic!("File loader note implemented");
     }
 }
@@ -24,44 +27,86 @@ pub trait FileLoad<T> {
 impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
     fn load(path: &str) -> SampleFile<Stereo2> {
         /* Load sample from cache */
-
-        for (p, buffer) in &*SAMPLE_CACHE_STEREO.read().unwrap() {
-            if p.as_str() == path {
-                return SampleFile::from(buffer.clone(), 440.0, 44100, path.to_string());
+        for sample in &*SAMPLE_CACHE_STEREO.read().unwrap() {
+            if sample.path() == path {
+                return sample.clone();
             }
         }
 
         /* Load sample from files asynchronously */
-
         println!("Loading {}", path);
 
-        let mut reader = hound::WavReader::open(path.to_string()).unwrap();
+        let reader = hound::WavReader::open(path.to_string()).unwrap();
         let spec = reader.spec();
-        let sample_rate = reader.spec().sample_rate;
 
-        {
-            let size = reader.samples::<i16>().len();
-            println!("Size is {}", size);
-            let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
-
-            let mut i = 0;
-            reader.samples::<i16>()
-                .fold(0.0, |_, v| {
-                    let sample = v.unwrap() as f32 * (1.0/32768.0);
-                    if i % 2 == 0 {
-                        buffer_new.as_slice_mut()[i / spec.channels as usize].left = sample;
-                    } else {
-                        buffer_new.as_slice_mut()[i / spec.channels as usize].right = sample;
-                    }
-
-                    i += 1;
-                    0.0
-                }
-            );
-
-            println!("Should set sample here");
-
-            return SampleFile::from(Arc::new(buffer_new), 440.0, sample_rate, path.to_string());
+        if spec.bits_per_sample == 16 {
+            load_sample_file_i16(path, reader, spec.channels)
+        } else if spec.bits_per_sample == 24 {
+            load_sample_file_i24(path, reader, spec.channels)
+        } else {
+            panic!("Unsupported WAV bit depth");
         }
     }
+}
+
+fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
+    let sample_rate = reader.spec().sample_rate;
+    let size = reader.samples::<i16>().len();
+    let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
+
+    let mut i = 0;
+    reader.samples::<i16>()
+        .fold(0.0, |_, v| {
+            let sample = v.unwrap().as_i16() as f32 * (1.0 / (i16::MAX as f32));
+            if i % 2 == 0 {
+                buffer_new.as_slice_mut()[i / channels as usize].left = sample;
+            } else {
+                buffer_new.as_slice_mut()[i / channels as usize].right = sample;
+            }
+
+            i += 1;
+            0.0
+        }
+    );
+
+    let mut sample = SampleFile::from(Arc::new(buffer_new), None, sample_rate, path.to_string());
+    for note_name in event::NOTE_NAMES {
+        if path.contains(note_name) {
+            sample.pitch = Some(num_to_pitch(name_to_num(note_name).unwrap()));
+        }
+    }
+
+    SAMPLE_CACHE_STEREO.write().unwrap().push(sample.clone());
+    return sample;
+}
+
+fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
+    let sample_rate = reader.spec().sample_rate;
+    let size = reader.samples::<i32>().len();
+    let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
+
+    let mut i = 0;
+    reader.samples::<i32>()
+        .fold(0.0, |_, v| {
+            let sample = v.unwrap() as f32 * (1.0 / (16777215 as f32));
+            if i % 2 == 0 {
+                buffer_new.as_slice_mut()[i / channels as usize].left = sample;
+            } else {
+                buffer_new.as_slice_mut()[i / channels as usize].right = sample;
+            }
+
+            i += 1;
+            0.0
+        }
+    );
+
+    let mut sample = SampleFile::from(Arc::new(buffer_new), None, sample_rate, path.to_string());
+    for note_name in event::NOTE_NAMES {
+        if path.contains(note_name) {
+            sample.pitch = Some(num_to_pitch(name_to_num(note_name).unwrap()));
+        }
+    }
+
+    SAMPLE_CACHE_STEREO.write().unwrap().push(sample.clone());
+    return sample;
 }

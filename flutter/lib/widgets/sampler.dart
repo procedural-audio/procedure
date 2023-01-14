@@ -183,7 +183,7 @@ class SampleMapperWidget extends ModuleWidget {
       double highVelocity =
           ffiSampleMapperGetRegionHighVelocity(widgetRaw.pointer, i);
 
-      print("Adding region " + lowNote.toString() + " " + highNote.toString());
+      // print("Adding region " + lowNote.toString() + " " + highNote.toString());
 
       sampleMaps.add(SampleRegion(
         lowNote: lowNote,

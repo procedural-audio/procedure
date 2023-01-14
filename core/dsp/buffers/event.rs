@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 
 use crate::Buffer;
 
-const NOTE_NAMES: [&'static str; 120] = [
+pub const NOTE_NAMES: [&'static str; 120] = [
     "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0", "C1", "C#1", "D1",
     "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1", "C2", "C#2", "D2", "D#2", "E2", "F2",
     "F#2", "G2", "G#2", "A2", "A#2", "B2", "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3",
@@ -104,16 +104,10 @@ impl NoteMessage {
     }
 
     pub fn from_name(name: &str) -> Option<Self> {
-        let mut i = 12;
-        for n in NOTE_NAMES {
-            if n == name {
-                return Some(NoteMessage::from_num(i));
-            }
-
-            i += 1;
+        match name_to_num(name) {
+            Some(num) => Some(NoteMessage::from_num(num)),
+            None => None
         }
-
-        return None;
     }
 }
 
@@ -130,6 +124,19 @@ pub fn num_to_pitch(num: u32) -> f32 {
 
 pub fn pitch_to_num(pitch: f32) -> u32 {
     (f32::round(f32::log2(pitch / 440.0) * 12.0) + 69.0) as u32
+}
+
+pub fn name_to_num(name: &str) -> Option<u32> {
+    let mut i = 12;
+    for n in NOTE_NAMES {
+        if n == name {
+            return Some(i);
+        }
+
+        i += 1;
+    }
+
+    return None;
 }
 
 /*impl Note {

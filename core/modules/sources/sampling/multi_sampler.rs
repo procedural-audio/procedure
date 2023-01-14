@@ -7,7 +7,7 @@ pub struct MultiSampler {
 }
 
 impl Module for MultiSampler {
-    type Voice = SamplePlayer<Stereo2>;
+    type Voice = PitchedSamplePlayer<Stereo2>;
 
     const INFO: Info = Info {
         title: "Multi-Sampler",
@@ -31,7 +31,7 @@ impl Module for MultiSampler {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-            SamplePlayer::new()
+        PitchedSamplePlayer::new()
     }
 
     fn load(&mut self, _json: &JSON) {}
@@ -60,6 +60,7 @@ impl Module for MultiSampler {
                             if region.low_note <= num && region.high_note >= num {
                                 println!("Playing note {}", num);
                                 voice.set_sample(region.sounds[0].clone());
+                                voice.set_pitch(pitch);
                                 voice.play();
                                 break;
                             }
@@ -328,177 +329,206 @@ impl SampleMap {
         };
 
         if cfg!(target_os = "macos") {
-            temp.load_dspreset("/Users/chasekanipe/guitar_samples/guitar.dspreset");
+            // temp.load("/Users/chasekanipe/Music/Decent Samples/Winter Felt Piano/Winter Felt Piano Prototype.dspreset");
+            temp.load("/Users/chasekanipe/Music/Decent Samples/Electric Celeste/Pitched Electric Celeste.dspreset");
         } else {
-            temp.load_dspreset("/home/chase/guitar_samples/guitar.dspreset");
+            temp.load("/home/chase/guitar_samples/guitar.dspreset");
         }
 
         return temp;
     }
 
-    pub fn load_dspreset(&mut self, path: &str) {
-        use std::fs::File;
-        use std::io::BufReader;
-        use xml::reader::{EventReader, XmlEvent};
+    pub fn load(&mut self, path: &str) {
+        if path.ends_with(".dspreset") {
+            self.regions = load_dspreset(path);
+        } else {
+            panic!("Load not implemented");
+        }
+    }
+}
 
-        let mut regions: Vec<SoundRegion<SampleFile<Stereo2>>> = Vec::new();
+fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2>>> {
+    use std::fs::File;
+    use std::io::BufReader;
+    use xml::reader::{EventReader, XmlEvent};
 
-        match File::open(path) {
-            Ok(file) => {
-                let reader = BufReader::new(file);
-                let mut parser = EventReader::new(reader);
+    let mut regions: Vec<SoundRegion<SampleFile<Stereo2>>> = Vec::new();
 
-                loop {
-                    println!("Loop");
-                    match parser.next() {
-                        Ok(XmlEvent::StartElement {
-                            name,
-                            attributes: _,
-                            namespace: _,
-                        }) => {
-                            println!("Element {}", name);
-                            match name.to_string().as_str() {
-                                "ui" => loop {
-                                    match parser.next() {
-                                        Ok(XmlEvent::StartElement {
-                                            name,
-                                            attributes: _,
-                                            namespace: _,
-                                        }) => match name.to_string().as_str() {
-                                            "tab" => println!("Found tab"),
-                                            "labeled-knob" => println!("Found knob"),
-                                            "binding" => println!("Found binding"),
+    match File::open(path) {
+        Ok(file) => {
+            let reader = BufReader::new(file);
+            let mut parser = EventReader::new(reader);
+
+            loop {
+                // println!("Loop");
+                match parser.next() {
+                    Ok(XmlEvent::StartElement {
+                        name,
+                        attributes: _,
+                        namespace: _,
+                    }) => {
+                        // println!("Element {}", name);
+                        match name.to_string().as_str() {
+                            "ui" => loop {
+                                match parser.next() {
+                                    Ok(XmlEvent::StartElement {
+                                        name,
+                                        attributes: _,
+                                        namespace: _,
+                                    }) => match name.to_string().as_str() {
+                                        /*"tab" => println!("Found tab"),
+                                        "labeled-knob" => println!("Found knob"),
+                                        "binding" => println!("Found binding"),*/
+                                        "ui" => break,
+                                        _ => (),
+                                    },
+                                    Ok(XmlEvent::EndElement { name }) => {
+                                        match name.to_string().as_str() {
                                             "ui" => break,
                                             _ => (),
-                                        },
-                                        Ok(XmlEvent::EndElement { name }) => {
-                                            match name.to_string().as_str() {
-                                                "ui" => break,
-                                                _ => (),
-                                            }
                                         }
-                                        Ok(XmlEvent::EndDocument) => break,
-                                        Err(e) => {
-                                            println!("Error {}", e);
-                                            break;
-                                        }
-                                        _ => (),
                                     }
-                                },
-                                "groups" => loop {
-                                    println!("Found groups");
-                                    match parser.next() {
-                                        Ok(XmlEvent::StartElement {
-                                            name,
-                                            attributes: _,
-                                            namespace: _,
-                                        }) => match name.to_string().as_str() {
-                                            "group" => loop {
-                                                println!("Found group");
-                                                match parser.next() {
-                                                    Ok(XmlEvent::StartElement {
-                                                        name,
-                                                        attributes,
-                                                        namespace: _,
-                                                    }) => match name.to_string().as_str() {
-                                                        "sample" => {
-                                                            println!("Found sample");
-                                                            let mut region =
-                                                                SoundRegion::<SampleFile<Stereo2>> {
-                                                                    low_note: 0,
-                                                                    high_note: 127,
-                                                                    low_velocity: 0.0,
-                                                                    high_velocity: 1.0,
-                                                                    index: 0,
-                                                                    sounds: Vec::new(),
-                                                                };
+                                    Ok(XmlEvent::EndDocument) => break,
+                                    Err(e) => {
+                                        println!("Error {}", e);
+                                        break;
+                                    }
+                                    _ => (),
+                                }
+                            },
+                            "groups" => loop {
+                                // println!("Found groups");
+                                match parser.next() {
+                                    Ok(XmlEvent::StartElement {
+                                        name,
+                                        attributes: _,
+                                        namespace: _,
+                                    }) => match name.to_string().as_str() {
+                                        "group" => loop {
+                                            // println!("Found group");
+                                            match parser.next() {
+                                                Ok(XmlEvent::StartElement {
+                                                    name,
+                                                    attributes,
+                                                    namespace: _,
+                                                }) => match name.to_string().as_str() {
+                                                    "sample" => {
+                                                        // println!("Found sample");
+                                                        let mut region =
+                                                            SoundRegion::<SampleFile<Stereo2>> {
+                                                                low_note: 0,
+                                                                high_note: 127,
+                                                                low_velocity: 0.0,
+                                                                high_velocity: 1.0,
+                                                                index: 0,
+                                                                sounds: Vec::new(),
+                                                            };
 
-                                                            let mut root_note = 0;
+                                                        let mut root_note = 0;
+                                                        let mut start = 0;
+                                                        let mut end = 0;
 
-                                                            let mut sample_path = String::new();
+                                                        let mut sample_path = String::new();
 
-                                                            for a in attributes {
-                                                                match a.name.to_string().as_str() {
-                                                                            "loNote" => region.low_note = a.value.to_string().parse::<u32>().unwrap(),
-                                                                            "hiNote" => region.high_note = a.value.to_string().parse::<u32>().unwrap(),
-                                                                            "loVel" => region.low_velocity = a.value.to_string().parse::<u32>().unwrap() as f32 / 127.0,
-                                                                            "hiVel" => region.high_velocity = a.value.to_string().parse::<u32>().unwrap() as f32 / 127.0,
-                                                                            "rootNote" => root_note = a.value.to_string().parse::<u32>().unwrap(),
-                                                                            "seqPosition" => (),
-                                                                            "path" => {
-                                                                                let dir = std::path::Path::new(path);
-                                                                                let mut path = dir.parent().unwrap().to_str().unwrap().to_owned();
-                                                                                path.push_str("/");
-                                                                                path.push_str(&a.value);
+                                                        for a in attributes {
+                                                            match a.name.to_string().as_str() {
+                                                                "start" => start = a.value.to_string().parse::<usize>().unwrap(),
+                                                                "end" => end = a.value.to_string().parse::<usize>().unwrap(),
+                                                                "loNote" => region.low_note = a.value.to_string().parse::<u32>().unwrap(),
+                                                                "hiNote" => region.high_note = a.value.to_string().parse::<u32>().unwrap(),
+                                                                "loVel" => region.low_velocity = a.value.to_string().parse::<u32>().unwrap() as f32 / 127.0,
+                                                                "hiVel" => region.high_velocity = a.value.to_string().parse::<u32>().unwrap() as f32 / 127.0,
+                                                                "rootNote" => root_note = a.value.to_string().parse::<u32>().unwrap(),
+                                                                "seqPosition" => (),
+                                                                "tuning" => (),
+                                                                "volume" => (),
+                                                                "pan" => (),
+                                                                "loopEnabled" => (),
+                                                                "loopStart" => (),
+                                                                "loopEnd" => (),
+                                                                "loopCrossfade" => (),
+                                                                "path" => {
+                                                                    let dir = std::path::Path::new(path);
+                                                                    let mut path = dir.parent().unwrap().to_str().unwrap().to_owned();
+                                                                    path.push_str("/");
+                                                                    path.push_str(&a.value);
 
-                                                                                sample_path = path;
-                                                                            },
-                                                                            s => println!("Unknown sample attribute {}", s),
-                                                                        }
-                                                            }
-
-                                                            let mut found = false;
-                                                            for r in &mut regions {
-                                                                if r.low_note == region.low_note
-                                                                    && r.high_note
-                                                                        == region.high_note
-                                                                {
-                                                                    println!("Adding sample to existing region");
-                                                                    found = true;
-                                                                    r.sounds.push(SampleFile::load(
-                                                                        &sample_path,
-                                                                    ));
-                                                                }
-                                                            }
-
-                                                            if !found {
-                                                                println!(
-                                                                    "Adding sample to new region"
-                                                                );
-                                                                region.sounds.push(SampleFile::load(
-                                                                    &sample_path,
-                                                                ));
-                                                                regions.push(region);
+                                                                    sample_path = path;
+                                                                },
+                                                                s => println!("Unknown sample attribute {}", s),
                                                             }
                                                         }
-                                                        _ => (),
-                                                    },
-                                                    Ok(XmlEvent::EndDocument) => break,
-                                                    Err(_e) => break,
+
+                                                        let mut found = false;
+                                                        for r in &mut regions {
+                                                            if r.low_note == region.low_note
+                                                                && r.high_note
+                                                                    == region.high_note
+                                                            {
+                                                                // println!("Adding sample to existing region");
+                                                                found = true;
+                                                                let mut sample = SampleFile::load(&sample_path);
+                                                                sample.pitch = Some(num_to_pitch(root_note));
+
+                                                                if start != 0 {
+                                                                    println!("Set start to {}", start);
+                                                                    sample.start = start;
+                                                                }
+
+                                                                if end != 0 {
+                                                                    println!("Set end to {}", end);
+                                                                    sample.end = end;
+                                                                }
+
+                                                                r.sounds.push(sample);
+                                                            }
+                                                        }
+
+                                                        if !found {
+                                                            // println!("Adding sample to new region");
+
+                                                            region.sounds.push(SampleFile::load(
+                                                                &sample_path,
+                                                            ));
+                                                            regions.push(region);
+                                                        }
+                                                    }
                                                     _ => (),
-                                                }
-                                            },
-                                            _ => (),
-                                        },
-                                        Ok(XmlEvent::EndElement { name }) => {
-                                            match name.to_string().as_str() {
-                                                "groups" => break,
+                                                },
+                                                Ok(XmlEvent::EndDocument) => break,
+                                                Err(_e) => break,
                                                 _ => (),
                                             }
-                                        }
-                                        Ok(XmlEvent::EndDocument) => break,
-                                        Err(_e) => break,
+                                        },
                                         _ => (),
+                                    },
+                                    Ok(XmlEvent::EndElement { name }) => {
+                                        match name.to_string().as_str() {
+                                            "groups" => break,
+                                            _ => (),
+                                        }
                                     }
-                                },
-                                "effects" => {}
-                                "midi" => {}
-                                _ => (),
-                            }
+                                    Ok(XmlEvent::EndDocument) => break,
+                                    Err(_e) => break,
+                                    _ => (),
+                                }
+                            },
+                            "effects" => {}
+                            "midi" => {}
+                            _ => (),
                         }
-                        Ok(XmlEvent::EndElement { name: _ }) => {
-                            // println!("{}-{}", indent(depth), name);
-                        }
-                        Err(_e) => break,
-                        Ok(XmlEvent::EndDocument) => break,
-                        _ => (),
                     }
+                    Ok(XmlEvent::EndElement { name: _ }) => {
+                        // println!("{}-{}", indent(depth), name);
+                    }
+                    Err(_e) => break,
+                    Ok(XmlEvent::EndDocument) => break,
+                    _ => (),
                 }
             }
-            Err(_e) => println!("Couldn't open dspreset file {}", path),
-        };
+        }
+        Err(_e) => println!("Couldn't open dspreset file {}", path),
+    };
 
-        self.regions.clear();
-        self.regions = regions;
-    }
+    return regions;
 }
