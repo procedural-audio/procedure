@@ -34,6 +34,8 @@ class SamplePickerWidget extends ModuleWidget {
   List<double> leftBuffer = [0.0];
   List<double> rightBuffer = [0.0];
 
+  bool loadingSample = false;
+
   void refreshBuffer() {
     leftBuffer.clear();
     rightBuffer.clear();
@@ -61,10 +63,9 @@ class SamplePickerWidget extends ModuleWidget {
         var pathRaw = path.toNativeUtf8();
         ffiSampleFilePickerSetSample(widgetRaw.pointer, pathRaw);
         calloc.free(pathRaw);
-      }
 
-      refreshBuffer();
-      setState(() {});
+        refreshBuffer();
+      }
     }
   }
 
@@ -87,8 +88,30 @@ class SamplePickerWidget extends ModuleWidget {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   onPressed: () {
+                    setState(() {
+                      loadingSample = true;
+                    });
+
                     browseForSample();
-                  }))
+
+                    setState(() {
+                      loadingSample = false;
+                    });
+                  })),
+          Visibility(
+              visible: loadingSample,
+              child: Container(
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Color.fromRGBO(0, 0, 0, 0.5),
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                  ),
+                  child: const SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
+                      ))))
         ]));
   }
 }

@@ -340,3 +340,146 @@ class _SearchableDropdownElement extends State<SearchableDropdownElement> {
             )));
   }
 }
+
+class Keyboard extends StatelessWidget {
+  Keyboard(
+      {this.keyWidth = 25.0,
+      this.keySpacing = 1.0,
+      this.keyHeight = 50,
+      this.keyCount = 88,
+      this.widthRatio = 2 / 3,
+      this.heightRatio = 2 / 3,
+      required this.onKeyPress,
+      required this.onKeyRelease,
+      required this.getKeyDown});
+
+  final double keyWidth;
+  final double keySpacing;
+  final double keyHeight;
+  final double widthRatio;
+  final double heightRatio;
+  final int keyCount;
+  void Function(int) onKeyPress;
+  void Function(int) onKeyRelease;
+  bool Function(int) getKeyDown;
+
+  ScrollController controller = ScrollController();
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> whiteKeys = [];
+    List<Widget> blackKeys = [];
+
+    double x = 0.0;
+    for (int i = 0; i < keyCount; i++) {
+      int j = i % 12;
+      if (j == 1 || j == 3 || j == 6 || j == 8 || j == 10) {
+        blackKeys.add(Positioned(
+            left: x - keyWidth * (widthRatio / 2),
+            top: 0,
+            child: KeyWidget(
+              index: i,
+              onPress: (i) {
+                onKeyPress(i);
+              },
+              onRelease: (i) {
+                onKeyRelease(i);
+              },
+              color: Colors.black,
+              down: getKeyDown(i),
+              width: keyWidth * widthRatio,
+              spacing: keySpacing,
+              height: keyHeight * heightRatio,
+            )));
+      } else {
+        whiteKeys.add(Positioned(
+            left: x,
+            top: 0,
+            child: KeyWidget(
+              index: i,
+              onPress: (i) {
+                onKeyPress(i);
+              },
+              onRelease: (i) {
+                onKeyRelease(i);
+              },
+              color: Colors.white,
+              down: getKeyDown(i),
+              width: keyWidth,
+              spacing: keySpacing,
+              height: keyHeight,
+            )));
+
+        x += keyWidth;
+      }
+    }
+
+    return Scrollbar(
+        thumbVisibility: true,
+        trackVisibility: true,
+        thickness: 4,
+        controller: controller,
+        scrollbarOrientation: ScrollbarOrientation.bottom,
+        child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: controller,
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                child: Container(
+                    width: x,
+                    height: keyHeight,
+                    color: const Color.fromRGBO(20, 20, 20, 1.0),
+                    child: Stack(
+                      children: whiteKeys + blackKeys,
+                    )))));
+  }
+}
+
+class KeyWidget extends StatelessWidget {
+  KeyWidget(
+      {required this.index,
+      required this.color,
+      required this.down,
+      required this.width,
+      required this.spacing,
+      required this.height,
+      required this.onPress,
+      required this.onRelease});
+
+  int index;
+  Color color;
+  bool down;
+  double width;
+  double spacing;
+  double height;
+  void Function(int) onPress;
+  void Function(int) onRelease;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(spacing),
+        child: Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (details) {
+              onPress(index);
+            },
+            onPointerUp: (details) {
+              onRelease(index);
+            },
+            onPointerCancel: (details) {
+              onRelease(index);
+            },
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                width: width - spacing * 2,
+                height: height,
+                decoration: BoxDecoration(
+                    color: down ? color.withOpacity(0.5) : color,
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(0), bottom: Radius.circular(3))),
+              ),
+            )));
+  }
+}

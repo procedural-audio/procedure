@@ -125,6 +125,8 @@ class _Module extends State<Module> {
     var width = api.ffiNodeGetWidth(widget.module);
     var height = api.ffiNodeGetHeight(widget.module);
 
+    final inputPins = <PinWidget>[];
+    final outputPins = <PinWidget>[];
     final widgets = <Widget>[];
 
     widgets.addAll(widget.widgets);
@@ -145,14 +147,14 @@ class _Module extends State<Module> {
     for (var pin in widget.pins) {
       if (pin.isInput) {
         if (pin.type != IO.external) {
-          widgets.add(PinWidget(widget.id, pin.index, pin.type, 10,
+          inputPins.add(PinWidget(widget.id, pin.index, pin.type, 10,
               pin.offset.dy, pin.name, pin.isInput, widget.host));
         }
       } else {
         pin.offset = Offset(width - 25, pin.offset.dy);
 
         if (pin.type != IO.external) {
-          widgets.add(PinWidget(widget.id, pin.index, pin.type, width - 25,
+          outputPins.add(PinWidget(widget.id, pin.index, pin.type, width - 25,
               pin.offset.dy, pin.name, pin.isInput, widget.host));
         }
       }
@@ -229,6 +231,8 @@ class _Module extends State<Module> {
                   child: Stack(
                       fit: StackFit.expand,
                       children: widgets +
+                          inputPins +
+                          outputPins +
                           (resizable
                               ? ([
                                   Align(

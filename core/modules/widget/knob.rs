@@ -296,7 +296,7 @@ impl<F: FnMut(&str)> WidgetNew for SearchableDropdown<F> {
     }
 }
 
-fn str_from_char(buffer: &i8) -> &str {
+pub fn str_from_char(buffer: &i8) -> &str {
     unsafe {
         let c_str: &std::ffi::CStr = std::ffi::CStr::from_ptr(buffer);
         c_str.to_str().unwrap()

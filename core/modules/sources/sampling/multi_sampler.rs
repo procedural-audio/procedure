@@ -119,6 +119,12 @@ pub extern "C" fn ffi_sample_mapper_add_region(
 }
 
 #[no_mangle]
+pub extern "C" fn ffi_sample_mapper_load(widget: &mut SampleMapper, path: &i8) {
+    let path= str_from_char(path);
+    widget.map.write().unwrap().load(path);
+}
+
+#[no_mangle]
 pub extern "C" fn ffi_sample_mapper_remove_region(widget: &mut SampleMapper, index: usize) {
     (*widget.map.write().unwrap()).regions.remove(index);
 }
@@ -330,7 +336,8 @@ impl SampleMap {
 
         if cfg!(target_os = "macos") {
             // temp.load("/Users/chasekanipe/Music/Decent Samples/Winter Felt Piano/Winter Felt Piano Prototype.dspreset");
-            temp.load("/Users/chasekanipe/Music/Decent Samples/Electric Celeste/Pitched Electric Celeste.dspreset");
+            // temp.load("/Users/chasekanipe/Music/Decent Samples/Electric Celeste/Pitched Electric Celeste.dspreset");
+            temp.load("/Users/chasekanipe/Music/Decent Samples/Flamenco Dreams Guitar/FlamencoDreams2.dspreset");
         } else {
             temp.load("/home/chase/guitar_samples/guitar.dspreset");
         }
@@ -339,6 +346,7 @@ impl SampleMap {
     }
 
     pub fn load(&mut self, path: &str) {
+        self.regions.clear();
         if path.ends_with(".dspreset") {
             self.regions = load_dspreset(path);
         } else {
@@ -413,7 +421,6 @@ fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2>>> {
                                                     namespace: _,
                                                 }) => match name.to_string().as_str() {
                                                     "sample" => {
-                                                        // println!("Found sample");
                                                         let mut region =
                                                             SoundRegion::<SampleFile<Stereo2>> {
                                                                 low_note: 0,
@@ -465,31 +472,37 @@ fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2>>> {
                                                                 && r.high_note
                                                                     == region.high_note
                                                             {
-                                                                // println!("Adding sample to existing region");
-                                                                found = true;
                                                                 let mut sample = SampleFile::load(&sample_path);
                                                                 sample.pitch = Some(num_to_pitch(root_note));
 
                                                                 if start != 0 {
-                                                                    println!("Set start to {}", start);
                                                                     sample.start = start;
                                                                 }
 
                                                                 if end != 0 {
-                                                                    println!("Set end to {}", end);
                                                                     sample.end = end;
                                                                 }
 
+                                                                // println!("Adding sample to existing region");
+                                                                found = true;
                                                                 r.sounds.push(sample);
                                                             }
                                                         }
 
                                                         if !found {
-                                                            // println!("Adding sample to new region");
+                                                            let mut sample = SampleFile::load(&sample_path);
+                                                            sample.pitch = Some(num_to_pitch(root_note));
+                                                            println!("Set num to {}", root_note);
 
-                                                            region.sounds.push(SampleFile::load(
-                                                                &sample_path,
-                                                            ));
+                                                            if start != 0 {
+                                                                sample.start = start;
+                                                            }
+
+                                                            if end != 0 {
+                                                                sample.end = end;
+                                                            }
+                                                            // println!("Adding sample to new region");
+                                                            region.sounds.push(sample);
                                                             regions.push(region);
                                                         }
                                                     }

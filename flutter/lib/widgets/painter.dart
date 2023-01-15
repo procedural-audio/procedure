@@ -137,6 +137,11 @@ class CanvasPainter extends CustomPainter {
   Pointer<CanvasFFI> canvasRaw;
 
   @override
+  bool hitTest(Offset position) {
+    return false;
+  }
+
+  @override
   void paint(Canvas canvas, ui.Size size) {
     canvasRaw.ref.width = size.width;
     canvasRaw.ref.height = size.height;

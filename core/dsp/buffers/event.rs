@@ -14,8 +14,6 @@ pub const NOTE_NAMES: [&'static str; 120] = [
     "G#9", "A9", "A#9", "B9",
 ];
 
-// Size is 20 bytes
-
 use std::{sync::{Arc, Mutex}, fmt::Display};
 
 lazy_static!(

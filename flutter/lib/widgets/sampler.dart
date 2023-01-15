@@ -1,22 +1,26 @@
 import 'package:ffi/ffi.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../common.dart';
 import '../host.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
+void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleMapperLoad = core
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Pointer<Utf8>)>>(
+        "ffi_sample_mapper_load")
+    .asFunction();
 int Function(FFIWidgetPointer) ffiSampleMapperGetRegionCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_sample_mapper_get_region_count")
     .asFunction();
-
 void Function(FFIWidgetPointer, int) ffiSampleMapperRemoveRegion = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int32)>>(
         "ffi_sample_mapper_remove_region")
     .asFunction();
-
 void Function(FFIWidgetPointer, int, int, double, double)
     ffiSampleMapperAddRegion = core
         .lookup<
@@ -24,57 +28,47 @@ void Function(FFIWidgetPointer, int, int, double, double)
                 Void Function(FFIWidgetPointer, Int32, Int32, Float,
                     Float)>>("ffi_sample_mapper_add_region")
         .asFunction();
-
 int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionLowNote = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_low_note")
     .asFunction();
-
 void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionLowNote = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
         "ffi_sample_mapper_set_region_low_note")
     .asFunction();
-
 int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionHighNote = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_high_note")
     .asFunction();
-
 void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionHighNote =
     core
         .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
             "ffi_sample_mapper_set_region_high_note")
         .asFunction();
-
 double Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionLowVelocity =
     core
         .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
             "ffi_sample_mapper_get_region_low_velocity")
         .asFunction();
-
 void Function(FFIWidgetPointer, int, double)
     ffiSampleMapperSetRegionLowVelocity = core
         .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Float)>>(
             "ffi_sample_mapper_set_region_low_velocity")
         .asFunction();
-
 double Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionHighVelocity =
     core
         .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
             "ffi_sample_mapper_get_region_high_velocity")
         .asFunction();
-
 void Function(FFIWidgetPointer, int, double)
     ffiSampleMapperSetRegionHighVelocity = core
         .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Float)>>(
             "ffi_sample_mapper_set_region_high_velocity")
         .asFunction();
-
 int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionSampleCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_sample_count")
     .asFunction();
-
 Pointer<Utf8> Function(FFIWidgetPointer, int, int)
     ffiSampleMapperGetRegionSamplePath = core
         .lookup<
@@ -82,7 +76,6 @@ Pointer<Utf8> Function(FFIWidgetPointer, int, int)
                 Pointer<Utf8> Function(FFIWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_path")
         .asFunction();
-
 FFIBuffer Function(FFIWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferLeft = core
         .lookup<
@@ -90,7 +83,6 @@ FFIBuffer Function(FFIWidgetPointer, int, int)
                 FFIBuffer Function(FFIWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_buffer_left")
         .asFunction();
-
 FFIBuffer Function(FFIWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferRight = core
         .lookup<
@@ -98,7 +90,6 @@ FFIBuffer Function(FFIWidgetPointer, int, int)
                 FFIBuffer Function(FFIWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_buffer_right")
         .asFunction();
-
 double Function(FFIWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferTimeMs = core
         .lookup<
@@ -107,15 +98,7 @@ double Function(FFIWidgetPointer, int, int)
             "ffi_sample_mapper_get_region_sample_buffer_time_ms")
         .asFunction();
 
-const double MAP_HEIGHT = 320;
-const double MAP_WIDTH = 1400;
-
-const double COLUMNS_HEIGHT = 120;
-const double COLUMNS_WIDTH = 600;
-const double COLUMN_WIDTH = 265;
-
-const double KEYBOARD_HEIGHT = 50;
-const double BAND_HEIGHT = 20;
+const double MAP_WIDTH = (108 * 7 / 12) * KEY_WIDTH;
 
 const double KEY_WIDTH = 24;
 
@@ -169,8 +152,11 @@ class SampleMapperWidget extends ModuleWidget {
     refreshMap();
   }
 
+  bool loadingSample = false;
+
   void refreshMap() {
     sampleMaps.clear();
+    samples.clear();
 
     int count = ffiSampleMapperGetRegionCount(widgetRaw.pointer);
     print("Count is " + count.toString());
@@ -195,6 +181,28 @@ class SampleMapperWidget extends ModuleWidget {
         selectedSamples: selectedSamples,
         pointer: widgetRaw.pointer,
       ));
+    }
+  }
+
+  void browseForSampleMap() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      var path = result.files.single.path;
+      if (path != null) {
+        setState(() {
+          loadingSample = true;
+        });
+
+        var pathRaw = path.toNativeUtf8();
+        ffiSampleMapperLoad(widgetRaw.pointer, pathRaw);
+        calloc.free(pathRaw);
+
+        refreshMap();
+
+        setState(() {
+          loadingSample = false;
+        });
+      }
     }
   }
 
@@ -227,101 +235,138 @@ class SampleMapperWidget extends ModuleWidget {
   List<SampleRegion> sampleMaps = [];
 
   ScrollController controller = ScrollController();
-
   ValueNotifier<int> selected = ValueNotifier(-1);
   ValueNotifier<List<int>> selectedSamples = ValueNotifier([]);
-  ValueNotifier<double> zoom = ValueNotifier(1.0);
-  ValueNotifier<double> scroll = ValueNotifier(0.0);
-
-  ValueNotifier<bool> loop = ValueNotifier(false); // SHOULD INIT FROM BACKEND
-  ValueNotifier<bool> oneshot =
-      ValueNotifier(false); // SHOULD INIT FROM BACKEND
-  ValueNotifier<List<SampleParameters>> parameters =
-      ValueNotifier([SampleParameters()]);
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          if (event.physicalKey == PhysicalKeyboardKey.delete ||
-              event.physicalKey == PhysicalKeyboardKey.backspace) {
-            if (selected.value >= 0) {
-              // ffiSampleMapperRemoveRegion(widgetRaw.pointer, selected.value);
-              // print("Removing region");
-              // setState(() {});
+    return Stack(children: [
+      KeyboardListener(
+          focusNode: FocusNode(),
+          onKeyEvent: (event) {
+            if (event.physicalKey == PhysicalKeyboardKey.delete ||
+                event.physicalKey == PhysicalKeyboardKey.backspace) {
+              if (selected.value >= 0) {
+                print("Removing region");
+                ffiSampleMapperRemoveRegion(widgetRaw.pointer, selected.value);
+                refreshMap();
+                setState(() {});
+              }
             }
-          }
-        },
-        child: ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-            child: Stack(children: [
-              Scrollbar(
-                  thickness: 8,
-                  thumbVisibility: true,
-                  controller: controller,
-                  child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      controller: controller,
-                      child: Container(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                          color: const Color.fromRGBO(20, 20, 20, 1.0),
-                          child: Column(children: [
-                            Expanded(
-                                child: Container(
-                              width: MAP_WIDTH,
-                              height: MAP_HEIGHT - 50 - KEYBOARD_HEIGHT,
-                              child: CustomPaint(
-                                  painter: SamplerGrid(),
-                                  child: Stack(
-                                      children: <Widget>[
-                                            GestureDetector(
-                                                onTapDown: (details) {
-                                              selected.value = -1;
-                                              ffiSampleMapperAddRegion(
-                                                  widgetRaw.pointer,
-                                                  details.localPosition.dx ~/
-                                                      (KEY_WIDTH / 2),
-                                                  details.localPosition.dx ~/
-                                                      (KEY_WIDTH / 2),
-                                                  0.0,
-                                                  1.0);
-                                              refreshMap();
-                                              setState(() {});
-                                            })
-                                          ] +
-                                          sampleMaps)),
-                              color: const Color.fromRGBO(20, 20, 20, 1.0),
-                            )),
-                            SizedBox(
-                              height: KEYBOARD_HEIGHT,
-                              width: MAP_WIDTH,
-                              child: Keyboard(),
-                            )
-                          ])))),
-              SampleMapTopBar(selected),
-              ValueListenableBuilder<int>(
-                  valueListenable: selected,
-                  builder: (context, value, w) {
-                    refreshSamples();
-
-                    const double width = 180;
-                    return AnimatedPositioned(
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        duration: const Duration(milliseconds: 800),
-                        top: 0,
-                        bottom: 0,
-                        right: value == -1 ? -width : 0,
+          },
+          child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(5)),
+              child: Stack(children: [
+                Scrollbar(
+                    thickness: 8,
+                    thumbVisibility: true,
+                    controller: controller,
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        controller: controller,
                         child: Container(
-                          width: width,
-                          height: 200,
-                          decoration: const BoxDecoration(
-                            color: Color.fromRGBO(30, 30, 30, 1.0),
-                          ),
-                          child: Column(children: samples),
-                        ));
-                  })
-            ])));
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            color: const Color.fromRGBO(20, 20, 20, 1.0),
+                            child: Column(children: [
+                              Expanded(
+                                  child: Container(
+                                width: MAP_WIDTH,
+                                child: CustomPaint(
+                                    painter: SamplerGrid(),
+                                    child: Stack(
+                                        children: <Widget>[
+                                              GestureDetector(
+                                                  onTapDown: (details) {
+                                                selected.value = -1;
+                                                ffiSampleMapperAddRegion(
+                                                    widgetRaw.pointer,
+                                                    details.localPosition.dx ~/
+                                                        (KEY_WIDTH * 7 / 12),
+                                                    details.localPosition.dx ~/
+                                                        (KEY_WIDTH * 7 / 12),
+                                                    0.0,
+                                                    1.0);
+                                                refreshMap();
+                                                setState(() {});
+                                              })
+                                            ] +
+                                            sampleMaps)),
+                                color: const Color.fromRGBO(20, 20, 20, 1.0),
+                              )),
+                              SizedBox(
+                                width: MAP_WIDTH,
+                                height: 64,
+                                child: Keyboard(
+                                  keyWidth: KEY_WIDTH,
+                                  keyHeight: 50,
+                                  keySpacing: 1,
+                                  widthRatio: 2 / 3,
+                                  heightRatio: 0.6,
+                                  keyCount: 108,
+                                  onKeyPress: (i) {},
+                                  onKeyRelease: (i) {},
+                                  getKeyDown: (i) {
+                                    return false;
+                                  },
+                                ),
+                              )
+                            ])))),
+                SampleMapTopBar(selected),
+                ValueListenableBuilder<int>(
+                    valueListenable: selected,
+                    builder: (context, value, w) {
+                      refreshSamples();
+
+                      const double width = 180;
+                      return AnimatedPositioned(
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          duration: const Duration(milliseconds: 800),
+                          top: 0,
+                          bottom: 0,
+                          right: value == -1 ? -width : 0,
+                          child: Container(
+                            width: width,
+                            height: 200,
+                            decoration: const BoxDecoration(
+                              color: Color.fromRGBO(30, 30, 30, 1.0),
+                            ),
+                            child: Column(children: samples),
+                          ));
+                    })
+              ]))),
+      Align(
+          alignment: Alignment.bottomRight,
+          child: Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                color: Color.fromRGBO(40, 40, 40, 1.0),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(5)),
+              ),
+              child: IconButton(
+                  icon: const Icon(Icons.folder),
+                  iconSize: 18,
+                  color: Colors.blue,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    browseForSampleMap();
+                  }))),
+      Visibility(
+          visible: loadingSample,
+          child: Container(
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: Color.fromRGBO(0, 0, 0, 0.5),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              child: const SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    color: Colors.blue,
+                  ))))
+    ]);
   }
 }
 
@@ -342,7 +387,7 @@ class SampleMapTopBar extends StatelessWidget {
               right: 0,
               duration: const Duration(milliseconds: 800),
               child: Container(
-                  height: BAND_HEIGHT,
+                  height: 20,
                   color: const Color.fromRGBO(30, 30, 30, 1.0),
                   child: Row(children: [
                     Container(
@@ -370,392 +415,6 @@ class SampleMapTopBar extends StatelessWidget {
   }
 }
 
-class SampleParameters {
-  int sampleIndex = -1;
-  double length = 1000.0;
-  double start = 100.0;
-  double end = 800.0;
-  double fadeIn = 100.0;
-  double fadeOut = 100.0;
-  bool loop = false;
-  double loopStart = 0.0;
-  double loopEnd = 0.0;
-  double crossFade = 0.0;
-  bool oneShot = false;
-  int transpose = 0;
-  double gain = 0.0;
-}
-
-class SampleDisplay extends StatelessWidget {
-  SampleDisplay(
-      {required this.buffersLeft,
-      required this.buffersRight,
-      required this.parameters});
-
-  List<List<double>> buffersLeft;
-  List<List<double>> buffersRight;
-  ValueNotifier<List<SampleParameters>> parameters;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<SampleParameters>>(
-      valueListenable: parameters,
-      builder: (context, parametersValue, w) {
-        return Container(
-          width: 320,
-          height: 100,
-          color: const Color.fromRGBO(20, 20, 20, 1.0),
-          child: CustomPaint(
-            painter: SamplePainter(
-                leftBuffers: buffersLeft,
-                rightBuffers: buffersRight,
-                parameters: parametersValue),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class SampleEditorParameter extends StatelessWidget {
-  SampleEditorParameter(this.text);
-
-  String text;
-  TextEditingController controller = TextEditingController(text: "0");
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-          height: 35,
-          color: const Color.fromRGBO(20, 20, 20, 1.0),
-          child: Stack(
-            children: [
-              Positioned(
-                left: 3,
-                top: 3,
-                child: Text(
-                  text,
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
-                ),
-              ),
-              Positioned(
-                left: 15,
-                right: 15,
-                top: 16,
-                child: SizedBox(
-                  width: 50,
-                  height: 20,
-                  child: TextField(
-                    controller: controller,
-                    /*onTap: () {
-                    controller.text = controller.text.replaceAll(" " + suffix, "");
-                    print("Text is " + controller.text);
-                  },
-                  onEditingComplete: () {
-                    controller.text = controller.text.replaceAll(" " + suffix, "");
-                    controller.text = controller.text + " " + suffix;
-                  },
-                  onSubmitted: (details) {
-                    controller.text = controller.text.replaceAll(" " + suffix, "");
-                    controller.text = controller.text + " " + suffix;
-                  },*/
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    keyboardType: TextInputType.number,
-                    cursorHeight: 14,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 12,
-                    ),
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.all(5),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          )),
-    );
-  }
-}
-
-class SampleEditorCheckbox extends StatelessWidget {
-  SampleEditorCheckbox({required this.text, required this.checked});
-
-  String text;
-  ValueNotifier<bool> checked;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: checked,
-      builder: (context, value, w) {
-        return Expanded(
-          child: Container(
-              height: 35,
-              color: const Color.fromRGBO(20, 20, 20, 1.0),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 3,
-                    top: 3,
-                    child: Text(
-                      text,
-                      style: const TextStyle(color: Colors.grey, fontSize: 10),
-                    ),
-                  ),
-                  Positioned(
-                    left: 15,
-                    right: 15,
-                    top: 7,
-                    child: Transform.scale(
-                      scale: 0.8,
-                      child: Checkbox(
-                        value: value,
-                        activeColor: Colors.red,
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5))),
-                        side: const BorderSide(color: Colors.grey, width: 2.0),
-                        onChanged: (v) {
-                          if (v != null) {
-                            checked.value = v;
-                          }
-                        },
-                      ),
-                    ),
-                  )
-                ],
-              )),
-        );
-      },
-    );
-  }
-}
-
-class SamplePainter extends CustomPainter {
-  SamplePainter(
-      {required this.leftBuffers,
-      required this.rightBuffers,
-      required this.parameters});
-
-  List<List<double>> leftBuffers;
-  List<List<double>> rightBuffers;
-  List<SampleParameters> parameters;
-
-  @override
-  void paint(Canvas canvas, ui.Size size) {
-    Paint paint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.fill;
-
-    int red = 0;
-
-    /* Draw left buffers */
-
-    for (var left in leftBuffers) {
-      List<Offset> points = [];
-
-      red += 30;
-      paint.color = paint.color.withRed(red);
-
-      for (int i = 0; i < left.length; i++) {
-        double x = i * (size.width / left.length);
-        double y = size.height * left[i] * 0.5;
-
-        if (y > 0) {
-          y = -y;
-        }
-
-        Offset end = Offset(x, y + size.height * 0.5);
-        points.add(end);
-      }
-
-      canvas.drawPoints(ui.PointMode.polygon, points, paint);
-      points.clear();
-    }
-
-    /* Draw right buffers */
-
-    paint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.fill;
-
-    red = 0;
-
-    for (var right in rightBuffers) {
-      List<Offset> points = [];
-
-      red += 30;
-      paint.color = paint.color.withRed(red);
-
-      for (int i = 0; i < right.length; i++) {
-        double x = i * (size.width / right.length);
-        double y = size.height * right[i] * 0.5;
-
-        if (y < 0) {
-          y = -y;
-        }
-
-        Offset end = Offset(x, y + size.height * 0.5);
-
-        points.add(end);
-      }
-
-      canvas.drawPoints(ui.PointMode.polygon, points, paint);
-      points.clear();
-    }
-
-    for (var parameter in parameters) {
-      paint = Paint()
-        ..color = Colors.grey
-        ..strokeWidth = 2.0;
-
-      canvas.drawLine(
-          Offset(
-              size.width * (parameter.start / parameter.length), size.height),
-          Offset(
-              size.width * (parameter.start / parameter.length) +
-                  size.width * (parameter.fadeIn / parameter.length),
-              0),
-          paint);
-
-      canvas.drawLine(
-          Offset(
-              size.width * (parameter.end / parameter.length) -
-                  size.width * (parameter.fadeOut / parameter.length),
-              0),
-          Offset(size.width * (parameter.end / parameter.length), size.height),
-          paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-class CustomScrollbar extends StatefulWidget {
-  CustomScrollbar({required this.controller, required this.zoom});
-
-  ScrollController controller;
-  ValueNotifier<double> zoom;
-
-  @override
-  State<CustomScrollbar> createState() => _CustomScrollbar();
-}
-
-class _CustomScrollbar extends State<CustomScrollbar> {
-  double position = 0.5;
-  double width = 100.0;
-
-  double size = 16.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Container(
-        height: size,
-        width: MAP_WIDTH,
-        color: Colors.black,
-        child: Stack(
-          children: [
-            Positioned(
-              left: position,
-              child: Container(
-                width: width,
-                height: size,
-                color: const Color.fromRGBO(60, 60, 60, 1.0),
-                child: Stack(
-                  children: [
-                    GestureDetector(
-                      onPanUpdate: (details) {
-                        position += details.delta.dx;
-
-                        if (position < 0) {
-                          position = 0;
-                        }
-                        if (position + width > constraints.maxWidth) {
-                          position = constraints.maxWidth - width;
-                        }
-
-                        scrollZoom(widget.controller, position, width,
-                            constraints.maxWidth, widget.zoom);
-                        setState(() {});
-                      },
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: size,
-                        height: size,
-                        color: const Color.fromRGBO(80, 80, 80, 1.0),
-                        child: GestureDetector(
-                          onPanUpdate: (details) {
-                            width -= details.delta.dx;
-                            position += details.delta.dx;
-
-                            if (position < 0) {
-                              position = 0;
-                            }
-
-                            scrollZoom(widget.controller, position, width,
-                                constraints.maxWidth, widget.zoom);
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        width: size,
-                        height: size,
-                        color: const Color.fromRGBO(80, 80, 80, 1.0),
-                        child: GestureDetector(
-                          onPanUpdate: (details) {
-                            width += details.delta.dx;
-
-                            if (position + width > constraints.maxWidth) {
-                              width = constraints.maxWidth - position;
-                            }
-
-                            scrollZoom(widget.controller, position, width,
-                                constraints.maxWidth, widget.zoom);
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-      );
-    });
-  }
-}
-
-void scrollZoom(ScrollController controller, double position, double width,
-    double maxWidth, ValueNotifier<double> zoom) {
-  zoom.value = (maxWidth / width) * 0.5;
-
-  double keyboardWidth = 1400 * zoom.value;
-  // print("Keyboard width is " + keyboardWidth.toString());
-
-  position = ((position + width / 2) / maxWidth) * keyboardWidth;
-  controller.jumpTo(position);
-  // print("Scrolled to " + position.toString());
-}
-
 class SampleRegion extends StatefulWidget {
   SampleRegion({
     required this.lowNote,
@@ -766,7 +425,7 @@ class SampleRegion extends StatefulWidget {
     required this.selected,
     required this.selectedSamples,
     required this.pointer,
-  });
+  }) : super(key: UniqueKey());
 
   int lowNote;
   int highNote;
@@ -786,6 +445,8 @@ class SampleRegion extends StatefulWidget {
 class _SampleRegionState extends State<SampleRegion> {
   double x = -1.0;
   double y = -1.0;
+  // double x2 = -1.0;
+  // double y2 = -1.0;
 
   double width = -1.0;
   double height = -1.0;
@@ -800,42 +461,43 @@ class _SampleRegionState extends State<SampleRegion> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
+      double ratio = KEY_WIDTH * 7 / 12;
+
       if (x == -1.0) {
-        x = widget.lowNote * KEY_WIDTH / 2;
+        x = widget.lowNote * ratio;
         y = widget.lowVelocity * constraints.maxHeight;
-        width = (widget.highNote - widget.lowNote + 1) * KEY_WIDTH / 2;
+        width = (widget.highNote - widget.lowNote + 1) * ratio;
         height =
             (widget.highVelocity - widget.lowVelocity) * constraints.maxHeight;
       }
 
-      ffiSampleMapperSetRegionLowNote(
-          widget.pointer, widget.index, x ~/ (KEY_WIDTH / 2));
-      ffiSampleMapperSetRegionHighNote(widget.pointer, widget.index,
-          x ~/ (KEY_WIDTH / 2) + width ~/ (KEY_WIDTH / 2) - 1);
+      ffiSampleMapperSetRegionLowNote(widget.pointer, widget.index, x ~/ ratio);
+      ffiSampleMapperSetRegionHighNote(
+          widget.pointer, widget.index, x ~/ ratio + width ~/ ratio - 1);
       ffiSampleMapperSetRegionLowVelocity(
           widget.pointer, widget.index, y / constraints.maxHeight);
       ffiSampleMapperSetRegionHighVelocity(widget.pointer, widget.index,
           y / constraints.maxHeight + (y + height) / constraints.maxHeight);
 
       return Stack(children: [
-        dragging || left
+        dragging || left // Left line
             ? Positioned(
-                left: x - (x % 12),
+                left: x - (x % ratio),
                 top: 0,
                 child: Container(
                   width: 1,
-                  height: 270,
+                  height: constraints.maxHeight,
                   decoration: const BoxDecoration(
                       color: Color.fromRGBO(200, 200, 200, 0.5)),
                 ))
             : Container(),
-        dragging || right
+        dragging || right // Right line
             ? Positioned(
-                left: x - (x % 12) + width - (width % 12),
+                left: x - (x % ratio) + width - (width % ratio),
                 top: 0,
                 child: Container(
                   width: 1,
-                  height: 270,
+                  height: constraints.maxHeight,
                   decoration: const BoxDecoration(
                       color: Color.fromRGBO(200, 200, 200, 0.5)),
                 ))
@@ -844,198 +506,183 @@ class _SampleRegionState extends State<SampleRegion> {
             valueListenable: widget.selected,
             builder: (context, value, w) {
               return Positioned(
-                  left: x - (x % 12),
-                  top: y - (y % 12),
+                  left: x - (x % ratio) - 1,
+                  top: y - (y % ratio) - 1,
                   child: Container(
-                    width: width - (width % 12),
-                    height: height - (height % 12),
-                    decoration: BoxDecoration(
-                      color: value == widget.index
-                          ? const Color.fromRGBO(140, 180, 100, 0.5)
-                          : const Color.fromRGBO(100, 140, 180, 0.5),
-                    ),
-                    child: Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (value == widget.index) {
-                                widget.selected.value = -1;
-                                widget.selectedSamples.value = [];
-                              } else {
-                                widget.selected.value = widget.index;
-                                widget.selectedSamples.value = [];
-                              }
-                            });
-                          },
-                          onPanStart: (details) {
-                            setState(() {
-                              dragging = true;
-                            });
-                          },
-                          onPanUpdate: (details) {
-                            setState(() {
-                              x += details.delta.dx;
-                              y += details.delta.dy;
+                      width: width - (width % ratio) + 2,
+                      height: height - (height % ratio) + 2,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: const Color.fromRGBO(200, 200, 200, 0.5),
+                            width: 2.0),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4)),
+                        color: value == widget.index
+                            ? const Color.fromRGBO(140, 180, 100, 0.5)
+                            : const Color.fromRGBO(100, 140, 180, 0.5),
+                      ),
+                      child: Stack(children: [
+                        GestureDetector(onTap: () {
+                          setState(() {
+                            if (value == widget.index) {
+                              widget.selected.value = -1;
+                              widget.selectedSamples.value = [];
+                            } else {
+                              widget.selected.value = widget.index;
+                              widget.selectedSamples.value = [];
+                            }
+                          });
+                        }, onPanStart: (details) {
+                          setState(() {
+                            dragging = true;
+                          });
+                        }, onPanUpdate: (details) {
+                          setState(() {
+                            x += details.delta.dx;
+                            y += details.delta.dy;
 
-                              if (x < 0) {
-                                x = 0;
-                              }
-                              if (y < 0) {
-                                y = 0;
-                              }
-                              if (x + width > constraints.maxWidth) {
-                                x = constraints.maxWidth - width;
-                              }
-                              if (y + height > constraints.maxHeight) {
-                                y = constraints.maxHeight - height;
-                              }
-                            });
-                          },
-                          onPanEnd: (details) {
-                            setState(() {
-                              dragging = false;
-                            });
-                          },
-                          onPanCancel: () {
-                            setState(() {
-                              dragging = false;
-                            });
-                          },
-                        ),
+                            if (x < 0) {
+                              x = 0;
+                            }
+
+                            if (y < 0) {
+                              y = 0;
+                            }
+
+                            if (x + width > constraints.maxWidth) {
+                              x = constraints.maxWidth - width;
+                            }
+
+                            if (y + height > constraints.maxHeight) {
+                              y = constraints.maxHeight - height;
+                            }
+                          });
+                        }, onPanEnd: (details) {
+                          setState(() {
+                            dragging = false;
+                          });
+                        }, onPanCancel: () {
+                          setState(() {
+                            dragging = false;
+                          });
+                        }),
                         Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            height: 2,
-                            color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            //color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            child: GestureDetector(
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  y += details.delta.dy;
-                                  height -= details.delta.dy;
-                                });
-                              },
-                              onPanStart: (e) {
-                                setState(() {
-                                  top = true;
-                                });
-                              },
-                              onPanEnd: (e) {
-                                setState(() {
-                                  top = false;
-                                });
-                              },
-                              onPanCancel: () {
-                                setState(() {
-                                  top = false;
-                                });
-                              },
-                              child: const MouseRegion(
-                                  cursor: SystemMouseCursors.resizeUpDown),
-                            ),
-                          ),
-                        ),
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                                height: 2,
+                                child: GestureDetector(
+                                  onPanUpdate: (details) {
+                                    setState(() {
+                                      y += details.delta.dy;
+                                      height -= details.delta.dy;
+                                    });
+                                  },
+                                  onPanStart: (e) {
+                                    setState(() {
+                                      top = true;
+                                    });
+                                  },
+                                  onPanEnd: (e) {
+                                    setState(() {
+                                      top = false;
+                                    });
+                                  },
+                                  onPanCancel: () {
+                                    setState(() {
+                                      top = false;
+                                    });
+                                  },
+                                  child: const MouseRegion(
+                                      cursor: SystemMouseCursors.resizeUpDown),
+                                ))),
                         Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            height: 2,
-                            color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            //color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            child: GestureDetector(
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  height += details.delta.dy;
-                                });
-                              },
-                              onPanStart: (e) {
-                                setState(() {
-                                  bottom = true;
-                                });
-                              },
-                              onPanEnd: (e) {
-                                setState(() {
-                                  bottom = false;
-                                });
-                              },
-                              onPanCancel: () {
-                                setState(() {
-                                  bottom = false;
-                                });
-                              },
-                              child: const MouseRegion(
-                                  cursor: SystemMouseCursors.resizeUpDown),
-                            ),
-                          ),
-                        ),
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                                height: 2,
+                                child: GestureDetector(
+                                  onPanUpdate: (details) {
+                                    setState(() {
+                                      height += details.delta.dy;
+                                    });
+                                  },
+                                  onPanStart: (e) {
+                                    setState(() {
+                                      bottom = true;
+                                    });
+                                  },
+                                  onPanEnd: (e) {
+                                    setState(() {
+                                      bottom = false;
+                                    });
+                                  },
+                                  onPanCancel: () {
+                                    setState(() {
+                                      bottom = false;
+                                    });
+                                  },
+                                  child: const MouseRegion(
+                                      cursor: SystemMouseCursors.resizeUpDown),
+                                ))),
                         Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            width: 2,
-                            color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            //color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            child: GestureDetector(
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  x += details.delta.dx;
-                                  width -= details.delta.dx;
-                                });
-                              },
-                              onPanStart: (e) {
-                                setState(() {
-                                  left = true;
-                                });
-                              },
-                              onPanEnd: (e) {
-                                setState(() {
-                                  left = false;
-                                });
-                              },
-                              onPanCancel: () {
-                                setState(() {
-                                  left = false;
-                                });
-                              },
-                              child: const MouseRegion(
-                                  cursor: SystemMouseCursors.resizeLeftRight),
-                            ),
-                          ),
-                        ),
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                                width: 2,
+                                child: GestureDetector(
+                                  onPanUpdate: (details) {
+                                    setState(() {
+                                      x += details.delta.dx;
+                                      width -= details.delta.dx;
+                                    });
+                                  },
+                                  onPanStart: (e) {
+                                    setState(() {
+                                      left = true;
+                                    });
+                                  },
+                                  onPanEnd: (e) {
+                                    setState(() {
+                                      left = false;
+                                    });
+                                  },
+                                  onPanCancel: () {
+                                    setState(() {
+                                      left = false;
+                                    });
+                                  },
+                                  child: const MouseRegion(
+                                      cursor:
+                                          SystemMouseCursors.resizeLeftRight),
+                                ))),
                         Align(
-                          alignment: Alignment.centerRight,
-                          child: Container(
-                            width: 2,
-                            color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            //color: const Color.fromRGBO(200, 200, 200, 0.5),
-                            child: GestureDetector(
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  width += details.delta.dx;
-                                });
-                              },
-                              onPanStart: (e) {
-                                setState(() {
-                                  right = true;
-                                });
-                              },
-                              onPanEnd: (e) {
-                                setState(() {
-                                  right = false;
-                                });
-                              },
-                              onPanCancel: () {
-                                setState(() {
-                                  right = false;
-                                });
-                              },
-                              child: const MouseRegion(
-                                  cursor: SystemMouseCursors.resizeLeftRight),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ));
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                                width: 2,
+                                child: GestureDetector(
+                                  onPanUpdate: (details) {
+                                    setState(() {
+                                      width += details.delta.dx;
+                                    });
+                                  },
+                                  onPanStart: (e) {
+                                    setState(() {
+                                      right = true;
+                                    });
+                                  },
+                                  onPanEnd: (e) {
+                                    setState(() {
+                                      right = false;
+                                    });
+                                  },
+                                  onPanCancel: () {
+                                    setState(() {
+                                      right = false;
+                                    });
+                                  },
+                                  child: const MouseRegion(
+                                      cursor:
+                                          SystemMouseCursors.resizeLeftRight),
+                                )))
+                      ])));
             })
       ]);
     });
@@ -1043,6 +690,8 @@ class _SampleRegionState extends State<SampleRegion> {
 }
 
 class SamplerGrid extends CustomPainter {
+  final int count = 108;
+
   @override
   void paint(Canvas canvas, ui.Size size) {
     Paint paint = Paint()
@@ -1053,20 +702,23 @@ class SamplerGrid extends CustomPainter {
       ..color = const Color.fromRGBO(45, 45, 45, 1.0)
       ..strokeWidth = 1.0;
 
-    for (double x = 0.0; x < size.width; x += 12) {
-      if ((x / 24) % 7 == 0) {
+    double x = 0.0;
+    for (int num = 0; num < count; num++) {
+      if (num % 12 == 0) {
         canvas.drawLine(Offset(x, 0.0), Offset(x, size.height), paint2);
       } else {
         canvas.drawLine(Offset(x, 0.0), Offset(x, size.height), paint);
       }
+      x += KEY_WIDTH * 7 / 12;
     }
 
-    for (double x = 0.0; x < size.width; x += 12) {
-      if ((x / 24) % 7 == 0) {
+    x = 0.0;
+    for (int num = 0; num < count; num++) {
+      if (num % 12 == 0) {
         TextSpan span = TextSpan(
             style: const TextStyle(
                 color: Color.fromRGBO(80, 80, 80, 1.0), fontSize: 10),
-            text: "C" + (x / 24 ~/ 7).toString());
+            text: "C" + (x / KEY_WIDTH ~/ 7).toString());
         TextPainter tp = TextPainter(
             text: span,
             textAlign: TextAlign.left,
@@ -1074,6 +726,7 @@ class SamplerGrid extends CustomPainter {
         tp.layout();
         tp.paint(canvas, Offset(x + 2.0, 2.0));
       }
+      x += KEY_WIDTH * 7 / 12;
     }
 
     for (double y = 0.0; y < size.height; y += size.height / 8) {
@@ -1124,51 +777,49 @@ class SampleListItem extends StatelessWidget {
         childWhenDragging: Container(),
         data: text,
         child: ValueListenableBuilder<List<int>>(
-          valueListenable: selectedSamples,
-          builder: (context, value, w) {
-            return GestureDetector(
-              child: Container(
-                height: 30,
-                width: 180,
-                padding: const EdgeInsets.fromLTRB(15, 0, 10, 0),
-                alignment: Alignment.centerLeft,
-                child: Row(children: [
-                  Text(
-                    text,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        decoration: TextDecoration.none),
+            valueListenable: selectedSamples,
+            builder: (context, value, w) {
+              return GestureDetector(
+                  child: Container(
+                    height: 30,
+                    width: 180,
+                    padding: const EdgeInsets.fromLTRB(15, 0, 10, 0),
+                    alignment: Alignment.centerLeft,
+                    child: Row(children: [
+                      Text(
+                        text,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            decoration: TextDecoration.none),
+                      ),
+                      const Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Icon(Icons.drag_indicator,
+                              size: 14, color: Colors.white),
+                        ),
+                      )
+                    ]),
+                    decoration: BoxDecoration(
+                        color: selectedSamples.value.contains(index)
+                            ? const Color.fromRGBO(50, 50, 50, 1.0)
+                            : const Color.fromRGBO(30, 30, 30, 1.0)),
                   ),
-                  const Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Icon(Icons.drag_indicator,
-                          size: 14, color: Colors.white),
-                    ),
-                  )
-                ]),
-                decoration: BoxDecoration(
-                    color: selectedSamples.value.contains(index)
-                        ? const Color.fromRGBO(50, 50, 50, 1.0)
-                        : const Color.fromRGBO(30, 30, 30, 1.0)),
-              ),
-              onTap: () {
-                if (!selectedSamples.value.contains(index)) {
-                  selectedSamples.value.add(index);
-                } else {
-                  selectedSamples.value.remove(index);
-                }
+                  onTap: () {
+                    if (!selectedSamples.value.contains(index)) {
+                      selectedSamples.value.add(index);
+                    } else {
+                      selectedSamples.value.remove(index);
+                    }
 
-                selectedSamples.notifyListeners();
-              },
-            );
-          },
-        ));
+                    selectedSamples.notifyListeners();
+                  });
+            }));
   }
 }
 
-class Keyboard extends StatefulWidget {
+/*class Keyboard extends StatefulWidget {
   @override
   State<Keyboard> createState() => _KeyboardState();
 }
@@ -1285,4 +936,19 @@ class _KeyState extends State<KeyWidget> {
           ),
         ));
   }
-}
+}*/
+
+          /*Visibility(
+              visible: loadingSample,
+              child: Container(
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Color.fromRGBO(0, 0, 0, 0.5),
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                  ),
+                  child: const SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
+                      ))))*/
