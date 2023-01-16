@@ -1,9 +1,5 @@
-
-
 use crate::*;
 
-
-// use pa_dsp::buffers::*;
 pub struct TriangleModule;
 
 pub struct TriangleModuleVoice {
@@ -17,7 +13,7 @@ impl Module for TriangleModule {
     const INFO: Info = Info {
         title: "Tri",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -43,7 +39,7 @@ impl Module for TriangleModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/saw.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }
@@ -84,27 +80,6 @@ impl Module for TriangleModule {
     }
 }
 
-/*faust!(Triangle2,
-    freq = hslider("freq[style:numerical]", 500, 20, 20000, 0.001) : si.smoo;
-    process = os.triangletooth(freq);
-);
-
-faust!(Square2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.square(freq * driftosc);
-);
-
-faust!(Sine2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.osc(freq);
-);
-
-faust!(Triangle2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.triangle(freq);
-);
-*/
-
 fn Triangle_faustpower2_f(value: f32) -> f32 {
     return value * value;
 }
@@ -121,7 +96,7 @@ pub struct Triangle {
     fRec2: [f32; 2],
     fVec1: [f32; 2],
     IOTA0: i32,
-    fVec2: [f32; 4096],
+    fVec2: Box<[f32; 4096]>,
     fConst6: f32,
     fRec1: [f32; 2],
 }
@@ -141,7 +116,7 @@ impl Triangle {
             fRec2: [0.0; 2],
             fVec1: [0.0; 2],
             IOTA0: 0,
-            fVec2: [0.0; 4096],
+            fVec2: Box::new([0.0; 4096]),
             fConst6: 0.0,
             fRec1: [0.0; 2],
         }

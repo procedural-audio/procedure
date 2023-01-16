@@ -1,16 +1,7 @@
-
-
 use crate::*;
 
 
-// use pa_dsp::buffers::*;
-
-pub struct SineModule {
-    wave_index: u32,
-    freq: f32,
-    glide: f32,
-    other: f32,
-}
+pub struct SineModule;
 
 pub struct SineModuleVoice {
     sine: Sine,
@@ -23,7 +14,7 @@ impl Module for SineModule {
     const INFO: Info = Info {
         title: "Sin",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -32,14 +23,7 @@ impl Module for SineModule {
     };
 
     
-    fn new() -> Self {
-        Self {
-            wave_index: 0,
-            freq: 100.0,
-            glide: 0.0,
-            other: 0.0,
-        }
-    }
+    fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
@@ -137,7 +121,9 @@ pub fn newSineSIG0() -> SineSIG0 {
         iRec0: [0; 2],
     }
 }
+
 static mut ftbl0SineSIG0: [f32; 65536] = [0.0; 65536];
+
 pub struct Sine {
     fSampleRate: i32,
     fConst1: f32,

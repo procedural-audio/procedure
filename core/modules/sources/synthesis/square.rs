@@ -1,5 +1,3 @@
-
-
 use crate::*;
 
 pub struct SquareModule;
@@ -15,7 +13,7 @@ impl Module for SquareModule {
     const INFO: Info = Info {
         title: "Squ",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
@@ -23,7 +21,6 @@ impl Module for SquareModule {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
@@ -42,7 +39,7 @@ impl Module for SquareModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/square.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }
@@ -99,7 +96,7 @@ pub struct Square {
     fRec0: [f32; 2],
     fVec1: [f32; 2],
     IOTA0: i32,
-    fVec2: [f32; 4096],
+    fVec2: Box<[f32; 4096]>,
     fConst5: f32,
 }
 
@@ -117,7 +114,7 @@ impl Square {
             fRec0: [0.0; 2],
             fVec1: [0.0; 2],
             IOTA0: 0,
-            fVec2: [0.0; 4096],
+            fVec2: Box::new([0.0; 4096]),
             fConst5: 0.0,
         }
     }

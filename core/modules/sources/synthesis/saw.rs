@@ -87,33 +87,6 @@ impl Module for SawModule {
     }
 }
 
-/* 
-import("stdfaust.lib");
-freq = hslider("freq[style:numerical]", 500, 20, 20000, 0.001) : si.smoo;
-process = os.sawtooth(freq);
-*/
-
-/*faust!(Saw2,
-    freq = hslider("freq[style:numerical]", 500, 20, 20000, 0.001) : si.smoo;
-    process = os.sawtooth(freq);
-);
-
-faust!(Square2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.square(freq * driftosc);
-);
-
-faust!(Sine2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.osc(freq);
-);
-
-faust!(Triangle2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.triangle(freq);
-);
-*/
-
 pub struct Saw {
 	fSampleRate: i32,
 	fConst0: f32,
