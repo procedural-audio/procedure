@@ -1,31 +1,23 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_highlight/flutter_highlight.dart';
+import 'package:flutter_highlight/themes/vs2015.dart';
+import 'package:highlight/highlight.dart';
+import 'package:highlight/languages/lua.dart';
 import 'package:metasampler/host.dart';
-import 'package:statsfl/statsfl.dart';
+import 'package:metasampler/ui/code_editor/code_text_field.dart';
 
 import 'views/info.dart';
 import 'views/settings.dart';
-import 'views/browser.dart';
-import 'views/samples.dart';
 import 'views/presets.dart';
 import 'views/right_click.dart';
 import 'views/bar.dart';
 
-import 'views/variables.dart';
 import 'widgets/widget.dart';
 import 'instrument.dart';
 import 'module.dart';
-
-import 'config.dart';
-
-import 'dart:ffi' as ffi;
 
 import 'ui/layout.dart';
 
@@ -332,12 +324,11 @@ class _PatchingView extends State<PatchingView> {
                 child: ModuleWheel(wheelModules)),
           ),
           MouseRegion(
-            opaque: false,
-            onHover: (event) {
-              mouseOffset = event.localPosition;
-              // print(mouseOffset.toString());
-            },
-          ),
+              opaque: false,
+              onHover: (event) {
+                mouseOffset = event.localPosition;
+                // print(mouseOffset.toString());
+              }),
           ValueListenableBuilder<String>(
               valueListenable: widget.host.globals.pinLabel,
               builder: (context, value, w) {
@@ -348,8 +339,64 @@ class _PatchingView extends State<PatchingView> {
                       top: widget.host.globals.labelPosition.dy,
                       child: PinLabel(value),
                     ));
-              })
+              }),
+          // Positioned(top: 0, bottom: 0, right: 0, child: CodeEditor())
         ]));
+  }
+}
+
+class CodeEditor extends StatefulWidget {
+  @override
+  _CodeEditor createState() => _CodeEditor();
+}
+
+class _CodeEditor extends State<CodeEditor> {
+  final codeController = CodeController(modifiers: [
+    const IndentModifier(handleBrackets: true)
+  ], stringMap: const {
+    'function': TextStyle(color: Color(0xfffb7b72)),
+    'if': TextStyle(color: Color(0xfffb7b72)),
+    'then': TextStyle(color: Color(0xfffb7b72)),
+    'else': TextStyle(color: Color(0xfffb7b72)),
+    'end': TextStyle(color: Color(0xfffb7b72)),
+    'return': TextStyle(color: Color(0xfffb7b72)),
+    'print': TextStyle(color: Color(0xff74b8f4)),
+    '"': TextStyle(color: Color(0xffa5d6ff)),
+  }, text: """function fact (n)
+      if n == 0 then
+        return 1
+      else
+        return n * fact(n-1)
+      end
+    end
+    
+    print("enter a number:")
+    a = io.read("*number")        -- read a number
+    print(fact(a))""");
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return Column(children: [
+        Container(
+            width: 400,
+            height: 30,
+            decoration: const BoxDecoration(color: Colors.grey)),
+        Container(
+            width: 400,
+            height: constraints.maxHeight - 30,
+            child: CodeField(
+                isDense: true,
+                controller: codeController,
+                lineNumberStyle: const LineNumberStyle(
+                    width: 30,
+                    textStyle: TextStyle(
+                        color: Color.fromRGBO(100, 100, 100, 1.0),
+                        fontSize: 10)),
+                textStyle:
+                    const TextStyle(fontSize: 14, color: Color(0xffc9d1d9))))
+      ]);
+    });
   }
 }
 

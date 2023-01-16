@@ -317,3 +317,19 @@ impl<F: FnMut(&str)> SearchableDropdownTrait for SearchableDropdown<F> {
 pub unsafe extern "C" fn ffi_searchable_dropdown_on_select(widget: &mut dyn SearchableDropdownTrait, element: &i8) {
     widget.on_select(str_from_char(element));
 }
+
+pub struct Scripter<T: WidgetNew, F: FnMut(&str)> {
+    pub dir: &'static str,
+    pub on_update: F,
+    pub child: T
+}
+
+impl<T: WidgetNew, F: FnMut(&str)> WidgetNew for Scripter<T, F> {
+    fn get_name(&self) -> &'static str {
+        "LuaEditor"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &(self.child)
+    }
+}

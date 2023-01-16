@@ -23,7 +23,7 @@ impl Module for StepSequencer {
         title: "Step Sequencer",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(20 + 42 * 16, 42 * 8),
+        size: Size::Static(42 * 16 + 2, 42 * 8 + 11),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Time("Time", 10)
@@ -74,19 +74,25 @@ impl Module for StepSequencer {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: Refresh {
-                callback: &mut self.callback,
-                child: widget::Pads {
-                    pads: &mut self.pads,
-                    on_event: | event, pads | {
-                        match event {
-                            PadEvent::Press(x, y) => {
-                                println!("Pad pressed");
-                                pads[x][y].down = !pads[x][y].down;
-                            },
-                            PadEvent::Release(x, y) => {
-                                println!("Pad released");
-                            },
+            child: Scripter {
+                dir: "some/path/here",
+                on_update: | script | {
+                    println!("Script {}", script);
+                },
+                child: Refresh {
+                    callback: &mut self.callback,
+                    child: widget::Pads {
+                        pads: &mut self.pads,
+                        on_event: | event, pads | {
+                            match event {
+                                PadEvent::Press(x, y) => {
+                                    println!("Pad pressed");
+                                    pads[x][y].down = !pads[x][y].down;
+                                },
+                                PadEvent::Release(x, y) => {
+                                    println!("Pad released");
+                                },
+                            }
                         }
                     }
                 }

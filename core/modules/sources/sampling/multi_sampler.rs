@@ -40,8 +40,14 @@ impl Module for MultiSampler {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: SampleMapper {
-                map: self.map.clone(),
+            child: Scripter {
+                dir: "multi-sampler",
+                on_update: | script | {
+                    println!("Update script with {}", script);
+                },
+                child: SampleMapper {
+                    map: self.map.clone(),
+                }
             }
         });
     }
@@ -291,20 +297,6 @@ pub struct SampleEditor {}
 impl WidgetNew for SampleEditor {
     fn get_name(&self) -> &'static str {
         "SampleEditor"
-    }
-
-    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
-        &()
-    }
-}
-
-pub struct LuaEditor {
-    pub dir: &'static str
-}
-
-impl WidgetNew for LuaEditor {
-    fn get_name(&self) -> &'static str {
-        "LuaEditor"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
