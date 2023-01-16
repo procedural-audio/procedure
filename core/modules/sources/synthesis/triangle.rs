@@ -4,24 +4,18 @@ use crate::*;
 
 
 // use pa_dsp::buffers::*;
-pub struct TriangleModule {
-    wave_index: u32,
-    freq: f32,
-    glide: f32,
-    other: f32,
-}
+pub struct TriangleModule;
 
 pub struct TriangleModuleVoice {
     triangle: Triangle,
     active: bool,
-    id: Id,
 }
 
 impl Module for TriangleModule {
     type Voice = TriangleModuleVoice;
 
     const INFO: Info = Info {
-        title: "Triangle",
+        title: "Tri",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),
@@ -31,20 +25,12 @@ impl Module for TriangleModule {
         path: "Category 1/Category 2/Module Name"
     };
 
-    fn new() -> Self {
-        Self {
-            wave_index: 0,
-            freq: 100.0,
-            glide: 0.0,
-            other: 0.0,
-        }
-    }
+    fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             triangle: Triangle::new(),
             active: false,
-            id: Id::new(),
         }
     }
 
@@ -64,42 +50,37 @@ impl Module for TriangleModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = Id::new();
         voice.triangle.init(sample_rate as i32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*for note in &inputs.events[0] {
-            match note {
-                Event::NoteOn { note, offset: _ } => {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure: _ } => {
                     voice.active = true;
-                    voice.id = note.id;
-
-                    voice.triangle.set_freq(note.pitch);
+                    voice.triangle.init(voice.triangle.fSampleRate);
+                    voice.triangle.set_freq(pitch);
                 }
-                Event::NoteOff { id } => {
-                    if voice.id == *id {
-                        voice.active = false;
-                    }
+                Event::NoteOff => {
+                    voice.active = false;
                 }
-                Event::Pitch { id, freq } => {
-                    if voice.id == *id {
-                        voice.triangle.set_freq(*freq);
-                    }
+                Event::Pitch(pitch) => {
+                    voice.triangle.set_freq(pitch);
                 }
                 _ => (),
             }
         }
 
         if voice.active {
-            let buffer = &mut outputs.audio[0];
+            voice.triangle.compute(
+                outputs.audio[0].len() as i32, 
+                &[],
+                &mut [outputs.audio[0].as_slice_mut()]);
 
-            voice
-                .triangle
-                .compute(buffer.len() as i32, &[], &mut [buffer.left.as_slice_mut()]);
-
-            buffer.right.copy_from(&buffer.left);
-        }*/
+            for sample in outputs.audio[0].as_slice_mut() {
+                sample.gain(0.1);
+            }
+        }
     }
 }
 
@@ -232,7 +213,7 @@ impl Triangle {
         self.fHslider0 = value;
     }
 
-    fn compute(&mut self, count: i32, _inputs: &[&[f32]], outputs: &mut [&mut [f32]]) {
+    fn compute(&mut self, count: i32, _inputs: &[&[Stereo2]], outputs: &mut [&mut [Stereo2]]) {
         let outputs0 = if let [outputs0, ..] = outputs {
             let outputs0 = outputs0[..count as usize].iter_mut();
             outputs0
@@ -262,7 +243,8 @@ impl Triangle {
                             * (fTemp7 + 1.0 - fTemp5)
                         - (fTemp5 - fTemp7)
                             * self.fVec2[((self.IOTA0 - (iTemp6 + 1)) & 4095) as usize]);
-            *output0 = (self.fConst1 * self.fRec0[0] * self.fRec1[0]) as f32;
+            output0.left = (self.fConst1 * self.fRec0[0] * self.fRec1[0]) as f32;
+            output0.right = output0.left;
             self.iVec0[1] = self.iVec0[0];
             self.fRec0[1] = self.fRec0[0];
             self.fRec2[1] = self.fRec2[0];

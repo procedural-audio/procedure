@@ -2,27 +2,18 @@
 
 use crate::*;
 
-
-// use pa_dsp::buffers::*;
-
-pub struct SquareModule {
-    wave_index: u32,
-    freq: f32,
-    glide: f32,
-    other: f32,
-}
+pub struct SquareModule;
 
 pub struct SquareModuleVoice {
     square: Square,
     active: bool,
-    id: Id,
 }
 
 impl Module for SquareModule {
     type Voice = SquareModuleVoice;
 
     const INFO: Info = Info {
-        title: "Square",
+        title: "Squ",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),
@@ -33,20 +24,12 @@ impl Module for SquareModule {
     };
 
     
-    fn new() -> Self {
-        Self {
-            wave_index: 0,
-            freq: 100.0,
-            glide: 0.0,
-            other: 0.0,
-        }
-    }
+    fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             square: Square::new(),
             active: false,
-            id: Id::new(),
         }
     }
 
@@ -66,69 +49,44 @@ impl Module for SquareModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = Id::new();
         voice.square.init(sample_rate as i32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*for note in &inputs.events[0] {
-            match note {
-                Event::NoteOn { note, offset: _ } => {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure: _ } => {
                     voice.active = true;
-                    voice.id = note.id;
-
-                    voice.square.set_freq(note.pitch);
+                    voice.square.init(voice.square.fSampleRate);
+                    voice.square.set_freq(pitch);
                 }
-                Event::NoteOff { id } => {
-                    if voice.id == *id {
-                        voice.active = false;
-                    }
+                Event::NoteOff => {
+                    voice.active = false;
                 }
-                Event::Pitch { id, freq } => {
-                    if voice.id == *id {
-                        voice.square.set_freq(*freq);
-                    }
+                Event::Pitch(pitch) => {
+                    voice.square.set_freq(pitch);
                 }
                 _ => (),
             }
         }
 
         if voice.active {
-            let buffer = &mut outputs.audio[0];
+            voice.square.compute(
+                outputs.audio[0].len() as i32, 
+                &[],
+                &mut [outputs.audio[0].as_slice_mut()]);
 
-            voice
-                .square
-                .compute(buffer.len() as i32, &[], &mut [buffer.left.as_slice_mut()]);
-
-            buffer.right.copy_from(&buffer.left);
-        }*/
+            for sample in outputs.audio[0].as_slice_mut() {
+                sample.gain(0.1);
+            }
+        }
     }
 }
-
-/*faust!(Square2,
-    freq = hslider("freq[style:numerical]", 500, 20, 20000, 0.001) : si.smoo;
-    process = os.squaretooth(freq);
-);
-
-faust!(Square2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.square(freq * driftosc);
-);
-
-faust!(Sine2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.osc(freq);
-);
-
-faust!(Triangle2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.triangle(freq);
-);
-*/
 
 fn mydsp_faustpower2_f(value: f32) -> f32 {
     return value * value;
 }
+
 pub struct Square {
     fSampleRate: i32,
     fConst1: f32,
@@ -226,7 +184,7 @@ impl Square {
         self.fHslider0 = value;
     }
 
-    fn compute(&mut self, count: i32, _inputs: &[&[f32]], outputs: &mut [&mut [f32]]) {
+    fn compute(&mut self, count: i32, _inputs: &[&[Stereo2]], outputs: &mut [&mut [Stereo2]]) {
         let outputs0 = if let [outputs0, ..] = outputs {
             let outputs0 = outputs0[..count as usize].iter_mut();
             outputs0
@@ -249,11 +207,12 @@ impl Square {
             let fTemp5: f32 = f32::max(0.0, f32::min(2047.0, self.fConst5 / fTemp0));
             let iTemp6: i32 = fTemp5 as i32;
             let fTemp7: f32 = f32::floor(fTemp5);
-            *output0 = self.fConst1
+            output0.left = self.fConst1
                 * (fTemp4
                     - self.fVec2[((self.IOTA0 - iTemp6) & 4095) as usize] * (fTemp7 + 1.0 - fTemp5)
                     - (fTemp5 - fTemp7) * self.fVec2[((self.IOTA0 - (iTemp6 + 1)) & 4095) as usize])
                     as f32;
+            output0.right = output0.left;
             self.iVec0[1] = self.iVec0[0];
             self.fRec1[1] = self.fRec1[0];
             self.fRec0[1] = self.fRec0[0];

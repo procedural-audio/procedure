@@ -30,24 +30,9 @@ int Function(FFIWidgetPointer) ffiSliderGetColor = core
 class LuaEditorWidget extends ModuleWidget {
   LuaEditorWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
-  /*final controller = CodeController(
-    language: lua,
-    stringMap: {
-      "function":
-          const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-      "if": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-      "do": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-      "end": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-      "while": const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-    },
-  );*/
-
   @override
   Widget build(BuildContext context) {
     bool isOver = false;
-    /*return CodeField(
-        controller: controller,
-        textStyle: const TextStyle(fontFamily: "SourceCode"));*/
     return Container(
         decoration: const BoxDecoration(
             color: Color.fromRGBO(20, 20, 20, 1.0),

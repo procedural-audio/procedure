@@ -1,16 +1,10 @@
 use crate::*;
 
-pub struct SawModule {
-    wave_index: u32,
-    freq: f32,
-    glide: f32,
-    other: f32,
-}
+pub struct SawModule;
 
 pub struct SawModuleVoice {
     saw: Saw,
     active: bool,
-    id: Id,
 }
 
 impl Module for SawModule {
@@ -31,32 +25,17 @@ impl Module for SawModule {
         path: "Category 1/Category 2/Module Name"
     };
 
-    fn new() -> Self {
-        Self {
-            wave_index: 0,
-            freq: 100.0,
-            glide: 0.0,
-            other: 0.0,
-        }
-    }
+    fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             saw: Saw::new(),
             active: false,
-            id: Id::new(),
         }
     }
 
-    fn load(&mut self, json: &JSON) {
-        self.freq = json.get("freq");
-        self.wave_index = json.get("wave_index");
-    }
-
-    fn save(&self, json: &mut JSON) {
-        json.insert("freq", self.freq);
-        json.insert("wave_index", self.wave_index);
-    }
+    fn load(&mut self, json: &JSON) {}
+    fn save(&self, json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
@@ -71,7 +50,6 @@ impl Module for SawModule {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = Id::new();
         voice.saw.init(sample_rate as i32);
     }
 
@@ -80,18 +58,14 @@ impl Module for SawModule {
             match msg.note {
                 Event::NoteOn { pitch, pressure } => {
                     voice.active = true;
-                    voice.id = msg.id;
+                    voice.saw.init(voice.saw.fSampleRate);
                     voice.saw.set_freq(pitch);
                 }
                 Event::NoteOff => {
-                    if voice.id == msg.id {
-                        voice.active = false;
-                    }
+                    voice.active = false;
                 }
                 Event::Pitch(freq) => {
-                    if voice.id == msg.id {
-                        voice.saw.set_freq(freq);
-                    }
+                    voice.saw.set_freq(freq);
                 }
                 _ => (),
             }

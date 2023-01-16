@@ -15,14 +15,13 @@ pub struct SineModule {
 pub struct SineModuleVoice {
     sine: Sine,
     active: bool,
-    id: Id,
 }
 
 impl Module for SineModule {
     type Voice = SineModuleVoice;
 
     const INFO: Info = Info {
-        title: "Sine",
+        title: "Sin",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),
@@ -46,7 +45,6 @@ impl Module for SineModule {
         Self::Voice {
             sine: Sine::new(),
             active: false,
-            id: Id::new(),
         }
     }
 
@@ -59,72 +57,46 @@ impl Module for SineModule {
             size: (40, 40),
             child: Svg {
                 path: "waveforms/sine.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.active = false;
-        voice.id = Id::new();
         voice.sine.init(sample_rate as i32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*for note in &inputs.events[0] {
-            match note {
-                Event::NoteOn { note, offset: _ } => {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure: _ } => {
                     voice.active = true;
-                    voice.id = note.id;
-
-                    voice.sine.set_freq(note.pitch);
+                    voice.sine.init(voice.sine.fSampleRate);
+                    voice.sine.set_freq(pitch);
                 }
-                Event::NoteOff { id } => {
-                    if voice.id == *id {
-                        voice.active = false;
-                    }
+                Event::NoteOff => {
+                    voice.active = false;
                 }
-                Event::Pitch { id, freq } => {
-                    if voice.id == *id {
-                        voice.sine.set_freq(*freq);
-                    }
+                Event::Pitch(pitch) => {
+                    voice.sine.set_freq(pitch);
                 }
                 _ => (),
             }
         }
 
         if voice.active {
-            let buffer = &mut outputs.audio[0];
+            voice.sine.compute(
+                outputs.audio[0].len() as i32, 
+                &[],
+                &mut [outputs.audio[0].as_slice_mut()]);
 
-            voice
-                .sine
-                .compute(buffer.len() as i32, &[], &mut [buffer.left.as_slice_mut()]);
-
-            buffer.right.copy_from(&buffer.left);
-        }*/
+            for sample in outputs.audio[0].as_slice_mut() {
+                sample.gain(0.1);
+            }
+        }
     }
 }
-
-/*faust!(Saw2,
-    freq = hslider("freq[style:numerical]", 500, 20, 20000, 0.001) : si.smoo;
-    process = os.sinetooth(freq);
-);
-
-faust!(Square2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.square(freq * driftosc);
-);
-
-faust!(Sine2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.osc(freq);
-);
-
-faust!(Triangle2,
-    freq = hslider("freq[style:numerical]", 500, 200, 12000, 0.001) : si.smoo;
-    process = os.triangle(freq);
-);
-*/
 
 pub struct SineSIG0 {
     iVec0: [i32; 2],
@@ -241,7 +213,7 @@ impl Sine {
         self.fHslider0 = value;
     }
 
-    fn compute(&mut self, count: i32, _inputs: &[&[f32]], outputs: &mut [&mut [f32]]) {
+    fn compute(&mut self, count: i32, _inputs: &[&[Stereo2]], outputs: &mut [&mut [Stereo2]]) {
         let outputs0 = if let [outputs0, ..] = outputs {
             let outputs0 = outputs0[..count as usize].iter_mut();
             outputs0
@@ -254,8 +226,9 @@ impl Sine {
             self.fRec2[0] = fSlow0 + self.fConst3 * self.fRec2[1];
             let fTemp0: f32 = self.fRec1[1] + self.fConst1 * self.fRec2[0];
             self.fRec1[0] = fTemp0 - f32::floor(fTemp0);
-            *output0 =
+            output0.left =
                 (unsafe { ftbl0SineSIG0[((65536.0 * self.fRec1[0]) as i32) as usize] }) as f32;
+            output0.right = output0.left;
             self.fRec2[1] = self.fRec2[0];
             self.fRec1[1] = self.fRec1[0];
         }
