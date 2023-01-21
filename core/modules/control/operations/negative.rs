@@ -29,9 +29,6 @@ impl Module for Negative {
         ()
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
-
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (30, 25),

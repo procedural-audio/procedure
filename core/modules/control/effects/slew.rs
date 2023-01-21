@@ -24,16 +24,8 @@ impl Module for Slew {
     };
 
         
-    fn new() -> Self {
-        Self { rate: 0.0 }
-    }
-
-    fn new_voice(&self, _index: u32) -> Self::Voice {
-        ()
-    }
-
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn new() -> Self { Self { rate: 0.0 } }
+    fn new_voice(&self, _index: u32) -> Self::Voice { () }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

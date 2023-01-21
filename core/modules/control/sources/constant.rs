@@ -28,8 +28,13 @@ impl Module for Constant {
         ()
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, state: &State) {
+        self.value = state.load("value");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("value", self.value);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

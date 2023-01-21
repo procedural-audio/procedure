@@ -34,19 +34,35 @@ impl Module for MultiSampler {
         PitchedSamplePlayer::new()
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: Scripter {
-                dir: "multi-sampler",
-                on_update: | script | {
-                    println!("Update script with {}", script);
+            child: Browser {
+                dir: "directory/goes/here",
+                on_event: | event | {
+                    match event {
+                        BrowserEvent::Load(path) => {
+                            println!("Load path {}", path);
+                        },
+                        BrowserEvent::Save => {
+                            println!("Save stuff here");
+                        },
+                        BrowserEvent::Import(path) => {
+                            println!("Import file {}", path);
+                        }
+                    }
                 },
-                child: SampleMapper {
-                    map: self.map.clone(),
+                child: Scripter {
+                    dir: "directory/goes/here",
+                    on_update: | script | {
+                        println!("Update script with {}", script);
+                    },
+                    child: SampleMapper {
+                        map: self.map.clone(),
+                    }
                 }
             }
         });

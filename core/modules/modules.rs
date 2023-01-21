@@ -43,7 +43,6 @@ pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
     modules.push(("Sampler", create_module::<Sampler>));
     modules.push(("Granular", create_module::<Granular>));
     modules.push(("Slicer", create_module::<Slicer>));
-    // modules.push(("Sample Resynthesis", create_module::<SampleResynthesis>));
     modules.push(("Looper", create_module::<Looper>));
 
     modules.push(("Waveshaper", create_module::<Waveshaper>));
@@ -154,8 +153,8 @@ pub struct ModuleSymbols {
     pub sym_build: for<'m> extern "C" fn(&'m mut ModuleFFI, ui: &'m UI) -> Box<dyn WidgetNew + 'm>,
     pub sym_prepare: extern "C" fn(&ModuleFFI, &mut VoiceFFI, sample_rate: u32, block_size: usize),
     pub sym_process: extern "C" fn(&mut ModuleFFI, &mut VoiceFFI, inputs: &IO, outputs: &mut IO),
-    pub sym_load: extern "C" fn(&mut ModuleFFI, json: &JSON),
-    pub sym_save: extern "C" fn(&ModuleFFI, json: &mut JSON),
+    pub sym_load: extern "C" fn(&mut ModuleFFI, state: &State),
+    pub sym_save: extern "C" fn(&ModuleFFI, state: &mut State),
     pub sym_info: extern "C" fn(&ModuleFFI) -> Info,
 }
 
@@ -200,6 +199,28 @@ impl UI {
     }
 }
 
+#[derive(Serialize, Deserialize, PartialEq)]
+pub enum Key {
+    Str(&'static str),
+    Int(usize)
+}
+
+pub trait ToKey {
+    fn to_key(self) -> Key;
+}
+
+impl ToKey for &'static str {
+    fn to_key(self) -> Key {
+        Key::Str(self)
+    }
+}
+
+impl ToKey for usize {
+    fn to_key(self) -> Key {
+        Key::Int(self)
+    }
+}
+
 #[derive(Serialize, Copy, Clone)]
 pub enum Value {
     Float(f32),
@@ -215,9 +236,7 @@ pub trait ToValue {
 }
 
 pub trait FromValue {
-    fn from_value(value: Value) -> Self where Self: Sized {
-        panic!("Couldn't get type from value");
-    }
+    fn from_value(value: Value) -> Self where Self: Sized;
 }
 
 impl ToValue for f32 {
@@ -252,24 +271,47 @@ impl FromValue for u32 {
     }
 }
 
-#[derive(Serialize)]
-pub struct JSON {
-    map: std::collections::HashMap<&'static str, Value>,
+impl ToValue for bool {
+    fn to_value(self) -> Value {
+        Value::Bool(self)
+    }
 }
 
-impl JSON {
+impl FromValue for bool {
+    fn from_value(value: Value) -> Self {
+        if let Value::Bool(v) = value {
+            v
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct State {
+    state: Vec<(Key, Value)>,
+}
+
+impl State {
     pub fn new() -> Self {
-        JSON {
-            map: std::collections::HashMap::new(),
+        State {
+            state: Vec::new()
         }
     }
 
-    pub fn insert<T: ToValue>(&mut self, name: &'static str, value: T) {
-        self.map.insert(name, value.to_value());
+    pub fn save<K: ToKey, V: ToValue>(&mut self, key: K, value: V) {
+        self.state.push((key.to_key(), value.to_value()));
     }
 
-    pub fn get<T: FromValue>(&self, name: &'static str) -> T {
-        T::from_value(*self.map.get(name).unwrap())
+    pub fn load<K: ToKey, V: FromValue>(&self, key: K) -> V {
+        let key = key.to_key();
+        for (k, v) in &self.state {
+            if *k == key {
+                return V::from_value(*v);
+            }
+        }
+
+        panic!("Couldn't find element");
     }
 }
 
@@ -300,8 +342,13 @@ pub trait Module {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w>;
 
-    fn load(&mut self, state: &JSON);
-    fn save(&self, state2: &mut JSON);
+    fn load(&mut self, state: &State) {
+        // Load stuff here
+    }
+
+    fn save(&self, state2: &mut State) {
+        // Load stuff here
+    }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) where Self: Sized;
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
@@ -326,8 +373,8 @@ pub enum Voicing {
 pub trait PolyphonicModule {
     fn new() -> Self where Self: Sized;
     fn info(&self) -> Info;
-    fn load(&mut self, state: &JSON);
-    fn save(&self, state: &mut JSON);
+    fn load(&mut self, state: &State);
+    fn save(&self, state: &mut State);
     fn should_refresh(&self) -> bool;
     fn should_rebuild(&self) -> bool;
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
@@ -424,7 +471,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         self.module.info()
     }
 
-    fn load(&mut self, json: &JSON) {
+    fn load(&mut self, json: &State) {
         self.module.load(json);
     }
 
@@ -436,7 +483,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         false
     }
 
-    fn save(&self, _json: &mut JSON) {
+    fn save(&self, _state: &mut State) {
         println!("SAVE NOT IMPLEMENTED IN POLYPHONIC MODULE");
     }
 

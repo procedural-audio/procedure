@@ -276,7 +276,6 @@ pub struct Category<T> {
     pub elements: Vec<T>
 }
 
-
 pub struct SearchableDropdown<F: FnMut(&str)> {
     pub categories: Vec<Category<String>>,
     pub on_select: F
@@ -327,6 +326,28 @@ pub struct Scripter<T: WidgetNew, F: FnMut(&str)> {
 impl<T: WidgetNew, F: FnMut(&str)> WidgetNew for Scripter<T, F> {
     fn get_name(&self) -> &'static str {
         "LuaEditor"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &(self.child)
+    }
+}
+
+pub enum BrowserEvent {
+    Load(String),
+    Save,
+    Import(String)
+}
+
+pub struct Browser<T: WidgetNew, F: FnMut(BrowserEvent)> {
+    pub dir: &'static str,
+    pub on_event: F,
+    pub child: T
+}
+
+impl<T: WidgetNew, F: FnMut(BrowserEvent)> WidgetNew for Browser<T, F> {
+    fn get_name(&self) -> &'static str {
+        "Browser"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {

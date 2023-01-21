@@ -32,8 +32,8 @@ impl Module for ControlToNotes {
         Self::Voice { note_on: false }
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

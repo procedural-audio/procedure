@@ -21,7 +21,6 @@ impl Module for Display {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self {
             value: 0.0,
@@ -29,12 +28,7 @@ impl Module for Display {
         }
     }
 
-    fn new_voice(&self, index: u32) -> Self::Voice {
-        index
-    }
-
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn new_voice(&self, index: u32) -> Self::Voice { index }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

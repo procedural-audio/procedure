@@ -43,7 +43,7 @@ impl Serialize for Node {
         state.serialize_field("position", &self.position)?;
         state.serialize_field("name", &self.info().title)?;
 
-        let mut module_state = JSON::new();
+        let mut module_state = State::new();
         self.module.save(&mut module_state);
 
         state.serialize_field("state", &module_state)?;

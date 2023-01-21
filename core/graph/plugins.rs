@@ -493,12 +493,12 @@ impl PolyphonicModule for ModuleDynamic {
         self.state.ui.should_refresh()
     }
 
-    fn load(&mut self, json: &JSON) {
-        (self.state.symbols.sym_load)(&mut *self.state.module, json);
+    fn load(&mut self, state: &modules::State) {
+        (self.state.symbols.sym_load)(&mut *self.state.module, state);
     }
 
-    fn save(&self, json: &mut JSON) {
-        (self.state.symbols.sym_save)(&*self.state.module, json);
+    fn save(&self, state: &mut modules::State) {
+        (self.state.symbols.sym_save)(&*self.state.module, state);
     }
 
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {

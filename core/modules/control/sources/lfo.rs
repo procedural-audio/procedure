@@ -71,8 +71,15 @@ impl Module for LfoModule {
         }
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, state: &State) {
+        self.wave = state.load::<&str, u32>("wave") as usize;
+        self.value = state.load("value");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("wave", self.wave as u32);
+        state.save("value", self.value);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Stack {

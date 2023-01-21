@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
+import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/samplePicker.dart';
 
@@ -119,7 +120,7 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return InputWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Indicator") {
     return IndicatorWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "Wavetable") {
+  } else if (name == "WavetablePicker") {
     return WavetableWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Display") {
     return DisplayWidget(host, moduleRaw, widgetRaw);
@@ -127,6 +128,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return SearchableDropdownWidget(host, moduleRaw, widgetRaw);
   } else if (name == "AudioPlugin") {
     return AudioPluginWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "Browser") {
+    return BrowserWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Painter") {
     return PainterWidget(host, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {

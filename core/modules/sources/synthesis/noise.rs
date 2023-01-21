@@ -18,7 +18,6 @@ impl Module for Noise {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -27,8 +26,8 @@ impl Module for Noise {
         // NoiseProcessor::new()
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
@@ -36,7 +35,7 @@ impl Module for Noise {
             size: (50, 70),
             child: Knob {
                 text: "Type",
-                color: Color::GREEN,
+                color: Color::BLUE,
                 value: &mut self.value,
                 feedback: Box::new(|v| {
                     if v < 1.0 / 3.0 {

@@ -294,22 +294,20 @@ class SampleMapperWidget extends ModuleWidget {
                                 color: const Color.fromRGBO(20, 20, 20, 1.0),
                               )),
                               SizedBox(
-                                width: MAP_WIDTH,
-                                height: 64,
-                                child: Keyboard(
-                                  keyWidth: KEY_WIDTH,
-                                  keyHeight: 50,
-                                  keySpacing: 1,
-                                  widthRatio: 2 / 3,
-                                  heightRatio: 0.6,
-                                  keyCount: 108,
-                                  onKeyPress: (i) {},
-                                  onKeyRelease: (i) {},
-                                  getKeyDown: (i) {
-                                    return false;
-                                  },
-                                ),
-                              )
+                                  width: MAP_WIDTH,
+                                  height: 60,
+                                  child: Keyboard(
+                                      keyWidth: KEY_WIDTH,
+                                      keyHeight: 50,
+                                      keySpacing: 1,
+                                      widthRatio: 2 / 3,
+                                      heightRatio: 0.6,
+                                      keyCount: 108,
+                                      onKeyPress: (i) {},
+                                      onKeyRelease: (i) {},
+                                      getKeyDown: (i) {
+                                        return false;
+                                      }))
                             ])))),
                 SampleMapTopBar(selected),
                 ValueListenableBuilder<int>(
@@ -334,7 +332,7 @@ class SampleMapperWidget extends ModuleWidget {
                           ));
                     })
               ]))),
-      Align(
+      /*Align(
           alignment: Alignment.bottomRight,
           child: Container(
               width: 30,
@@ -351,7 +349,7 @@ class SampleMapperWidget extends ModuleWidget {
                   padding: EdgeInsets.zero,
                   onPressed: () {
                     browseForSampleMap();
-                  }))),
+                  }))),*/
       Visibility(
           visible: loadingSample,
           child: Container(

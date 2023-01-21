@@ -44,11 +44,11 @@ impl Module for Phaser {
         () // PhaserDsp::new()
     }
 
-    fn load(&mut self, _json: &JSON) {
+    fn load(&mut self, _state: &State) {
         // Should use generics like serde
     }
 
-    fn save(&self, _json: &mut JSON) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Stack {

@@ -1,9 +1,5 @@
 use crate::*;
 
-use pa_dsp::AudioBuffer;
-
-// https://github.com/electro-smith/DaisySP/blob/master/Source/PhysicalModeling/stringvoice.h
-
 pub struct Pluck {
     wave_index: u32,
     unison: f32,
@@ -14,7 +10,7 @@ pub struct Pluck {
 }
 
 pub struct PluckVoice {
-    string: KarplusString,
+    string: StringVoice,
 }
 
 impl Module for Pluck {
@@ -28,11 +24,9 @@ impl Module for Pluck {
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Midi Input", 20),
-            Pin::Audio("Input 1", 50),
         ],
         outputs: &[
             Pin::Audio("Audio Output", 20),
-            Pin::Audio("Audio Output", 50)
         ],
         path: "Category 1/Category 2/Module Name"
     };
@@ -52,12 +46,12 @@ impl Module for Pluck {
         println!("Created voice {}", index);
 
         Self::Voice {
-            string: KarplusString::new()
+            string: StringVoice::new()
         }
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         let size = 50;
@@ -210,24 +204,341 @@ impl Module for Pluck {
         });
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.string.init(sample_rate as f32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let mut done = false;
+		for msg in &inputs.events[0] {
+			match msg.note {
+				Event::NoteOn { pitch, pressure } => {
+					println!("Set frequency and brightness to {} {}", pitch, pressure);
+					voice.string.set_freq(pitch);
+					voice.string.set_brightness(pressure);
+					voice.string.trig();
+					voice.string.set_sustain(true);
+				},
+				Event::NoteOff => {
+				},
+				Event::Pitch(pitch) => {
+					voice.string.set_freq(pitch);
+				},
+				Event::Pressure(pressure) => {
+					voice.string.set_brightness(pressure);
+				}
+				_ => ()
+			}
+		}
 
-        for (out, inp) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
-            let sample = voice.string.process(inp.left);
+		let temp = voice.string.trig;
+        for out in outputs.audio[0].as_slice_mut() {
+            let sample = voice.string.process(false);
             out.left = sample;
             out.right = sample;
 
-            if !done {
-                println!("{}", sample);
-                done = true;
-            }
+			if temp {
+				print!("{} ", sample);
+			}
         }
+
+		if temp {
+			println!("");
+		}
     }
+}
+
+struct StringVoice {
+	sample_rate: f32,
+	sustain: bool,
+	trig: bool,
+	f0: f32,
+	brightness: f32,
+	damping: f32,
+	density: f32,
+	accent: f32,
+	aux: f32,
+	dust: Dust,
+	excitation_filter: Svf,
+	string: KarplusString,
+	remaining_noise_samples: usize
+}
+
+impl StringVoice {
+	pub fn new() -> Self {
+		Self {
+			sample_rate: 44100.0,
+			sustain: false,
+			trig: false,
+			f0: 0.0,
+			brightness: 0.2,
+			damping: 0.7,
+			density: 0.0,
+			accent: 0.0,
+			aux: 0.0,
+			dust: Dust::new(),
+			excitation_filter: Svf::new(),
+			string: KarplusString::new(),
+			remaining_noise_samples: 0,
+}
+	}
+
+	pub fn init(&mut self, sample_rate: f32) {
+		self.sample_rate = sample_rate;
+		self.excitation_filter.init(sample_rate);
+		self.string.init(sample_rate);
+		self.dust.init();
+		self.remaining_noise_samples = 0;
+
+		self.set_sustain(false);
+		self.set_freq(440.0);
+		self.set_accent(0.8);
+		self.set_structure(0.7);
+		self.set_brightness(0.2);
+		self.set_damping(0.7);
+	}
+
+	pub fn reset(&mut self) {
+		self.string.reset();
+	}
+
+	pub fn set_sustain(&mut self, sustain: bool) {
+		self.sustain = sustain;
+	}
+
+	pub fn trig(&mut self) {
+		self.trig = true;
+	}
+
+	pub fn set_freq(&mut self, freq: f32) {
+		self.string.set_freq(freq);
+		self.f0 = f32::clamp(freq / self.sample_rate, 0.0, 0.25);
+	}
+
+	pub fn set_accent(&mut self, accent: f32) {
+		self.accent = f32::clamp(accent, 0.0, 1.0);
+	}
+
+	pub fn set_structure(&mut self, structure: f32) {
+		let structure = f32::clamp(structure, 0.0, 1.0);
+		let non_linearity = if structure < 0.24 {
+			(structure - 0.24) * 4.166
+		} else {
+			if structure > 0.26 {
+				(structure - 0.26) * 1.35135
+			} else {
+				0.0
+			}
+		};
+
+		self.string.set_nonlinearity(non_linearity);
+	}
+
+	pub fn set_brightness(&mut self, brightness: f32) {
+		self.brightness = f32::clamp(brightness, 0.0, 1.0);
+		self.density = brightness * brightness;
+	}
+
+	pub fn set_damping(&mut self, damping: f32) {
+		self.damping = f32::clamp(damping, 0.0, 1.0);
+	}
+
+	pub fn get_aux(&self) -> f32 {
+		self.aux
+	}
+
+	pub fn process(&mut self, trigger: bool) -> f32 {
+		let brightness = self.brightness + 0.25 * self.accent * (1.0 - self.brightness);
+		let damping = self.damping + 0.25 * self.accent * (1.0 - self.damping);
+
+		if trigger || self.trig || self.sustain {
+			self.trig = false;
+			let range = 72.0;
+			let f = 4.0 * self.f0;
+			let cutoff = f32::min(f * f32::powf(2.0, (1.0 / 12.0) * (brightness * (2.0 - brightness) - 0.5) * range), 0.499);
+			let q = if self.sustain {
+				1.0
+			} else {
+				0.5
+			};
+
+			self.remaining_noise_samples = (1.0 / self.f0) as usize;
+			self.excitation_filter.set_freq(cutoff * self.sample_rate);
+			self.excitation_filter.set_res(q);
+		}
+
+		let mut temp = 0.0;
+
+		if self.sustain {
+			let dust_f = 0.00005 + 0.99995 * self.density * self.density;
+			self.dust.set_density(dust_f);
+			temp = self.dust.process() * (8.0 - dust_f * 6.0) * self.accent;
+		} else if self.remaining_noise_samples > 0 {
+			temp = 2.0 * rand() * (1.0 / f32::MAX) - 1.0;
+			self.remaining_noise_samples -= 1;
+			self.remaining_noise_samples = usize::max(self.remaining_noise_samples, 0);
+		}
+
+		self.excitation_filter.process(temp);
+		temp = self.excitation_filter.low();
+		self.aux = temp;
+
+		self.string.set_brightness(brightness);
+		self.string.set_damping(damping);
+
+		return self.string.process(temp);
+	}
+}
+
+struct Svf {
+	sr: f32, fc: f32, res: f32, drive: f32, freq: f32, damp: f32,
+	notch: f32, low: f32, high: f32, band: f32, peak: f32,
+	input: f32,
+	out_low: f32, out_high: f32, out_band: f32, out_peak: f32, out_notch: f32,
+	pre_drive: f32, fc_max: f32,
+}
+
+impl Svf {
+	pub fn new() -> Self {
+		Self {
+			sr: 44100.0,
+			fc: 200.0,
+			res: 0.5,
+			drive: 0.5,
+			freq: 0.25,
+			damp: 0.0,
+			notch: 0.0,
+			low: 0.0,
+			high: 0.0,
+			band: 0.0,
+			peak: 0.0,
+			input: 0.0,
+			out_low: 0.0,
+			out_high: 0.0,
+			out_band: 0.0,
+			out_peak: 0.0,
+			out_notch: 0.0,
+			pre_drive: 0.5,
+			fc_max: 44100.0 / 3.0,
+		}
+	}
+
+	pub fn init(&mut self, sample_rate: f32) {
+		self.sr = sample_rate;
+		self.fc = 200.0;
+		self.res = 0.5;
+		self.drive = 0.5;
+		self.pre_drive = 0.5;
+		self.freq = 0.25;
+		self.damp = 0.0;
+		self.notch = 0.0;
+		self.low = 0.0;
+		self.high = 0.0;
+		self.band = 0.0;
+		self.peak = 0.0;
+		self.input = 0.0;
+		self.out_notch = 0.0;
+		self.out_low = 0.0;
+		self.out_high = 0.0;
+		self.out_peak = 0.0;
+		self.out_band = 0.0;
+		self.fc_max = sample_rate / 3.0;
+	}
+
+	pub fn process(&mut self, input: f32) {
+		self.input = input;
+		self.notch = self.input - self.damp * self.band;
+		self.low = self.low + self.freq * self.band;
+		self.high = self.notch - self.low;
+		self.band = self.freq * self.high + self.band + self.drive * self.band * self.band * self.band;
+
+		self.out_low = 0.5 * self.low;
+		self.out_high = 0.5 * self.high;
+		self.out_band = 0.5 * self.band;
+		self.out_peak = 0.5 * (self.low - self.high);
+		self.out_notch = 0.5 * self.notch;
+
+		self.notch = self.input - self.damp * self.band;
+		self.low = self.low + self.freq * self.band;
+		self.high = self.notch - self.low;
+		self.band = self.freq * self.high + self.band - self.drive * self.band * self.band * self.band;
+
+		self.out_low += 0.5 * self.low;
+		self.out_high += 0.5 * self.high;
+		self.out_band += 0.5 * self.band;
+		self.out_peak += 0.5 * (self.low - self.high);
+		self.out_notch += 0.5 * self.notch;
+	}
+
+	pub fn set_freq(&mut self, f: f32) {
+		self.fc = f32::clamp(f, 1.0e-6, self.fc_max);
+		self.freq = 2.0 * f32::sin(std::f32::consts::PI * f32::min(0.25, self.fc / (self.sr * 2.0)));
+		self.damp = f32::min(2.0 * (1.0 - f32::powf(self.res, 0.25)), f32::min(2.0, 2.0 / self.freq - self.freq * 0.5));
+	}
+
+	pub fn set_res(&mut self, r: f32) {
+		let res = f32::clamp(r, 0.0, 1.0);
+		self.res = res;
+		self.damp = f32::min(2.0 * (1.0 - f32::powf(self.res, 0.25)), f32::min(2.0, 2.0 / self.freq - self.freq * 0.5));
+		self.drive = self.pre_drive * self.res;
+	}
+
+	pub fn set_drive(&mut self, d: f32) {
+		let drv = f32::clamp(d * 0.1, 0.0, 1.0);
+		self.pre_drive = drv;
+		self.drive = self.pre_drive * self.res;
+	}
+
+	pub fn low(&self) -> f32 {
+		self.out_low
+	}
+
+	pub fn high(&self) -> f32 {
+		self.out_high
+	}
+
+	pub fn band(&self) -> f32 {
+		self.out_band
+	}
+
+	pub fn notch(&self) -> f32 {
+		self.out_notch
+	}
+
+	pub fn peak(&self) -> f32 {
+		self.out_peak
+	}
+}
+
+struct Dust {
+	density: f32,
+}
+
+impl Dust {
+	pub fn new() -> Self {
+		Self {
+			density: 0.0,
+		}
+	}
+
+	pub fn init(&mut self) {
+		self.set_density(0.5);
+	}
+
+	pub fn set_density(&mut self, density: f32) {
+		self.density = f32::clamp(density, 0.0, 1.0);
+		self.density = density * 0.3;
+	}
+
+	pub fn process(&mut self) -> f32 {
+		let inv_density = 1.0 / self.density;
+		let u = rand() * (1.0 / f32::MAX);
+
+		if u < self.density {
+			u * inv_density
+		} else {
+			0.0
+		}
+	}
 }
 
 const NON_LINEARITY_CURVED_BRIDGE: usize = 0;
@@ -236,7 +547,7 @@ const DELAY_LINE_SIZE: usize = 1024;
 const RAND_FRAC: f32 = 1.0 / f32::MAX;
 
 pub fn rand() -> f32 {
-    rand::random()
+	rand::random()
 }
 
 pub fn fonepole(out: &mut f32, inp: f32, coeff: f32) {
@@ -270,7 +581,7 @@ struct KarplusString {
 impl KarplusString {
     pub fn new() -> Self {
         Self {
-            non_linearity: NON_LINEARITY_CURVED_BRIDGE,
+            non_linearity: NON_LINEARITY_DISPERSION,
             string: DelayLine::new(),
             stretch: DelayLine::new(),
             frequency: 440.0,
@@ -408,7 +719,7 @@ impl KarplusString {
 			self.src_phase -= 1.0;
 			
 			delay = delay * damping_compensation;
-			let mut s = 0.0;
+			let mut s;
 			
 			if T == NON_LINEARITY_DISPERSION {
 				let noise = rand() * RAND_FRAC - 0.5;
@@ -432,7 +743,7 @@ impl KarplusString {
 				s = self.string.read_hermite(delay);
 			}
 			
-			if (self.non_linearity == NON_LINEARITY_CURVED_BRIDGE) {
+			if self.non_linearity == NON_LINEARITY_CURVED_BRIDGE {
 				let value = f32::abs(s) - 0.025;
 				let sign = if s > 0.0 { 1.0 } else { -1.5 };
 				self.curved_bridge = (f32::abs(value) + value) * sign;

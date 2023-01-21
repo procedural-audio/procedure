@@ -34,12 +34,17 @@ impl Module for Bend {
         }
     }
 
-    fn new_voice(&self, _index: u32) -> Self::Voice {
-        ()
+    fn new_voice(&self, _index: u32) -> Self::Voice { () }
+
+    fn load(&mut self, state: &State) {
+        self.value = state.load("value");
+        self.exp = state.load("exp");
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
+    fn save(&self, state: &mut State) {
+        state.save("value", self.value);
+        state.save("exp", self.value);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         println!("Building stuff");

@@ -29,8 +29,118 @@ List<List<double>> getWavetable() {
   return wavetable;
 }
 
-class WavetableWidget extends ModuleWidget {
-  WavetableWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+class BrowserWidget extends ModuleWidget {
+  BrowserWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+
+  String name = "Tempered Felt Piano";
+  String author = "Chase Kanipe";
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: const BoxDecoration(
+            color: Color.fromRGBO(20, 20, 20, 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        child: Column(children: [
+          Container(
+              height: 30 + 8,
+              decoration: const BoxDecoration(
+                  color: Color.fromRGBO(20, 20, 20, 1.0),
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
+              child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Row(children: [
+                    Expanded(
+                        child: Container(
+                            width: 200,
+                            decoration: const BoxDecoration(
+                                color: Color.fromRGBO(40, 40, 40, 1.0),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5))),
+                            child: Row(children: [
+                              IconButton(
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  iconSize: 20,
+                                  icon: const Icon(Icons.list,
+                                      color: Colors.grey),
+                                  onPressed: () {
+                                    print("Pressed icon button");
+                                  }),
+                              const SizedBox(width: 4),
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.white),
+                              ),
+                              Text(
+                                " - " + author,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.grey),
+                              )
+                            ]))),
+                    const SizedBox(width: 4),
+                    BrowserBarElement(
+                        icon:
+                            const Icon(Icons.chevron_left, color: Colors.grey),
+                        onPressed: () {
+                          print("Pressed here");
+                        }),
+                    const SizedBox(width: 4),
+                    BrowserBarElement(
+                        icon:
+                            const Icon(Icons.chevron_right, color: Colors.grey),
+                        onPressed: () {
+                          print("Pressed here");
+                        })
+                  ]))),
+          Expanded(child: children[0])
+        ]));
+  }
+}
+
+class BrowserBarElement extends StatefulWidget {
+  BrowserBarElement({required this.icon, required this.onPressed});
+
+  Widget icon;
+  void Function() onPressed;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserBarElement();
+}
+
+class _BrowserBarElement extends State<BrowserBarElement> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+        onEnter: (e) => setState(() {
+              hovering = true;
+            }),
+        onExit: (e) => setState(() {
+              hovering = false;
+            }),
+        child: Container(
+            width: 30,
+            decoration: BoxDecoration(
+                color: hovering
+                    ? const Color.fromRGBO(50, 50, 50, 1.0)
+                    : const Color.fromRGBO(40, 40, 40, 1.0),
+                borderRadius: const BorderRadius.all(Radius.circular(5))),
+            child: IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                iconSize: 20,
+                icon: widget.icon,
+                onPressed: () {
+                  widget.onPressed();
+                })));
+  }
+}
+
+class BrowserWidget2 extends ModuleWidget {
+  BrowserWidget2(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

@@ -34,8 +34,8 @@ impl Module for SawModule {
         }
     }
 
-    fn load(&mut self, json: &JSON) {}
-    fn save(&self, json: &mut JSON) {}
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

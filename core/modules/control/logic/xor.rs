@@ -21,15 +21,13 @@ impl Module for Xor {
         path: "Category 1/Category 2/Module Name"
     };
 
-    
     fn new() -> Self {
         Self
     }
+
     fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

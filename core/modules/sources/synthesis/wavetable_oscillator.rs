@@ -1,9 +1,5 @@
 use crate::*;
 
-
-
-// use pa_dsp::buffers::*;
-
 fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     let mut array = [0.0; C];
     let mut i = 0;
@@ -17,10 +13,7 @@ fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
 }
 
 pub struct WavetableOscillator {
-    wave_index: u32,
-    freq: f32,
-    glide: f32,
-    wavetable: Wavetable,
+    wavetable: [f32; 2048]
 }
 
 pub struct WavetableOscillatorVoice {
@@ -33,21 +26,22 @@ impl Module for WavetableOscillator {
     const INFO: Info = Info {
         title: "Wavetable Oscillator",
         version: "0.0.0",
-        color: Color::GREEN,
-        size: Size::Static(500, 300),
+        color: Color::BLUE,
+        size: Size::Static(350, 250),
         voicing: Voicing::Polyphonic,
-        inputs: &[Pin::Notes("Midi Input", 20), Pin::Control("Pitch", 50)],
-        outputs: &[Pin::Audio("Audio Output", 20)],
+        inputs: &[
+            Pin::Notes("Midi Input", 10),
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 10)
+        ],
         path: "Category 1/Category 2/Module Name"
     };
 
     
     fn new() -> Self {
         Self {
-            wave_index: 0,
-            freq: 100.0,
-            glide: 0.0,
-            wavetable: Wavetable::generate(f32::sin),
+            wavetable: [0.0; 2048]
         }
     }
 
@@ -57,34 +51,43 @@ impl Module for WavetableOscillator {
         }
     }
 
-    fn load(&mut self, _json: &JSON) {}
-    fn save(&self, _json: &mut JSON) {}
-
-    // Make it look like pigments: https://youtu.be/8DjnDVWKaEs?t=141
+    fn load(&mut self, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Transform {
-            position: (40, 40),
-            size: (350, 220),
-            //child: Wavetable::generate(f32::sin)
-            child: EmptyWidget,
+        return Box::new(Padding {
+            padding: (5, 35, 5, 5),
+            child: WavetablePicker {
+                wavetable: &mut self.wavetable
+            },
         });
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
-        // voice.player.set_wavetable(self.wavetable);
-
-        /*
-        outputs.audio[0].copy_from(
-            voice.player.pitch(self.freq)
-        );
-        */
+        // Process stuff here
     }
 }
 
 /* ========== FFI ========== */
 
+#[repr(C)]
+pub struct WavetablePicker<'a> {
+    pub wavetable: &'a mut [f32; 2048]
+}
+
+impl<'a> WidgetNew for WavetablePicker<'a> {
+    fn get_name(&self) -> &'static str {
+        "WavetablePicker"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn ffi_wavetable_set_value(_knob: &mut _NotesTrack, _value: f32) {}
+pub unsafe extern "C" fn ffi_wavetable_get_index(widget: &mut ButtonGrid) -> usize {
+    *widget.index
+}
