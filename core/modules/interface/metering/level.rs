@@ -16,7 +16,8 @@ impl Module for LevelMeter {
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Audio("Audio Input", 25)],
         outputs: &[Pin::Control("RMS", 25)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -31,7 +32,7 @@ impl Module for LevelMeter {
         ()
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

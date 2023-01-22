@@ -36,7 +36,8 @@ impl Module for DigitalFilter {
         outputs: &[
             IO::Audio(230, 20)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     

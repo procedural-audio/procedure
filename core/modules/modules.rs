@@ -315,6 +315,18 @@ impl State {
     }
 }
 
+pub struct Presets {
+    pub path: &'static str,
+    pub extension: &'static str,
+}
+
+impl Presets {
+    pub const NONE: Presets = Presets {
+        path: "",
+        extension: ""
+    };
+}
+
 pub struct Info {
     pub title: &'static str,
     pub version: &'static str,
@@ -324,6 +336,7 @@ pub struct Info {
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
     pub path: &'static str,
+    pub presets: Presets
 }
 
 pub struct Param2<T>(&'static str, T);
@@ -342,7 +355,7 @@ pub trait Module {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w>;
 
-    fn load(&mut self, state: &State) {
+    fn load(&mut self, version: &str, state: &State) {
         // Load stuff here
     }
 
@@ -373,7 +386,7 @@ pub enum Voicing {
 pub trait PolyphonicModule {
     fn new() -> Self where Self: Sized;
     fn info(&self) -> Info;
-    fn load(&mut self, state: &State);
+    fn load(&mut self, version: &str, state: &State);
     fn save(&self, state: &mut State);
     fn should_refresh(&self) -> bool;
     fn should_rebuild(&self) -> bool;
@@ -471,8 +484,8 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         self.module.info()
     }
 
-    fn load(&mut self, json: &State) {
-        self.module.load(json);
+    fn load(&mut self, version: &str, json: &State) {
+        self.module.load(version, json);
     }
 
     fn should_refresh(&self) -> bool {

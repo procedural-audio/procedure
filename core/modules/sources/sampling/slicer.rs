@@ -63,7 +63,8 @@ impl Module for Slicer {
             Pin::Control("Window crossfade", 15 + 30 * 4),
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -95,7 +96,7 @@ impl Module for Slicer {
     fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

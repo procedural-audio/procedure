@@ -18,7 +18,8 @@ impl Module for Transpose {
             Pin::Control("Transpose Steps", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
     
     fn new() -> Self {
@@ -29,7 +30,7 @@ impl Module for Transpose {
         ()
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

@@ -50,8 +50,8 @@ class SamplePickerWidget extends ModuleWidget {
       double right =
           ffiSampleFilePickerGetSampleRight(widgetRaw.pointer, index);
 
-      leftBuffer.add(left * 5);
-      rightBuffer.add(right * 5);
+      leftBuffer.add(left * 2);
+      rightBuffer.add(right * 2);
     }
   }
 

@@ -18,7 +18,8 @@ impl Module for Chorus {
         voicing: Voicing::Monophonic,
         inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
         outputs: &[Pin::Audio("Audio Output", 20)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -35,7 +36,7 @@ impl Module for Chorus {
         () // ChorusDsp::new()
     }
 
-    fn load(&mut self, _state: &State) {
+    fn load(&mut self, _version: &str, _state: &State) {
         // Should use generics like serde
     }
 

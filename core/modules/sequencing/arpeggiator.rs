@@ -32,7 +32,8 @@ impl Module for Arpeggiator {
         outputs: &[
             Pin::Notes("Midi Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     fn new() -> Self {
@@ -55,7 +56,7 @@ impl Module for Arpeggiator {
         ()
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

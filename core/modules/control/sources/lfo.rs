@@ -29,7 +29,8 @@ impl Module for LfoModule {
         outputs: &[
             Pin::Control("LFO Output", 15)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
     
     fn new() -> Self {
@@ -71,7 +72,7 @@ impl Module for LfoModule {
         }
     }
 
-    fn load(&mut self, state: &State) {
+    fn load(&mut self, version: &str, state: &State) {
         self.wave = state.load::<&str, u32>("wave") as usize;
         self.value = state.load("value");
     }

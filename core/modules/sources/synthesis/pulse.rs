@@ -29,7 +29,8 @@ impl Module for PulseModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -50,7 +51,7 @@ impl Module for PulseModule {
         }
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

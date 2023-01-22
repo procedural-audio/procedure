@@ -27,7 +27,7 @@ impl Module for WavetableOscillator {
         title: "Wavetable Oscillator",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(350, 250),
+        size: Size::Static(400, 300),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Midi Input", 10),
@@ -35,10 +35,13 @@ impl Module for WavetableOscillator {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets {
+            path: "wavetables",
+            extension: ".wavetable"
+        }
     };
 
-    
     fn new() -> Self {
         Self {
             wavetable: [0.0; 2048]
@@ -51,15 +54,21 @@ impl Module for WavetableOscillator {
         }
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: WavetablePicker {
-                wavetable: &mut self.wavetable
-            },
+            child: Browser {
+                dir: "some/dir/here",
+                on_event: | _event | {
+                    println!("Some browser event");
+                },
+                child: WavetablePicker {
+                    wavetable: &mut self.wavetable
+                }
+            }
         });
     }
 

@@ -19,7 +19,8 @@ impl Module for Random {
         outputs: &[
             Pin::Control("Output (0-1)", 22)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
     
     fn new() -> Self {

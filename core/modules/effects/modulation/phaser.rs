@@ -25,7 +25,8 @@ impl Module for Phaser {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -44,7 +45,7 @@ impl Module for Phaser {
         () // PhaserDsp::new()
     }
 
-    fn load(&mut self, _state: &State) {
+    fn load(&mut self, _version: &str, _state: &State) {
         // Should use generics like serde
     }
 

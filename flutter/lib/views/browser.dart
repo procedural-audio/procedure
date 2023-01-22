@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -25,96 +26,88 @@ class _BrowserView extends State<BrowserView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Stack(
-      children: [
-        Column(
-          children: [
+        padding: const EdgeInsets.all(10),
+        child: Stack(children: [
+          Column(children: [
             Container(
               padding: const EdgeInsets.fromLTRB(0, 2, 0, 10),
               alignment: Alignment.center,
               child: const Text(
                 "Instruments",
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w300
-                ),
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Row(
-                children: [
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                child: Row(children: [
                   Expanded(
-                    child: Container(
-                      height: 26,
-                      decoration: const BoxDecoration(
-                        color: Color.fromRGBO(30, 30, 30, 1.0),
-                        borderRadius: BorderRadius.all(Radius.circular(5))
-                      ),
-                      child: TextField(
-                        maxLines: 1,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        decoration: const InputDecoration(
-                          fillColor: Color.fromARGB(255, 112, 35, 30),
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3)
-                        ),
-                        onChanged: (text) {
-                          setState(() {
-                            searchText = text;
-                          });
-                        }
-                      )
-                    )
-                  ),
+                      child: Container(
+                          height: 26,
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(30, 30, 30, 1.0),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5))),
+                          child: TextField(
+                              maxLines: 1,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                              decoration: const InputDecoration(
+                                  fillColor: Color.fromARGB(255, 112, 35, 30),
+                                  border: OutlineInputBorder(),
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(10, 10, 0, 3)),
+                              onChanged: (text) {
+                                setState(() {
+                                  searchText = text;
+                                });
+                              }))),
                   IconButton(
-                    iconSize: 16,
-                    padding: const EdgeInsets.all(0),
-                    icon: const Icon(
-                      Icons.info_outline,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-
-                    }
-                  ),
-                ]
-              )
-            ),
+                      iconSize: 16,
+                      padding: const EdgeInsets.all(0),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {}),
+                ])),
             Expanded(
-              child: ValueListenableBuilder<List<InstrumentInfo>>(
-                valueListenable: widget.host.globals.instruments,
-                builder: (context, instruments, w) {
-                  List<InstrumentInfo> filteredInstruments = [];
+                child: ValueListenableBuilder<List<InstrumentInfo>>(
+              valueListenable: widget.host.globals.instruments,
+              builder: (context, instruments, w) {
+                List<InstrumentInfo> filteredInstruments = [];
 
-                  if (searchText == "") {
-                    filteredInstruments = instruments;
-                  } else {
-                    for (var instrument in instruments) {
-                      if (instrument.name.toLowerCase().contains(searchText.toLowerCase()) 
-                      || instrument.description.toLowerCase().contains(searchText.toLowerCase())) {
-                        filteredInstruments.add(instrument);
-                      }
+                if (searchText == "") {
+                  filteredInstruments = instruments;
+                } else {
+                  for (var instrument in instruments) {
+                    if (instrument.name
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase()) ||
+                        instrument.description
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase())) {
+                      filteredInstruments.add(instrument);
                     }
                   }
+                }
 
-                  if (filteredInstruments.isEmpty) {
-                    return Container();
-                  }
+                if (filteredInstruments.isEmpty) {
+                  return Container();
+                }
 
-                  return GridView.builder(
+                return GridView.builder(
                     controller: controller,
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 300,
-                      childAspectRatio: 2.5,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 15
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            childAspectRatio: 1.0,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 15),
                     itemCount: filteredInstruments.length,
                     itemBuilder: (BuildContext ctx, index) {
                       return BrowserViewElement(
@@ -122,20 +115,15 @@ class _BrowserView extends State<BrowserView> {
                         info: filteredInstruments[index],
                         selectedIndex: selectedIndex,
                       );
-                    }
-                  );
-                },
-              )
-            )
-          ]
-        ),
-        InfoView(
-          widget.host,
-          index: selectedIndex,
-        )
-      ]
-      )
-    );
+                    });
+              },
+            ))
+          ]),
+          InfoView(
+            widget.host,
+            index: selectedIndex,
+          )
+        ]));
   }
 }
 
@@ -155,14 +143,13 @@ class _InfoView extends State<InfoView> {
 
   var name = "";
   var description = "";
-  
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double width = constraints.maxWidth;
+    return LayoutBuilder(builder: (context, constraints) {
+      double width = constraints.maxWidth;
 
-        return ValueListenableBuilder<int>(
+      return ValueListenableBuilder<int>(
           valueListenable: widget.index,
           builder: (context, index, w) {
             if (index >= 0) {
@@ -177,129 +164,14 @@ class _InfoView extends State<InfoView> {
                 height: 0,
               );
             }
-          }
-        );
-      }
-    );
+          });
+    });
   }
 }
-
-/*class InfoView extends StatefulWidget {
-  InfoView(this.host, {required this.index});
-
-  Host host;
-
-  ValueNotifier<int> index;
-
-  @override
-  State<InfoView> createState() => _InfoView();
-}
-
-class _InfoView extends State<InfoView> {
-  bool mouseOver = false;
-
-  var name = "";
-  var description = "";
-  
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double width = constraints.maxWidth;
-
-        return ValueListenableBuilder<int>(
-          valueListenable: widget.index,
-          builder: (context, index, w) {
-
-            if (index >= 0 && index < widget.host.globals.instruments.value.length) {
-              name = widget.host.globals.instruments.value[index].name;
-              description = widget.host.globals.instruments.value[index].description;
-            }
-
-            return AnimatedPositioned(
-              right: widget.index.value < 0 ? -width: 0,
-              curve: Curves.fastLinearToSlowEaseIn,
-              duration: const Duration(milliseconds: 500),
-              child: Container(
-                width: width,
-                height: 600,
-                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 15,
-                      top: -5,
-                      child: IconButton(
-                        iconSize: 30,
-                        padding: const EdgeInsets.all(0),
-                        icon: const Icon(
-                          Icons.chevron_left,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          widget.index.value = -1;
-                        },
-                      ),
-                    ),
-                    Column(
-                      children: [
-                        Container(
-                          height: 20,
-                          alignment: Alignment.center,
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Container(
-                          height: 200,
-                          width: width,
-                          alignment: Alignment.center,
-                          color: const Color.fromRGBO(30, 30, 30, 1.0),
-                          child: Text(
-                            description,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w300
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            var path = widget.host.globals.instruments.value[index].path;
-                            print("Loading instrument " + path);
-                            widget.host.loadInstrument(path);
-                          },
-                          icon: const Icon(Icons.download),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            print("Not implemented");
-                          },
-                          icon: const Icon(Icons.delete),
-                        )
-                      ]
-                    )
-                  ]
-                )
-              )
-            );
-          },
-        );
-      },
-    );
-  }
-}*/
 
 class BrowserViewElement extends StatefulWidget {
-  BrowserViewElement({required this.index, required this.info, required this.selectedIndex});
+  BrowserViewElement(
+      {required this.index, required this.info, required this.selectedIndex});
 
   int index;
   InstrumentInfo info;
@@ -311,94 +183,129 @@ class BrowserViewElement extends StatefulWidget {
 
 class _BrowserViewElement extends State<BrowserViewElement> {
   bool mouseOver = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (details) {
-        setState(() {
-          mouseOver = true;
-        });
-      },
-      onExit: (details) {
-        setState(() {
-          mouseOver = false;
-        });
-      },
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(5)
-            ),
-            child: Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(60, 60, 60, 1.0),
-                borderRadius: BorderRadius.circular(5)
-              ),
-              child: Stack(
-                children: [
-                  Image.file(
-                    widget.info.image,
-                    width: 290,
-                    fit: BoxFit.fitWidth,
-                  ),
-                  AnimatedOpacity(
-                    opacity: mouseOver ? 0.3 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Container(
-                      color: Colors.grey,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      widget.selectedIndex.value = widget.index;
-                    }
-                  )
-                ]
-              )
-            )
-          ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Row(
-              children: [
-                ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: 4.0,
-                      sigmaY: 4.0
-                    ),
-                    child: Container(
-                      height: 30,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                      decoration: const BoxDecoration(
-                        color: Color.fromRGBO(0, 0, 0, 0.5),
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(5)
-                        )
-                      ),
-                      child: Text(
-                        widget.info.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400
-                        )
-                      )
-                    )
-                  )
-                )
-              ]
-            )
-          )
-        ]
-      )
-    );
+        onEnter: (details) {
+          setState(() {
+            mouseOver = true;
+          });
+        },
+        onExit: (details) {
+          setState(() {
+            mouseOver = false;
+          });
+        },
+        child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 290,
+            height: mouseOver ? 300 : 200,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                color: mouseOver
+                    ? const Color.fromRGBO(70, 70, 70, 1.0)
+                    : const Color.fromRGBO(50, 50, 50, 1.0)),
+            child: Column(children: [
+              Expanded(
+                  child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      child: Image.file(widget.info.image,
+                          width: 290, fit: BoxFit.cover))),
+              Container(
+                  height: 56,
+                  alignment: Alignment.topLeft,
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 2),
+                        Text(widget.info.name,
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(220, 220, 220, 1.0))),
+                        const SizedBox(height: 4),
+                        Text(
+                            widget.info.description.substring(0,
+                                    min(40, widget.info.description.length)) +
+                                (widget.info.description.length < 40
+                                    ? ""
+                                    : "..."),
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey)),
+                      ]))
+            ])));
   }
 }
+
+/*class _BrowserViewElement extends State<BrowserViewElement> {
+  bool mouseOver = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+        onEnter: (details) {
+          setState(() {
+            mouseOver = true;
+          });
+        },
+        onExit: (details) {
+          setState(() {
+            mouseOver = false;
+          });
+        },
+        child: Stack(children: [
+          ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(5)),
+              child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: const Color.fromRGBO(60, 60, 60, 1.0),
+                      borderRadius: BorderRadius.circular(5)),
+                  child: Stack(children: [
+                    Image.file(
+                      widget.info.image,
+                      width: 290,
+                      fit: BoxFit.fitWidth,
+                    ),
+                    AnimatedOpacity(
+                        opacity: mouseOver ? 0.3 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Container(
+                          color: Colors.grey,
+                        )),
+                    GestureDetector(onTap: () {
+                      widget.selectedIndex.value = widget.index;
+                    })
+                  ]))),
+          Align(
+              alignment: Alignment.bottomLeft,
+              child: Row(children: [
+                ClipRect(
+                    child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+                        child: Container(
+                            height: 26,
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                            decoration: const BoxDecoration(
+                                color: Color.fromRGBO(0, 0, 0, 0.4),
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(5))),
+                            child: Text(widget.info.name,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400)))))
+              ]))
+        ])));
+  }
+}*/
 
 class BrowserListCard extends StatelessWidget {
   final String name;
@@ -479,25 +386,20 @@ class _BrowserInfoWidgetState extends State<BrowserInfoWidget> {
             decoration: BoxDecoration(
               color: MyTheme.grey30,
             ),
-            child: Column(
-              children: <Widget>[
-                InfoContentsWidget(widget.host,
-                  instrument: widget.host.globals.browserInstrument,
-                ),
-                IconButton(
-                  onPressed: () {
-
-                  },
-                  icon: Icon(Icons.download),
-                ),
-                IconButton(
-                  onPressed: () {
-
-                  },
-                  icon: Icon(Icons.download),
-                ),
-              ]
-            ),
+            child: Column(children: <Widget>[
+              InfoContentsWidget(
+                widget.host,
+                instrument: widget.host.globals.browserInstrument,
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.download),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.download),
+              ),
+            ]),
           ),
         ),
       ),

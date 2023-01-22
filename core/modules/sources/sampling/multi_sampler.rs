@@ -21,9 +21,13 @@ impl Module for MultiSampler {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets {
+            path: "multi-samples",
+            extension: ".multisample"
+        }
     };
-    
+
     fn new() -> Self {
         Self {
             map: Arc::new(RwLock::new(SampleMap::new())),
@@ -34,8 +38,13 @@ impl Module for MultiSampler {
         PitchedSamplePlayer::new()
     }
 
-    fn load(&mut self, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, version: &str, state: &State) {
+        // *self.map.write().unwrap() = state.load("map");
+    }
+
+    fn save(&self, state: &mut State) {
+        // state.save("map", *self.map.read().unwrap());
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {

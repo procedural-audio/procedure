@@ -23,7 +23,8 @@ impl Module for Bend {
         outputs: &[
             Pin::Control("Control Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -36,7 +37,7 @@ impl Module for Bend {
 
     fn new_voice(&self, _index: u32) -> Self::Voice { () }
 
-    fn load(&mut self, state: &State) {
+    fn load(&mut self, version: &str, state: &State) {
         self.value = state.load("value");
         self.exp = state.load("exp");
     }

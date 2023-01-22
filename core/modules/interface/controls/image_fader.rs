@@ -15,7 +15,8 @@ impl Module for ImageFader {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Control("Control Output", 30)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -27,7 +28,7 @@ impl Module for ImageFader {
         ()
     }
 
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

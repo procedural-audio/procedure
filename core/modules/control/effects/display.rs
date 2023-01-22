@@ -18,7 +18,8 @@ impl Module for Display {
             Pin::Control("Input", 17)
         ],
         outputs: &[],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     fn new() -> Self {

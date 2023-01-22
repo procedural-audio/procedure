@@ -493,7 +493,7 @@ impl PolyphonicModule for ModuleDynamic {
         self.state.ui.should_refresh()
     }
 
-    fn load(&mut self, state: &modules::State) {
+    fn load(&mut self, version: &str, state: &modules::State) {
         (self.state.symbols.sym_load)(&mut *self.state.module, state);
     }
 

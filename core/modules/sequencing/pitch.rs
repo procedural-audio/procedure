@@ -16,7 +16,8 @@ impl Module for Pitch {
             Pin::Control("Pitch (hz)", 45),
         ],
         outputs: &[Pin::Notes("Notes Output", 30)],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     
@@ -26,7 +27,7 @@ impl Module for Pitch {
     fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
-    fn load(&mut self, _state: &State) {}
+    fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

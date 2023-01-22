@@ -22,13 +22,19 @@ class SearchableDropdown extends StatefulWidget {
       required this.categories,
       required this.onSelect,
       this.width,
-      this.height});
+      this.height,
+      this.titleStyle = const TextStyle(fontSize: 14, color: Colors.grey),
+      this.decoration = const BoxDecoration(
+          color: Color.fromRGBO(20, 20, 20, 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(3)))});
 
   String? value;
   List<Category> categories;
   void Function(String?) onSelect;
   double? width;
   double? height;
+  BoxDecoration decoration;
+  TextStyle titleStyle;
 
   @override
   State<SearchableDropdown> createState() => _SearchableDropdown();
@@ -41,10 +47,10 @@ class _SearchableDropdown extends State<SearchableDropdown>
   bool _isOpen = false;
   AnimationController? _animationController;
 
-  final FocusNode textFieldFocus = FocusNode();
+  // final FocusNode textFieldFocus = FocusNode();
   final FocusScopeNode _focusScopeNode = FocusScopeNode();
 
-  TextEditingController controller = TextEditingController(text: "");
+  TextEditingController searchController = TextEditingController(text: "");
 
   // final FocusNode focusNode = FocusNode();
 
@@ -55,21 +61,17 @@ class _SearchableDropdown extends State<SearchableDropdown>
     _animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 0));
 
-    textFieldFocus.addListener(onTextFieldFocus);
+    // textFieldFocus.addListener(onTextFieldFocus);
   }
 
-  void onTextFieldUnfocus() async {
-    if (_isOpen) {
+  void toggleDropdown({bool? open}) async {
+    if (_isOpen || open == false) {
       await _animationController?.reverse();
       _overlayEntry?.remove();
       setState(() {
         _isOpen = false;
       });
-    }
-  }
-
-  void onTextFieldFocus() async {
-    if (!_isOpen) {
+    } else if (!_isOpen || open == true) {
       _overlayEntry = _createOverlayEntry();
       Overlay.of(context)?.insert(_overlayEntry!);
       setState(() => _isOpen = true);
@@ -96,7 +98,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
   @override
   void dispose() {
     _focusScopeNode.dispose();
-    textFieldFocus.dispose();
+    // textFieldFocus.dispose();
     super.dispose();
   }
 
@@ -104,36 +106,17 @@ class _SearchableDropdown extends State<SearchableDropdown>
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
         link: _layerLink,
-        child: Container(
-            width: widget.width,
-            height: widget.height,
-            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-            decoration: BoxDecoration(
-                color: const Color.fromRGBO(20, 20, 20, 1.0),
-                border: Border.all(
-                    color: const Color.fromRGBO(80, 80, 80, 1.0), width: 1),
-                borderRadius: BorderRadius.circular(5)),
-            child: Row(children: [
-              Expanded(
-                  child: TextField(
-                      focusNode: textFieldFocus,
-                      controller: controller,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: InputDecoration(
-                          hintText: widget.value,
-                          hintStyle:
-                              const TextStyle(color: Colors.grey, fontSize: 14),
-                          isDense: true,
-                          border: InputBorder.none),
-                      onChanged: (v) {
-                        print("Search updated");
-                      })),
-              const SizedBox(
-                width: 14,
-                child: Icon(Icons.search,
-                    color: Color.fromRGBO(60, 60, 60, 1.0), size: 16),
-              )
-            ])));
+        child: GestureDetector(
+            onTap: () {
+              toggleDropdown();
+            },
+            child: Container(
+              width: widget.width,
+              height: widget.height,
+              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+              decoration: widget.decoration,
+              child: Text(widget.value ?? "", style: widget.titleStyle),
+            )));
   }
 
   OverlayEntry _createOverlayEntry() {
@@ -152,7 +135,13 @@ class _SearchableDropdown extends State<SearchableDropdown>
               node: _focusScopeNode,
               child: GestureDetector(
                   onTap: () {
-                    onTextFieldUnfocus();
+                    toggleDropdown(open: false);
+                  },
+                  onSecondaryTap: () {
+                    toggleDropdown(open: false);
+                  },
+                  onPanStart: (e) {
+                    toggleDropdown(open: false);
                   },
                   behavior: HitTestBehavior.opaque,
                   child: Container(
@@ -471,15 +460,14 @@ class KeyWidget extends StatelessWidget {
               onRelease(index);
             },
             child: GestureDetector(
-              onTap: () {},
-              child: Container(
-                width: width - spacing * 2,
-                height: height,
-                decoration: BoxDecoration(
-                    color: down ? color.withOpacity(0.5) : color,
-                    borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(0), bottom: Radius.circular(3))),
-              ),
-            )));
+                onTap: () {},
+                child: Container(
+                    width: width - spacing * 2,
+                    height: height,
+                    decoration: BoxDecoration(
+                        color: down ? color.withOpacity(0.5) : color,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(0),
+                            bottom: Radius.circular(3)))))));
   }
 }

@@ -17,7 +17,8 @@ impl Module for Constant {
         outputs: &[
             Pin::Control("Control Output", 17)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
     
     fn new() -> Self {
@@ -28,7 +29,7 @@ impl Module for Constant {
         ()
     }
 
-    fn load(&mut self, state: &State) {
+    fn load(&mut self, version: &str, state: &State) {
         self.value = state.load("value");
     }
 

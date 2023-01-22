@@ -21,7 +21,8 @@ impl Module for Hold {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Category 1/Category 2/Module Name"
+        path: "Category 1/Category 2/Module Name",
+        presets: Presets::NONE
     };
 
     fn new() -> Self {

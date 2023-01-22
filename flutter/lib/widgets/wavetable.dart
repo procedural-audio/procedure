@@ -146,136 +146,38 @@ class WavetableWidget extends ModuleWidget {
         decoration: BoxDecoration(
             color: const Color.fromRGBO(20, 20, 20, 1.0),
             borderRadius: BorderRadius.circular(5)),
-        child: Column(children: [
-          SizedBox(
-              height: 40,
-              child: Row(children: [
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 5, 0, 5),
+        child: Padding(
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+            child: Stack(fit: StackFit.expand, children: [
+              Visibility(
+                visible: showPresets,
+                child: Row(children: [
+                  SingleChildScrollView(
+                    controller: ScrollController(),
                     child: Container(
-                        width: 30,
-                        height: 30,
-                        child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                showPresets = !showPresets;
-                              });
-                            },
-                            child: Icon(
-                              showPresets ? Icons.waves : Icons.list,
-                              color: Colors.grey,
-                              size: 20,
-                            )),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-                Expanded(
-                    child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Container(
-                          decoration: const BoxDecoration(
-                              color: Color.fromRGBO(40, 40, 40, 1.0)),
-                          child: MouseRegion(
-                              onEnter: (e) {
-                                setState(() {
-                                  presetsHovering = true;
-                                });
-                              },
-                              onExit: (e) {
-                                setState(() {
-                                  presetsHovering = false;
-                                });
-                              },
-                              child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                  child: Container(
-                                      width: 100,
-                                      child: Row(children: [
-                                        const Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Icon(
-                                            Icons.book,
-                                            color: Colors.grey,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              10, 0, 0, 0),
-                                          child: Text(
-                                            presets[selectedCategory]
-                                                [selectedPreset],
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        )
-                                      ])))),
-                        ))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.chevron_left,
-                          color: Colors.grey,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.chevron_right,
-                          color: Colors.grey,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.folder,
-                          color: Colors.blueAccent,
-                          size: 20,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-              ])),
-          Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                  child: Stack(fit: StackFit.expand, children: [
-                    Visibility(
-                      visible: showPresets,
-                      child: Row(children: [
-                        SingleChildScrollView(
-                          controller: ScrollController(),
-                          child: Container(
-                            width: 150,
-                            child: Column(
-                              children: categoryWidgets,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            controller: ScrollController(),
-                            child: Column(children: elementWidgets),
-                          ),
-                        ),
-                      ]),
+                      width: 150,
+                      child: Column(
+                        children: categoryWidgets,
+                      ),
                     ),
-                    Visibility(
-                        visible: !showPresets,
-                        child: CustomPaint(
-                          painter: WavetablePainter(wavetable),
-                        ))
-                  ])))
-        ]));
+                  ),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: ScrollController(),
+                      child: Column(children: elementWidgets),
+                    ),
+                  ),
+                ]),
+              ),
+              Visibility(
+                  visible: !showPresets,
+                  child: CustomPaint(
+                    painter: WavetablePainter(wavetable),
+                  ))
+            ])));
   }
 }
 

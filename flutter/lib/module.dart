@@ -1,6 +1,7 @@
 import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:metasampler/common.dart';
 
 import 'main.dart';
 
@@ -143,6 +144,39 @@ class _Module extends State<Module> {
                   fontWeight: FontWeight.normal,
                   decoration: TextDecoration.none),
             ))));
+
+    /*
+    Dropdown elements:
+     - Module info
+     - Duplicate
+     - Delete
+
+    */
+
+    /*widgets.add(Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(35, 7, 35, 0),
+          child: SearchableDropdown(
+              value: widget.name,
+              onSelect: (s) {},
+              decoration: const BoxDecoration(),
+              titleStyle: TextStyle(color: widget.color, fontSize: 16),
+              categories: [
+                Category(name: "Category 1", elements: [
+                  CategoryElement("Element 1"),
+                  CategoryElement("Element 2"),
+                  CategoryElement("Element 3"),
+                  CategoryElement("Element 4"),
+                ]),
+                Category(name: "Category 2", elements: [
+                  CategoryElement("Element 5"),
+                  CategoryElement("Element 6"),
+                  CategoryElement("Element 7"),
+                  CategoryElement("Element 8"),
+                ])
+              ]),
+        )));*/
 
     for (var pin in widget.pins) {
       if (pin.isInput) {
