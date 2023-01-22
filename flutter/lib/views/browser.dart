@@ -26,55 +26,17 @@ class _BrowserView extends State<BrowserView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
+        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
         child: Stack(children: [
           Column(children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(0, 2, 0, 10),
-              alignment: Alignment.center,
-              child: const Text(
-                "Instruments",
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w300),
-              ),
-            ),
             Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Row(children: [
-                  Expanded(
-                      child: Container(
-                          height: 26,
-                          decoration: const BoxDecoration(
-                              color: Color.fromRGBO(30, 30, 30, 1.0),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5))),
-                          child: TextField(
-                              maxLines: 1,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                              decoration: const InputDecoration(
-                                  fillColor: Color.fromARGB(255, 112, 35, 30),
-                                  border: OutlineInputBorder(),
-                                  contentPadding:
-                                      EdgeInsets.fromLTRB(10, 10, 0, 3)),
-                              onChanged: (text) {
-                                setState(() {
-                                  searchText = text;
-                                });
-                              }))),
-                  IconButton(
-                      iconSize: 16,
-                      padding: const EdgeInsets.all(0),
-                      icon: const Icon(
-                        Icons.info_outline,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {}),
-                ])),
+                padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+                child: BrowserSearchBar(onFilter: (s) {
+                  setState(() {
+                    searchText = s;
+                  });
+                })),
+            const SizedBox(height: 10),
             Expanded(
                 child: ValueListenableBuilder<List<InstrumentInfo>>(
               valueListenable: widget.host.globals.instruments,
@@ -101,7 +63,7 @@ class _BrowserView extends State<BrowserView> {
                 }
 
                 return GridView.builder(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
                     controller: controller,
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -125,6 +87,81 @@ class _BrowserView extends State<BrowserView> {
             index: selectedIndex,
           )
         ]));
+  }
+}
+
+class BrowserSearchBar extends StatelessWidget {
+  BrowserSearchBar({required this.onFilter});
+
+  void Function(String) onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      Container(
+          width: 200,
+          height: 26,
+          decoration: const BoxDecoration(
+              color: Color.fromRGBO(30, 30, 30, 1.0),
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+          child: TextField(
+              maxLines: 1,
+              style: const TextStyle(
+                color: Color.fromRGBO(220, 220, 220, 1.0),
+                fontSize: 14,
+              ),
+              decoration: const InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8),
+                  prefixIconColor: Colors.grey,
+                  prefixIcon: Icon(
+                    Icons.search,
+                  )),
+              onChanged: (text) {
+                onFilter(text);
+              })),
+      Expanded(
+          child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [
+                BrowserTag(title: "Type", tags: [
+                  "Sound",
+                  "Effect",
+                  "Application",
+                ]),
+                BrowserTag(title: "Category", tags: []),
+                BrowserTag(title: "Genre", tags: []),
+                BrowserTag(
+                    title: "Other", tags: ["Generative", "Analog", "Digital"]),
+              ])))
+    ]);
+  }
+}
+
+class BrowserTag extends StatelessWidget {
+  BrowserTag({required this.title, required this.tags});
+
+  String title;
+  List<String> tags;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: Container(
+          height: 24,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          decoration: const BoxDecoration(
+              color: Color.fromRGBO(50, 50, 50, 1.0),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              boxShadow: []),
+          child: Text(
+            title,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ));
   }
 }
 
