@@ -26,7 +26,7 @@ class _BrowserView extends State<BrowserView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
         child: Stack(children: [
           Column(children: [
             Container(
@@ -101,6 +101,7 @@ class _BrowserView extends State<BrowserView> {
                 }
 
                 return GridView.builder(
+                    padding: const EdgeInsets.all(5),
                     controller: controller,
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -206,7 +207,14 @@ class _BrowserViewElement extends State<BrowserViewElement> {
                 borderRadius: const BorderRadius.all(Radius.circular(5)),
                 color: mouseOver
                     ? const Color.fromRGBO(70, 70, 70, 1.0)
-                    : const Color.fromRGBO(50, 50, 50, 1.0)),
+                    : const Color.fromRGBO(50, 50, 50, 1.0),
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: 3,
+                      spreadRadius: 3,
+                      offset: const Offset(0, 3),
+                      color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0))
+                ]),
             child: Column(children: [
               Expanded(
                   child: ClipRRect(
