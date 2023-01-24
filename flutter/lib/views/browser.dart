@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:metasampler/views/info.dart';
 
 import '../host.dart';
@@ -20,6 +21,9 @@ class _BrowserView extends State<BrowserView> {
   bool expanded = false;
   String searchText = "";
   ValueNotifier<int> selectedIndex = ValueNotifier(-1);
+  bool infoVisible = false;
+  bool showInfo = false;
+  bool showEnabled = true;
 
   ScrollController controller = ScrollController();
 
@@ -74,18 +78,54 @@ class _BrowserView extends State<BrowserView> {
                     itemCount: filteredInstruments.length,
                     itemBuilder: (BuildContext ctx, index) {
                       return BrowserViewElement(
-                        index: index,
-                        info: filteredInstruments[index],
-                        selectedIndex: selectedIndex,
-                      );
+                          index: index,
+                          info: filteredInstruments[index],
+                          selectedIndex: selectedIndex,
+                          onTap: (x, y) {
+                            setState(() {
+                              showInfo = true;
+                              infoVisible = true;
+                            });
+                            selectedIndex.value = index;
+                          });
                     });
               },
             ))
           ]),
-          InfoView(
-            widget.host,
-            index: selectedIndex,
-          )
+          Visibility(
+              visible: infoVisible,
+              maintainState: true,
+              maintainAnimation: true,
+              child: LayoutBuilder(builder: (context, constraints) {
+                return AnimatedPadding(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.fastLinearToSlowEaseIn,
+                    padding: EdgeInsets.fromLTRB(
+                        showInfo ? 0 : 200, showInfo ? 0 : 200, 0, 0),
+                    child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastLinearToSlowEaseIn,
+                        width: showInfo ? constraints.maxWidth : 200,
+                        height: showInfo ? constraints.maxHeight : 200,
+                        child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            opacity: showInfo ? 1.0 : 0.0,
+                            child: InfoView(widget.host, index: selectedIndex,
+                                onClose: () {
+                              setState(() {
+                                showInfo = false;
+                              });
+                              Future.delayed(const Duration(milliseconds: 500),
+                                  () {
+                                if (!showInfo) {
+                                  setState(() {
+                                    infoVisible = false;
+                                  });
+                                }
+                              });
+                            }))));
+              }))
         ]));
   }
 }
@@ -150,27 +190,26 @@ class BrowserTag extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
         child: Container(
-          height: 24,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          decoration: const BoxDecoration(
-              color: Color.fromRGBO(50, 50, 50, 1.0),
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              boxShadow: []),
-          child: Text(
-            title,
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-        ));
+            height: 24,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            decoration: const BoxDecoration(
+                color: Color.fromRGBO(50, 50, 50, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                boxShadow: []),
+            child: Text(
+              title,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            )));
   }
 }
 
 class InfoView extends StatefulWidget {
-  InfoView(this.host, {required this.index});
+  InfoView(this.host, {required this.index, required this.onClose});
 
   Host host;
-
   ValueNotifier<int> index;
+  void Function() onClose;
 
   @override
   State<InfoView> createState() => _InfoView();
@@ -179,48 +218,68 @@ class InfoView extends StatefulWidget {
 class _InfoView extends State<InfoView> {
   bool mouseOver = false;
 
-  var name = "";
-  var description = "";
-
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      double width = constraints.maxWidth;
+    return ValueListenableBuilder<int>(
+        valueListenable: widget.index,
+        builder: ((context, index, child) {
+          if (index < 0) {
+            return Container();
+          }
 
-      return ValueListenableBuilder<int>(
-          valueListenable: widget.index,
-          builder: (context, index, w) {
-            if (index >= 0) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                // STUFF HERE?
-                color: const Color.fromRGBO(40, 40, 40, 1.0),
-              );
-            } else {
-              return const SizedBox(
-                width: 0,
-                height: 0,
-              );
-            }
-          });
-    });
+          var instrument = widget.host.globals.instruments.value[index];
+          return Container(
+              decoration:
+                  const BoxDecoration(color: Color.fromRGBO(40, 40, 40, 1.0)),
+              child: Stack(children: [
+                Column(children: [
+                  Text(instrument.name),
+                  Text(instrument.description),
+                ]),
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: IconButton(
+                        iconSize: 18,
+                        color: Colors.white,
+                        icon: const Icon(Icons.chevron_left),
+                        padding: const EdgeInsets.all(5),
+                        visualDensity: VisualDensity.comfortable,
+                        onPressed: () {
+                          widget.onClose();
+                        })),
+              ]));
+        }));
   }
 }
 
 class BrowserViewElement extends StatefulWidget {
   BrowserViewElement(
-      {required this.index, required this.info, required this.selectedIndex});
+      {required this.index,
+      required this.info,
+      required this.selectedIndex,
+      required this.onTap});
 
   int index;
   InstrumentInfo info;
   ValueNotifier<int> selectedIndex;
+  void Function(double x, double y) onTap;
 
   @override
   State<BrowserViewElement> createState() => _BrowserViewElement();
 }
 
-class _BrowserViewElement extends State<BrowserViewElement> {
+class _BrowserViewElement extends State<BrowserViewElement>
+    with TickerProviderStateMixin {
   bool mouseOver = false;
+  bool playing = false;
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -235,55 +294,91 @@ class _BrowserViewElement extends State<BrowserViewElement> {
             mouseOver = false;
           });
         },
-        child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 290,
-            height: mouseOver ? 300 : 200,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(5)),
-                color: mouseOver
-                    ? const Color.fromRGBO(70, 70, 70, 1.0)
-                    : const Color.fromRGBO(50, 50, 50, 1.0),
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: 3,
-                      spreadRadius: 3,
-                      offset: const Offset(0, 3),
-                      color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0))
-                ]),
-            child: Column(children: [
-              Expanded(
-                  child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: Image.file(widget.info.image,
-                          width: 290, fit: BoxFit.cover))),
-              Container(
-                  height: 56,
-                  alignment: Alignment.topLeft,
-                  padding: const EdgeInsets.all(4),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 2),
-                        Text(widget.info.name,
-                            style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(220, 220, 220, 1.0))),
-                        const SizedBox(height: 4),
-                        Text(
-                            widget.info.description.substring(0,
-                                    min(40, widget.info.description.length)) +
-                                (widget.info.description.length < 40
-                                    ? ""
-                                    : "..."),
-                            style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.grey)),
-                      ]))
-            ])));
+        child: GestureDetector(
+            onTap: () => widget.onTap(0.0, 0.0),
+            child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 290,
+                height: mouseOver ? 300 : 200,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
+                    color: mouseOver
+                        ? const Color.fromRGBO(70, 70, 70, 1.0)
+                        : const Color.fromRGBO(50, 50, 50, 1.0),
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 3,
+                          spreadRadius: 3,
+                          offset: const Offset(0, 3),
+                          color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0))
+                    ]),
+                child: Column(children: [
+                  Expanded(
+                      child: Stack(children: [
+                    ClipRRect(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(5)),
+                        child: Image.file(widget.info.image,
+                            width: 290, fit: BoxFit.cover)),
+                    Center(
+                        child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: mouseOver ? 1.0 : 0.0,
+                            child: GestureDetector(
+                                onTap: () {
+                                  if (playing) {
+                                    controller.reverse();
+                                  } else {
+                                    controller.forward();
+                                  }
+
+                                  playing = !playing;
+                                },
+                                child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: const BoxDecoration(
+                                        color:
+                                            Color.fromRGBO(150, 150, 150, 0.5),
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(25))),
+                                    child: AnimatedIcon(
+                                      progress: controller,
+                                      icon: AnimatedIcons.play_pause,
+                                      color: const Color.fromRGBO(
+                                          220, 220, 220, 1.0),
+                                    )))))
+                  ])),
+                  Container(
+                      height: 56,
+                      alignment: Alignment.topLeft,
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 2),
+                            Text(widget.info.name,
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(220, 220, 220, 1.0))),
+                            const SizedBox(height: 4),
+                            Text(
+                                widget.info.description.substring(
+                                        0,
+                                        min(40,
+                                            widget.info.description.length)) +
+                                    (widget.info.description.length < 40
+                                        ? ""
+                                        : "..."),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.grey)),
+                          ]))
+                ]))));
   }
 }
 
