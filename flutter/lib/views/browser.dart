@@ -165,42 +165,33 @@ class BrowserSearchBar extends StatelessWidget {
           child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: [
-                BrowserTag(title: "Type", tags: [
-                  "Sound",
-                  "Effect",
-                  "Application",
-                ]),
-                BrowserTag(title: "Category", tags: []),
-                BrowserTag(title: "Genre", tags: []),
-                BrowserTag(
-                    title: "Other", tags: ["Generative", "Analog", "Digital"]),
+                TagDropdown(
+                    value: "Type",
+                    tags: const [
+                      "Synthesizer",
+                      "Sampler",
+                      "Effect",
+                      "Sequencer",
+                      "Song",
+                      "Application",
+                    ],
+                    onSelect: (s) {}),
+                TagDropdown(
+                    value: "Attributes",
+                    tags: const [
+                      "Analog",
+                      "Generative",
+                    ],
+                    onSelect: (s) {}),
+                TagDropdown(
+                    value: "Other",
+                    tags: const [
+                      "Analog",
+                      "Generative",
+                    ],
+                    onSelect: (s) {}),
               ])))
     ]);
-  }
-}
-
-class BrowserTag extends StatelessWidget {
-  BrowserTag({required this.title, required this.tags});
-
-  String title;
-  List<String> tags;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-        child: Container(
-            height: 24,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            decoration: const BoxDecoration(
-                color: Color.fromRGBO(50, 50, 50, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                boxShadow: []),
-            child: Text(
-              title,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            )));
   }
 }
 
@@ -382,71 +373,6 @@ class _BrowserViewElement extends State<BrowserViewElement>
   }
 }
 
-/*class _BrowserViewElement extends State<BrowserViewElement> {
-  bool mouseOver = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-        onEnter: (details) {
-          setState(() {
-            mouseOver = true;
-          });
-        },
-        onExit: (details) {
-          setState(() {
-            mouseOver = false;
-          });
-        },
-        child: Stack(children: [
-          ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(5)),
-              child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      color: const Color.fromRGBO(60, 60, 60, 1.0),
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Stack(children: [
-                    Image.file(
-                      widget.info.image,
-                      width: 290,
-                      fit: BoxFit.fitWidth,
-                    ),
-                    AnimatedOpacity(
-                        opacity: mouseOver ? 0.3 : 0.0,
-                        duration: const Duration(milliseconds: 200),
-                        child: Container(
-                          color: Colors.grey,
-                        )),
-                    GestureDetector(onTap: () {
-                      widget.selectedIndex.value = widget.index;
-                    })
-                  ]))),
-          Align(
-              alignment: Alignment.bottomLeft,
-              child: Row(children: [
-                ClipRect(
-                    child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-                        child: Container(
-                            height: 26,
-                            alignment: Alignment.centerLeft,
-                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                            decoration: const BoxDecoration(
-                                color: Color.fromRGBO(0, 0, 0, 0.4),
-                                borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(5))),
-                            child: Text(widget.info.name,
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400)))))
-              ]))
-        ])));
-  }
-}*/
-
 class BrowserListCard extends StatelessWidget {
   final String name;
   final String selected;
@@ -544,5 +470,231 @@ class _BrowserInfoWidgetState extends State<BrowserInfoWidget> {
         ),
       ),
     );
+  }
+}
+
+class Category {
+  Category({required this.name, required this.elements});
+
+  String name;
+  List<CategoryElement> elements;
+}
+
+class CategoryElement {
+  CategoryElement(this.name, {this.color, this.icon});
+
+  String name;
+  Color? color;
+  Icon? icon;
+}
+
+class TagDropdown extends StatefulWidget {
+  TagDropdown(
+      {required this.value,
+      required this.tags,
+      required this.onSelect,
+      this.width,
+      this.height = 24,
+      this.decoration = const BoxDecoration(
+          color: Color.fromRGBO(20, 20, 20, 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(3)))});
+
+  String? value;
+  List<String> tags;
+  void Function(String?) onSelect;
+  double? width;
+  double? height;
+  BoxDecoration decoration;
+
+  @override
+  State<TagDropdown> createState() => _TagDropdown();
+}
+
+class _TagDropdown extends State<TagDropdown> with TickerProviderStateMixin {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+  AnimationController? _animationController;
+
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+  TextEditingController searchController = TextEditingController(text: "");
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 0));
+  }
+
+  void toggleDropdown({bool? open}) async {
+    if (_isOpen || open == false) {
+      await _animationController?.reverse();
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    } else if (!_isOpen || open == true) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context)?.insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+      _animationController?.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusScopeNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: CompositedTransformTarget(
+            link: _layerLink,
+            child: GestureDetector(
+                onTap: () {
+                  toggleDropdown();
+                },
+                child: Container(
+                    width: widget.width,
+                    height: widget.height,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    decoration: BoxDecoration(
+                        color: _isOpen
+                            ? const Color.fromRGBO(100, 100, 100, 1.0)
+                            : const Color.fromRGBO(50, 50, 50, 1.0),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12))),
+                    child: Text(widget.value ?? "",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: _isOpen
+                                ? const Color.fromRGBO(20, 20, 20, 1.0)
+                                : Colors.grey))))));
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+        maintainState: false,
+        opaque: false,
+        builder: (entryContext) {
+          return FocusScope(
+              node: _focusScopeNode,
+              child: GestureDetector(
+                  onTap: () {
+                    toggleDropdown(open: false);
+                  },
+                  onSecondaryTap: () {
+                    toggleDropdown(open: false);
+                  },
+                  onPanStart: (e) {
+                    toggleDropdown(open: false);
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      child: Stack(children: [
+                        Positioned(
+                            left: offset.dx - 50,
+                            top: offset.dy + size.height + 5,
+                            child: CompositedTransformFollower(
+                                offset: Offset(0, size.height),
+                                link: _layerLink,
+                                showWhenUnlinked: false,
+                                child: Material(
+                                    elevation: 0,
+                                    borderRadius: BorderRadius.zero,
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          color: const Color.fromRGBO(
+                                              30, 30, 30, 1.0),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                              color: const Color.fromRGBO(
+                                                  40, 40, 40, 1.0),
+                                              width: 1.0)),
+                                      child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: widget.tags.map((name) {
+                                            return TagDropdownElement(
+                                              name: name,
+                                              onSelect: widget.onSelect,
+                                            );
+                                          }).toList()),
+                                    ))))
+                      ]))));
+        });
+  }
+}
+
+class TagDropdownElement extends StatefulWidget {
+  const TagDropdownElement({required this.name, required this.onSelect});
+
+  final String name;
+  final void Function(String) onSelect;
+
+  @override
+  State<TagDropdownElement> createState() => _TagDropdownElement();
+}
+
+class _TagDropdownElement extends State<TagDropdownElement> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+        child: MouseRegion(
+            onEnter: (event) {
+              setState(() {
+                hovering = true;
+              });
+            },
+            onExit: (event) {
+              setState(() {
+                hovering = false;
+              });
+            },
+            child: GestureDetector(
+                onTap: () {
+                  widget.onSelect(widget.name);
+                },
+                child: Container(
+                    height: 22,
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      border: Border.all(
+                          width: 1.0,
+                          color: !hovering
+                              ? const Color.fromRGBO(60, 60, 60, 1.0)
+                              : const Color.fromRGBO(100, 100, 100, 1.0)),
+                    ),
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Row(children: [
+                          Text(
+                            widget.name,
+                            style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400),
+                          )
+                        ]))))));
   }
 }
