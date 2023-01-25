@@ -21,7 +21,8 @@ class InstrumentInfo {
   String description =
       "Here is a paragraph that can go below the title. It is here to fill some space.\n";
   String path = "";
-  File image = File("/home/chase/github/content/assets/backgrounds/background_01.png");
+  File image =
+      File("/home/chase/github/content/assets/backgrounds/background_01.png");
   List<String> tags = ["Tag 1", "Tag 2"];
 
   int rating = -1;
@@ -53,40 +54,37 @@ class InstrumentInfo {
 }
 
 class InfoContentsWidget extends StatefulWidget {
-  final InstrumentInfo instrument;
-  Host host;
-
   InfoContentsWidget(this.host, {required this.instrument, Key? key})
       : super(key: key);
 
+  InstrumentInfo instrument;
+  Host host;
+
   @override
-  _InfoContentsWidgetState createState() =>
-      _InfoContentsWidgetState(instrument: instrument);
+  _InfoContentsWidgetState createState() => _InfoContentsWidgetState();
 }
 
 class _InfoContentsWidgetState extends State<InfoContentsWidget> {
+  _InfoContentsWidgetState();
+
   bool editing = false;
-  InstrumentInfo instrument;
-
-  _InfoContentsWidgetState({required this.instrument});
-
   String nameText = "";
   bool titleError = false;
 
   bool mouseOverImage = false;
 
   File getBackgroundImage() {
-    File file1 = File(instrument.path + "/info/background.jpg");
+    File file1 = File(widget.instrument.path + "/info/background.jpg");
     if (file1.existsSync()) {
       return file1;
     }
 
-    File file2 = File(instrument.path + "/info/background.png");
+    File file2 = File(widget.instrument.path + "/info/background.png");
     if (file2.existsSync()) {
       return file2;
     }
 
-    File file3 = File(instrument.path + "/info/background.jpeg");
+    File file3 = File(widget.instrument.path + "/info/background.jpeg");
     if (file3.existsSync()) {
       return file3;
     }
@@ -103,27 +101,27 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
 
       /* Delete old image */
 
-      File file1 = File(instrument.path + "/info/background.jpg");
+      File file1 = File(widget.instrument.path + "/info/background.jpg");
       if (file1.existsSync()) {
         file1.delete();
       }
 
-      File file2 = File(instrument.path + "/info/background.png");
+      File file2 = File(widget.instrument.path + "/info/background.png");
       if (file2.existsSync()) {
         file2.delete();
       }
 
-      File file3 = File(instrument.path + "/info/background.jpeg");
+      File file3 = File(widget.instrument.path + "/info/background.jpeg");
       if (file3.existsSync()) {
         file3.delete();
       }
 
       if (file.name.endsWith(".png")) {
-        file.copySync(instrument.path + "/info/background.png");
+        file.copySync(widget.instrument.path + "/info/background.png");
       } else if (file.name.endsWith(".jpg")) {
-        file.copySync(instrument.path + "/info/background.jpg");
+        file.copySync(widget.instrument.path + "/info/background.jpg");
       } else if (file.name.endsWith(".jpeg")) {
-        file.copySync(instrument.path + "/info/background.jpeg");
+        file.copySync(widget.instrument.path + "/info/background.jpeg");
       } else {
         print("ERROR: Couldn't find image extension");
       }
@@ -137,7 +135,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
     /* Markdown Viewer */
     final markdownViewer = Markdown(
       selectable: false,
-      data: instrument.description,
+      data: widget.instrument.description,
       styleSheet: MarkdownStyleSheet(
           h1: const TextStyle(
               fontWeight: FontWeight.normal,
@@ -148,7 +146,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
           p: const TextStyle(
               fontWeight: FontWeight.w300,
               fontStyle: FontStyle.normal,
-              fontSize: 18,
+              fontSize: 14,
               color: Colors.white70,
               decoration: TextDecoration.none)),
     );
@@ -156,7 +154,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
     /* Markdown Editor */
     var markdownEditor = EditableText(
         controller: TextEditingController.fromValue(
-            TextEditingValue(text: instrument.description)),
+            TextEditingValue(text: widget.instrument.description)),
         focusNode: FocusNode(),
         cursorColor: Colors.grey,
         backgroundCursorColor: Colors.grey,
@@ -164,7 +162,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         style: const TextStyle(
             fontWeight: FontWeight.w300,
             fontStyle: FontStyle.normal,
-            fontSize: 18,
+            fontSize: 14,
             color: Colors.white,
             decoration: TextDecoration.none));
 
@@ -172,7 +170,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
 
     var titleEditor = EditableText(
         controller: TextEditingController.fromValue(
-            TextEditingValue(text: instrument.name)),
+            TextEditingValue(text: widget.instrument.name)),
         focusNode: FocusNode(),
         cursorColor: Colors.grey,
         backgroundCursorColor: Colors.grey,
@@ -180,291 +178,230 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         style: const TextStyle(
             fontWeight: FontWeight.normal,
             fontStyle: FontStyle.normal,
-            fontSize: 24,
+            fontSize: 18,
             color: Colors.white,
             decoration: TextDecoration.none));
 
-    return Expanded(
-      child: Row(
-        children: [
+    return Container(
+        decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+            color: Color.fromRGBO(40, 40, 40, 1.0)),
+        child: Row(children: [
           SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  height: 20,
-                ),
+              child: Column(children: [
+            Container(height: 20),
 
-                /* Main image */
-                Stack(
-                  children: [
-                    Image.file(
-                      getBackgroundImage(),
-                      width: 650,
-                      height: 200,
-                      fit: BoxFit.fitWidth,
-                    ),
-                    !editing
-                        ? Container()
-                        : MouseRegion(
-                            onEnter: (event) {
-                              setState(() {
-                                mouseOverImage = true;
-                              });
-                            },
-                            onExit: (event) {
-                              setState(() {
-                                mouseOverImage = false;
-                              });
-                            },
-                            child: GestureDetector(
-                                onTap: () {
-                                  browserForImage();
-                                },
-                                child: Container(
-                                  width: 650,
-                                  height: 200,
-                                  child: const Center(
-                                    child: Text(
-                                      "Select an image",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontStyle: FontStyle.normal,
-                                          fontSize: 24,
-                                          color: Colors.white,
-                                          decoration: TextDecoration.none),
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: mouseOverImage
-                                        ? const Color.fromRGBO(
-                                            120, 120, 120, 100)
-                                        : const Color.fromRGBO(
-                                            100, 100, 100, 100),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 1,
-                                    ),
-                                  ),
-                                )))
-                  ],
-                ),
-                Container(
-                    padding: editing
-                        ? const EdgeInsets.fromLTRB(23, 30, 20, 0)
-                        : const EdgeInsets.fromLTRB(30, 30, 20, 0),
-                    width: 690,
-                    height: 60,
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          !editing
-                              ? Text(
-                                  instrument.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 24,
-                                      color: Colors.white,
-                                      decoration: TextDecoration.none),
-                                )
-                              : Container(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                                  height: 30,
-                                  width: 400,
-                                  child: titleEditor,
-                                  decoration: BoxDecoration(
-                                    color: MyTheme.grey40,
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 1,
-                                    ),
-                                  ),
+            /* Main image */
+            Stack(children: [
+              ClipRRect(
+                  borderRadius: const BorderRadius.all(Radius.circular(5)),
+                  child: Image.file(
+                    getBackgroundImage(),
+                    width: 450,
+                    height: 200,
+                    fit: BoxFit.fitWidth,
+                  )),
+              !editing
+                  ? Container()
+                  : MouseRegion(
+                      onEnter: (event) {
+                        setState(() {
+                          mouseOverImage = true;
+                        });
+                      },
+                      onExit: (event) {
+                        setState(() {
+                          mouseOverImage = false;
+                        });
+                      },
+                      child: GestureDetector(
+                          onTap: () {
+                            browserForImage();
+                          },
+                          child: Container(
+                              width: 450,
+                              height: 200,
+                              child: const Center(
+                                  child: Text(
+                                "Select an image",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontStyle: FontStyle.normal,
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    decoration: TextDecoration.none),
+                              )),
+                              decoration: BoxDecoration(
+                                  color: mouseOverImage
+                                      ? const Color.fromRGBO(120, 120, 120, 100)
+                                      : const Color.fromRGBO(
+                                          100, 100, 100, 100),
+                                  border: Border.all(
+                                    color: Colors.grey,
+                                    width: 1,
+                                  )))))
+            ]),
+            Container(
+                padding: editing
+                    ? const EdgeInsets.fromLTRB(23, 30, 20, 0)
+                    : const EdgeInsets.fromLTRB(30, 30, 20, 0),
+                width: 690 - 200,
+                height: 60,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      !editing
+                          ? Text(
+                              widget.instrument.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.none),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                              height: 30,
+                              width: 400,
+                              child: titleEditor,
+                              decoration: BoxDecoration(
+                                color: MyTheme.grey40,
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1,
                                 ),
-                          IconButton(
-                            color: Colors.white,
-                            icon: editing
-                                ? const Icon(Icons.save)
-                                : const Icon(Icons.edit),
-                            iconSize: 20,
-                            onPressed: () {
-                              /* Save the instrument */
-                              for (int i = 0;
-                                  i < widget.host.globals.instruments2.length;
-                                  i++) {
-                                if (widget.host.globals.instruments2[i].path ==
-                                    instrument.path) {
-                                  widget.host.globals.instruments2[i].description =
-                                      markdownEditor.controller.text;
-
-                                  /* Rename instrument */
-                                  if (widget.host.globals.instruments2[i].name !=
-                                      titleEditor.controller.text) {
-                                    if (titleEditor.controller.text == "") {
-                                      setState(() {
-                                        titleError = true;
-                                      });
-
-                                      return;
-                                    }
-
-                                    /* Find new path */
-                                    String newPath =
-                                        Directory(widget.host.globals.instruments2[i].path)
-                                                .parent
-                                                .path +
-                                            "/" +
-                                            titleEditor.controller.text;
-
-                                    int count = 2;
-                                    while (Directory(newPath).existsSync()) {
-                                      newPath =
-                                          Directory(widget.host.globals.instruments2[i].path)
-                                                  .parent
-                                                  .path +
-                                              "/" +
-                                              titleEditor.controller.text +
-                                              " (" +
-                                              count.toString() +
-                                              ")";
-                                      count += 1;
-                                    }
-
-                                    /* Move file */
-                                    Directory(widget.host.globals.instruments2[i].path)
-                                        .renameSync(newPath);
-
-                                    /* Update instrument list */
-                                    widget.host.globals.instruments2[i].name =
-                                        titleEditor.controller.text;
-                                    widget.host.globals.instruments2[i].path = newPath;
-                                  }
-
-                                  /* Update loaded instrument */
-                                  if (instrument.path ==
-                                      widget.host.globals.instrument.path) {
-                                    widget.host.globals.instrument = widget.host.globals.instruments2[i];
-                                  }
-
-                                  instrument = widget.host.globals.instruments2[i];
-
-                                  /* Update info json */
-                                  File file = File(widget.host.globals.instruments2[i].path +
-                                      "/info/info.json");
-                                  String json =
-                                      jsonEncode(widget.host.globals.instruments2[i]);
-                                  file.writeAsString(json);
-                                }
-                              }
-
-                              setState(() {
-                                if (editing) {
-                                  /* Update local instrument metadata */
-                                  instrument.description =
-                                      markdownEditor.controller.text;
-                                  editing = false;
-                                } else {
-                                  /* Start editing */
-                                  markdownEditor.controller.text =
-                                      instrument.description;
-                                  editing = true;
-                                }
-                              });
-                            },
-                          ),
-                        ])),
-
-                /* Description Container */
-                Padding(
-                  padding: !editing
-                      ? const EdgeInsets.fromLTRB(0, 0, 15, 15)
-                      : const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 1000),
-                    child: Container(
-                      padding: !editing
-                          ? const EdgeInsets.all(0)
-                          : const EdgeInsets.all(10),
-                      width: 690 - 30 - 15,
-                      child: !editing ? markdownViewer : markdownEditor,
-                      decoration: !editing
-                          ? const BoxDecoration()
-                          : BoxDecoration(
-                              color: MyTheme.grey40,
-                              border: Border.all(
-                                color: Colors.grey,
-                                width: 1,
                               ),
                             ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+                      IconButton(
+                        color: Colors.white,
+                        icon: editing
+                            ? const Icon(Icons.save,
+                                size: 18, color: Colors.white)
+                            : const Icon(Icons.edit,
+                                size: 18, color: Colors.white),
+                        iconSize: 20,
+                        onPressed: () {
+                          /* Save the instrument */
+                          for (int i = 0;
+                              i < widget.host.globals.instruments2.length;
+                              i++) {
+                            if (widget.host.globals.instruments2[i].path ==
+                                widget.instrument.path) {
+                              widget.host.globals.instruments2[i].description =
+                                  markdownEditor.controller.text;
+
+                              /* Rename instrument */
+                              if (widget.host.globals.instruments2[i].name !=
+                                  titleEditor.controller.text) {
+                                if (titleEditor.controller.text == "") {
+                                  setState(() {
+                                    titleError = true;
+                                  });
+
+                                  return;
+                                }
+
+                                /* Find new path */
+                                String newPath = Directory(widget
+                                            .host.globals.instruments2[i].path)
+                                        .parent
+                                        .path +
+                                    "/" +
+                                    titleEditor.controller.text;
+
+                                int count = 2;
+                                while (Directory(newPath).existsSync()) {
+                                  newPath = Directory(widget.host.globals
+                                              .instruments2[i].path)
+                                          .parent
+                                          .path +
+                                      "/" +
+                                      titleEditor.controller.text +
+                                      " (" +
+                                      count.toString() +
+                                      ")";
+                                  count += 1;
+                                }
+
+                                /* Move file */
+                                Directory(widget
+                                        .host.globals.instruments2[i].path)
+                                    .renameSync(newPath);
+
+                                /* Update instrument list */
+                                widget.host.globals.instruments2[i].name =
+                                    titleEditor.controller.text;
+                                widget.host.globals.instruments2[i].path =
+                                    newPath;
+                              }
+
+                              /* Update loaded instrument */
+                              if (widget.instrument.path ==
+                                  widget.host.globals.instrument.path) {
+                                widget.host.globals.instrument =
+                                    widget.host.globals.instruments2[i];
+                              }
+
+                              widget.instrument =
+                                  widget.host.globals.instruments2[i];
+
+                              /* Update info json */
+                              File file = File(
+                                  widget.host.globals.instruments2[i].path +
+                                      "/info/info.json");
+                              String json = jsonEncode(
+                                  widget.host.globals.instruments2[i]);
+                              file.writeAsString(json);
+                            }
+                          }
+
+                          setState(() {
+                            if (editing) {
+                              /* Update local instrument metadata */
+                              widget.instrument.description =
+                                  markdownEditor.controller.text;
+                              editing = false;
+                            } else {
+                              /* Start editing */
+                              markdownEditor.controller.text =
+                                  widget.instrument.description;
+                              editing = true;
+                            }
+                          });
+                        },
+                      ),
+                    ])),
+
+            /* Description Container */
+            Padding(
+                padding: !editing
+                    ? const EdgeInsets.fromLTRB(0, 0, 15, 15)
+                    : const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 1000),
+                    child: Container(
+                        padding: !editing
+                            ? const EdgeInsets.all(0)
+                            : const EdgeInsets.all(10),
+                        width: 690 - 30 - 15 - 200,
+                        child: !editing ? markdownViewer : markdownEditor,
+                        decoration: !editing
+                            ? const BoxDecoration()
+                            : BoxDecoration(
+                                color: MyTheme.grey40,
+                                border:
+                                    Border.all(color: Colors.grey, width: 1)))))
+          ])),
           Container(
-            width: 300,
-            child: Column(
-              children: [AuthorView(), AudioPreview(path: ""), TagView()],
-            ),
-            decoration: BoxDecoration(
-              color: MyTheme.grey30,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class InfoWidget extends StatefulWidget {
-  InfoWidget(this.host, {Key? key}) : super(key: key);
-
-  Host host;
-
-  @override
-  _InfoWidgetState createState() => _InfoWidgetState();
-}
-
-class _InfoWidgetState extends State<InfoWidget> {
-  bool editing = false;
-
-  // AudioPlayer player = AudioPlayer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 1000),
-        child: Padding(
-          padding: const EdgeInsets.all(50),
-          child: Container(
-            decoration: BoxDecoration(
-              color: MyTheme.grey30,
-              borderRadius: BorderRadius.circular(10.0),
-              border: Border.all(
-                color: const Color.fromRGBO(200, 200, 200, 0.3),
-                width: 1,
+              width: 200,
+              child: Column(
+                children: [AuthorView(), AudioPreview(path: ""), TagView()],
               ),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
-                    spreadRadius: 5,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5)),
-              ],
-            ),
-            child: Column(children: <Widget>[
-              /* Main Widget */
-
-              InfoContentsWidget(widget.host,
-                instrument: widget.host.globals.instrument,
-              ),
-            ]),
-          ),
-        ),
-      ),
-    );
+              decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                  color: Color.fromRGBO(40, 40, 40, 1.0)))
+        ]));
   }
 }
 
@@ -482,7 +419,6 @@ class _AudioPreviewState extends State<AudioPreview> {
 
   final String path;
   bool editing = false;
-  //AudioPlayer player = AudioPlayer();
   int _currIndex = 0;
 
   @override
@@ -490,7 +426,7 @@ class _AudioPreviewState extends State<AudioPreview> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
       child: Container(
-        width: 280,
+        width: 200,
         height: 60,
         child: Stack(
           children: [
@@ -534,7 +470,7 @@ class _AudioPreviewState extends State<AudioPreview> {
           ],
         ),
         decoration: const BoxDecoration(
-          color: Color.fromRGBO(45, 45, 45, 1.0),
+          color: Color.fromRGBO(40, 40, 40, 1.0),
         ),
       ),
     );
@@ -550,37 +486,26 @@ class _AuthorViewState extends State<AuthorView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
-        child: Column(children: [
-          Container(
-            width: 300,
-            height: 200,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-              child: Image.network(
+        // padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+        padding: const EdgeInsets.all(10),
+        child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                color: Color.fromRGBO(50, 50, 50, 1.0)),
+            child: Column(children: [
+              Image.network(
                 "https://akns-images.eonline.com/eol_images/Entire_Site/2015717/rs_1024x759-150817131955-1024-kermit-lipton.jpg",
                 fit: BoxFit.cover,
               ),
-            ),
-            decoration:
-                const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)),
-          ),
-          Container(
-            height: 40,
-            width: 300,
-            padding: const EdgeInsets.all(8),
-            child: const Text(
-              "Kermit",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-            decoration:
-                const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)),
-          )
-        ]));
+              const SizedBox(height: 10),
+              const Text("Kermit the Frog",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ))
+            ])));
   }
 }
 
@@ -626,26 +551,22 @@ class _TagViewState extends State<TagView> {
         padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
         child: Column(children: [
           Container(
-            width: 300,
-            height: 100,
-            decoration:
-                const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)),
-          ),
+              width: 300,
+              height: 100,
+              decoration:
+                  const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0))),
           Container(
-            height: 40,
-            width: 300,
-            padding: const EdgeInsets.all(8),
-            child: const Text(
-              "Tags",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-            decoration:
-                const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)),
-          )
+              height: 40,
+              width: 300,
+              padding: const EdgeInsets.all(8),
+              child: const Text("Tags",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                  )),
+              decoration:
+                  const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)))
         ]));
   }
 }

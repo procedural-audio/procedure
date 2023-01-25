@@ -108,10 +108,18 @@ class _BrowserView extends State<BrowserView> {
                         width: showInfo ? constraints.maxWidth : 200,
                         height: showInfo ? constraints.maxHeight : 200,
                         child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.fastLinearToSlowEaseIn,
-                            opacity: showInfo ? 1.0 : 0.0,
-                            child: InfoView(widget.host, index: selectedIndex,
+                          duration: const Duration(milliseconds: 600),
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          opacity: showInfo ? 1.0 : 0.0,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: selectedIndex,
+                            builder: (context, index, child) {
+                              return InfoContentsWidget(widget.host,
+                                  instrument: widget
+                                      .host.globals.instruments.value[index]);
+                            },
+                          ),
+                          /*child: InfoView(widget.host, index: selectedIndex,
                                 onClose: () {
                               setState(() {
                                 showInfo = false;
@@ -124,7 +132,8 @@ class _BrowserView extends State<BrowserView> {
                                   });
                                 }
                               });
-                            }))));
+                            })*/
+                        )));
               }))
         ]));
   }
@@ -195,7 +204,7 @@ class BrowserSearchBar extends StatelessWidget {
   }
 }
 
-class InfoView extends StatefulWidget {
+/*class InfoView extends StatefulWidget {
   InfoView(this.host, {required this.index, required this.onClose});
 
   Host host;
@@ -241,7 +250,7 @@ class _InfoView extends State<InfoView> {
               ]));
         }));
   }
-}
+}*/
 
 class BrowserViewElement extends StatefulWidget {
   BrowserViewElement(
