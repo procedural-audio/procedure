@@ -118,7 +118,6 @@ public:
     }
 
     void process(juce::AudioBuffer<float>& audioBuffer, juce::MidiBuffer& midiBuffer) {
-        puts("Processing in plugin");
         plugin->processBlock(audioBuffer, midiBuffer);
     }
 
@@ -171,6 +170,7 @@ extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* ma
                         if (manager->doesPluginStillExist(*desc)) {
                             puts("Creating plugin instance");
                             auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
+                            instance->enableAllBuses();
                             auto plugin = new MyAudioPlugin(std::move(instance));
                             return plugin;
                         } else {
@@ -200,7 +200,6 @@ extern "C" void audio_plugin_process(MyAudioPlugin* plugin, float **buffer, size
     if (plugin != nullptr) {
         auto audioBuffer = AudioBuffer<float>(buffer, channels, samples);
         auto midiBuffer = MidiBuffer();
-        printf("Sample is %f\n", buffer[0][0]);
         plugin->process(audioBuffer, midiBuffer);
     }
 }

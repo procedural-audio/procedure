@@ -101,12 +101,9 @@ impl Module for AudioPluginModule {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if voice.index == 0 {
-            println!("----------");
             if let Ok(plugin) = &mut self.plugin.try_lock() {
                 if let Some(plugin) = &mut **plugin {
-                    println!("Processing audio {}", inputs.audio[0].as_slice()[0].left);
                     plugin.process(&inputs.audio[0], &mut outputs.audio[0]);
-                    println!("Got audio {}", outputs.audio[0].as_slice()[0].left);
                 }
             }
         }
