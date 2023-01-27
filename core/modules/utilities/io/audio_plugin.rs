@@ -1,15 +1,23 @@
 use crate::*;
 use nodio::*;
 
+use std::sync::Mutex;
+
 pub struct AudioPluginModule {
-    process: Option<extern "C" fn (u32, *const *mut f32, u32, u32, *mut Event, u32)>,
-    id: Option<u32>,
     manager: AudioPluginManager,
-    plugin: Option<AudioPlugin>,
+    plugin: Mutex<Option<AudioPlugin>>,
+    sample_rate: u32,
+    block_size: usize
+}
+
+pub struct AudioPluginVoice {
+    index: u32,
+    sample_rate: u32,
+    block_size: usize
 }
 
 impl Module for AudioPluginModule {
-    type Voice = ();
+    type Voice = AudioPluginVoice;
 
     const INFO: Info = Info {
         title: "Audio Plugin",
@@ -33,15 +41,19 @@ impl Module for AudioPluginModule {
         let manager = AudioPluginManager::new();
 
         Self {
-            process: None,
-            id: None,
             manager,
-            plugin: None,
+            plugin: Mutex::new(None),
+            sample_rate: 44100,
+            block_size: 512
         }
     }
 
-    fn new_voice(&self, _index: u32) -> Self::Voice {
-        ()
+    fn new_voice(&self, index: u32) -> Self::Voice {
+        Self::Voice {
+            index,
+            sample_rate: 44100,
+            block_size: 512
+        }
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -63,9 +75,11 @@ impl Module for AudioPluginModule {
                     }
                 ],
                 on_select: | element | {
-                    self.plugin = self.manager.create_plugin(element);
+                    let mut plugin = &mut *self.plugin.lock().unwrap();
+                    *plugin = self.manager.create_plugin(element);
 
-                    if let Some(plugin) = &self.plugin {
+                    if let Some(plugin) = &mut plugin {
+                        plugin.prepare(self.sample_rate, self.block_size);
                         plugin.show_gui();
                     }
                 }
@@ -73,22 +87,28 @@ impl Module for AudioPluginModule {
         })
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
+        if voice.index == 0 {
+            voice.sample_rate = sample_rate;
+            voice.block_size = block_size;
+
+            let plugin = &mut *self.plugin.lock().unwrap();
+            if let Some(plugin) = plugin {
+                plugin.prepare(sample_rate, block_size);
+            }
+        }
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*outputs.audio[0].copy_from(&inputs.audio[0]);
-        outputs.events[0].copy_from(&inputs.events[0]);
-
-        if let Some(f) = self.process {
-            if let Some(id) = self.id {
-                let arr = [
-                    outputs.audio[0].left.as_mut_ptr(),
-                    outputs.audio[0].right.as_mut_ptr()
-                ];
-
-                (f)(id, arr.as_ptr(), 2, outputs.audio[0].left.len() as u32, outputs.events[0].as_mut_ptr(), outputs.events[0].len() as u32);
+        if voice.index == 0 {
+            println!("----------");
+            if let Ok(plugin) = &mut self.plugin.try_lock() {
+                if let Some(plugin) = &mut **plugin {
+                    println!("Processing audio {}", inputs.audio[0].as_slice()[0].left);
+                    plugin.process(&inputs.audio[0], &mut outputs.audio[0]);
+                    println!("Got audio {}", outputs.audio[0].as_slice()[0].left);
+                }
             }
-        }*/
+        }
     }
 }

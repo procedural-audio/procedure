@@ -43,54 +43,53 @@ class _BrowserView extends State<BrowserView> {
             const SizedBox(height: 10),
             Expanded(
                 child: ValueListenableBuilder<List<InstrumentInfo>>(
-              valueListenable: widget.host.globals.instruments,
-              builder: (context, instruments, w) {
-                List<InstrumentInfo> filteredInstruments = [];
+                    valueListenable: widget.host.globals.instruments,
+                    builder: (context, instruments, w) {
+                      List<InstrumentInfo> filteredInstruments = [];
 
-                if (searchText == "") {
-                  filteredInstruments = instruments;
-                } else {
-                  for (var instrument in instruments) {
-                    if (instrument.name
-                            .toLowerCase()
-                            .contains(searchText.toLowerCase()) ||
-                        instrument.description
-                            .toLowerCase()
-                            .contains(searchText.toLowerCase())) {
-                      filteredInstruments.add(instrument);
-                    }
-                  }
-                }
+                      if (searchText == "") {
+                        filteredInstruments = instruments;
+                      } else {
+                        for (var instrument in instruments) {
+                          if (instrument.name
+                                  .toLowerCase()
+                                  .contains(searchText.toLowerCase()) ||
+                              instrument.description
+                                  .toLowerCase()
+                                  .contains(searchText.toLowerCase())) {
+                            filteredInstruments.add(instrument);
+                          }
+                        }
+                      }
 
-                if (filteredInstruments.isEmpty) {
-                  return Container();
-                }
+                      if (filteredInstruments.isEmpty) {
+                        return Container();
+                      }
 
-                return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-                    controller: controller,
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 15),
-                    itemCount: filteredInstruments.length,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return BrowserViewElement(
-                          index: index,
-                          info: filteredInstruments[index],
-                          selectedIndex: selectedIndex,
-                          onTap: (x, y) {
-                            setState(() {
-                              showInfo = true;
-                              infoVisible = true;
-                            });
-                            selectedIndex.value = index;
+                      return GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                          controller: controller,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 200,
+                                  childAspectRatio: 1.0,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 15),
+                          itemCount: filteredInstruments.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return BrowserViewElement(
+                                index: index,
+                                info: filteredInstruments[index],
+                                selectedIndex: selectedIndex,
+                                onTap: (x, y) {
+                                  setState(() {
+                                    showInfo = true;
+                                    infoVisible = true;
+                                  });
+                                  selectedIndex.value = index;
+                                });
                           });
-                    });
-              },
-            ))
+                    }))
           ]),
           Visibility(
               visible: infoVisible,
@@ -108,32 +107,33 @@ class _BrowserView extends State<BrowserView> {
                         width: showInfo ? constraints.maxWidth : 200,
                         height: showInfo ? constraints.maxHeight : 200,
                         child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          opacity: showInfo ? 1.0 : 0.0,
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: selectedIndex,
-                            builder: (context, index, child) {
-                              return InfoContentsWidget(widget.host,
-                                  instrument: widget
-                                      .host.globals.instruments.value[index]);
-                            },
-                          ),
-                          /*child: InfoView(widget.host, index: selectedIndex,
-                                onClose: () {
-                              setState(() {
-                                showInfo = false;
-                              });
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                if (!showInfo) {
-                                  setState(() {
-                                    infoVisible = false;
-                                  });
-                                }
-                              });
-                            })*/
-                        )));
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            opacity: showInfo ? 1.0 : 0.0,
+                            child: ValueListenableBuilder<int>(
+                                valueListenable: selectedIndex,
+                                builder: (context, index, child) {
+                                  if (index < 0) {
+                                    index = 0;
+                                  }
+
+                                  return InfoContentsWidget(widget.host,
+                                      onClose: () {
+                                    setState(() {
+                                      showInfo = false;
+                                    });
+                                    Future.delayed(
+                                        const Duration(milliseconds: 500), () {
+                                      if (!showInfo) {
+                                        setState(() {
+                                          infoVisible = false;
+                                        });
+                                      }
+                                    });
+                                  },
+                                      instrument: widget.host.globals
+                                          .instruments.value[index]);
+                                }))));
               }))
         ]));
   }
@@ -203,54 +203,6 @@ class BrowserSearchBar extends StatelessWidget {
     ]);
   }
 }
-
-/*class InfoView extends StatefulWidget {
-  InfoView(this.host, {required this.index, required this.onClose});
-
-  Host host;
-  ValueNotifier<int> index;
-  void Function() onClose;
-
-  @override
-  State<InfoView> createState() => _InfoView();
-}
-
-class _InfoView extends State<InfoView> {
-  bool mouseOver = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-        valueListenable: widget.index,
-        builder: ((context, index, child) {
-          if (index < 0) {
-            return Container();
-          }
-
-          var instrument = widget.host.globals.instruments.value[index];
-          return Container(
-              decoration:
-                  const BoxDecoration(color: Color.fromRGBO(40, 40, 40, 1.0)),
-              child: Stack(children: [
-                Column(children: [
-                  Text(instrument.name),
-                  Text(instrument.description),
-                ]),
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                        iconSize: 18,
-                        color: Colors.white,
-                        icon: const Icon(Icons.chevron_left),
-                        padding: const EdgeInsets.all(5),
-                        visualDensity: VisualDensity.comfortable,
-                        onPressed: () {
-                          widget.onClose();
-                        })),
-              ]));
-        }));
-  }
-}*/
 
 class BrowserViewElement extends StatefulWidget {
   BrowserViewElement(
@@ -426,56 +378,6 @@ class BrowserListCard extends StatelessWidget {
           dense: dense,
           minLeadingWidth: 26,
           onTap: onTap,
-        ),
-      ),
-    );
-  }
-}
-
-class BrowserInfoWidget extends StatefulWidget {
-  BrowserInfoWidget(this.host, {Key? key}) : super(key: key);
-
-  Host host;
-
-  @override
-  _BrowserInfoWidgetState createState() => _BrowserInfoWidgetState();
-}
-
-class _BrowserInfoWidgetState extends State<BrowserInfoWidget> {
-  bool editing = false;
-
-  // AudioPlayer player = AudioPlayer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 1100,
-        ),
-        child: Padding(
-          padding: widget.host.globals.settings.showTopBar
-              ? const EdgeInsets.fromLTRB(51, 54 + 55, 51, 51)
-              : const EdgeInsets.fromLTRB(51, 51 + 50 + 1, 51, 51),
-          child: Container(
-            decoration: BoxDecoration(
-              color: MyTheme.grey30,
-            ),
-            child: Column(children: <Widget>[
-              InfoContentsWidget(
-                widget.host,
-                instrument: widget.host.globals.browserInstrument,
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.download),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.download),
-              ),
-            ]),
-          ),
         ),
       ),
     );

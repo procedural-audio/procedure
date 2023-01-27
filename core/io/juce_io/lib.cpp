@@ -113,6 +113,15 @@ public:
         this->plugin = std::move(instance);
     }
 
+    void prepare(uint32_t sampleRate, size_t blockSize) {
+        plugin->prepareToPlay((double) sampleRate, blockSize);
+    }
+
+    void process(juce::AudioBuffer<float>& audioBuffer, juce::MidiBuffer& midiBuffer) {
+        puts("Processing in plugin");
+        plugin->processBlock(audioBuffer, midiBuffer);
+    }
+
 private:
     std::unique_ptr<juce::AudioPluginInstance> plugin;
     std::unique_ptr<AudioPluginWindow> window;
@@ -179,6 +188,21 @@ extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* ma
 
 extern "C" void destroy_audio_plugin(MyAudioPlugin* plugin) {
     delete plugin;
+}
+
+extern "C" void audio_plugin_prepare(MyAudioPlugin* plugin, uint32_t sampleRate, size_t blockSize) {
+    if (plugin != nullptr) {
+        plugin->prepare(sampleRate, blockSize);
+    }
+}
+
+extern "C" void audio_plugin_process(MyAudioPlugin* plugin, float **buffer, size_t channels, size_t samples) {
+    if (plugin != nullptr) {
+        auto audioBuffer = AudioBuffer<float>(buffer, channels, samples);
+        auto midiBuffer = MidiBuffer();
+        printf("Sample is %f\n", buffer[0][0]);
+        plugin->process(audioBuffer, midiBuffer);
+    }
 }
 
 extern "C" void audio_plugin_show_gui(MyAudioPlugin* plugin) {

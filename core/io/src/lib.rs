@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, c_void};
-use pa_dsp::{AudioBuffer, NoteBuffer};
+use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer};
 
 pub trait IOCallback {
     fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
@@ -24,6 +24,13 @@ extern "C" {
     fn create_audio_plugin(manager: *mut c_void, name: *const i8) -> *mut c_void;
     fn destroy_audio_plugin(plugin: *mut c_void);
     fn audio_plugin_show_gui(plugin: *mut c_void);
+    fn audio_plugin_prepare(plugin: *mut c_void, sample_rate: u32, block_size: usize);
+    fn audio_plugin_process(
+        plugin: *mut c_void,
+        buffer: *mut *mut f32,
+        channels: usize,
+        samples: usize
+    );
 }
 
 /*pub struct IODevice {
@@ -183,7 +190,9 @@ impl AudioPluginManager {
         } else {
             Some(
                 AudioPlugin {
-                    plugin
+                    plugin,
+                    left: AudioBuffer::init(0.0, 512),
+                    right: AudioBuffer::init(0.0, 512),
                 }
             )
         }
@@ -198,14 +207,47 @@ impl Drop for AudioPluginManager {
     }
 }
 
-#[repr(transparent)]
 pub struct AudioPlugin {
-    plugin: *mut c_void
+    plugin: *mut c_void,
+    left: AudioBuffer,
+    right: AudioBuffer
 }
 
 impl AudioPlugin {
     pub fn show_gui(&self) {
         unsafe { audio_plugin_show_gui(self.plugin); }
+    }
+
+    pub fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.left = AudioBuffer::init(0.0, block_size);
+        self.right = AudioBuffer::init(0.0, block_size);
+        unsafe { audio_plugin_prepare(self.plugin, sample_rate, block_size); }
+    }
+
+    pub fn process(&mut self, inputs: &Buffer<Stereo2>, outputs: &mut Buffer<Stereo2>) {
+        unsafe {
+            for (i, l) in inputs.as_slice().iter().zip(self.left.as_slice_mut()) {
+                *l = i.left;
+            }
+
+            for (i, r) in inputs.as_slice().iter().zip(self.right.as_slice_mut()) {
+                *r = i.right;
+            }
+
+            let channels = 2;
+            let samples = self.left.len();
+            let mut buffers = [self.left.as_mut_ptr(), self.right.as_mut_ptr()];
+
+            audio_plugin_process(self.plugin, buffers.as_mut_ptr(), channels, samples);
+
+            for (i, l) in outputs.as_slice_mut().iter_mut().zip(self.left.as_slice()) {
+                i.left = *l;
+            }
+
+            for (i, r) in outputs.as_slice_mut().iter_mut().zip(self.right.as_slice()) {
+                i.right = *r;
+            }
+        }
     }
 }
 
