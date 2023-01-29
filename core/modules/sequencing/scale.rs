@@ -26,7 +26,7 @@ impl Module for Scale {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Effects/Scale",
         presets: Presets::NONE
     };
 

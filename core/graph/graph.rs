@@ -29,7 +29,7 @@ pub struct Connector {
 
 pub struct Node {
     pub id: i32,
-    pub position: Mutex<(i32, i32)>,
+    pub position: (i32, i32),
     pub module: Box<dyn PolyphonicModule>,
 }
 
@@ -131,10 +131,10 @@ impl<'de> Deserialize<'de> for Node {
             where
                 V: MapAccess<'de>,
             {
-                let mut id = None;
-                let mut position = None;
-                let mut name = None;
-                let mut state = None;
+                let mut id: Option<i32> = None;
+                let mut position: Option<(i32, i32)> = None;
+                let mut name: Option<String> = None;
+                let mut state: Option<State> = None;
 
                 while let Some(key) = map.next_key()? {
                     match key {
@@ -165,11 +165,14 @@ impl<'de> Deserialize<'de> for Node {
                     }
                 }
 
-                let _id = id.ok_or_else(|| de::Error::missing_field("id"))?;
-                let _position = position.ok_or_else(|| de::Error::missing_field("position"))?;
-                let _name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+                let id = id.ok_or_else(|| de::Error::missing_field("id"))?;
+                let position = position.ok_or_else(|| de::Error::missing_field("position"))?;
+                let name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+                let state = state.ok_or_else(|| de::Error::missing_field("state"))?;
 
-                panic!("SHould load module here 2");
+                let modules = get_modules();
+
+                panic!("Should load module here 2");
             }
         }
 
@@ -186,7 +189,7 @@ impl Node {
 
         return Node {
             id: unsafe { CURRENT_ID },
-            position: Mutex::new((100, 100)),
+            position: (100, 100),
             module: module,
         };
     }
@@ -209,20 +212,33 @@ impl PartialEq for Node {
 #[derive(Serialize, Deserialize)]
 pub struct Graph {
     pub nodes: Vec<Rc<Node>>,
+    pub connectors: Vec<Connector>,
     #[serde(skip_serializing, skip_deserializing)]
     pub nodes_updated: Option<Vec<Rc<Node>>>,
-    pub connectors: Vec<Connector>,
     #[serde(skip_serializing, skip_deserializing)]
     pub processor: GraphProcessor,
     #[serde(skip_serializing, skip_deserializing)]
     pub updated: Mutex<Option<GraphProcessor>>,
+    #[serde(skip_serializing, skip_deserializing)]
     pub block_size: usize,
+    #[serde(skip_serializing, skip_deserializing)]
     pub sample_rate: u32,
     #[serde(skip_serializing, skip_deserializing)]
-    pub modules: Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)>,
+    pub modules: ModuleList,
     #[serde(skip_serializing, skip_deserializing)]
     pub plugins: Plugins,
-    // Other stuff
+}
+
+pub struct ModuleList {
+    pub modules: Vec<ModuleSpec>,
+}
+
+impl Default for ModuleList {
+    fn default() -> Self {
+        Self {
+            modules: get_modules()
+        }
+    }
 }
 
 impl Graph {
@@ -239,17 +255,17 @@ impl Graph {
             updated: Mutex::new(None),
             block_size: 256,
             sample_rate: 44100,
-            modules: get_modules(),
+            modules: ModuleList::default(),
             plugins: Plugins::new(),
         };
     }
 
-    pub fn add_module(&mut self, name: &str) -> bool {
-        println!("[Rust] Adding module {}", name);
+    pub fn add_module(&mut self, id: &str) -> bool {
+        println!("[Rust] Adding module {}", id);
 
-        for (n, f) in &self.modules {
-            if *n == name {
-                let mut manager = f();
+        for module in &self.modules.modules {
+            if module.id == id {
+                let mut manager = module.create();
                 manager.prepare(self.sample_rate, self.block_size);
                 self.nodes.push(Rc::new(Node::new(manager)));
                 self.refresh();
@@ -257,14 +273,14 @@ impl Graph {
             }
         }
 
-        if let Some(mut module) = self.plugins.create_module(name) {
+        if let Some(mut module) = self.plugins.create_module(id) {
             module.prepare(self.sample_rate, self.block_size);
             self.nodes.push(Rc::new(Node::new(module)));
             self.refresh();
             return true;
         }
 
-        println!("Couldn't add module {}", name);
+        println!("Couldn't add module {}", id);
 
         return false;
     }

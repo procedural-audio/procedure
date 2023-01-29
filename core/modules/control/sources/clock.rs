@@ -21,7 +21,7 @@ impl Module for Clock {
         outputs: &[
             Pin::Control("Clock Pulses", 25)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Sources/Clock",
         presets: Presets::NONE
     };
     

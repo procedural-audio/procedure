@@ -28,7 +28,7 @@ impl Module for RandomNotes {
         outputs: &[
             Pin::Notes("Notes", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Sources/Random Notes",
         presets: Presets::NONE
     };
     

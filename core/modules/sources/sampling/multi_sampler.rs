@@ -21,7 +21,7 @@ impl Module for MultiSampler {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Sampling/Multi-Sampler",
         presets: Presets {
             path: "multi-samples",
             extension: ".multisample"

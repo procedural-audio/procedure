@@ -22,7 +22,7 @@ impl Module for Keyboard {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Sources/Keyboard",
         presets: Presets::NONE
     };
     

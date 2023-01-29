@@ -29,113 +29,112 @@ class _BrowserView extends State<BrowserView> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-        child: Stack(children: [
-          Column(children: [
-            Padding(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                child: BrowserSearchBar(onFilter: (s) {
-                  setState(() {
-                    searchText = s;
-                  });
-                })),
-            const SizedBox(height: 10),
-            Expanded(
-                child: ValueListenableBuilder<List<InstrumentInfo>>(
-                    valueListenable: widget.host.globals.instruments,
-                    builder: (context, instruments, w) {
-                      List<InstrumentInfo> filteredInstruments = [];
+    return Stack(children: [
+      Column(children: [
+        const SizedBox(height: 10),
+        Padding(
+            padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+            child: BrowserSearchBar(onFilter: (s) {
+              setState(() {
+                searchText = s;
+              });
+            })),
+        const SizedBox(height: 10),
+        Expanded(
+            child: ValueListenableBuilder<List<InstrumentInfo>>(
+                valueListenable: widget.host.globals.instruments,
+                builder: (context, instruments, w) {
+                  List<InstrumentInfo> filteredInstruments = [];
 
-                      if (searchText == "") {
-                        filteredInstruments = instruments;
-                      } else {
-                        for (var instrument in instruments) {
-                          if (instrument.name
-                                  .toLowerCase()
-                                  .contains(searchText.toLowerCase()) ||
-                              instrument.description
-                                  .toLowerCase()
-                                  .contains(searchText.toLowerCase())) {
-                            filteredInstruments.add(instrument);
-                          }
-                        }
+                  if (searchText == "") {
+                    filteredInstruments = instruments;
+                  } else {
+                    for (var instrument in instruments) {
+                      if (instrument.name
+                              .toLowerCase()
+                              .contains(searchText.toLowerCase()) ||
+                          instrument.description
+                              .toLowerCase()
+                              .contains(searchText.toLowerCase())) {
+                        filteredInstruments.add(instrument);
                       }
+                    }
+                  }
 
-                      if (filteredInstruments.isEmpty) {
-                        return Container();
-                      }
+                  if (filteredInstruments.isEmpty) {
+                    return Container();
+                  }
 
-                      return GridView.builder(
-                          padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-                          controller: controller,
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 200,
-                                  childAspectRatio: 1.0,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 15),
-                          itemCount: filteredInstruments.length,
-                          itemBuilder: (BuildContext ctx, index) {
-                            return BrowserViewElement(
-                                index: index,
-                                info: filteredInstruments[index],
-                                selectedIndex: selectedIndex,
-                                onTap: (x, y) {
-                                  setState(() {
-                                    showInfo = true;
-                                    infoVisible = true;
-                                  });
-                                  selectedIndex.value = index;
-                                });
-                          });
-                    }))
-          ]),
-          Visibility(
-              visible: infoVisible,
-              maintainState: true,
-              maintainAnimation: true,
-              child: LayoutBuilder(builder: (context, constraints) {
-                return AnimatedPadding(
+                  return GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                      controller: controller,
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              childAspectRatio: 1.0,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 15),
+                      itemCount: filteredInstruments.length,
+                      itemBuilder: (BuildContext ctx, index) {
+                        return BrowserViewElement(
+                            index: index,
+                            info: filteredInstruments[index],
+                            selectedIndex: selectedIndex,
+                            onTap: (x, y) {
+                              setState(() {
+                                showInfo = true;
+                                infoVisible = true;
+                              });
+                              selectedIndex.value = index;
+                            });
+                      });
+                }))
+      ]),
+      Visibility(
+          visible: infoVisible,
+          maintainState: true,
+          maintainAnimation: true,
+          child: LayoutBuilder(builder: (context, constraints) {
+            return AnimatedPadding(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.fastLinearToSlowEaseIn,
+                padding: EdgeInsets.fromLTRB(
+                    showInfo ? 0 : 200, showInfo ? 0 : 200, 0, 0),
+                child: AnimatedContainer(
                     duration: const Duration(milliseconds: 500),
                     curve: Curves.fastLinearToSlowEaseIn,
-                    padding: EdgeInsets.fromLTRB(
-                        showInfo ? 0 : 200, showInfo ? 0 : 200, 0, 0),
-                    child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
+                    width: showInfo ? constraints.maxWidth : 200,
+                    height: showInfo ? constraints.maxHeight : 200,
+                    child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 600),
                         curve: Curves.fastLinearToSlowEaseIn,
-                        width: showInfo ? constraints.maxWidth : 200,
-                        height: showInfo ? constraints.maxHeight : 200,
-                        child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 600),
-                            curve: Curves.fastLinearToSlowEaseIn,
-                            opacity: showInfo ? 1.0 : 0.0,
-                            child: ValueListenableBuilder<int>(
-                                valueListenable: selectedIndex,
-                                builder: (context, index, child) {
-                                  if (index < 0) {
-                                    index = 0;
-                                  }
+                        opacity: showInfo ? 1.0 : 0.0,
+                        child: ValueListenableBuilder<int>(
+                            valueListenable: selectedIndex,
+                            builder: (context, index, child) {
+                              if (index < 0) {
+                                index = 0;
+                              }
 
-                                  return InfoContentsWidget(widget.host,
-                                      onClose: () {
+                              return InfoContentsWidget(widget.host,
+                                  onClose: () {
+                                setState(() {
+                                  showInfo = false;
+                                });
+                                Future.delayed(
+                                    const Duration(milliseconds: 500), () {
+                                  if (!showInfo) {
                                     setState(() {
-                                      showInfo = false;
+                                      infoVisible = false;
                                     });
-                                    Future.delayed(
-                                        const Duration(milliseconds: 500), () {
-                                      if (!showInfo) {
-                                        setState(() {
-                                          infoVisible = false;
-                                        });
-                                      }
-                                    });
-                                  },
-                                      instrument: widget.host.globals
-                                          .instruments.value[index]);
-                                }))));
-              }))
-        ]));
+                                  }
+                                });
+                              },
+                                  instrument: widget
+                                      .host.globals.instruments.value[index]);
+                            }))));
+          }))
+    ]);
   }
 }
 

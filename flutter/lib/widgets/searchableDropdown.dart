@@ -33,6 +33,10 @@ class SearchableDropdownWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return SearchableDropdown(
+      width: 150,
+      height: 30,
+      titleStyle: const TextStyle(
+          color: Color.fromRGBO(200, 200, 200, 1.0), fontSize: 14),
       value: "Element 1",
       categories: [
         Category(name: "Valhalla", elements: [

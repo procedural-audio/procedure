@@ -66,7 +66,7 @@ public:
         collector.addMessageToQueue(message);
     }
 
-    class MainWindow    : public juce::DocumentWindow
+    class MainWindow : public juce::DocumentWindow
     {
     public:
         explicit MainWindow (juce::String name, NodusProcessor& processor)
@@ -102,9 +102,9 @@ public:
     public:
         explicit SettingsWindow (juce::AudioDeviceManager& manager)
             : DocumentWindow ("Audio/Midi Settings",
-                              juce::Desktop::getInstance().getDefaultLookAndFeel()
-                                                          .findColour (ResizableWindow::backgroundColourId),
-                              DocumentWindow::allButtons)
+                                juce::Desktop::getInstance().getDefaultLookAndFeel()
+                                    .findColour (ResizableWindow::backgroundColourId),
+                                        DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
             setContentOwned(new juce::AudioDeviceSelectorComponent(manager, 2, 2, 2, 2, true, true, true, true), true);

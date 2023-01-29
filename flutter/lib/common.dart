@@ -111,12 +111,20 @@ class _SearchableDropdown extends State<SearchableDropdown>
               toggleDropdown();
             },
             child: Container(
-              width: widget.width,
-              height: widget.height,
-              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-              decoration: widget.decoration,
-              child: Text(widget.value ?? "", style: widget.titleStyle),
-            )));
+                width: widget.width,
+                height: widget.height,
+                decoration: widget.decoration,
+                padding: const EdgeInsets.fromLTRB(10, 0, 5, 0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(widget.value ?? "", style: widget.titleStyle),
+                      const Icon(
+                        Icons.arrow_drop_down,
+                        size: 20,
+                        color: Color.fromRGBO(200, 200, 200, 1.0),
+                      )
+                    ]))));
   }
 
   OverlayEntry _createOverlayEntry() {

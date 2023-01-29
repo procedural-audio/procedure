@@ -13,7 +13,7 @@ impl Module for GlobalTime {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/Time/Global Time",
         presets: Presets::NONE
     };
     

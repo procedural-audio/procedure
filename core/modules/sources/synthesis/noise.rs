@@ -13,9 +13,13 @@ impl Module for Noise {
         color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Monophonic,
-        inputs: &[Pin::Control("Noise Type", 25)],
-        outputs: &[Pin::Audio("Audio Output", 25)],
-        path: "Category 1/Category 2/Module Name",
+        inputs: &[
+            Pin::Control("Noise Type", 25)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 25)
+        ],
+        path: "Audio Sources/Synthesis/Noise",
         presets: Presets::NONE
     };
 

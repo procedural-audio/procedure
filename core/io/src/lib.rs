@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, c_void};
-use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer};
+use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer, NoteMessage};
 
 pub trait IOCallback {
     fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
@@ -29,7 +29,9 @@ extern "C" {
         plugin: *mut c_void,
         buffer: *mut *mut f32,
         channels: usize,
-        samples: usize
+        samples: usize,
+        notes: *mut NoteMessage,
+        count: usize
     );
 }
 
@@ -224,7 +226,7 @@ impl AudioPlugin {
         unsafe { audio_plugin_prepare(self.plugin, sample_rate, block_size); }
     }
 
-    pub fn process(&mut self, inputs: &Buffer<Stereo2>, outputs: &mut Buffer<Stereo2>) {
+    pub fn process(&mut self, inputs: &Buffer<Stereo2>, notes: &Buffer<NoteMessage>, outputs: &mut Buffer<Stereo2>) {
         unsafe {
             for (i, l) in inputs.as_slice().iter().zip(self.left.as_slice_mut()) {
                 *l = i.left;
@@ -237,8 +239,9 @@ impl AudioPlugin {
             let channels = 2;
             let samples = self.left.len();
             let mut buffers = [self.left.as_mut_ptr(), self.right.as_mut_ptr()];
+            let notes_ptr = notes.as_ptr() as *mut NoteMessage;
 
-            audio_plugin_process(self.plugin, buffers.as_mut_ptr(), channels, samples);
+            audio_plugin_process(self.plugin, buffers.as_mut_ptr(), channels, samples, notes_ptr, notes.len());
 
             for (i, l) in outputs.as_slice_mut().iter_mut().zip(self.left.as_slice()) {
                 i.left = *l;

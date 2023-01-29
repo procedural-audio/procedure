@@ -22,7 +22,7 @@ impl Module for SawModule {
         outputs: &[
             Pin::Audio("Audio Output", 15)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Synthesis/Saw",
         presets: Presets::NONE
     };
 

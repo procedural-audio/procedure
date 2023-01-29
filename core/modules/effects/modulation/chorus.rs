@@ -16,13 +16,17 @@ impl Module for Chorus {
         color: Color::GREEN,
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
-        inputs: &[Pin::Audio("Audio Input", 20), Pin::Control("Control 1", 50)],
-        outputs: &[Pin::Audio("Audio Output", 20)],
-        path: "Category 1/Category 2/Module Name",
+        inputs: &[
+            Pin::Audio("Audio Input", 20),
+            Pin::Control("Control 1", 50)
+        ],
+        outputs: &[
+            Pin::Audio("Audio Output", 20)
+        ],
+        path: "Audio Effects/Modulation/Chorus",
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Chorus {
             level: 0.5,

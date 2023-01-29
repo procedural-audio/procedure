@@ -26,7 +26,7 @@ impl Module for EnvelopeModule {
         outputs: &[
             Pin::Control("Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Sources/Envelope",
         presets: Presets::NONE
     };
     

@@ -28,7 +28,7 @@ impl Module for Waveshaper {
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Effects/Distortion/Waveshaper",
         presets: Presets::NONE
     };
 

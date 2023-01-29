@@ -354,3 +354,67 @@ impl<T: WidgetNew, F: FnMut(BrowserEvent)> WidgetNew for Browser<T, F> {
         &(self.child)
     }
 }
+
+pub struct IconButton<F: FnMut(bool)> {
+    pub icon: Icon,
+    pub on_pressed: F
+}
+
+pub trait IconButtonTrait {
+    fn get_color(&self) -> Color;
+    fn get_icon(&self) -> &'static str;
+    fn on_pressed(&mut self, down: bool);
+}
+
+impl<F: FnMut(bool)> IconButtonTrait for IconButton<F> {
+    fn get_color(&self) -> Color {
+        self.icon.color
+    }
+
+    fn get_icon(&self) -> &'static str {
+        self.icon.path
+    }
+
+    fn on_pressed(&mut self, pressed: bool) {
+        (self.on_pressed)(pressed);
+    }
+}
+
+impl<F: FnMut(bool)> WidgetNew for IconButton<F> {
+    fn get_name(&self) -> &'static str {
+        "IconButton"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn IconButtonTrait) }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_icon_button_get_color(widget: &mut dyn IconButtonTrait) -> Color {
+    widget.get_color()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_icon_button_get_icon(widget: &mut dyn IconButtonTrait) -> *const i8 {
+    let text = widget.get_icon();
+    let s = match CString::new(text) {
+        Ok(s) => s,
+        Err(_) => {
+            CString::new("Error").unwrap()
+        }
+    };
+
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_icon_button_pressed(widget: &mut dyn IconButtonTrait, pressed: bool) {
+    widget.on_pressed(pressed);
+}

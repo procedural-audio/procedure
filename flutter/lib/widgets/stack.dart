@@ -10,6 +10,27 @@ class StackWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
+      children: children,
+    );
+  }
+}
+
+class RowWidget extends ModuleWidget {
+  RowWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.max, children: children);
+  }
+}
+
+class ColumnWidget extends ModuleWidget {
+  ColumnWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
       children: children,
     );
   }

@@ -23,7 +23,7 @@ impl Module for AudioPluginModule {
         title: "Audio Plugin",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(270, 90),
+        size: Size::Static(260, 80),
         voicing: Voicing::Monophonic,
         inputs: &[
             Pin::Audio("Audio Input", 15),
@@ -33,15 +33,13 @@ impl Module for AudioPluginModule {
             Pin::Audio("Audio Output", 15),
             Pin::Notes("Notes Output", 45)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/IO/Audio Plugin",
         presets: Presets::NONE
     };
 
     fn new() -> Self {
-        let manager = AudioPluginManager::new();
-
         Self {
-            manager,
+            manager: AudioPluginManager::new(),
             plugin: Mutex::new(None),
             sample_rate: 44100,
             block_size: 512
@@ -60,29 +58,53 @@ impl Module for AudioPluginModule {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Transform {
-            position: (35, 40),
-            size: (200, 35),
-            child: SearchableDropdown {
-                categories: vec![
-                    Category {
-                        name: String::from("Category 1"),
-                        elements: vec![
-                            String::from("Element 1"),
-                            String::from("Element 2"),
-                            String::from("Element 3"),
-                        ]
-                    }
-                ],
-                on_select: | element | {
-                    let mut plugin = &mut *self.plugin.lock().unwrap();
-                    *plugin = self.manager.create_plugin(element);
+        Box::new(Padding {
+            padding: (35, 35, 35, 5),
+            child: Row {
+                children: (
+                    SizedBox {
+                        size: (30, 30),
+                        child: IconButton {
+                            icon: Icon {
+                                path: "icons/icon.svg",
+                                color: Color::BLUE,
+                            },
+                            on_pressed: | down | {
+                                if down {
+                                    let plugin = &mut *self.plugin.lock().unwrap();
+                                    if let Some(plugin) = plugin {
+                                        plugin.show_gui();
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    SizedBox {
+                        size: (10, 0),
+                        child: EmptyWidget
+                    },
+                    SearchableDropdown {
+                        categories: vec![
+                            Category {
+                                name: String::from("Category 1"),
+                                elements: vec![
+                                    String::from("Element 1"),
+                                    String::from("Element 2"),
+                                    String::from("Element 3"),
+                                ]
+                            }
+                        ],
+                        on_select: | element | {
+                            let mut plugin = &mut *self.plugin.lock().unwrap();
+                            *plugin = self.manager.create_plugin(element);
 
-                    if let Some(plugin) = &mut plugin {
-                        plugin.prepare(self.sample_rate, self.block_size);
-                        plugin.show_gui();
+                            if let Some(plugin) = &mut plugin {
+                                plugin.prepare(self.sample_rate, self.block_size);
+                                plugin.show_gui();
+                            }
+                        }
                     }
-                }
+                )
             }
         })
     }
@@ -103,7 +125,7 @@ impl Module for AudioPluginModule {
         if voice.index == 0 {
             if let Ok(plugin) = &mut self.plugin.try_lock() {
                 if let Some(plugin) = &mut **plugin {
-                    plugin.process(&inputs.audio[0], &mut outputs.audio[0]);
+                    plugin.process(&inputs.audio[0], &inputs.events[0], &mut outputs.audio[0]);
                 }
             }
         }

@@ -23,7 +23,7 @@ impl Module for Bend {
         outputs: &[
             Pin::Control("Control Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Effects/Bend",
         presets: Presets::NONE
     };
 

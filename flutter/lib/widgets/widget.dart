@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
+import 'package:metasampler/widgets/iconButton.dart';
 import 'package:metasampler/widgets/samplePicker.dart';
 
 import 'dart:ui' as ui;
@@ -52,6 +53,10 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return KnobWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Stack") {
     return StackWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "Row") {
+    return RowWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "Column") {
+    return ColumnWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Transform") {
     return TransformWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Positioned") {
@@ -60,6 +65,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return PaddingWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SizedBox") {
     return SizedBoxWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "IconButton") {
+    return IconButtonWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SvgButton") {
     return ButtonSVG(host, moduleRaw, widgetRaw);
   } else if (name == "Svg") {
@@ -133,8 +140,7 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   } else if (name == "Painter") {
     return PainterWidget(host, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
-    //return EmptyWidget(moduleRaw, widgetRaw);
-    return null;
+    return EmptyWidget(host, moduleRaw, widgetRaw);
   } else {
     print("Unknown widget " + name);
     return null;

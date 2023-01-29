@@ -18,7 +18,7 @@ impl Module for And {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Logic/And",
         presets: Presets::NONE
     };
 

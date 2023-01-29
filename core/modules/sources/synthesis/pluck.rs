@@ -28,7 +28,7 @@ impl Module for Pluck {
         outputs: &[
             Pin::Audio("Audio Output", 20),
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Synthesis/Pluck",
         presets: Presets::NONE
     };
 

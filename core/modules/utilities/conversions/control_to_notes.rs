@@ -20,11 +20,10 @@ impl Module for ControlToNotes {
             Pin::Control("Note Pitch", 45),
         ],
         outputs: &[Pin::Notes("Notes", 30)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/Conversion/Control To Notes",
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Self
     }

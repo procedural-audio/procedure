@@ -10,6 +10,55 @@
 
 using namespace juce;
 
+enum class NoteTag: uint32_t {
+    NoteOn,
+    NoteOff,
+    Pitch,
+    Pressure,
+    Other
+};
+
+struct NoteOn {
+    float pitch;
+    float pressure;
+};
+
+struct NoteOff {
+};
+
+struct Pitch {
+    float freq;
+};
+
+struct Pressure {
+    float pressure;
+};
+
+struct Other {
+    char* s;
+    size_t size;
+    float value;
+};
+
+union NoteValue {
+    NoteOn noteOn;
+    NoteOff noteOff;
+    Pitch pitch;
+    Pressure pressure;
+    Other other;
+};
+
+struct NoteMessage {
+    uint64_t id;
+    size_t offset;
+    NoteTag tag;
+    NoteValue value;
+};
+
+int pitchToNum(float pitch) {
+    return (int) (round(log2(pitch / 440.0) * 12.0) + 69.0);
+}
+
 extern "C" void io_manager_callback(const float**, int, float**, int, int);
 
 class IOManager : public AudioIODeviceCallback, public MidiInputCallback {
@@ -72,7 +121,7 @@ public:
     }
 
     ~AudioPluginWindow() {
-
+        setVisible(false);
     }
 
     void closeButtonPressed() {
@@ -82,55 +131,158 @@ public:
 
 class MyAudioPlugin {
 public:
+    MyAudioPlugin() {
+        midiBuffer.ensureSize(128);
+        playing.reserve(64);
+    }
+
     MyAudioPlugin(std::unique_ptr<juce::AudioPluginInstance> p) {
         plugin.swap(p);
+        midiBuffer.ensureSize(128);
+        playing.reserve(64);
     }
 
     ~MyAudioPlugin() {
 
     }
 
-    void createGui() {
+    static MyAudioPlugin* create(juce::AudioPluginFormatManager* manager, juce::String name) {
+        for (auto format : manager->getFormats()) {
+            std::cout << "Found format with name " << format->getName() << std::endl;
+
+            auto locations = format->getDefaultLocationsToSearch();
+            auto paths = format->searchPathsForPlugins(locations, false);
+
+            for (auto path : paths) {
+                if (path.contains(name)) {
+                    OwnedArray<PluginDescription> descs;
+                    format->findAllTypesForFile(descs, path); // THIS CAUSES KONTAKT CRASH ???
+
+                    for (auto desc : descs) {
+                        if (desc->name.contains(name)) {
+                            if (manager->doesPluginStillExist(*desc)) {
+                                puts("Creating plugin instance");
+                                auto plugin = new MyAudioPlugin();
+
+                                // juce::MessageManager::callAsync([plugin, manager, desc] {
+                                    juce::String error = "";
+                                    auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
+                                    instance->enableAllBuses();
+                                    plugin->setInstance(std::move(instance));
+
+                                    /*auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
+
+                                    w->setUsingNativeTitleBar(true);
+                                    w->setContentOwned(plugin->plugin->createEditor(), true);
+                                    w->centreWithSize(w->getWidth(), w->getHeight());
+                                    w->setVisible(true);
+
+                                    plugin->window.swap(w);*/
+                                // });
+
+                                return plugin;
+                            } else {
+
+                                puts("Can't create plugin instance");
+                                return nullptr;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void showGui() {
         puts("Creating gui");
 
-        juce::MessageManager::callAsync([this] {
-            puts("Crate gui callback");
+        if (window == nullptr) {
+            juce::MessageManager::callAsync([this] {
+                puts("Crate gui callback");
 
-            auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
+                auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
 
-            puts("Created plugin");
+                puts("Created plugin");
 
-            w->setUsingNativeTitleBar(true);
-            w->setContentOwned(plugin->createEditor(), true);
-            w->centreWithSize(w->getWidth(), w->getHeight());
-            w->setVisible(true);
+                w->setUsingNativeTitleBar(true);
+                w->setContentOwned(plugin->createEditor(), true);
+                w->centreWithSize(w->getWidth(), w->getHeight());
+                w->setVisible(true);
 
-            window.swap(w);
-        });
+                window.swap(w);
+            });
+        } else {
+            juce::MessageManager::callAsync([this] {
+                window->setVisible(true);
+            });
+        }
+
     }
 
     void setInstance(std::unique_ptr<juce::AudioPluginInstance> instance) {
-        this->plugin = std::move(instance);
+        plugin = std::move(instance);
     }
 
     void prepare(uint32_t sampleRate, size_t blockSize) {
-        plugin->prepareToPlay((double) sampleRate, blockSize);
+        if (plugin != nullptr) {
+            plugin->prepareToPlay((double) sampleRate, blockSize);
+        }
     }
 
-    void process(juce::AudioBuffer<float>& audioBuffer, juce::MidiBuffer& midiBuffer) {
-        plugin->processBlock(audioBuffer, midiBuffer);
+    void process(float **buffer, size_t channels, size_t samples, NoteMessage *notes, size_t noteCount) {
+        auto audioBuffer = AudioBuffer<float>(buffer, channels, samples);
+        midiBuffer.clear();
+
+        for (int i = 0; i < noteCount; i++) {
+            NoteMessage message = notes[i];
+
+            if (message.tag == NoteTag::NoteOn) {
+                auto event = message.value.noteOn;
+                auto newMessage = juce::MidiMessage::noteOn(0, pitchToNum(event.pitch), event.pressure * 127);
+                midiBuffer.addEvent(newMessage, message.offset);
+                playing.push_back(message);
+            }
+
+            if (message.tag == NoteTag::NoteOff) {
+                int num = 0;
+                int index = 0;
+
+                for (int j = 0; j < playing.size(); j++) {
+                    if (playing[j].id == message.id) {
+                        num = pitchToNum(playing[j].value.noteOn.pitch);
+                        index = j;
+                        break;
+                    }
+                }
+
+                if (num > 0) {
+                    auto event = message.value.noteOff;
+                    auto newMessage = juce::MidiMessage::noteOff(0, num);
+
+                    playing.erase(playing.begin() + index);
+                    midiBuffer.addEvent(newMessage, message.offset);
+                } else {
+                    puts("Failed to find noteOn event");
+                }
+            }
+        }
+
+        if (plugin != nullptr) {
+            plugin->processBlock(audioBuffer, midiBuffer);
+        }
     }
 
 private:
     std::unique_ptr<juce::AudioPluginInstance> plugin;
     std::unique_ptr<AudioPluginWindow> window;
+    juce::MidiBuffer midiBuffer = juce::MidiBuffer();
+    std::vector<NoteMessage> playing;
 };
 
 extern "C" juce::AudioPluginFormatManager* create_audio_plugin_manager() {
     puts("Creating plugin format manager");
 
     auto manager = new juce::AudioPluginFormatManager();
-
     manager->addDefaultFormats();
 
     for (auto format : manager->getFormats()) {
@@ -153,7 +305,7 @@ extern "C" void destroy_audio_plugin_manager(juce::AudioPluginFormatManager* man
 }
 
 extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* manager, char* name) {
-    for (auto format : manager->getFormats()) {
+    /*for (auto format : manager->getFormats()) {
         std::cout << "Found format with name " << format->getName() << std::endl;
 
         auto locations = format->getDefaultLocationsToSearch();
@@ -171,8 +323,7 @@ extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* ma
                             puts("Creating plugin instance");
                             auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
                             instance->enableAllBuses();
-                            auto plugin = new MyAudioPlugin(std::move(instance));
-                            return plugin;
+                            return new MyAudioPlugin(std::move(instance));
                         } else {
                             puts("Can't create plugin instance");
                             return nullptr;
@@ -183,11 +334,15 @@ extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* ma
         }
     }
 
-    return nullptr;
+    return nullptr;*/
+
+    return MyAudioPlugin::create(manager, juce::String(name));
 }
 
 extern "C" void destroy_audio_plugin(MyAudioPlugin* plugin) {
-    delete plugin;
+    // juce::MessageManager::callAsync([plugin] {
+        delete plugin;
+    // });
 }
 
 extern "C" void audio_plugin_prepare(MyAudioPlugin* plugin, uint32_t sampleRate, size_t blockSize) {
@@ -196,17 +351,15 @@ extern "C" void audio_plugin_prepare(MyAudioPlugin* plugin, uint32_t sampleRate,
     }
 }
 
-extern "C" void audio_plugin_process(MyAudioPlugin* plugin, float **buffer, size_t channels, size_t samples) {
+extern "C" void audio_plugin_process(MyAudioPlugin* plugin, float **buffer, size_t channels, size_t samples, NoteMessage *notes, size_t noteCount) {
     if (plugin != nullptr) {
-        auto audioBuffer = AudioBuffer<float>(buffer, channels, samples);
-        auto midiBuffer = MidiBuffer();
-        plugin->process(audioBuffer, midiBuffer);
+        plugin->process(buffer, channels, samples, notes, noteCount);
     }
 }
 
 extern "C" void audio_plugin_show_gui(MyAudioPlugin* plugin) {
     if (plugin != nullptr) {
-        plugin->createGui();
+        plugin->showGui();
     } else {
         puts("Plugin is nullptr, couldn't show gui");
     }

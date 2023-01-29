@@ -20,7 +20,7 @@ impl Module for Panner {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Effects/Dynamics/Panner",
         presets: Presets::NONE
     };
 

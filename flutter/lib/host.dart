@@ -64,12 +64,12 @@ DynamicLibrary getCore() {
   }
 }
 
-bool Function(FFIHost, Pointer<Utf8>) _loadInstrument = core
+bool Function(FFIHost, Pointer<Utf8>) _loadHost = core
     .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
         "ffi_host_load")
     .asFunction();
 
-bool Function(FFIHost, Pointer<Utf8>) _saveInstrument = core
+bool Function(FFIHost, Pointer<Utf8>) _saveHost = core
     .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
         "ffi_host_save")
     .asFunction();
@@ -142,6 +142,25 @@ class FFIApi {
   FFINode Function(FFIHost, int) ffiHostGetNode = core
       .lookup<NativeFunction<FFINode Function(FFIHost, Int64)>>(
           "ffi_host_get_node")
+      .asFunction();
+
+  /* Modules */
+
+  int Function(FFIHost) ffiHostGetModuleSpecCount = core
+      .lookup<NativeFunction<Int64 Function(FFIHost)>>(
+          "ffi_host_get_module_spec_count")
+      .asFunction();
+  Pointer<Utf8> Function(FFIHost, int) ffiHostGetModuleSpecId = core
+      .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
+          "ffi_host_get_module_spec_id")
+      .asFunction();
+  Pointer<Utf8> Function(FFIHost, int) ffiHostGetModuleSpecPath = core
+      .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
+          "ffi_host_get_module_spec_path")
+      .asFunction();
+  int Function(FFIHost, int) ffiHostGetModuleSpecColor = core
+      .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
+          "ffi_host_get_module_spec_color")
       .asFunction();
 
   /* Node */
@@ -376,12 +395,25 @@ class AudioPlugins {
   }
 }
 
+class ModuleSpec {
+  ModuleSpec(this.id, this.path, this.color);
+
+  String id;
+  String path;
+  Color color;
+}
+
 class Host extends ChangeNotifier {
   final FFIHost host;
   late Graph graph;
   late Vars vars;
 
   Globals globals = Globals();
+
+  var loadedInstrument = ValueNotifier(InstrumentInfo("Untitled Instrument",
+      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument"));
+
+  ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
 
   late Timer ticker;
   //late Timer timer2;
@@ -402,6 +434,7 @@ class Host extends ChangeNotifier {
     });
 
     refreshInstruments();
+    refreshModuleSpecs();
 
     /*timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
       var rebuilt = false;
@@ -432,16 +465,35 @@ class Host extends ChangeNotifier {
     super.dispose();
   }
 
-  bool load(String path) {
+  void refreshModuleSpecs() {
+    List<ModuleSpec> specs = [];
+    var count = api.ffiHostGetModuleSpecCount(host);
+
+    for (int i = 0; i < count; i++) {
+      var rawId = api.ffiHostGetModuleSpecId(host, i);
+      var rawPath = api.ffiHostGetModuleSpecPath(host, i);
+      var color = Color(api.ffiHostGetModuleSpecColor(host, i));
+
+      specs
+          .add(ModuleSpec(rawId.toDartString(), rawPath.toDartString(), color));
+
+      calloc.free(rawId);
+      calloc.free(rawPath);
+    }
+
+    moduleSpecs.value = specs;
+  }
+
+  bool loadHost(String path) {
     Pointer<Utf8> pathRaw = path.toNativeUtf8();
-    bool ret = _loadInstrument(host, pathRaw);
+    bool ret = _loadHost(host, pathRaw);
     calloc.free(pathRaw);
     return ret;
   }
 
-  bool save(String path) {
+  bool saveHost(String path) {
     Pointer<Utf8> pathRaw = path.toNativeUtf8();
-    bool ret = _saveInstrument(host, pathRaw);
+    bool ret = _saveHost(host, pathRaw);
     calloc.free(pathRaw);
     return ret;
   }
@@ -451,7 +503,7 @@ class Host extends ChangeNotifier {
 
     Directory presetsDir = Directory(path + "/presets");
 
-    globals.instrument = InstrumentInfo(File(path).name, path);
+    loadedInstrument.value = InstrumentInfo(File(path).name, path);
 
     if (!presetsDir.existsSync()) {
       presetsDir.createSync();
@@ -488,12 +540,12 @@ class Host extends ChangeNotifier {
     print("Loading preset at " + preset.path);
 
     if (preset.existsSync()) {
-      if (load(preset.path)) {
+      if (loadHost(preset.path)) {
         graph.refresh();
         gGridState?.refresh();
         globals.preset = PresetInfo(preset.name, preset);
 
-        var uiFile = File(globals.instrument.path + "/ui.json");
+        var uiFile = File(loadedInstrument.value.path + "/ui.json");
 
         var s = uiFile.readAsStringSync();
         var data = jsonDecode(s);
@@ -516,42 +568,45 @@ class Host extends ChangeNotifier {
     return false;
   }
 
-  void saveInstrument() {
-    /* Save metadata */
+  void save() {
+    String path = loadedInstrument.value.path;
 
-    String json = jsonEncode(globals.instrument);
-
-    Directory directory = Directory(globals.instrument.path);
+    // Create instrument directory
+    Directory directory = Directory(path);
     if (!directory.existsSync()) {
       directory.createSync();
     }
 
-    Directory directory2 = Directory(globals.instrument.path + "/info");
+    // Create info directory
+    Directory directory2 = Directory(path + "/info");
     if (!directory2.existsSync()) {
       directory2.createSync();
     }
 
-    File file = File(globals.instrument.path + "/info/info.json");
+    // Create info json
+    File file = File(path + "/info/info.json");
     if (!file.existsSync()) {
       file.createSync();
     }
 
+    // Write instrument info
+    String json = jsonEncode(loadedInstrument.value);
     file.writeAsString(json);
+    print("Saved instrument to " + path);
+    print(json);
 
-    /* Save graph */
+    // Save preset graph
+    saveHost(globals.preset.file.path);
 
-    save(globals.preset.file.path);
-
-    /* Save UI */
-
-    File uiFile = File(globals.instrument.path + "/ui.json");
-
+    // Save UI
+    File uiFile = File(path + "/ui.json");
     var data = globals.rootWidget?.getJson();
 
     if (data != null) {
       var s = jsonEncode(data);
       uiFile.writeAsStringSync(s);
-      print("Writing UI:\n" + s);
+      print("Saved UI to " + path + "/ui.json");
+      print(s);
     } else {
       print("Couldn't save UI");
     }
@@ -581,7 +636,7 @@ class Host extends ChangeNotifier {
     print("Refreshing presets");
     List<PresetDirectory> newPresetDirs = [];
 
-    final presetsDir = Directory(globals.instrument.path + "/presets");
+    final presetsDir = Directory(loadedInstrument.value.path + "/presets");
 
     if (await presetsDir.exists()) {
       var dirs = await presetsDir.list(recursive: false).toList();

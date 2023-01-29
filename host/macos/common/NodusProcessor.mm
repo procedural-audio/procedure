@@ -46,7 +46,7 @@ NodusProcessor::NodusProcessor()
     }
 
     events.reserve(64);
-    
+
     // FlutterEngine *engine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil allowHeadlessExecution:YES];
     // [engine runWithEntrypoint:nil];
     // [flutterViewController setInitialRoute:@"myApp"];
@@ -116,9 +116,6 @@ void NodusProcessor::pluginsMessage(juce::String message) {
                 return;
             }
         }
-        
-        // addAudioPlugin(moduleId, name);
-        
     } else if (json["message"] == "show") {
         int moduleId = json["module_id"];
         
@@ -348,9 +345,7 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
                 tag: NoteTag::NoteOff,
             };
 
-            event.value.noteOff = NoteOff {
-            };
-
+            event.value.noteOff = NoteOff {};
             events.push_back(event);
         }
     }

@@ -17,7 +17,7 @@ impl Module for Constant {
         outputs: &[
             Pin::Control("Control Output", 17)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Sources/Constant",
         presets: Presets::NONE
     };
     

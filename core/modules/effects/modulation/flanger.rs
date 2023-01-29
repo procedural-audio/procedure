@@ -23,11 +23,10 @@ impl Module for Flanger {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Effects/Modulation/Flanger",
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Flanger {
             delay: 0.5,

@@ -24,7 +24,7 @@ impl Module for NotesTrack {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Time("Time", 10)],
         outputs: &[Pin::Notes("Notes Output", 10)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Sources/Notes Track",
         presets: Presets::NONE
     };
 

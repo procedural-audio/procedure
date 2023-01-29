@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:metasampler/ui/interactive.dart';
 import 'settings.dart';
 import '../host.dart';
 import '../config.dart';
@@ -113,8 +114,8 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         }
 
         /* Update loaded instrument */
-        if (widget.instrument.path == widget.host.globals.instrument.path) {
-          widget.host.globals.instrument = instruments[i];
+        if (widget.instrument.path == widget.host.loadedInstrument.value.path) {
+          widget.host.loadedInstrument.value = instruments[i];
         }
 
         widget.instrument = instruments[i];
@@ -177,28 +178,48 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
 
     return LayoutBuilder(builder: (context, constraints) {
       double width = constraints.maxWidth;
-      double height = constraints.maxHeight;
 
       return Container(
+          padding: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               color: Color.fromRGBO(40, 40, 40, 1.0)),
-          child: Row(children: [
-            SingleChildScrollView(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                  GestureDetector(
-                      child: const Icon(Icons.chevron_left, color: Colors.grey),
-                      onTap: () => widget.onClose()),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(
+                child: SingleChildScrollView(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                  Stack(children: [
+                    InfoViewImage(
+                      editing: editing,
+                      path: widget.instrument.path,
+                      onUpdate: () => setState(() {}),
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: IconButton(
+                            icon: const Icon(Icons.chevron_left),
+                            iconSize: 24,
+                            color: Colors.grey,
+                            onPressed: () => widget.onClose()))
+                  ]),
                   Container(height: 20),
-                  InfoViewImage(
-                    width: width,
-                    editing: editing,
-                    path: widget.instrument.path,
-                    onUpdate: () => setState(() {}),
-                  ),
-                  Container(
+                  Row(
+                    children: [
+                      TextButton(
+                          onPressed: () {
+                            widget.host.loadInstrument(widget.instrument.path);
+                          },
+                          child: const Text("Load")),
+                      TextButton(
+                          onPressed: () {
+                            print("Delete instrument");
+                          },
+                          child: const Text("Delete")),
+                    ],
+                  )
+                  /*Container(
                       padding: editing
                           ? const EdgeInsets.fromLTRB(23, 30, 20, 0)
                           : const EdgeInsets.fromLTRB(30, 30, 20, 0),
@@ -220,10 +241,10 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                                 onPressed: () => savePressed(
                                     titleController.text,
                                     markdownEditor.controller.text))
-                          ])),
+                          ])),*/
 
                   /* Description Container */
-                  Padding(
+                  /*Padding(
                       padding: !editing
                           ? const EdgeInsets.fromLTRB(0, 0, 15, 15)
                           : const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -236,26 +257,19 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                               : BoxDecoration(
                                   color: MyTheme.grey40,
                                   border: Border.all(
-                                      color: Colors.grey, width: 1))))
-                ])),
-            Container(
+                                      color: Colors.grey, width: 1))))*/
+                ]))),
+            SizedBox(
                 width: min(max(width - 200, 0), 200),
-                child: Column(
-                  children: [
-                    AuthorView(),
-                    const AudioPreview(path: ""),
-                    TagView()
-                  ],
-                ),
-                decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                    color: Color.fromRGBO(40, 40, 40, 1.0)))
+                child: Column(children: [
+                  AuthorView(),
+                  const AudioPreview(path: ""),
+                  Expanded(child: TagView())
+                ]))
           ]));
     });
   }
 }
-
-// class InfoViewEditButton extends StatelessWidget {}
 
 class InfoViewTitle extends StatelessWidget {
   InfoViewTitle(
@@ -267,52 +281,52 @@ class InfoViewTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Visibility(
-          visible: !editing,
-          child: Text(
-            name,
-            style: const TextStyle(
-                fontWeight: FontWeight.normal,
-                fontStyle: FontStyle.normal,
-                fontSize: 18,
-                color: Colors.white,
-                decoration: TextDecoration.none),
-          )),
-      Visibility(
-          visible: editing,
-          child: Container(
-              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-              height: 30,
-              child: EditableText(
-                  controller: controller,
-                  focusNode: FocusNode(),
-                  cursorColor: Colors.grey,
-                  backgroundCursorColor: Colors.grey,
-                  maxLines: 20,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 18,
-                      color: Colors.white,
-                      decoration: TextDecoration.none)),
-              decoration: BoxDecoration(
-                  color: MyTheme.grey40,
-                  border: Border.all(color: Colors.grey, width: 1))))
-    ]);
+    return SizedBox(
+        width: 300,
+        height: 40,
+        child: Stack(children: [
+          Visibility(
+              visible: !editing,
+              child: Text(
+                name,
+                style: const TextStyle(
+                    fontWeight: FontWeight.normal,
+                    fontStyle: FontStyle.normal,
+                    fontSize: 18,
+                    color: Colors.white,
+                    decoration: TextDecoration.none),
+              )),
+          Visibility(
+              visible: editing,
+              child: Container(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                  height: 30,
+                  child: EditableText(
+                      controller: TextEditingController(text: name),
+                      onChanged: (s) {},
+                      focusNode: FocusNode(),
+                      cursorColor: Colors.grey,
+                      backgroundCursorColor: Colors.grey,
+                      maxLines: 20,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontStyle: FontStyle.normal,
+                          fontSize: 18,
+                          color: Colors.white,
+                          decoration: TextDecoration.none)),
+                  decoration: BoxDecoration(
+                      color: MyTheme.grey40,
+                      border: Border.all(color: Colors.grey, width: 1))))
+        ]));
   }
 }
 
 class InfoViewImage extends StatefulWidget {
   InfoViewImage(
-      {required this.editing,
-      required this.path,
-      required this.onUpdate,
-      required this.width});
+      {required this.editing, required this.path, required this.onUpdate});
 
   bool editing;
   String path;
-  double width;
   void Function() onUpdate;
 
   File getBackgroundImage() {
@@ -383,54 +397,55 @@ class _InfoViewImage extends State<InfoViewImage> {
   Widget build(BuildContext context) {
     /* Main image */
     return LayoutBuilder(builder: (context, constraints) {
-      return Stack(children: [
-        ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-            child: Image.file(
-              widget.getBackgroundImage(),
-              width: min(450, widget.width - 200),
-              height: 200,
-              fit: BoxFit.cover,
-            )),
-        Visibility(
-            visible: widget.editing,
-            child: MouseRegion(
-                onEnter: (event) {
-                  setState(() {
-                    mouseOverImage = true;
-                  });
-                },
-                onExit: (event) {
-                  setState(() {
-                    mouseOverImage = false;
-                  });
-                },
-                child: GestureDetector(
-                    onTap: () {
-                      widget.browserForImage();
+      return Padding(
+          padding: const EdgeInsets.all(10),
+          child: Stack(children: [
+            ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                child: Image.file(
+                  widget.getBackgroundImage(),
+                  width: constraints.maxWidth,
+                  height: 200,
+                  fit: BoxFit.cover,
+                )),
+            Visibility(
+                visible: widget.editing,
+                child: MouseRegion(
+                    onEnter: (event) {
+                      setState(() {
+                        mouseOverImage = true;
+                      });
                     },
-                    child: Container(
-                        width: min(450, widget.width - 200),
-                        height: 200,
-                        child: const Center(
-                            child: Text(
-                          "Select an image",
-                          style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontStyle: FontStyle.normal,
-                              fontSize: 20,
-                              color: Colors.white,
-                              decoration: TextDecoration.none),
-                        )),
-                        decoration: BoxDecoration(
-                            color: mouseOverImage
-                                ? const Color.fromRGBO(120, 120, 120, 100)
-                                : const Color.fromRGBO(100, 100, 100, 100),
-                            border: Border.all(
-                              color: Colors.grey,
-                              width: 1,
-                            ))))))
-      ]);
+                    onExit: (event) {
+                      setState(() {
+                        mouseOverImage = false;
+                      });
+                    },
+                    child: GestureDetector(
+                        onTap: () {
+                          widget.browserForImage();
+                        },
+                        child: Container(
+                            height: 200,
+                            child: const Center(
+                                child: Text(
+                              "Select an image",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontStyle: FontStyle.normal,
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  decoration: TextDecoration.none),
+                            )),
+                            decoration: BoxDecoration(
+                                color: mouseOverImage
+                                    ? const Color.fromRGBO(120, 120, 120, 100)
+                                    : const Color.fromRGBO(100, 100, 100, 100),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1,
+                                ))))))
+          ]));
     });
   }
 }
@@ -441,13 +456,10 @@ class AudioPreview extends StatefulWidget {
   final String path;
 
   @override
-  _AudioPreviewState createState() => _AudioPreviewState(path: path);
+  _AudioPreviewState createState() => _AudioPreviewState();
 }
 
 class _AudioPreviewState extends State<AudioPreview> {
-  _AudioPreviewState({required this.path});
-
-  final String path;
   bool editing = false;
   int _currIndex = 0;
 
@@ -455,56 +467,52 @@ class _AudioPreviewState extends State<AudioPreview> {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
-        child: Container(
-          width: min(200, constraints.maxWidth),
-          height: 60,
-          child: Stack(
-            children: [
-              /* Play Button */
-              Positioned(
-                child: IconButton(
-                  icon: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      transitionBuilder: (child, anim) => RotationTransition(
-                            turns: child.key == const ValueKey('icon1')
-                                ? Tween<double>(begin: 0.75, end: 1.0)
-                                    .animate(anim)
-                                : Tween<double>(begin: 1.0, end: 0.75)
-                                    .animate(anim),
-                            child: FadeTransition(opacity: anim, child: child),
-                          ),
-                      child: _currIndex == 0
-                          ? const Icon(Icons.play_arrow, key: ValueKey('icon1'))
-                          : const Icon(
-                              Icons.stop,
-                              key: ValueKey('icon2'),
-                            )),
-                  onPressed: () {
-                    setState(() {
-                      _currIndex = _currIndex == 0 ? 1 : 0;
-                    });
-                  },
-                  iconSize: 40,
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(10),
-                ),
-              ),
-              Positioned(
-                  left: 60,
-                  top: 0,
-                  width: min(200, constraints.maxWidth),
-                  height: 50,
-                  child: CustomPaint(
-                    painter: WaveformPreview(),
-                  )),
-            ],
-          ),
-          decoration: const BoxDecoration(
-            color: Color.fromRGBO(40, 40, 40, 1.0),
-          ),
-        ),
-      );
+          padding: const EdgeInsets.all(10),
+          child: Container(
+              width: min(200, constraints.maxWidth),
+              height: 40,
+              decoration: const BoxDecoration(
+                  color: Color.fromRGBO(50, 50, 50, 1.0),
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    /* Play Button */
+                    IconButton(
+                        icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            transitionBuilder: (child, anim) =>
+                                RotationTransition(
+                                  turns: child.key == const ValueKey('icon1')
+                                      ? Tween<double>(begin: 0.75, end: 1.0)
+                                          .animate(anim)
+                                      : Tween<double>(begin: 1.0, end: 0.75)
+                                          .animate(anim),
+                                  child: FadeTransition(
+                                      opacity: anim, child: child),
+                                ),
+                            child: _currIndex == 0
+                                ? const Icon(Icons.play_arrow,
+                                    key: ValueKey('icon1'))
+                                : const Icon(
+                                    Icons.stop,
+                                    key: ValueKey('icon2'),
+                                  )),
+                        onPressed: () {
+                          setState(() {
+                            _currIndex = _currIndex == 0 ? 1 : 0;
+                          });
+                        },
+                        iconSize: 28,
+                        color: Colors.white),
+                    Expanded(
+                        child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 7, 10, 5),
+                            child: CustomPaint(
+                                painter: WaveformPreview(),
+                                child: Container())))
+                  ])));
     });
   }
 }
@@ -541,25 +549,33 @@ class _AuthorViewState extends State<AuthorView> {
 }
 
 class WaveformPreview extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    int width = size.width.toInt();
-    int height = size.height.toInt();
+  static int count = 50;
 
+  static List<double> generateBuffer() {
+    List<double> buffer = [];
     var rng = Random();
 
-    int count = 50;
-    double barWidth = width / count - 1;
-    int barHeight = height * 4 ~/ 5;
+    for (int i = 0; i < count; i++) {
+      buffer.add(rng.nextDouble());
+    }
 
+    return buffer;
+  }
+
+  List<double> buffer = generateBuffer();
+
+  @override
+  void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = Colors.blue
       ..strokeWidth = 1;
 
     for (int i = 0; i < count; i++) {
+      double height = buffer[i] * size.height;
+
       canvas.drawRect(
-          Rect.fromLTWH(i * barWidth + i, height.toDouble(), barWidth,
-              -rng.nextInt(barHeight).toDouble()),
+          Rect.fromLTWH(size.width / count * i, size.height - height,
+              size.width / count, height),
           paint);
     }
   }
@@ -578,28 +594,43 @@ class TagView extends StatefulWidget {
 class _TagViewState extends State<TagView> {
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
-          padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
-          child: Column(children: [
-            Container(
-                width: min(300, constraints.maxWidth),
-                height: 100,
-                decoration: const BoxDecoration(
-                    color: Color.fromRGBO(45, 45, 45, 1.0))),
-            Container(
-                height: 40,
-                width: min(300, constraints.maxWidth),
-                padding: const EdgeInsets.all(8),
-                child: const Text("Tags",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                    )),
-                decoration:
-                    const BoxDecoration(color: Color.fromRGBO(45, 45, 45, 1.0)))
-          ]));
-    });
+    return Padding(
+        padding: const EdgeInsets.all(10),
+        child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+                color: Color.fromRGBO(50, 50, 50, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: Stack(children: [
+              Align(
+                  alignment: Alignment.topLeft,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Tag("Tag Example 1"),
+                        Tag("Tag 2"),
+                        Tag("Tag 3"),
+                        Tag("Tag 4"),
+                      ]))
+            ])));
+  }
+}
+
+class Tag extends StatelessWidget {
+  Tag(this.name);
+
+  String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+        child: Container(
+            padding: const EdgeInsets.all(5),
+            decoration: const BoxDecoration(
+                color: Color.fromRGBO(70, 70, 70, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: Text(name,
+                style: const TextStyle(fontSize: 12, color: Colors.white))));
   }
 }

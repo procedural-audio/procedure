@@ -28,11 +28,6 @@ struct Other {
     float value;
 };
 
-/*struct FFIIOProcessor {
-    uint64_t temp1;
-    uint64_t temp2;
-};*/
-
 union NoteValue {
     NoteOn noteOn;
     NoteOff noteOff;

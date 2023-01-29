@@ -20,7 +20,7 @@ impl Module for Slew {
         outputs: &[
             Pin::Control("Output", 25)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Effects/Slew",
         presets: Presets::NONE
     };
 

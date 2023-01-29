@@ -29,7 +29,7 @@ impl Host {
     }
 
     pub fn load(&mut self, path: &str) {
-        println!("Host is loading a preset");
+        println!("Loading graph from {}", path);
 
         let path = path.to_string();
         let data = std::fs::read_to_string(path).unwrap();
@@ -41,20 +41,21 @@ impl Host {
                 graph.refresh();
                 self.graph = graph;
             }
-            Err(_err) => {
+            Err(e) => {
                 self.graph.nodes.clear();
                 self.graph.nodes.clear();
                 self.graph.refresh();
-                println!("Failed to decode preset");
+                println!("Failed to decode graph {}", e);
             }
         }
     }
 
     pub fn save(&self, path: &str) {
-        println!("Saving instrument and preset");
         let path = path.to_string();
         let json = serde_json::to_string(&self.graph).unwrap();
-        std::fs::write(path, &json).unwrap();
+        std::fs::write(path.clone(), &json).unwrap();
+        println!("Saved graph to {}", path);
+        println!("{}", json);
     }
 
     pub fn prepare(&mut self, sample_rate: u32, block_size: usize) {

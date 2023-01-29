@@ -29,8 +29,8 @@ class Globals {
 
   ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
 
-  InstrumentInfo instrument = InstrumentInfo("Untitled Instrument",
-      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument");
+  /*InstrumentInfo instrument = InstrumentInfo("Untitled Instrument",
+      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument");*/
 
   PresetInfo preset = PresetInfo(
       "Untitled Instrument",
@@ -38,8 +38,8 @@ class Globals {
           "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
 
   List<InstrumentInfo> instruments2 = [];
-  InstrumentInfo browserInstrument = InstrumentInfo("Untitled Instrument",
-      "/home/chase/github/metasampler/content/instruments/Untitled Instrument");
+  /*InstrumentInfo browserInstrument = InstrumentInfo("Untitled Instrument",
+      "/home/chase/github/metasampler/content/instruments/Untitled Instrument");*/
 
   ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
 
@@ -283,6 +283,7 @@ class _PatchingView extends State<PatchingView> {
                 top: righttClickOffset.dy,
                 child: RightClickView(
                   widget.host,
+                  specs: widget.host.moduleSpecs,
                   addPosition: Offset(
                       righttClickOffset.dx -
                           controller.value.getTranslation().x,

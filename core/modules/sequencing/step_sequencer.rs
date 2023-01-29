@@ -31,7 +31,7 @@ impl Module for StepSequencer {
         outputs: &[
             Pin::Notes("Midi Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Effects/Arpeggiator",
         presets: Presets::NONE
     };
     

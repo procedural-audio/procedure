@@ -13,7 +13,7 @@ impl Module for LocalTime {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/Time/Local Time",
         presets: Presets::NONE
     };
     

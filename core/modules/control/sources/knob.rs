@@ -17,7 +17,7 @@ impl Module for KnobModule {
         outputs: &[
             Pin::Control("Clock Output", 30)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Sources/Knob",
         presets: Presets::NONE
     };
     

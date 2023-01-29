@@ -1,11 +1,9 @@
-import 'package:metasampler/ui/layout.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../host.dart';
-import '../main.dart';
 import 'settings.dart';
 
 import '../config.dart';
@@ -54,8 +52,7 @@ bool createDirectory(String name, String instPath) {
 
   Directory dir = Directory(instPath + "/presets/" + name);
 
-  presetDirs
-      .add(PresetDirectory(name: name, path: dir.path, presets: []));
+  presetDirs.add(PresetDirectory(name: name, path: dir.path, presets: []));
 
   dir.create(recursive: true);
 
@@ -107,7 +104,8 @@ void duplicatePreset(PresetInfo info) {
     if (presetDirs[i].name == info.file.parent.path.split("/").last) {
       for (int j = 0; j < presetDirs[i].presets.length; j++) {
         if (presetDirs[i].presets[j].name == info.name) {
-          presetDirs[i].presets
+          presetDirs[i]
+              .presets
               .insert(j + 1, PresetInfo(newName, File(newPath)));
           break;
         }
@@ -186,11 +184,8 @@ bool movePreset(String presetName, String categoryName) {
         }
 
         var oldFile = presetDirs[i].presets[j].file;
-        var newPath = oldFile.parent.parent.path +
-            "/" +
-            categoryName +
-            "/" +
-            presetName;
+        var newPath =
+            oldFile.parent.parent.path + "/" + categoryName + "/" + presetName;
         oldFile.copySync(newPath);
         oldFile.delete();
 
@@ -232,9 +227,7 @@ bool renameDirectory(String name, String newName) {
           Directory(presetDirs[i].path).parent.path + "/" + newName;
 
       var newDir = PresetDirectory(
-          name: newName,
-          path: newPath,
-          presets: presetDirs[i].presets);
+          name: newName, path: newPath, presets: presetDirs[i].presets);
 
       Directory(presetDirs[i].path).rename(newPath);
       presetDirs[i] = newDir;
@@ -280,140 +273,133 @@ class _PresetsView extends State<PresetsView> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: notifier,
-      builder: (context, value, child) {
-        List<Widget> dirWidgets = [];
-        List<Widget> presetWidgets = [];
-
-        dirWidgets.add(PresetDivider());
-        presetWidgets.add(PresetDivider());
-
-        for (var dir in presetDirs) {
-          dirWidgets.add(PresetDirectoryWidget(
-            notifier: notifier,
-            presetDir: dir,
-            onTap: () {
-              setState(() {
-                if (selectedFolder == dir.name) {
-                  selectedFolder = "All";
-                } else {
-                  selectedFolder = dir.name;
-                }
-                selectedPreset = "";
-              });
-            },
-            selected: selectedFolder,
-            locked: locked,
-          ));
+        valueListenable: notifier,
+        builder: (context, value, child) {
+          List<Widget> dirWidgets = [];
+          List<Widget> presetWidgets = [];
 
           dirWidgets.add(PresetDivider());
+          presetWidgets.add(PresetDivider());
 
-          for (var preset in dir.presets) {
-            if (selectedFolder == "All" ||
-                selectedFolder == preset.file.parent.path.split("/").last) {
-              presetWidgets.add(PresetEntryWidget(
-                widget.host,
-                notifier: notifier,
-                info: preset,
-                selected: selectedPreset,
-                onTap: () {
-                  if (selectedPreset == preset.name) {
-                    setState(() {
-                      selectedPreset = "";
-                    });
+          for (var dir in presetDirs) {
+            dirWidgets.add(PresetDirectoryWidget(
+              notifier: notifier,
+              presetDir: dir,
+              onTap: () {
+                setState(() {
+                  if (selectedFolder == dir.name) {
+                    selectedFolder = "All";
                   } else {
-                    setState(() {
-                      selectedPreset = preset.name;
-                    });
+                    selectedFolder = dir.name;
                   }
-                },
-                locked: locked,
-              ));
+                  selectedPreset = "";
+                });
+              },
+              selected: selectedFolder,
+              locked: locked,
+            ));
 
-              presetWidgets.add(PresetDivider());
+            dirWidgets.add(PresetDivider());
+
+            for (var preset in dir.presets) {
+              if (selectedFolder == "All" ||
+                  selectedFolder == preset.file.parent.path.split("/").last) {
+                presetWidgets.add(PresetEntryWidget(
+                  widget.host,
+                  notifier: notifier,
+                  info: preset,
+                  selected: selectedPreset,
+                  onTap: () {
+                    if (selectedPreset == preset.name) {
+                      setState(() {
+                        selectedPreset = "";
+                      });
+                    } else {
+                      setState(() {
+                        selectedPreset = preset.name;
+                      });
+                    }
+                  },
+                  locked: locked,
+                ));
+
+                presetWidgets.add(PresetDivider());
+              }
             }
           }
-        }
 
-        if (!locked) {
-          if (shouldCreateDirectory) {
-            shouldCreateDirectory = false;
-            dirWidgets.add(PresetDirectoryNewWidget(widget.host, notifier: notifier));
-          } else {
-            dirWidgets.add(PresetAddWidget(onClick: () {
-              setState(() {
-                shouldCreateDirectory = true;
-              });
-            }));
+          if (!locked) {
+            if (shouldCreateDirectory) {
+              shouldCreateDirectory = false;
+              dirWidgets.add(
+                  PresetDirectoryNewWidget(widget.host, notifier: notifier));
+            } else {
+              dirWidgets.add(PresetAddWidget(onClick: () {
+                setState(() {
+                  shouldCreateDirectory = true;
+                });
+              }));
+            }
+
+            if (shouldCreatePreset) {
+              shouldCreatePreset = false;
+              presetWidgets.add(PresetNewWidget(
+                  selectedFolder: selectedFolder, notifier: notifier));
+            } else {
+              presetWidgets.add(PresetAddWidget(onClick: () {
+                setState(() {
+                  shouldCreatePreset = true;
+                });
+              }));
+            }
           }
 
-          if (shouldCreatePreset) {
-            shouldCreatePreset = false;
-            presetWidgets.add(PresetNewWidget(selectedFolder: selectedFolder, notifier: notifier));
-          } else {
-            presetWidgets.add(PresetAddWidget(onClick: () {
-              setState(() {
-                shouldCreatePreset = true;
-              });
-            }));
-          }
-        }
-
-        return Stack(
-          children: [
-              Row(
-                children: [
-                  Expanded(
+          return Stack(children: [
+            Row(
+              children: [
+                Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: ListView(
-                        children: dirWidgets,
-                      )
-                    )
-                  ),
-                  Container(
-                    width: 2,
-                    color: const Color.fromRGBO(60, 60, 60, 1.0),
-                  ),
-                  Expanded(
+                        padding: const EdgeInsets.all(5),
+                        child: ListView(
+                          children: dirWidgets,
+                        ))),
+                Container(
+                  width: 2,
+                  color: const Color.fromRGBO(60, 60, 60, 1.0),
+                ),
+                Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: ListView(
-                        children: presetWidgets,
-                      )
-                    )
-                  )
-                ],
-              ),
+                        padding: const EdgeInsets.all(5),
+                        child: ListView(
+                          children: presetWidgets,
+                        )))
+              ],
+            ),
             Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                width: 40,
-                height: 40,
-                child: IconButton(
-                  icon: locked
-                      ? const Icon(Icons.lock)
-                      : const Icon(Icons.lock_open),
-                  color: locked ? Colors.white70 : Colors.white,
-                  iconSize: 20,
-                  onPressed: () {
-                    setState(() {
-                      locked = !locked;
-                    });
-                  },
-                ),
-                decoration: BoxDecoration(
-                  color: MyTheme.grey50,
-                  borderRadius:
-                      const BorderRadius.all(Radius.circular(10)),
-                ),
-              )
-            )
-          ]
-        );
-      }
-    );
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  child: IconButton(
+                    icon: locked
+                        ? const Icon(Icons.lock)
+                        : const Icon(Icons.lock_open),
+                    color: locked ? Colors.white70 : Colors.white,
+                    iconSize: 20,
+                    onPressed: () {
+                      setState(() {
+                        locked = !locked;
+                      });
+                    },
+                  ),
+                  decoration: BoxDecoration(
+                    color: MyTheme.grey50,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                ))
+          ]);
+        });
 
     /*const double width = 450;
 
@@ -552,78 +538,75 @@ class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
             },
             builder: (context, List<Object?> candidateData, rejectedData) {
               return Container(
-                height: 35,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(5)),
-                  color: widget.selected == widget.presetDir.name
-                      ? const Color.fromRGBO(80, 80, 80, 1.0)
-                      : (hovering ? const Color.fromRGBO(70, 70, 70, 1.0): const Color.fromRGBO(60, 60, 60, 1.0)),
-                ),
-                child: Row(
-                  children: [
+                  height: 35,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
+                    color: widget.selected == widget.presetDir.name
+                        ? const Color.fromRGBO(80, 80, 80, 1.0)
+                        : (hovering
+                            ? const Color.fromRGBO(70, 70, 70, 1.0)
+                            : const Color.fromRGBO(60, 60, 60, 1.0)),
+                  ),
+                  child: Row(children: [
                     const SizedBox(
-                      width: 40,
-                      child: Icon(
-                        Icons.folder,
-                        color: Colors.blueAccent,
-                        size: 18)),
+                        width: 40,
+                        child: Icon(Icons.folder,
+                            color: Colors.blueAccent, size: 18)),
                     Expanded(
-                      child: Visibility(
-                        visible: !editing,
-                        child: Text(
-                          widget.presetDir.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400),
-                        )
-                      )
-                    ),
-                    Expanded(
-                      child: Visibility(
-                        visible: editing,
-                        child: Container(
-                          height: 24,
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: MyTheme.grey50,
-                            border: Border.all(
-                              color: editFailed ? Colors.red : Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          child: EditableText(
-                              controller: TextEditingController.fromValue(
-                                  TextEditingValue(text: editingText)),
-                              onChanged: (text) {
-                                editingText = text;
-                              },
-                              onSubmitted: (text) {
-                                if (renameDirectory(widget.presetDir.name, text)) {
-                                  setState(() {
-                                    editing = false;
-                                    editFailed = false;
-                                  });
-                                } else {
-                                  setState(() {
-                                    editFailed = true;
-                                  });
-                                }
-
-                                widget.notifier.notifyListeners();
-                              },
-                              focusNode: FocusNode(),
-                              cursorColor: Colors.blue,
-                              backgroundCursorColor: Colors.blue,
-                              maxLines: 1,
+                        child: Visibility(
+                            visible: !editing,
+                            child: Text(
+                              widget.presetDir.name,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w300,
-                                  fontSize: 14,
                                   color: Colors.white,
-                                  decoration: TextDecoration.none))))),
-                  ]
-                )
-              );
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400),
+                            ))),
+                    Expanded(
+                        child: Visibility(
+                            visible: editing,
+                            child: Container(
+                                height: 24,
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: MyTheme.grey50,
+                                  border: Border.all(
+                                    color:
+                                        editFailed ? Colors.red : Colors.grey,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: EditableText(
+                                    controller: TextEditingController.fromValue(
+                                        TextEditingValue(text: editingText)),
+                                    onChanged: (text) {
+                                      editingText = text;
+                                    },
+                                    onSubmitted: (text) {
+                                      if (renameDirectory(
+                                          widget.presetDir.name, text)) {
+                                        setState(() {
+                                          editing = false;
+                                          editFailed = false;
+                                        });
+                                      } else {
+                                        setState(() {
+                                          editFailed = true;
+                                        });
+                                      }
+
+                                      widget.notifier.notifyListeners();
+                                    },
+                                    focusNode: FocusNode(),
+                                    cursorColor: Colors.blue,
+                                    backgroundCursorColor: Colors.blue,
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w300,
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                        decoration: TextDecoration.none))))),
+                  ]));
               /*return Stack(children: [
                 Container(
                   padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -886,7 +869,8 @@ class _PresetDirectoryWidgetState extends State<PresetDirectoryWidget> {
 }*/
 
 class PresetDirectoryNewWidget extends StatefulWidget {
-  PresetDirectoryNewWidget(this.host, {required this.notifier}) : super(key: UniqueKey());
+  PresetDirectoryNewWidget(this.host, {required this.notifier})
+      : super(key: UniqueKey());
 
   ValueNotifier<int> notifier;
   Host host;
@@ -925,50 +909,49 @@ class _PresetDirectoryNewWidgetState extends State<PresetDirectoryNewWidget> {
             height: 44,
             child: Stack(children: [
               Align(
-                alignment: Alignment.centerLeft,
+                  alignment: Alignment.centerLeft,
 
-                /* Static name text */
-                /* Editable name text */
-                child: Container(
-                  width: 120,
-                  height: 26,
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: MyTheme.grey50,
-                    border: Border.all(
-                      color: editFailed ? Colors.red : Colors.grey,
-                      width: 1,
-                    ),
-                  ),
-                  child: EditableText(
-                      controller: TextEditingController.fromValue(
-                          TextEditingValue(text: editingText)),
-                      onChanged: (text) {
-                        editingText = text;
-                      },
-                      onSubmitted: (text) {
-                        if (createDirectory(text, widget.host.globals.instrument.path)) {
-                          setState(() {});
-                          // Nothing
-                        } else {
-                          setState(() {
-                            editFailed = true;
-                          });
-                        }
+                  /* Static name text */
+                  /* Editable name text */
+                  child: Container(
+                      width: 120,
+                      height: 26,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: MyTheme.grey50,
+                        border: Border.all(
+                          color: editFailed ? Colors.red : Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      child: EditableText(
+                          controller: TextEditingController.fromValue(
+                              TextEditingValue(text: editingText)),
+                          onChanged: (text) {
+                            editingText = text;
+                          },
+                          onSubmitted: (text) {
+                            if (createDirectory(text,
+                                widget.host.loadedInstrument.value.path)) {
+                              setState(() {});
+                              // Nothing
+                            } else {
+                              setState(() {
+                                editFailed = true;
+                              });
+                            }
 
-                        widget.notifier.notifyListeners();
-                      },
-                      focusNode: FocusNode(),
-                      cursorColor: Colors.blue,
-                      backgroundCursorColor: Colors.blue,
-                      maxLines: 1,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w300,
-                          fontSize: 16,
-                          color: Colors.white,
-                          decoration: TextDecoration.none)),
-                ),
-              ),
+                            widget.notifier.notifyListeners();
+                          },
+                          focusNode: FocusNode(),
+                          cursorColor: Colors.blue,
+                          backgroundCursorColor: Colors.blue,
+                          maxLines: 1,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w300,
+                              fontSize: 16,
+                              color: Colors.white,
+                              decoration: TextDecoration.none)))),
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
@@ -980,9 +963,9 @@ class _PresetDirectoryNewWidgetState extends State<PresetDirectoryNewWidget> {
                         color: Colors.white,
                         iconSize: 16,
                         onPressed: () {
-                          if (createDirectory(editingText, widget.host.globals.instrument.path)) {
+                          if (createDirectory(editingText,
+                              widget.host.loadedInstrument.value.path)) {
                             setState(() {});
-                            // Nothing
                           } else {
                             setState(() {
                               editFailed = true;
@@ -1014,7 +997,8 @@ class _PresetDirectoryNewWidgetState extends State<PresetDirectoryNewWidget> {
 }
 
 class PresetNewWidget extends StatefulWidget {
-  PresetNewWidget({required this.selectedFolder, required this.notifier}) : super(key: UniqueKey());
+  PresetNewWidget({required this.selectedFolder, required this.notifier})
+      : super(key: UniqueKey());
 
   String selectedFolder;
   ValueNotifier<int> notifier;
@@ -1106,7 +1090,8 @@ class _PresetNewWidgetState extends State<PresetNewWidget> {
                         color: Colors.white,
                         iconSize: 16,
                         onPressed: () {
-                          if (createPreset(editingText, widget.selectedFolder)) {
+                          if (createPreset(
+                              editingText, widget.selectedFolder)) {
                             // Nothing
                           } else {
                             setState(() {
@@ -1147,8 +1132,7 @@ class PresetEntryWidget extends StatefulWidget {
 
   Host host;
 
-  PresetEntryWidget(
-    this.host,
+  PresetEntryWidget(this.host,
       {required this.info,
       required this.selected,
       required this.onTap,

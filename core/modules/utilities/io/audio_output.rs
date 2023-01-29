@@ -17,7 +17,7 @@ impl Module for AudioOutput {
         outputs: &[
             Pin::ExternalAudio(0)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/IO/Audio Output",
         presets: Presets::NONE
     };
 

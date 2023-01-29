@@ -45,7 +45,7 @@ impl Module for Mixer {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Effects/Dynamics/Mixer",
         presets: Presets::NONE
     };
 

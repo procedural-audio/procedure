@@ -9,6 +9,7 @@ import '../main.dart';
 import 'package:flutter/material.dart';
 
 import 'browser.dart';
+import 'info.dart';
 import 'variables.dart';
 
 class Bar extends StatefulWidget {
@@ -61,21 +62,20 @@ class _Bar extends State<Bar> {
                       height: 35,
                       color: const Color.fromRGBO(50, 50, 50, 1.0),
                     ),
-                    BarDropdown(
-                        text: widget.host.globals.instrument.name,
-                        onTap: () {
-                          setState(() {
-                            instrumentBrowserExpanded =
-                                !instrumentBrowserExpanded;
-                            presetBrowserExpanded = false;
-                            variableViewVisible = false;
-                          });
+                    ValueListenableBuilder<InstrumentInfo>(
+                        valueListenable: widget.host.loadedInstrument,
+                        builder: (context, value, child) {
+                          return BarDropdown(
+                              text: value.name,
+                              onTap: () {
+                                setState(() {
+                                  instrumentBrowserExpanded =
+                                      !instrumentBrowserExpanded;
+                                  presetBrowserExpanded = false;
+                                  variableViewVisible = false;
+                                });
+                              });
                         }),
-                    /*Container(
-                    width: 1,
-                    height: barHeight-10,
-                    color: const Color.fromRGBO(80, 80, 80, 1.0),
-                  ),*/
                     BarDropdown(
                         text: widget.host.globals.preset.name,
                         onTap: () {
@@ -93,7 +93,7 @@ class _Bar extends State<Bar> {
                     BarButton(
                         iconData: Icons.save,
                         onTap: () {
-                          widget.host.saveInstrument();
+                          widget.host.save();
                         }),
                     BarButton(
                         iconData: Icons.edit,
@@ -176,28 +176,34 @@ class _Bar extends State<Bar> {
                           });
                         }),
                   ]),
-                LayoutBuilder(builder: (context, constraints) {
-                  if (instrumentBrowserExpanded || presetBrowserExpanded || variableViewVisible) {
-                    return Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                        child: Container(
-                          width: barExpanded ? 710 : 525,
-                          height: 600,
-                          decoration: BoxDecoration(
+              LayoutBuilder(builder: (context, constraints) {
+                if (instrumentBrowserExpanded ||
+                    presetBrowserExpanded ||
+                    variableViewVisible) {
+                  return Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      child: Container(
+                        width: barExpanded ? 710 : 525,
+                        height: 600,
+                        decoration: BoxDecoration(
                             color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
                             border: Border.all(
-                              width: 1,
-                              color: const Color.fromRGBO(70, 70, 70, 1.0)
-                            )
-                          ),
-                          child: instrumentBrowserExpanded ? BrowserView(widget.host) : presetBrowserExpanded ? PresetsView(widget.host) : variableViewVisible ? widget.host.vars : Container(),
-                        )
-                    );
-                  } else {
-                    return const SizedBox(width: 0, height: 0);
-                  }
-                })
+                                width: 1,
+                                color: const Color.fromRGBO(70, 70, 70, 1.0))),
+                        child: instrumentBrowserExpanded
+                            ? BrowserView(widget.host)
+                            : presetBrowserExpanded
+                                ? PresetsView(widget.host)
+                                : variableViewVisible
+                                    ? widget.host.vars
+                                    : Container(),
+                      ));
+                } else {
+                  return const SizedBox(width: 0, height: 0);
+                }
+              })
             ]))));
   }
 }
@@ -367,155 +373,148 @@ class _ExtendedBar extends State<Bar> {
             child: BrowserView(widget.host)),
       ),
       Positioned(
-        right: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Container(
-              //width: expanded ? width * 5 : width,
-              height: height,
-              decoration: BoxDecoration(
-                  color: const Color.fromRGBO(50, 50, 50, 1.0),
-                  borderRadius: BorderRadius.all(Radius.circular(radius))),
-              child: Stack(children: [
-                selected >= 0
-                    ? AnimatedPositioned(
-                        left: width * selected,
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        duration: const Duration(milliseconds: 500),
-                        child: Container(
-                          width: width,
-                          height: height,
-                          decoration: BoxDecoration(
-                              color: const Color.fromRGBO(80, 80, 80, 0.5),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(radius))),
-                        ),
-                      )
-                    : Container(),
-                Row(
-                  children: [
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.fastLinearToSlowEaseIn,
-                      child: SizedBox(
-                          width: expanded ? width * 5 : 0,
-                          height: height,
-                          child: Row(
-                            children: [
-                              Container(
-                                // Parameters
-                                width: width,
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  icon: const Icon(Icons.code),
-                                  iconSize: 20,
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    setState(() {
-                                      selected = 0;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Container(
-                                // Samples
-                                width: width,
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  icon: const Icon(Icons.graphic_eq),
-                                  iconSize: 18,
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    setState(() {
-                                      selected = 1;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Container(
-                                // Unknown
-                                width: width,
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  icon: const Icon(Icons.device_unknown),
-                                  iconSize: 18,
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    setState(() {
-                                      selected = 2;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Container(
-                                // Browser
-                                width: width,
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  icon: const Icon(Icons.view_module),
-                                  iconSize: 18,
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    setState(() {
-                                      selected = 3;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Container(
-                                // Settings
-                                width: width,
-                                alignment: Alignment.center,
-                                child: IconButton(
-                                  icon: const Icon(Icons.settings),
-                                  iconSize: 18,
-                                  color: Colors.white,
-                                  onPressed: () {
-                                    setState(() {
-                                      selected = 4;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          )),
-                    ),
-                    expanded
-                        ? Container(
-                            width: 2,
-                            height: height - 10,
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color:
-                                        const Color.fromRGBO(80, 80, 80, 1.0),
-                                    width: 2.0)),
+          right: 0,
+          child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                  //width: expanded ? width * 5 : width,
+                  height: height,
+                  decoration: BoxDecoration(
+                      color: const Color.fromRGBO(50, 50, 50, 1.0),
+                      borderRadius: BorderRadius.all(Radius.circular(radius))),
+                  child: Stack(children: [
+                    selected >= 0
+                        ? AnimatedPositioned(
+                            left: width * selected,
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            duration: const Duration(milliseconds: 500),
+                            child: Container(
+                              width: width,
+                              height: height,
+                              decoration: BoxDecoration(
+                                  color: const Color.fromRGBO(80, 80, 80, 0.5),
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(radius))),
+                            ),
                           )
                         : Container(),
-                    AnimatedRotation(
-                      turns: expanded ? 0 : -0.25,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.fastLinearToSlowEaseIn,
-                      child: Container(
-                        width: 40,
-                        alignment: Alignment.center,
-                        child: IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          iconSize: 18,
-                          color: Colors.white,
-                          onPressed: () {
-                            setState(() {
-                              selected = -1;
-                              expanded = !expanded;
-                            });
-                          }
-                        )
-                      )
-                    )
-                  ]
-                )
-              ]))
-        )
-      )
+                    Row(children: [
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastLinearToSlowEaseIn,
+                        child: SizedBox(
+                            width: expanded ? width * 5 : 0,
+                            height: height,
+                            child: Row(
+                              children: [
+                                Container(
+                                  // Parameters
+                                  width: width,
+                                  alignment: Alignment.center,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.code),
+                                    iconSize: 20,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        selected = 0;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Container(
+                                  // Samples
+                                  width: width,
+                                  alignment: Alignment.center,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.graphic_eq),
+                                    iconSize: 18,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        selected = 1;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Container(
+                                  // Unknown
+                                  width: width,
+                                  alignment: Alignment.center,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.device_unknown),
+                                    iconSize: 18,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        selected = 2;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Container(
+                                  // Browser
+                                  width: width,
+                                  alignment: Alignment.center,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.view_module),
+                                    iconSize: 18,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        selected = 3;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Container(
+                                  // Settings
+                                  width: width,
+                                  alignment: Alignment.center,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.settings),
+                                    iconSize: 18,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        selected = 4;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )),
+                      ),
+                      expanded
+                          ? Container(
+                              width: 2,
+                              height: height - 10,
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color:
+                                          const Color.fromRGBO(80, 80, 80, 1.0),
+                                      width: 2.0)),
+                            )
+                          : Container(),
+                      AnimatedRotation(
+                          turns: expanded ? 0 : -0.25,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.fastLinearToSlowEaseIn,
+                          child: Container(
+                              width: 40,
+                              alignment: Alignment.center,
+                              child: IconButton(
+                                  icon: const Icon(Icons.chevron_left),
+                                  iconSize: 18,
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    setState(() {
+                                      selected = -1;
+                                      expanded = !expanded;
+                                    });
+                                  })))
+                    ])
+                  ]))))
     ]);
   }
 }

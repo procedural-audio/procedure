@@ -35,7 +35,7 @@ impl Module for AnalogFilter {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Effects/Filters/Analog Filter",
         presets: Presets::NONE
     };
 

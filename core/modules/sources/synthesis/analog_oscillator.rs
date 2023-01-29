@@ -43,7 +43,7 @@ impl Module for AnalogOscillator {
             Pin::Audio("Audio Output", 20),
             Pin::Audio("Audio Output", 50)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Synthesis/Analog Oscillator",
         presets: Presets::NONE
     };
 

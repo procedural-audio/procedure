@@ -49,36 +49,30 @@ class ButtonSVG extends ModuleWidget {
     bool active = ffiSvgButtonGetPressed(widgetRaw.pointer);
 
     return Container(
-      padding: const EdgeInsets.all(5),
-      child: Stack(children: [
-        SvgPicture.file(
-          File(path),
-          color: mouseOver
-              ? color
-              : active
-                  ? color
-                  : color.withAlpha(100),
-        ),
-        MouseRegion(
-          onEnter: (event) {
+        padding: const EdgeInsets.all(5),
+        child: Stack(children: [
+          SvgPicture.file(
+            File(path),
+            color: mouseOver
+                ? color
+                : active
+                    ? color
+                    : color.withAlpha(100),
+          ),
+          MouseRegion(onEnter: (event) {
             setState(() {
               mouseOver = true;
             });
-          },
-          onExit: (event) {
+          }, onExit: (event) {
             setState(() {
               mouseOver = false;
             });
-          },
-        ),
-        GestureDetector(
-          onTap: () {
+          }),
+          GestureDetector(onTap: () {
             ffiSvgButtonOnChanged(widgetRaw.pointer, !active);
             refresh();
-          },
-        ),
-      ]),
-    );
+          })
+        ]));
   }
 }
 

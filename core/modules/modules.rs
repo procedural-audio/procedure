@@ -1,4 +1,4 @@
-use std::{ops::Index, marker::PhantomData};
+pub use pa_dsp::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -17,127 +17,204 @@ pub use utilities::*;
 pub mod widget;
 pub use crate::widget::*;
 
-pub use pa_dsp::*;
-
-/* ========== Abstractions ========== */
-
-pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
-    return Box::new(ModuleManager::<T>::new());
+pub struct ModuleSpec {
+    pub id: &'static str,
+    pub path: &'static str,
+    pub color: Color,
+    create: fn() -> Box<dyn PolyphonicModule>
 }
 
-pub fn get_modules() -> Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> {
-    let mut modules: Vec<(&'static str, fn() -> Box<dyn PolyphonicModule>)> = Vec::new();
+impl ModuleSpec {
+    pub fn create(&self) -> Box<dyn PolyphonicModule> {
+        (self.create)()
+    }
+}
 
-    modules.push(("Analog Oscillator", create_module::<AnalogOscillator>));
-    modules.push(("Wavetable Oscillator", create_module::<WavetableOscillator>));
-    modules.push(("Pluck", create_module::<Pluck>));
-    modules.push(("Noise", create_module::<crate::sources::Noise>));
-    modules.push(("Saw", create_module::<SawModule>));
-    modules.push(("Square", create_module::<SquareModule>));
-    modules.push(("Sine", create_module::<SineModule>));
-    modules.push(("Triangle", create_module::<TriangleModule>));
-    modules.push(("Pulse", create_module::<PulseModule>));
+pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
+    Box::new(ModuleManager::<T>::new())
+}
 
-    modules.push(("Audio Track", create_module::<AudioTrack>));
-    modules.push(("Multi-Sampler", create_module::<MultiSampler>));
-    modules.push(("Sampler", create_module::<Sampler>));
-    modules.push(("Granular", create_module::<Granular>));
-    modules.push(("Slicer", create_module::<Slicer>));
-    modules.push(("Looper", create_module::<Looper>));
+pub fn module<T: 'static + Module>() -> ModuleSpec {
+    ModuleSpec {
+        id: T::id(),
+        path: T::INFO.path,
+        color: T::INFO.color,
+        create: create_module::<T>
+    }
+}
 
-    modules.push(("Waveshaper", create_module::<Waveshaper>));
-    modules.push(("Gain", create_module::<effects::Gain>));
-    modules.push(("Mute", create_module::<Mute>));
-    modules.push(("Panner", create_module::<Panner>));
-    modules.push(("Mixer", create_module::<Mixer>));
-    modules.push(("Gate", create_module::<Gate>));
-    modules.push(("Compressor", create_module::<Compressor>));
-    modules.push(("Crossover", create_module::<Crossover>));
+pub fn get_modules() -> Vec<ModuleSpec> {
+    let mut modules = Vec::new();
 
-    modules.push(("Analog Filter", create_module::<AnalogFilter>));
+    /* ========== Sources ========== */
 
-    modules.push(("Chorus", create_module::<Chorus>));
-    modules.push(("Flanger", create_module::<Flanger>));
-    modules.push(("Phaser", create_module::<Phaser>));
+    // Sampling
+    modules.push(module::<AudioTrack>());
+    modules.push(module::<Sampler>());
+    modules.push(module::<MultiSampler>());
+    // modules.push(module::<Granular>());
+    // modules.push(module::<Slicer>());
+    // modules.push(module::<SampleResynthesis>());
+    // modules.push(module::<Looper>());
 
-    modules.push(("Tube", create_module::<Tube>));
+    // Synthesis
+    modules.push(module::<SawModule>());
+    modules.push(module::<SquareModule>());
+    modules.push(module::<SineModule>());
+    modules.push(module::<TriangleModule>());
+    modules.push(module::<PulseModule>());
+    modules.push(module::<AnalogOscillator>());
+    modules.push(module::<WavetableOscillator>());
+    // modules.push(module::<AdditiveOscillator>());
+    // modules.push(module::<HarmonicOscillator>());
+    // modules.push(module::<modules::Noise>());
+    // modules.push(module::<Pluck>());
 
-    modules.push(("Add", create_module::<Add>));
-    modules.push(("Subtract", create_module::<Subtract>));
-    modules.push(("Multiply", create_module::<Multiply>));
-    modules.push(("Divide", create_module::<Divide>));
-    modules.push(("Negative", create_module::<Negative>));
-    modules.push(("Modulo", create_module::<Modulo>));
-    modules.push(("Clamp", create_module::<Clamp>));
+    // Physical Modeling
+    // modules.push(module::<StringModel>());
+    // modules.push(module::<AcousticGuitarModel>());
+    // modules.push(module::<ElectricGuitarModel>());
+    // modules.push(module::<ModalOscillator>());
 
-    modules.push(("And", create_module::<And>));
-    modules.push(("Or", create_module::<Or>));
-    modules.push(("Not", create_module::<Not>));
-    modules.push(("Xor", create_module::<Xor>));
+    // Machine Learning
+    // modules.push(module::<ToneTransfer>());
+    // modules.push(module::<Spectrogram Resynthesis>());
 
-    modules.push(("Equal", create_module::<Equal>));
-    modules.push(("Not equal", create_module::<NotEqual>));
-    modules.push(("Greater than", create_module::<Greater>));
-    modules.push(("Greater/equal to", create_module::<GreaterEqual>));
-    modules.push(("Less than", create_module::<Less>));
-    modules.push(("Less/equal to", create_module::<LessEqual>));
+    /* ========== Effects ========== */
 
-    /* Sources */
-    modules.push(("LFO", create_module::<LfoModule>));
-    modules.push(("Envelope", create_module::<EnvelopeModule>));
-    modules.push(("Constant", create_module::<Constant>));
-    modules.push(("Clock", create_module::<Clock>));
-    modules.push(("Random", create_module::<Random>));
-    modules.push(("Knob", create_module::<KnobModule>));
+    // Dynamics
+    modules.push(module::<Gain>());
+    modules.push(module::<Panner>());
+    modules.push(module::<Mute>());
+    modules.push(module::<Mixer>());
+    modules.push(module::<Gate>());
+    modules.push(module::<Compressor>());
+    // modules.push(module::<TransientShaper>());
+    // modules.push(module::<TransientSeparator>());
 
-    modules.push(("Display", create_module::<crate::control::Display>));
-    modules.push(("Bend", create_module::<Bend>));
-    modules.push(("Scale", create_module::<sequencing::Scale>));
-    modules.push(("Hold", create_module::<Hold>));
-    modules.push(("Slew", create_module::<Slew>));
+    // Distortion
+    // modules.push(module::<Amplifier>());
+    // modules.push(module::<AanalogSaturator>());
+    // modules.push(module::<AnalogDistortion>());
+    // modules.push(module::<Cassette>());
+    // modules.push(module::<Tape>());
+    // modules.push(module::<Tube>());
+    // modules.push(module::<Wavefolder>());
+    modules.push(module::<Waveshaper>());
 
-    modules.push(("Pitch", create_module::<crate::sequencing::Pitch>));
-    modules.push(("Pressure", create_module::<Pressure>));
+    // Filter
+    // modules.push(module::<DigitalFilter>());
+    modules.push(module::<AnalogFilter>());
+    // modules.push(module::<CreativeFilter>());
 
-    // modules.push(("Level Meter", create_module::<LevelMeter>));
+    // Space
+    // modules.push(module::<Reverb>());
+    // modules.push(module::<Delay>());
+    // modules.push(module::<Shimmer>());
+    // modules.push(module::<Convolution>());
+    // modules.push(module::<Resonator>());
+    // modules.push(module::<BinauralPanner>());
 
-    modules.push(("Audio Input", create_module::<AudioInput>));
-    modules.push(("Audio Output", create_module::<AudioOutput>));
-    modules.push(("Midi Input", create_module::<MidiInput>));
-    modules.push(("Midi Output", create_module::<MidiOutput>));
+    // Spectral
+    // modules.push(module::<Equalizer>());
+    // modules.push(module::<Exciter>());
+    // modules.push(module::<PitchShifter>());
+    // modules.push(module::<PitchCorrector>());
+    // modules.push(module::<Vocoder>());
+    // modules.push(module::<Crossover>());
 
-    // modules.push(("Simple Fader", create_module::<SimpleFaderModule>));
-    // modules.push(("Simple Button", create_module::<SimpleButtonModule>));
-    // modules.push(("Simple Switch", create_module::<SimpleSwitch>));
-    // modules.push(("Simple Pad", create_module::<SimplePad>));
+    // Modulation
+    modules.push(module::<Chorus>());
+    modules.push(module::<Flanger>());
+    modules.push(module::<Phaser>());
+    // modules.push(module::<Stereoizer>());
+    // modules.push(module::<Vibrato>());
 
-    // modules.push(("Image Fader", create_module::<ImageFader>));
-    // modules.push(("Image Knob", create_module::<ImageKnob>));
+    /* ========== Notes ========== */
 
-    // modules.push(("Solid Color", create_module::<SolidColor>));
-    // modules.push(("Image", create_module::<Image>));
-    // modules.push(("Keyboard", create_module::<Keyboard>));
+    // Sources
+    modules.push(module::<NotesTrack>());
+    modules.push(module::<StepSequencer>());
+    modules.push(module::<Arpeggiator>());
+    modules.push(module::<sequencing::Keyboard>());
+    modules.push(module::<RandomNotes>());
 
-    modules.push(("Notes Track", create_module::<NotesTrack>));
-    modules.push(("Step Sequencer", create_module::<crate::sequencing::StepSequencer>));
-    modules.push(("Keyboard", create_module::<crate::sequencing::Keyboard>));
-    modules.push(("Random Notes", create_module::<crate::sequencing::RandomNotes>));
+    // Effects
+    modules.push(module::<Transpose>());
+    modules.push(module::<sequencing::Scale>());
+    modules.push(module::<sequencing::Pitch>());
+    modules.push(module::<Pressure>());
+    modules.push(module::<Detune>());
+    modules.push(module::<Drift>());
 
-    modules.push(("Transpose", create_module::<Transpose>));
-    modules.push(("Detune", create_module::<Detune>));
+    /* ========== Control ========== */
 
-    modules.push(("Arpeggiator", create_module::<Arpeggiator>));
+    // Control Sources
+    modules.push(module::<Constant>());
+    modules.push(module::<LfoModule>());
+    modules.push(module::<EnvelopeModule>());
+    modules.push(module::<Clock>());
+    modules.push(module::<Random>());
+    modules.push(module::<KnobModule>());
+    // modules.push(module::<ControlTrack>());
+    // modules.push(module::<XYPad>());
 
-    modules.push(("Control To Notes", create_module::<ControlToNotes>));
-    modules.push(("Notes to Control", create_module::<NotesToControl>));
+    // Control Effects
+    modules.push(module::<control::Display>());
+    modules.push(module::<Hold>());
+    // modules.push(module::<Toggle>());
+    modules.push(module::<control::Scale>());
+    modules.push(module::<Bend>());
+    modules.push(module::<Slew>());
 
-    modules.push(("Time", create_module::<GlobalTime>));
-    // modules.push(("Time", create_module::<LocalTime>));
-    modules.push(("Reverse", create_module::<Reverse>));
-    modules.push(("Rate", create_module::<Rate>));
-    modules.push(("Accumulate", create_module::<Accumulator>));
+    // Logic
+    modules.push(module::<And>());
+    modules.push(module::<Or>());
+    modules.push(module::<Not>());
+    modules.push(module::<Xor>());
 
-    modules.push(("Audio Plugin", create_module::<AudioPluginModule>));
+    // Operations
+    modules.push(module::<Add>());
+    modules.push(module::<Subtract>());
+    modules.push(module::<Multiply>());
+    modules.push(module::<Divide>());
+    modules.push(module::<Modulo>());
+    modules.push(module::<Negative>());
+    modules.push(module::<Clamp>());
+
+    // Comparisons
+    modules.push(module::<Equal>());
+    modules.push(module::<NotEqual>());
+    modules.push(module::<Less>());
+    modules.push(module::<LessEqual>());
+    modules.push(module::<Greater>());
+    modules.push(module::<GreaterEqual>());
+
+    /* ========== Utilities ========== */
+
+    // Conversions
+    modules.push(module::<ControlToNotes>());
+    modules.push(module::<NotesToControl>());
+
+    // IO
+    modules.push(module::<AudioInput>());
+    modules.push(module::<AudioOutput>());
+    modules.push(module::<MidiInput>());
+    modules.push(module::<MidiOutput>());
+    modules.push(module::<AudioPluginModule>());
+
+    // Scripting
+    // modules.push(module::<LuaScripter>());
+    // modules.push(module::<FaustScripter>());
+    // modules.push(module::<DSPDesigner>());
+
+    // Time
+    modules.push(module::<GlobalTime>());
+    modules.push(module::<Rate>());
+    modules.push(module::<Reverse>());
+    // modules.push(module::<Accumulate>());
+    // modules.push(module::<Loop>());
+    // modules.push(module::<Shift>());
 
     println!("Loaded {} static modules", modules.len());
 
@@ -201,7 +278,7 @@ impl UI {
 
 #[derive(Serialize, Deserialize, PartialEq)]
 pub enum Key {
-    Str(&'static str),
+    Str(String),
     Int(usize)
 }
 
@@ -211,7 +288,7 @@ pub trait ToKey {
 
 impl ToKey for &'static str {
     fn to_key(self) -> Key {
-        Key::Str(self)
+        Key::Str(self.to_string())
     }
 }
 
@@ -221,12 +298,11 @@ impl ToKey for usize {
     }
 }
 
-#[derive(Serialize, Copy, Clone)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub enum Value {
     Float(f32),
     Int(u32),
     Bool(bool),
-    Str(&'static str),
     Color(Color),
     None,
 }
@@ -287,7 +363,7 @@ impl FromValue for bool {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct State {
     state: Vec<(Key, Value)>,
 }
@@ -350,16 +426,20 @@ pub trait Module {
         Self::INFO
     }
 
+    fn id() -> &'static str {
+        std::any::type_name::<Self>()
+    }
+
     fn new() -> Self;
     fn new_voice(&self, index: u32) -> Self::Voice;
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w>;
 
-    fn load(&mut self, version: &str, state: &State) {
+    fn load(&mut self, _version: &str, _state: &State) {
         // Load stuff here
     }
 
-    fn save(&self, state2: &mut State) {
+    fn save(&self, _state: &mut State) {
         // Load stuff here
     }
 
@@ -484,10 +564,6 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         self.module.info()
     }
 
-    fn load(&mut self, version: &str, json: &State) {
-        self.module.load(version, json);
-    }
-
     fn should_refresh(&self) -> bool {
         false
     }
@@ -498,6 +574,10 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
 
     fn save(&self, _state: &mut State) {
         println!("SAVE NOT IMPLEMENTED IN POLYPHONIC MODULE");
+    }
+
+    fn load(&mut self, version: &str, json: &State) {
+        self.module.load(version, json);
     }
 
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {

@@ -15,7 +15,7 @@ impl Module for MidiOutput {
             Pin::Notes("Midi Output", 30)
         ],
         outputs: &[],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/IO/Midi Output",
         presets: Presets::NONE
     };
 

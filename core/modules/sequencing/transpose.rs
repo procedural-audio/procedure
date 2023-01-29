@@ -18,10 +18,10 @@ impl Module for Transpose {
             Pin::Control("Transpose Steps", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Notes/Effects/Transpose",
         presets: Presets::NONE
     };
-    
+
     fn new() -> Self {
         Self { value: 0.5 }
     }

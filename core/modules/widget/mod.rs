@@ -314,7 +314,7 @@ pub enum Color {
     Purple = 4,
 }*/
 
-#[derive(Copy, Clone, serde::Serialize)]
+#[derive(Copy, Clone, serde::Serialize, serde::Deserialize)]
 #[repr(transparent)]
 pub struct Color(pub u32);
 

@@ -27,7 +27,7 @@ impl Module for Sampler {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Sampling/Sampler",
         presets: Presets::NONE
     };
 

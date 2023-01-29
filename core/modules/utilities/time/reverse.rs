@@ -16,7 +16,7 @@ impl Module for Reverse {
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: "Category 1/Category 2/Module Name",
+        path: "Utilities/Time/Reverse",
         presets: Presets::NONE
     };
     

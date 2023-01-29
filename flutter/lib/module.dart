@@ -1,7 +1,6 @@
 import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:metasampler/common.dart';
 
 import 'main.dart';
 

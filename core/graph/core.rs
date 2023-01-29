@@ -181,6 +181,34 @@ pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) ->
     }
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_get_module_spec_count(host: &mut Host) -> usize {
+    host.graph.modules.modules.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_get_module_spec_id(host: &mut Host, index: usize) -> *const i8 {
+    let id = host.graph.modules.modules[index].id;
+    let s = CString::new(id).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_get_module_spec_path(host: &mut Host, index: usize) -> *const i8 {
+    let id = host.graph.modules.modules[index].path;
+    let s = CString::new(id).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_host_get_module_spec_color(host: &mut Host, index: usize) -> u32 {
+    host.graph.modules.modules[index].color.0
+}
+
 /* Some other stuff */
 
 #[no_mangle]
@@ -242,34 +270,22 @@ pub unsafe extern "C" fn ffi_node_get_id(node: &mut Node) -> i32 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_x(node: &mut Node) -> i32 {
-    node.position
-        .lock()
-        .expect("Couldn't get lock to get node x")
-        .0
+    node.position.0
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_get_y(node: &mut Node) -> i32 {
-    node.position
-        .lock()
-        .expect("Couldn't get lock to get node y")
-        .1
+    node.position.1
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_set_x(node: &mut Node, x: i32) {
-    node.position
-        .lock()
-        .expect("Couldn't get lock to set node x")
-        .0 = x;
+    node.position.0 = x;
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_node_set_y(node: &mut Node, y: i32) {
-    node.position
-        .lock()
-        .expect("Couldn't get lock to set node y")
-        .1 = y;
+    node.position.1 = y;
 }
 
 #[no_mangle]

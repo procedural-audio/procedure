@@ -35,7 +35,7 @@ impl Module for WavetableOscillator {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Category 1/Category 2/Module Name",
+        path: "Audio Sources/Synthesis/Wavetable",
         presets: Presets {
             path: "wavetables",
             extension: ".wavetable"

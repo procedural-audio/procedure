@@ -18,7 +18,7 @@ impl Module for Display {
             Pin::Control("Input", 17)
         ],
         outputs: &[],
-        path: "Category 1/Category 2/Module Name",
+        path: "Control/Effects/Display",
         presets: Presets::NONE
     };
 
