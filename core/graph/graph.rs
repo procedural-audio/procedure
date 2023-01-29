@@ -144,13 +144,13 @@ impl<'de> Deserialize<'de> for Node {
                     match key {
                         Field::NodeId => {
                             if node_id.is_some() {
-                                return Err(de::Error::duplicate_field("id"));
+                                return Err(de::Error::duplicate_field("node_id"));
                             }
                             node_id = Some(map.next_value()?);
                         }
                         Field::ModuleId => {
                             if module_id.is_some() {
-                                return Err(de::Error::duplicate_field("name"));
+                                return Err(de::Error::duplicate_field("module_id"));
                             }
                             module_id = Some(map.next_value()?);
                         }
@@ -201,7 +201,7 @@ impl<'de> Deserialize<'de> for Node {
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["id", "position", "name", "state"];
+        const FIELDS: &'static [&'static str] = &["node_id", "module_id", "position", "name", "state"];
         deserializer.deserialize_struct("Node", FIELDS, NodeVisitor)
     }
 }
