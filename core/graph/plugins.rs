@@ -420,6 +420,10 @@ impl PolyphonicModule for ModuleDynamic {
         }
     }
 
+    fn module_id(&self) -> &'static str {
+        unimplemented!()
+    }
+
     /*fn get_ui_root(&self) -> Option<&dyn WidgetNew> {
         None
     }

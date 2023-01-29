@@ -36,7 +36,7 @@ pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
 
 pub fn module<T: 'static + Module>() -> ModuleSpec {
     ModuleSpec {
-        id: T::id(),
+        id: T::module_id(),
         path: T::INFO.path,
         color: T::INFO.color,
         create: create_module::<T>
@@ -426,7 +426,7 @@ pub trait Module {
         Self::INFO
     }
 
-    fn id() -> &'static str {
+    fn module_id() -> &'static str {
         std::any::type_name::<Self>()
     }
 
@@ -473,6 +473,8 @@ pub trait PolyphonicModule {
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn process_voice(&mut self, voice_index: usize, inputs: &IO, outputs: &mut IO);
     fn voicing(&self) -> Voicing;
+
+    fn module_id(&self) -> &'static str;
 
     fn get_module_root(&self) -> &dyn WidgetNew;
     fn get_module_size(&self) -> (f32, f32);
@@ -543,6 +545,10 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
                 module_size
             }
         }
+    }
+
+    fn module_id(&self) -> &'static str {
+        T::module_id()
     }
 
     fn get_connected(&mut self) -> &mut Vec<bool> {

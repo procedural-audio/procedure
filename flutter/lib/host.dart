@@ -122,20 +122,20 @@ class FFIApi {
           "ffi_host_get_connector_count")
       .asFunction();
 
-  int Function(FFIHost) ffiHostGetConnectorStartId = core
-      .lookup<NativeFunction<Int32 Function(FFIHost)>>(
+  int Function(FFIHost, int) ffiHostGetConnectorStartId = core
+      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
           "ffi_host_get_connector_start_id")
       .asFunction();
-  int Function(FFIHost) ffiHostGetConnectorEndId = core
-      .lookup<NativeFunction<Int32 Function(FFIHost)>>(
+  int Function(FFIHost, int) ffiHostGetConnectorEndId = core
+      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
           "ffi_host_get_connector_end_id")
       .asFunction();
-  int Function(FFIHost) ffiHostGetConnectorStartIndex = core
-      .lookup<NativeFunction<Int32 Function(FFIHost)>>(
+  int Function(FFIHost, int) ffiHostGetConnectorStartIndex = core
+      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
           "ffi_host_get_connector_start_index")
       .asFunction();
-  int Function(FFIHost) ffiHostGetConnectorEndIndex = core
-      .lookup<NativeFunction<Int32 Function(FFIHost)>>(
+  int Function(FFIHost, int) ffiHostGetConnectorEndIndex = core
+      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
           "ffi_host_get_connector_end_index")
       .asFunction();
 
@@ -159,7 +159,7 @@ class FFIApi {
           "ffi_host_get_module_spec_path")
       .asFunction();
   int Function(FFIHost, int) ffiHostGetModuleSpecColor = core
-      .lookup<NativeFunction<Int64 Function(FFIHost, Int64)>>(
+      .lookup<NativeFunction<Int64 Function(FFIHost, Int32)>>(
           "ffi_host_get_module_spec_color")
       .asFunction();
 
@@ -754,20 +754,20 @@ class Graph {
     int connectorCount = api.ffiHostGetConnectorCount(raw);
 
     for (int i = 0; i < connectorCount; i++) {
-      var start_id = api.ffiHostGetConnectorStartId(raw);
-      var end_id = api.ffiHostGetConnectorEndId(raw);
-      var start_index = api.ffiHostGetConnectorStartIndex(raw);
-      var end_index = api.ffiHostGetConnectorEndIndex(raw);
+      var startId = api.ffiHostGetConnectorStartId(raw, i);
+      var endId = api.ffiHostGetConnectorEndId(raw, i);
+      var startIndex = api.ffiHostGetConnectorStartIndex(raw, i);
+      var endIndex = api.ffiHostGetConnectorEndIndex(raw, i);
 
       var type = IO.audio;
 
       for (var module in modules) {
-        if (module.id == start_id) {
-          type = module.pins[start_index].type;
+        if (module.id == startId) {
+          type = module.pins[startIndex].type;
         }
       }
 
-      connectors.add(Connector(start_id, start_index, end_id, end_index, type));
+      connectors.add(Connector(startId, startIndex, endId, endIndex, type));
     }
   }
 }

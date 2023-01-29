@@ -39,9 +39,10 @@ impl Serialize for Node {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("Node", 3)?;
-        state.serialize_field("id", &self.id)?;
+        state.serialize_field("node_id", &self.id)?;
+        state.serialize_field("module_id", &self.module.module_id())?;
         state.serialize_field("position", &self.position)?;
-        state.serialize_field("name", &self.info().title)?;
+        state.serialize_field("version", &self.info().version)?;
 
         let mut module_state = State::new();
         self.module.save(&mut module_state);
@@ -57,9 +58,10 @@ impl<'de> Deserialize<'de> for Node {
         D: Deserializer<'de>,
     {
         enum Field {
-            Id,
+            NodeId,
+            ModuleId,
             Position,
-            Name,
+            Version,
             State,
         }
 
@@ -82,9 +84,10 @@ impl<'de> Deserialize<'de> for Node {
                         E: de::Error,
                     {
                         match value {
-                            "id" => Ok(Field::Id),
+                            "node_id" => Ok(Field::NodeId),
+                            "module_id" => Ok(Field::ModuleId),
                             "position" => Ok(Field::Position),
-                            "name" => Ok(Field::Name),
+                            "version" => Ok(Field::Version),
                             "state" => Ok(Field::State),
                             _ => Err(de::Error::unknown_field(value, FIELDS)),
                         }
@@ -131,18 +134,25 @@ impl<'de> Deserialize<'de> for Node {
             where
                 V: MapAccess<'de>,
             {
-                let mut id: Option<i32> = None;
+                let mut node_id: Option<i32> = None;
+                let mut module_id: Option<String> = None;
                 let mut position: Option<(i32, i32)> = None;
-                let mut name: Option<String> = None;
+                let mut version: Option<String> = None;
                 let mut state: Option<State> = None;
 
                 while let Some(key) = map.next_key()? {
                     match key {
-                        Field::Id => {
-                            if id.is_some() {
+                        Field::NodeId => {
+                            if node_id.is_some() {
                                 return Err(de::Error::duplicate_field("id"));
                             }
-                            id = Some(map.next_value()?);
+                            node_id = Some(map.next_value()?);
+                        }
+                        Field::ModuleId => {
+                            if module_id.is_some() {
+                                return Err(de::Error::duplicate_field("name"));
+                            }
+                            module_id = Some(map.next_value()?);
                         }
                         Field::Position => {
                             if position.is_some() {
@@ -150,11 +160,11 @@ impl<'de> Deserialize<'de> for Node {
                             }
                             position = Some(map.next_value()?);
                         }
-                        Field::Name => {
-                            if name.is_some() {
-                                return Err(de::Error::duplicate_field("name"));
+                        Field::Version => {
+                            if version.is_some() {
+                                return Err(de::Error::duplicate_field("version"));
                             }
-                            name = Some(map.next_value()?);
+                            version = Some(map.next_value()?);
                         }
                         Field::State => {
                             if state.is_some() {
@@ -165,14 +175,29 @@ impl<'de> Deserialize<'de> for Node {
                     }
                 }
 
-                let id = id.ok_or_else(|| de::Error::missing_field("id"))?;
+                let node_id = node_id.ok_or_else(|| de::Error::missing_field("node_id"))?;
+                let module_id = module_id.ok_or_else(|| de::Error::missing_field("module_id"))?;
                 let position = position.ok_or_else(|| de::Error::missing_field("position"))?;
-                let name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+                let version = version.ok_or_else(|| de::Error::missing_field("version"))?;
                 let state = state.ok_or_else(|| de::Error::missing_field("state"))?;
 
-                let modules = get_modules();
+                let module_specs = get_modules();
+                for module in &module_specs {
+                    if module.id == module_id {
+                        let mut module = module.create();
+                        module.load(&version, &state);
 
-                panic!("Should load module here 2");
+                        let node = Node {
+                            id: node_id,
+                            position,
+                            module
+                        };
+
+                        return Ok(node);
+                    }
+                }
+
+                panic!("Couldn't find module");
             }
         }
 
