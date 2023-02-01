@@ -33,7 +33,7 @@ impl Module for MidiOutput {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "logos/midi2.svg",
                 color: Color::GREEN,
             },

@@ -29,7 +29,7 @@ impl Module for Less {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "comparisons/less.svg",
                 color: Color::RED,
             },

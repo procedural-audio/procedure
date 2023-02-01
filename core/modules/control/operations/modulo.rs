@@ -34,7 +34,7 @@ impl Module for Modulo {
         Box::new(Transform {
             position: (32, 28),
             size: (36, 36),
-            child: Svg {
+            child: Icon {
                 path: "operations/modulo.svg",
                 color: Color::RED,
             },

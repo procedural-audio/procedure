@@ -5,6 +5,7 @@ mod dropdown;
 mod fader;
 mod groups;
 mod knob;
+mod traits;
 
 pub use button::*;
 pub use dropdown::*;
@@ -314,7 +315,7 @@ pub enum Color {
     Purple = 4,
 }*/
 
-#[derive(Copy, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Copy, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[repr(transparent)]
 pub struct Color(pub u32);
 
@@ -327,6 +328,17 @@ impl Color {
 
     pub const fn rgb(_r: u32, _b: u32, _g: u32) {
         panic!("From RGB not implemented");
+    }
+
+    pub fn hex(&self) -> u32 {
+        self.0
+    }
+
+    pub fn with_opacity(&self, opacity: f32) -> Color {
+        let scaled = f32::clamp(opacity, 0.0, 1.0) * 255.0;
+        let value = f32::round(scaled) as u32;
+        let color = (self.0 & 0x00ffffff) + (value << 24);
+        return Color(color);
     }
 }
 

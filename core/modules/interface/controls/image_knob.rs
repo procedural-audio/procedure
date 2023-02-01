@@ -35,7 +35,7 @@ impl Module for ImageKnob {
         Box::new(Transform {
             position: (35, 30),
             size: (50, 70),
-            child: Svg {
+            child: Icon {
                 path: "operations/add.svg",
                 color: Color::RED,
             },

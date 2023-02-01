@@ -76,18 +76,17 @@ class ButtonSVG extends ModuleWidget {
   }
 }
 
-int Function(FFIWidgetPointer) ffiSvgGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
-        "ffi_svg_get_color")
+int Function(FFIWidgetTrait) ffiSvgGetColor = core
+    .lookup<NativeFunction<Int32 Function(FFIWidgetTrait)>>("ffi_svg_get_color")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer) ffiSvgGetPath = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(FFIWidgetTrait) ffiSvgGetPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetTrait)>>(
         "ffi_svg_get_path")
     .asFunction();
 
 class SvgWidget extends ModuleWidget {
   SvgWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    var pathRaw = ffiSvgGetPath(widgetRaw.pointer);
+    var pathRaw = ffiSvgGetPath(widgetRaw.getTrait());
     path = contentPath + "/assets/icons/" + pathRaw.toDartString();
     calloc.free(pathRaw);
   }
@@ -96,7 +95,7 @@ class SvgWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = intToColor(ffiSvgGetColor(widgetRaw.pointer));
+    Color color = intToColor(ffiSvgGetColor(widgetRaw.getTrait()));
 
     return SvgPicture.file(
       File(path),

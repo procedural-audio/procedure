@@ -13,7 +13,7 @@ impl Module for LocalTime {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: "Utilities/Time/Local Time",
+        path: "Time/Local Time",
         presets: Presets::NONE
     };
     
@@ -32,7 +32,7 @@ impl Module for LocalTime {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "comparisons/greater_equal.svg",
                 color: Color::PURPLE,
             },

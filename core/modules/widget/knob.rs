@@ -1,6 +1,7 @@
 use pa_dsp::{SampleFile, FileLoad};
 
 use crate::widget::*;
+use crate::widget::traits::IntoColor;
 
 #[repr(C)]
 pub struct Knob<'a> {
@@ -355,8 +356,8 @@ impl<T: WidgetNew, F: FnMut(BrowserEvent)> WidgetNew for Browser<T, F> {
     }
 }
 
-pub struct IconButton<F: FnMut(bool)> {
-    pub icon: Icon,
+pub struct IconButton<T: IntoColor, F: FnMut(bool)> {
+    pub icon: Icon<T>,
     pub on_pressed: F
 }
 
@@ -366,9 +367,9 @@ pub trait IconButtonTrait {
     fn on_pressed(&mut self, down: bool);
 }
 
-impl<F: FnMut(bool)> IconButtonTrait for IconButton<F> {
+impl<T: IntoColor, F: FnMut(bool)> IconButtonTrait for IconButton<T, F> {
     fn get_color(&self) -> Color {
-        self.icon.color
+        self.icon.get_color()
     }
 
     fn get_icon(&self) -> &'static str {
@@ -380,7 +381,7 @@ impl<F: FnMut(bool)> IconButtonTrait for IconButton<F> {
     }
 }
 
-impl<F: FnMut(bool)> WidgetNew for IconButton<F> {
+impl<T: IntoColor, F: FnMut(bool)> WidgetNew for IconButton<T, F> {
     fn get_name(&self) -> &'static str {
         "IconButton"
     }

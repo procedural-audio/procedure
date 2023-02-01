@@ -34,7 +34,7 @@ impl Module for Multiply {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "operations/multiply.svg",
                 color: Color::RED,
             },

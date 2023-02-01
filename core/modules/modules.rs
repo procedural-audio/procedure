@@ -65,6 +65,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<PulseModule>());
     modules.push(module::<AnalogOscillator>());
     modules.push(module::<WavetableOscillator>());
+    modules.push(module::<sources::Noise>());
     // modules.push(module::<AdditiveOscillator>());
     // modules.push(module::<HarmonicOscillator>());
     // modules.push(module::<modules::Noise>());
@@ -153,7 +154,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<Constant>());
     modules.push(module::<LfoModule>());
     modules.push(module::<EnvelopeModule>());
-    modules.push(module::<Clock>());
+    modules.push(module::<Beats>());
     modules.push(module::<Random>());
     modules.push(module::<KnobModule>());
     // modules.push(module::<ControlTrack>());
@@ -163,7 +164,6 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<control::Display>());
     modules.push(module::<Hold>());
     // modules.push(module::<Toggle>());
-    modules.push(module::<control::Scale>());
     modules.push(module::<Bend>());
     modules.push(module::<Slew>());
 

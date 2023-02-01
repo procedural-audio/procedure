@@ -38,7 +38,7 @@ impl Module for NotesToControl {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "comparisons/greater_equal.svg",
                 color: Color::RED, // MAKE THIS A GRADIENT IF POSSIBLE
             },

@@ -34,7 +34,7 @@ impl Module for Subtract {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "operations/subtract.svg",
                 color: Color::RED,
             },

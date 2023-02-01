@@ -35,7 +35,7 @@ impl Module for Clamp {
         Box::new(Transform {
             position: (34, 35),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "operations/clamp.svg",
                 color: Color::RED,
             },

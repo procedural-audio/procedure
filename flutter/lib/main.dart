@@ -276,21 +276,18 @@ class _PatchingView extends State<PatchingView> {
                 }
               }),
           Visibility(
-            // Right click menu
-            visible: rightClickVisible,
-            child: Positioned(
-                left: righttClickOffset.dx,
-                top: righttClickOffset.dy,
-                child: RightClickView(
-                  widget.host,
-                  specs: widget.host.moduleSpecs,
-                  addPosition: Offset(
-                      righttClickOffset.dx -
-                          controller.value.getTranslation().x,
-                      righttClickOffset.dy -
-                          controller.value.getTranslation().y),
-                )),
-          ),
+              // Right click menu
+              visible: rightClickVisible,
+              child: Positioned(
+                  left: righttClickOffset.dx,
+                  top: righttClickOffset.dy,
+                  child: RightClickView(widget.host,
+                      specs: widget.host.moduleSpecs,
+                      addPosition: Offset(
+                          righttClickOffset.dx -
+                              controller.value.getTranslation().x,
+                          righttClickOffset.dy -
+                              controller.value.getTranslation().y)))),
           Visibility(
             // Right click menu
             visible: moduleMenuVisible,

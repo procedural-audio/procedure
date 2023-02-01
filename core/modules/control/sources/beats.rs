@@ -1,15 +1,15 @@
 use crate::*;
 
 /// Produces quantized impulses as a function of time. For non quantized impulses that aren't a function of time, use the LFO.
-pub struct Clock {
+pub struct Beats {
     value: f32,
 }
 
-impl Module for Clock {
+impl Module for Beats {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "Clock",
+        title: "Beats",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(120, 110),
@@ -21,7 +21,7 @@ impl Module for Clock {
         outputs: &[
             Pin::Control("Clock Pulses", 25)
         ],
-        path: "Control/Sources/Clock",
+        path: "Control/Sources/Beats",
         presets: Presets::NONE
     };
     
@@ -61,8 +61,10 @@ impl Module for Clock {
 
         outputs.control[0] = 0.0;
 
-        inputs.time[0].on_each(rate, | _ | {
-            outputs.control[0] = 1.0;
+        inputs.time[0].on_each(rate, | beat | {
+            if beat % 4 == 0 {
+                outputs.control[0] = 1.0;
+            }
         });
     }
 }

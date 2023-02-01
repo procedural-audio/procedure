@@ -46,33 +46,36 @@ impl Module for LfoModule {
         Self::Voice {
             saw: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
-
-                x / PI - 1.0
+                let y = x / PI / 2.0;
+                -y + 1.0
             }),
             square: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
 
                 if x < PI {
-                    -1.0
-                } else {
                     1.0
+                } else {
+                    0.0
                 }
             }),
-            sine: Lfo::from(f32::sin),
+            sine: Lfo::from(| x | {
+                f32::sin(x) / 2.0 + 0.5
+            }),
             triangle: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
+                let y = x / PI - 1.0;
 
                 if x < PI {
-                    x / PI * 2.0 - 1.0
+                    y + 1.0
                 } else {
-                    -(x / PI * 2.0 - 1.0)
+                    1.0 - y
                 }
             }),
             last_reset: 0.0,
         }
     }
 
-    fn load(&mut self, version: &str, state: &State) {
+    fn load(&mut self, _version: &str, state: &State) {
         self.wave = state.load::<&str, u32>("wave") as usize;
         self.value = state.load("value");
     }
@@ -123,7 +126,7 @@ impl Module for LfoModule {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let hz = self.value * 80.0;
-        let reset = inputs.control[0];
+        let reset = inputs.control[1];
 
         if voice.last_reset < 0.5 {
             if reset >= 0.5 {

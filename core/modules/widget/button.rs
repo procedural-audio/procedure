@@ -1,4 +1,5 @@
 use crate::widget::*;
+use crate::widget::traits::*;
 
 #[repr(C)]
 pub struct Button<F, T: WidgetNew>
@@ -239,12 +240,12 @@ pub unsafe extern "C" fn ffi_transform_get_height(widget: &mut TransformFFI) -> 
 /* ========== Svg ========== */
 
 #[repr(C)]
-pub struct Svg {
+pub struct Icon<T: IntoColor> {
     pub path: &'static str,
-    pub color: Color,
+    pub color: T,
 }
 
-impl WidgetNew for Svg {
+impl<T: IntoColor> WidgetNew for Icon<T> {
     fn get_name(&self) -> &'static str {
         "Svg"
     }
@@ -252,19 +253,38 @@ impl WidgetNew for Svg {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn IconTrait) }
+    }
+}
+
+pub trait IconTrait {
+    fn get_path(&self) -> &'static str;
+    fn get_color(&self) -> Color;
+}
+
+impl<T: IntoColor> IconTrait for Icon<T> {
+    fn get_path(&self) -> &'static str {
+        self.path
+    }
+
+    fn get_color(&self) -> Color {
+        self.color.into_color()
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_svg_get_path(button: &mut Svg) -> *const i8 {
-    let s = CString::new(button.path).unwrap();
+pub unsafe extern "C" fn ffi_svg_get_path(button: &mut dyn IconTrait) -> *const i8 {
+    let s = CString::new(button.get_path()).unwrap();
     let p = s.as_ptr();
     std::mem::forget(s);
     p
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_svg_get_color(button: &mut Svg) -> u32 {
-    button.color.0
+pub unsafe extern "C" fn ffi_svg_get_color(button: &mut dyn IconTrait) -> u32 {
+    button.get_color().0
 }
 
 /* ========== Container ========== */

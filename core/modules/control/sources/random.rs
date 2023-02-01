@@ -37,7 +37,7 @@ impl Module for Random {
         Box::new(Transform {
             position: (12, 12),
             size: (36, 36),
-            child: Svg {
+            child: Icon {
                 path: "random.svg",
                 color: Color::RED,
             },

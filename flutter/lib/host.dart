@@ -6,23 +6,15 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 
-import 'config.dart';
 import 'main.dart';
-
-import 'widgets/widget.dart';
+import 'config.dart';
+import 'module.dart';
 
 import 'views/variables.dart';
 import 'views/presets.dart';
 import 'views/info.dart';
 
-import 'module.dart';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/host.dart';
-import 'package:statsfl/statsfl.dart';
 
 var core = getCore();
 var api = FFIApi();

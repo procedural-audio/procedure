@@ -40,7 +40,7 @@ impl Module for SineModule {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "waveforms/sine.svg",
                 color: Color::BLUE,
             },

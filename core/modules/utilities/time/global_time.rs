@@ -13,7 +13,7 @@ impl Module for GlobalTime {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 22)],
-        path: "Utilities/Time/Global Time",
+        path: "Time/Global Time",
         presets: Presets::NONE
     };
     
@@ -32,7 +32,7 @@ impl Module for GlobalTime {
         Box::new(Transform {
             position: (15, 15),
             size: (30, 30),
-            child: Svg {
+            child: Icon {
                 path: "clock.svg",
                 color: Color::PURPLE,
             },

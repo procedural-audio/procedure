@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../host.dart';
 import 'widget.dart';
-import '../main.dart';
 import 'dart:ffi';
-
-import 'dart:ui' as ui;
-
-import '../views/settings.dart';
 
 bool Function(FFIWidgetTrait) ffiRefreshGetShouldRefresh = core
     .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(

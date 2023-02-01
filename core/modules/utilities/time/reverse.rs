@@ -16,7 +16,7 @@ impl Module for Reverse {
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: "Utilities/Time/Reverse",
+        path: "Time/Reverse",
         presets: Presets::NONE
     };
     
@@ -33,7 +33,7 @@ impl Module for Reverse {
         Box::new(Transform {
             position: (32, 25),
             size: (36, 36),
-            child: Svg {
+            child: Icon {
                 path: "operations/negative.svg",
                 color: Color::PURPLE,
             },

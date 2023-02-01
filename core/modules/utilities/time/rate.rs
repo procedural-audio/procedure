@@ -18,7 +18,7 @@ impl Module for Rate {
         outputs: &[
             Pin::Time("Time Output", 30)
         ],
-        path: "Utilities/Time/Rate",
+        path: "Time/Rate",
         presets: Presets::NONE
     };
 
@@ -36,7 +36,7 @@ impl Module for Rate {
         Box::new(Transform {
             position: (32, 25),
             size: (36, 36),
-            child: Svg {
+            child: Icon {
                 path: "operations/multiply.svg",
                 color: Color::PURPLE,
             },

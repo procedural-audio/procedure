@@ -21,7 +21,7 @@ impl Module for Accumulator {
         outputs: &[
             Pin::Time("Time Output", 30)
         ],
-        path: "Utilities/Time/Accumulate",
+        path: "Time/Accumulate",
         presets: Presets::NONE
     };
 
@@ -43,7 +43,7 @@ impl Module for Accumulator {
         Box::new(Transform {
             position: (32, 25),
             size: (36, 36),
-            child: Svg {
+            child: Icon {
                 path: "operations/multiply.svg",
                 color: Color::PURPLE,
             },

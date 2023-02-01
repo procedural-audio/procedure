@@ -36,7 +36,7 @@ impl Module for AudioOutput {
         Box::new(Transform {
             position: (40, 15),
             size: (30, 30),
-            child: Svg {
+            child: Icon {
                 path: "logos/audio.svg",
                 color: Color::BLUE,
             },

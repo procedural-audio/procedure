@@ -34,7 +34,7 @@ impl Module for And {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "logic/and.svg",
                 color: Color::RED,
             },

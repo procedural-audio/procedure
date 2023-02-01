@@ -35,7 +35,7 @@ impl Module for Looper {
         Box::new(Transform {
             position: (30, 20),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "comparisons/greater_equal.svg",
                 color: Color::RED,
             },

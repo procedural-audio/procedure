@@ -176,7 +176,7 @@ impl Module for MidiInput {
         Box::new(Transform {
             position: (15, 15),
             size: (30, 30),
-            child: Svg {
+            child: Icon {
                 path: "logos/midi2.svg",
                 color: Color::GREEN,
             },

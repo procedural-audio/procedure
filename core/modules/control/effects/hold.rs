@@ -1,12 +1,14 @@
 use crate::*;
 
-pub struct Hold {
+pub struct Hold;
+
+pub struct HoldVoice {
     hold: bool,
-    value: f32,
+    value: f32
 }
 
 impl Module for Hold {
-    type Voice = ();
+    type Voice = HoldVoice;
 
     const INFO: Info = Info {
         title: "Hold",
@@ -26,19 +28,21 @@ impl Module for Hold {
     };
 
     fn new() -> Self {
-        Hold {
-            hold: false,
-            value: 0.0,
-        }
+        Hold
     }
 
-    fn new_voice(&self, _index: u32) -> Self::Voice { () }
+    fn new_voice(&self, _index: u32) -> Self::Voice {
+        Self::Voice {
+            hold: false,
+            value: 0.0
+        }
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
             position: (35, 32),
             size: (30, 30),
-            child: Svg {
+            child: Icon {
                 path: "hold.svg",
                 color: Color::RED,
             },
@@ -47,22 +51,22 @@ impl Module for Hold {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let value = inputs.control[0];
 
-        if self.hold {
+        if voice.hold {
             if inputs.control[1] < 0.5 {
                 outputs.control[0] = value;
-                self.hold = false;
+                voice.hold = false;
             } else {
-                outputs.control[0] = self.value;
+                outputs.control[0] = voice.value;
             }
         } else {
             if inputs.control[1] < 0.5 {
                 outputs.control[0] = value;
             } else {
-                self.hold = true;
-                self.value = value;
+                voice.hold = true;
+                voice.value = value;
                 outputs.control[0] = value;
             }
         }

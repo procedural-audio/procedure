@@ -38,7 +38,7 @@ impl Module for SquareModule {
         Box::new(Transform {
             position: (30, 25),
             size: (40, 40),
-            child: Svg {
+            child: Icon {
                 path: "waveforms/square.svg",
                 color: Color::BLUE,
             },
