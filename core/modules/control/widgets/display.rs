@@ -25,11 +25,13 @@ impl Module for Display {
     fn new() -> Self {
         Self {
             value: 0.0,
-            updated: true,
+            updated: true
         }
     }
 
-    fn new_voice(&self, index: u32) -> Self::Voice { index }
+    fn new_voice(&self, index: u32) -> Self::Voice {
+        index
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
@@ -39,7 +41,7 @@ impl Module for Display {
                 text: || {
                     if self.updated {
                         self.updated = false;
-                        Some(format!("{:.1}", self.value))
+                        Some(format!("{:.2}", self.value))
                     } else {
                         None
                     }

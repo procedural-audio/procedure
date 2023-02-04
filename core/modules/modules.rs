@@ -172,6 +172,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<Slope>());
     modules.push(module::<Toggle>());
     modules.push(module::<Counter>());
+    modules.push(module::<Multiplexer>());
 
     // Logic
     modules.push(module::<And>());
