@@ -2,10 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_highlight/flutter_highlight.dart';
-import 'package:flutter_highlight/themes/vs2015.dart';
-import 'package:highlight/highlight.dart';
-import 'package:highlight/languages/lua.dart';
 import 'package:metasampler/host.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
 
@@ -15,10 +11,10 @@ import 'views/presets.dart';
 import 'views/right_click.dart';
 import 'views/bar.dart';
 
-import 'widgets/widget.dart';
 import 'instrument.dart';
 import 'module.dart';
 
+import 'widgets/widget.dart';
 import 'ui/layout.dart';
 
 class Globals {
@@ -29,17 +25,12 @@ class Globals {
 
   ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
 
-  /*InstrumentInfo instrument = InstrumentInfo("Untitled Instrument",
-      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument");*/
-
   PresetInfo preset = PresetInfo(
       "Untitled Instrument",
       File(
           "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
 
   List<InstrumentInfo> instruments2 = [];
-  /*InstrumentInfo browserInstrument = InstrumentInfo("Untitled Instrument",
-      "/home/chase/github/metasampler/content/instruments/Untitled Instrument");*/
 
   ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
 

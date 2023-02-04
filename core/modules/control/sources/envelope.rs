@@ -52,9 +52,9 @@ impl Module for EnvelopeModule {
                 position: (35, 40),
                 size: (235, 90),
                 child: _Envelope {
-                    on_changed: Box::new(|_v| {}),
-                },
-            }),
+                    on_changed: Box::new(|_v| {})
+                }
+            })
         })
     }
 

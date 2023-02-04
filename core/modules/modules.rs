@@ -150,22 +150,28 @@ pub fn get_modules() -> Vec<ModuleSpec> {
 
     /* ========== Control ========== */
 
-    // Control Sources
+    // Sources
     modules.push(module::<Constant>());
     modules.push(module::<LfoModule>());
     modules.push(module::<EnvelopeModule>());
     modules.push(module::<Beats>());
     modules.push(module::<Random>());
-    modules.push(module::<KnobModule>());
     // modules.push(module::<ControlTrack>());
-    // modules.push(module::<XYPad>());
 
-    // Control Effects
+    // Widgets
+    modules.push(module::<KnobModule>());
+    modules.push(module::<ButtonModule>());
+    modules.push(module::<PadModule>());
+    // modules.push(module::<XYPad>());
     modules.push(module::<control::Display>());
+
+    // Effects
     modules.push(module::<Hold>());
-    // modules.push(module::<Toggle>());
     modules.push(module::<Bend>());
     modules.push(module::<Slew>());
+    modules.push(module::<Slope>());
+    modules.push(module::<Toggle>());
+    modules.push(module::<Counter>());
 
     // Logic
     modules.push(module::<And>());
@@ -212,7 +218,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<GlobalTime>());
     modules.push(module::<Rate>());
     modules.push(module::<Reverse>());
-    // modules.push(module::<Accumulate>());
+    modules.push(module::<Accumulator>());
     // modules.push(module::<Loop>());
     // modules.push(module::<Shift>());
 

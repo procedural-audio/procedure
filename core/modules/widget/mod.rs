@@ -257,9 +257,7 @@ impl<
     }
 }
 
-//ffi_padding_get_left
-
-/// Left, right, top, bottom
+/// Left, top, right, bottom
 #[repr(C)]
 pub struct Padding<W: WidgetNew> {
     pub padding: (u32, u32, u32, u32),
@@ -326,9 +324,39 @@ impl Color {
     pub const PURPLE: Color = Color(0xff7c4dff);
     pub const GREY: Color = Color(0xff9e9e9e);
 
-    pub const fn rgb(_r: u32, _b: u32, _g: u32) {
-        panic!("From RGB not implemented");
+    pub const fn rgb(r: u8, g: u8, b: u8) -> Color {
+        let mut color = 0;
+        color += 255 << 24; // Opacity
+        color += (r as u32) << 16; // Red
+        color += (g as u32) << 8; // Green
+        color += (b as u32) << 0; // Blue
+
+        return Color(color);
     }
+
+    pub const fn rgba(r: u8, g: u8, b: u8, alpha: u8) -> Color {
+        let mut color = 0;
+        color += (alpha as u32) << 24; // Opacity
+
+        color += (r as u32) << 16; // Red
+        color += (g as u32) << 8; // Green
+        color += (b as u32) << 0; // Blue
+
+        return Color(color);
+    }
+
+    /*pub const fn rgbo(r: u8, g: u8, b: u8, opacity: f32) -> Color {
+        let mut color = 0;
+        let scaled = f32::clamp(opacity, 0.0, 1.0) * 255.0;
+        let opacity = f32::round(scaled) as u32;
+        color += opacity << 24; // Opacity
+
+        color += (r as u32) << 16; // Red
+        color += (g as u32) << 8; // Green
+        color += (b as u32) << 0; // Blue
+
+        return Color(color);
+    }*/
 
     pub fn hex(&self) -> u32 {
         self.0

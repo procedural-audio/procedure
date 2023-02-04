@@ -80,7 +80,7 @@ impl Module for AudioPluginModule {
                         }
                     },
                     SizedBox {
-                        size: (10, 0),
+                        size: (4, 0),
                         child: EmptyWidget
                     },
                     SearchableDropdown {

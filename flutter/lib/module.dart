@@ -3,12 +3,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'main.dart';
+import 'host.dart';
 
 import 'widgets/widget.dart';
 import 'views/variables.dart';
 import 'views/settings.dart';
-
-import 'host.dart';
 
 class Module extends StatefulWidget {
   var id = 1;

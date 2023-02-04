@@ -2,50 +2,33 @@ use crate::widget::*;
 use crate::widget::traits::*;
 
 #[repr(C)]
-pub struct Button<F, T: WidgetNew>
+pub struct Button<F>
 where
     F: FnMut(bool),
 {
-    pub pressed: bool,
-    pub toggle: bool,
-    pub on_changed: F,
-    pub child: T,
+    pub color: Color,
+    pub on_pressed: F,
 }
 
 pub trait ButtonTrait {
-    fn get_pressed(&self) -> bool;
-    fn set_pressed(&mut self, pressed: bool);
-    fn get_toggle(&self) -> bool;
-    fn on_changed(&mut self, pressed: bool);
-    fn get_children<'w>(&'w self) -> &'w dyn WidgetNew;
+    fn get_color(&self) -> Color;
+    fn on_pressed(&mut self, down: bool);
 }
 
-impl<F, T: WidgetNew> ButtonTrait for Button<F, T>
+impl<F> ButtonTrait for Button<F>
 where
     F: FnMut(bool),
 {
-    fn get_pressed(&self) -> bool {
-        self.pressed
+    fn get_color(&self) -> Color {
+        self.color
     }
 
-    fn set_pressed(&mut self, pressed: bool) {
-        self.pressed = pressed;
-    }
-
-    fn get_toggle(&self) -> bool {
-        self.toggle
-    }
-
-    fn on_changed(&mut self, pressed: bool) {
-        (self.on_changed)(pressed)
-    }
-
-    fn get_children<'w>(&'w self) -> &'w dyn WidgetNew {
-        &self.child
+    fn on_pressed(&mut self, down: bool) {
+        (self.on_pressed)(down)
     }
 }
 
-impl<F, T: WidgetNew> WidgetNew for Button<F, T>
+impl<F> WidgetNew for Button<F>
 where
     F: FnMut(bool),
 {
@@ -54,7 +37,7 @@ where
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
-        &(self.child)
+        &()
     }
 
     fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
@@ -63,18 +46,13 @@ where
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_button_get_pressed(button: &dyn ButtonTrait) -> bool {
-    button.get_pressed()
+pub unsafe extern "C" fn ffi_button_get_color(button: &mut dyn ButtonTrait) -> Color {
+    button.get_color()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_button_get_toggle(button: &dyn ButtonTrait) -> bool {
-    button.get_toggle()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_button_on_changed(button: &mut dyn ButtonTrait, pressed: bool) {
-    button.on_changed(pressed);
+pub unsafe extern "C" fn ffi_button_on_pressed(button: &mut dyn ButtonTrait, down: bool) {
+    button.on_pressed(down);
 }
 
 /* ========== Positioned ========== */

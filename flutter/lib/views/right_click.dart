@@ -31,8 +31,6 @@ class _RightClickView extends State<RightClickView> {
           for (var spec in specs) {
             var path = spec.path.split("/");
 
-            print("Adding spec " + spec.path);
-
             if (path.length == 1) {
               var name = path[0];
             } else if (path.length == 2) {
@@ -46,14 +44,12 @@ class _RightClickView extends State<RightClickView> {
               for (var category in categories) {
                 if (category.name == categoryName) {
                   foundCategory = true;
-                  print("Adding element to category");
                   category.elements.add(element);
                   break;
                 }
               }
 
               if (!foundCategory) {
-                print("Adding category and first element");
                 categories.add(RightClickCategory(categoryName, 10, [element]));
               }
             } else if (path.length == 3) {
@@ -88,7 +84,6 @@ class _RightClickView extends State<RightClickView> {
               }
 
               if (!foundCategory) {
-                print("Adding category and first element");
                 categories.add(RightClickCategory(categoryName, 10, [
                   RightClickCategory(subCategoryName, 20, [element])
                 ]));
