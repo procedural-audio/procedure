@@ -419,3 +419,38 @@ pub unsafe extern "C" fn ffi_icon_button_get_icon(widget: &mut dyn IconButtonTra
 pub unsafe extern "C" fn ffi_icon_button_pressed(widget: &mut dyn IconButtonTrait, pressed: bool) {
     widget.on_pressed(pressed);
 }
+
+pub struct XYPad<'a> {
+    pub x: &'a mut f32,
+    pub y: &'a mut f32
+}
+
+impl<'a> WidgetNew for XYPad<'a> {
+    fn get_name(&self) -> &'static str {
+        "XYPad"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_xy_pad_get_x(widget: &mut XYPad) -> f32 {
+    *widget.x
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_xy_pad_get_y(widget: &mut XYPad) -> f32 {
+    *widget.y
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_xy_pad_set_x(widget: &mut XYPad, x: f32) {
+    *widget.x = x;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_xy_pad_set_y(widget: &mut XYPad, y: f32) {
+    *widget.y = y;
+}

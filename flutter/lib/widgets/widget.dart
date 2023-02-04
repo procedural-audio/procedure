@@ -41,6 +41,8 @@ import 'buttonGrid.dart';
 import 'searchableDropdown.dart';
 import 'luaEditor.dart';
 import 'painter.dart';
+import 'mouseListener.dart';
+import 'xyPad.dart';
 
 ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = api.ffiWidgetGetName(widgetRaw);
@@ -85,6 +87,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return SimpleSwitchWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
     return SimplePadWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "XYPad") {
+    return XYPadWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Text") {
     return TextWidget(host, moduleRaw, widgetRaw);
   } else if (name == "NotesTrack") {
@@ -95,6 +99,8 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return EnvelopeWidget(host, moduleRaw, widgetRaw);
   } else if (name == "LevelMeter") {
     return LevelMeterWidget(host, moduleRaw, widgetRaw);
+  } else if (name == "MouseListener") {
+    return MouseListenerWidget(host, moduleRaw, widgetRaw);
   } else if (name == "DynamicLine") {
     return DynamicLineWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Keyboard") {

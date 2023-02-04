@@ -59,7 +59,9 @@ class PainterWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-        size: ui.Size.infinite, painter: CanvasPainter(widgetRaw, canvasRaw));
+        size: ui.Size.infinite,
+        painter: CanvasPainter(widgetRaw, canvasRaw),
+        child: const SizedBox.expand());
   }
 }
 
@@ -138,7 +140,8 @@ class CanvasPainter extends CustomPainter {
 
   @override
   bool hitTest(Offset position) {
-    return false;
+    // TODO: Make this user determined
+    return true;
   }
 
   @override
@@ -151,8 +154,6 @@ class CanvasPainter extends CustomPainter {
     int count = ffiCanvasGetActionsCount(canvasRaw);
 
     Paint paint = Paint();
-
-    Colors.grey;
 
     for (int i = 0; i < count; i++) {
       var action = actionsRaw.elementAt(i);

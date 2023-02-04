@@ -327,6 +327,56 @@ pub unsafe extern "C" fn ffi_canvas_get_actions_count(canvas: &mut Canvas) -> us
     canvas.actions.len()
 }
 
+pub enum MouseEvent {
+    Down(f32, f32),
+    Up(f32, f32),
+    Drag(f32, f32)
+}
+
+pub struct MouseListener<F: FnMut(MouseEvent), T: WidgetNew> {
+    pub on_event: F,
+    pub child: T
+}
+
+impl<F: FnMut(MouseEvent), T: WidgetNew> WidgetNew for MouseListener<F, T> {
+    fn get_name(&self) -> &'static str {
+        "MouseListener"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &(self.child)
+    }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn MouseListenerTrait) }
+    }
+}
+
+pub trait MouseListenerTrait {
+    fn on_event(&mut self, event: MouseEvent);
+}
+
+impl<F: FnMut(MouseEvent), T: WidgetNew> MouseListenerTrait for MouseListener<F, T> {
+    fn on_event(&mut self, event: MouseEvent) {
+        (self.on_event)(event);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_mouse_listener_on_down(widget: &mut dyn MouseListenerTrait, x: f32, y: f32) {
+    widget.on_event(MouseEvent::Down(x, y));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_mouse_listener_on_up(widget: &mut dyn MouseListenerTrait, x: f32, y: f32) {
+    widget.on_event(MouseEvent::Up(x, y));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_mouse_listener_on_drag(widget: &mut dyn MouseListenerTrait, x: f32, y: f32) {
+    widget.on_event(MouseEvent::Drag(x, y));
+}
+
 /* ========== Tabs ========== */
 
 pub trait TabsTuple {

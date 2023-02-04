@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'dart:ffi';
+
+import '../host.dart';
+import 'widget.dart';
+
+void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnDown = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+        "ffi_mouse_listener_on_down")
+    .asFunction();
+void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnUp = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+        "ffi_mouse_listener_on_up")
+    .asFunction();
+void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnDrag = core
+    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+        "ffi_mouse_listener_on_drag")
+    .asFunction();
+
+class MouseListenerWidget extends ModuleWidget {
+  MouseListenerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (e) {
+        double x = e.localPosition.dx;
+        double y = e.localPosition.dy;
+        setState(() {
+          ffiMouseListenerOnDown(widgetRaw.getTrait(), x, y);
+        });
+      },
+      onTapUp: (e) {
+        double x = e.localPosition.dx;
+        double y = e.localPosition.dy;
+        setState(() {
+          ffiMouseListenerOnUp(widgetRaw.getTrait(), x, y);
+        });
+      },
+      onTapCancel: () {},
+      onPanStart: (e) {
+        double x = e.localPosition.dx;
+        double y = e.localPosition.dy;
+        setState(() {
+          ffiMouseListenerOnDrag(widgetRaw.getTrait(), x, y);
+        });
+      },
+      onPanUpdate: (e) {
+        double x = e.localPosition.dx;
+        double y = e.localPosition.dy;
+        setState(() {
+          ffiMouseListenerOnDrag(widgetRaw.getTrait(), x, y);
+        });
+      },
+      child: children[0],
+    );
+  }
+}

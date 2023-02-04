@@ -162,7 +162,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<KnobModule>());
     modules.push(module::<ButtonModule>());
     modules.push(module::<PadModule>());
-    // modules.push(module::<XYPad>());
+    modules.push(module::<XYPadModule>());
     modules.push(module::<control::Display>());
 
     // Effects
