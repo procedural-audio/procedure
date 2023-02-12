@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-mod dynamics;
+pub mod dynamics;
 mod envelopes;
 mod oscillator;
 mod wavetable;

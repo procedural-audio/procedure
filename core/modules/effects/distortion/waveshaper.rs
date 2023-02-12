@@ -4,7 +4,7 @@ use crate::*;
 static mut points: [(f32, f32); 40] = [(0.0, 0.0); 40];
 
 pub struct Waveshaper {
-    selected: u32,
+    selected: usize,
     pregain: f32,
     gain: f32,
     gain2: f32,

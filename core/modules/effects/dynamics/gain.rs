@@ -54,7 +54,7 @@ impl Module for Gain {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut value = self.value;
 
-        if inputs.control.is_connected(0) {
+        if inputs.control.connected(0) {
             value = inputs.control[0];
         }
 

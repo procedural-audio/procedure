@@ -3,14 +3,13 @@ import 'package:ffi/ffi.dart';
 import 'dart:ffi';
 import '../host.dart';
 import 'widget.dart';
-import '../main.dart';
 
 int Function(FFIWidgetPointer) ffiDropdownGetColor = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
         "ffi_dropdown_get_color")
     .asFunction();
 int Function(FFIWidgetPointer) ffiDropdownGetElementCount = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_dropdown_get_element_count")
     .asFunction();
 Pointer<Utf8> Function(FFIWidgetPointer, int) ffiDropdownGetElement = core
@@ -18,11 +17,11 @@ Pointer<Utf8> Function(FFIWidgetPointer, int) ffiDropdownGetElement = core
         "ffi_dropdown_get_element")
     .asFunction();
 int Function(FFIWidgetPointer) ffiDropdownGetIndex = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_dropdown_get_index")
     .asFunction();
 void Function(FFIWidgetPointer, int) ffiDropdownSetIndex = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int32)>>(
+    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
         "ffi_dropdown_set_index")
     .asFunction();
 

@@ -38,6 +38,12 @@ impl Id {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct Note {
+    pub id: Id,
+    pub pitch: f32,
+    pub pressure: f32
+}
 
 #[derive(Copy, Clone, PartialEq)]
 #[repr(C, u32)]

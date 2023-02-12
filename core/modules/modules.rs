@@ -138,7 +138,6 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<StepSequencer>());
     modules.push(module::<Arpeggiator>());
     modules.push(module::<sequencing::Keyboard>());
-    modules.push(module::<RandomNotes>());
 
     // Effects
     modules.push(module::<Transpose>());
@@ -147,6 +146,8 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<Pressure>());
     modules.push(module::<Detune>());
     modules.push(module::<Drift>());
+    modules.push(module::<Portamento>());
+    modules.push(module::<Monophonic>());
 
     /* ========== Control ========== */
 

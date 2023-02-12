@@ -192,109 +192,140 @@ impl GraphProcessor {
                 _ => panic!("Need to update this"),
             };
 
+            fn is_connected(nodes: &Vec<Rc<Node>>, connectors: &Vec<Connector>, node_id: i32, kind: usize, kind_index: i32, input: bool) -> bool {
+                let mut pin_index = 0;
+                for node in nodes {
+                    if node.id == node_id {
+                        let pins = if input {
+                            node.module.info().inputs
+                        } else {
+                            node.module.info().outputs
+                        };
+
+                        let mut kind_count = 0;
+                        for pin in pins {
+                            match pin {
+                                Pin::Audio(_, _) => {
+                                    if kind == 0 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+                                },
+                                Pin::Notes(_, _) => {
+                                    if kind == 1 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+                                },
+                                Pin::Control(_, _) => {
+                                    if kind == 2 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+
+                                },
+                                Pin::Time(_, _) => {
+                                    if kind == 3 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+                                },
+                                Pin::ExternalAudio(_) => {
+                                    if kind == 0 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+                                },
+                                Pin::ExternalNotes(_) => {
+                                    if kind == 1 {
+                                        if kind_count == kind_index {
+                                            break;
+                                        } else {
+                                            kind_count += 1;
+                                        }
+                                    }
+                                },
+                            }
+
+                            pin_index += 1;
+                        }
+
+                        break;
+                    }
+                }
+
+                let mut connected = false;
+                connectors.iter().for_each(| conn | {
+                    if conn.end.module_id == node_id && conn.end.pin_index == pin_index {
+                        connected = true;
+                    }
+                });
+
+                return connected;
+            }
+
             for voice_index in 0..node_voice_count {
                 let mut audio_input_bus = Box::new(Bus::new());
                 for i in 0..audio_input_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.end.module_id == node.id && conn.end.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 0, i, true);
                     audio_input_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut audio_output_bus = Box::new(Bus::new());
                 for i in 0..audio_output_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.start.module_id == node.id && conn.start.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 0, i, false);
                     audio_output_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut events_input_bus = Box::new(Bus::new());
                 for i in 0..events_input_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.end.module_id == node.id && conn.end.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 1, i, true);
                     events_input_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
                 }
 
                 let mut events_output_bus = Box::new(Bus::new());
                 for i in 0..events_output_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.start.module_id == node.id && conn.start.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 1, i, false);
                     events_output_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
                 }
 
                 let mut control_input_bus = Box::new(Bus::new());
                 for i in 0..control_input_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.end.module_id == node.id && conn.end.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 2, i, true);
                     control_input_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
                 let mut control_output_bus = Box::new(Bus::new());
                 for i in 0..control_output_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.start.module_id == node.id && conn.start.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 2, i, false);
                     control_output_bus.add_channel(Channel::new(Box::new(0.0), connected));
                 }
 
                 let mut time_input_bus = Box::new(Bus::new());
                 for i in 0..time_input_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.end.module_id == node.id && conn.end.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 3, i, true);
                     time_input_bus.add_channel(Channel::new(Box::new(TimeMessage::from(0.0, 0.0)), connected));
 
                 }
 
                 let mut time_output_bus = Box::new(Bus::new());
                 for i in 0..time_output_channels_count {
-                    let mut connected = false;
-
-                    connectors.iter().for_each(|conn| {
-                        if conn.start.module_id == node.id && conn.start.pin_index == i {
-                            connected = true;
-                        }
-                    });
-
+                    let connected = is_connected(&nodes, connectors, node.id, 3, i, false);
                     time_output_bus.add_channel(Channel::new(Box::new(TimeMessage::from(0.0, 0.0)), connected));
                 }
 
@@ -744,9 +775,11 @@ impl GraphProcessor {
                                 *sample = src.left;
                             }
 
-                            for (src, sample) in outputs.audio[audio_index].into_iter().zip(audio[*i * 2 + 1].as_slice_mut()) {
-                                *sample = src.right;
-                            }
+                            // if audio.len() < *i * 2 + 1 {
+                                for (src, sample) in outputs.audio[audio_index].into_iter().zip(audio[*i * 2 + 1].as_slice_mut()) {
+                                    *sample = src.right;
+                                }
+                            // }
 
                             // audio[*i * 2].copy_from(&outputs.audio[audio_index].left);
                             // audio[*i * 2 + 1].copy_from(&outputs.audio[audio_index].right);

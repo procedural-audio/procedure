@@ -10,7 +10,7 @@ pub struct AnalogOscillator {
     detune: f32,
     spread: f32,
     glide: f32,
-    dropdown: u32,
+    dropdown: usize,
 }
 
 pub struct OscillatorVoice {

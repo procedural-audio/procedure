@@ -84,7 +84,7 @@ pub trait Sink {
 
 /* DSP Structs */
 
-pub struct ADSR<T: Source> {
+/*pub struct ADSR<T: Source> {
     pub source: T,
     index: usize,
     sample_rate: u32,
@@ -138,7 +138,7 @@ impl<T: Source> Source for ADSR<T> {
     fn process(&mut self, output: &mut Self::Output) {
         self.source.process(output);
     }
-}
+}*/
 
 /* Other */
 

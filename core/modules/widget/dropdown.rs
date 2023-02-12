@@ -2,7 +2,7 @@ use crate::widget::*;
 
 #[repr(C)]
 pub struct Dropdown<'a> {
-    pub index: &'a mut u32,
+    pub index: &'a mut usize,
     pub color: Color,
     pub elements: &'static [&'static str],
 }
@@ -20,12 +20,12 @@ impl<'a> WidgetNew for Dropdown<'a> {
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_dropdown_set_index(dropdown: &mut Dropdown, index: u32) {
+pub unsafe extern "C" fn ffi_dropdown_set_index(dropdown: &mut Dropdown, index: usize) {
     *dropdown.index = index;
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_dropdown_get_index(dropdown: &mut Dropdown) -> u32 {
+pub unsafe extern "C" fn ffi_dropdown_get_index(dropdown: &mut Dropdown) -> usize {
     *dropdown.index
 }
 

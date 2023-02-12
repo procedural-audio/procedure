@@ -1,29 +1,27 @@
+use std::cmp::Ordering;
+
 use rand::{seq::IteratorRandom, Rng};
 use pa_dsp::*;
 use crate::*;
 
 pub struct Arpeggiator {
-    indicators: [Color; 16],
-    velocities: [f32; 16],
-    range_start: f32,
-    range_end: f32,
-    dropdowns: [u32; 4],
-    knob_1: f32,
-    knob_2: f32,
-    knob_3: f32,
-    beat: usize,
-    callback: Callback,
-    arp: Arp,
+    mode: usize,
+    notes: Vec<Note>
+}
+
+pub struct ArpeggiatorVoice {
+    playing: Vec<Id>,
+    index: u32
 }
 
 impl Module for Arpeggiator {
-    type Voice = ();
+    type Voice = ArpeggiatorVoice;
 
     const INFO: Info = Info {
         title: "Arpeggiator",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(640, 290),
+        size: Size::Static(200, 100),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Midi Input", 20),
@@ -38,234 +36,158 @@ impl Module for Arpeggiator {
 
     fn new() -> Self {
         Self {
-            indicators: [Color::GREEN; 16],
-            velocities: [0.5; 16],
-            range_start: 0.0,
-            range_end: 0.5,
-            dropdowns: [0; 4],
-            knob_1: 0.0,
-            knob_2: 0.0,
-            knob_3: 0.0,
-            beat: 0,
-            callback: Callback::new(),
-            arp: Arp::new(),
+            mode: 0,
+            notes: Vec::with_capacity(32)
         }
     }
 
-    fn new_voice(&self, _index: u32) -> Self::Voice {
-        ()
+    fn new_voice(&self, index: u32) -> Self::Voice {
+        Self::Voice {
+            playing: Vec::with_capacity(8),
+            index
+        }
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Stack {
-            children: (
-                // Feedback Indicator
-                Transform {
-                    position: (40, 40),
-                    size: (35 * 16 as u32, 5),
-                    child: Refresh {
-                        callback: &mut self.callback,
-                        child: GridBuilder {
-                            columns: 16,
-                            state: &mut self.indicators,
-                            builder: |_index, color| {
-                                return Padding {
-                                    padding: (0, 0, 5, 0),
-                                    child: Indicator { color },
-                                };
-                            },
-                        },
-                    },
-                },
-                // Velocity Faders
-                Transform {
-                    position: (40, 50),
-                    size: (35 * 16 as u32, 120),
-                    child: GridBuilder {
-                        columns: 16,
-                        state: &mut self.velocities,
-                        builder: |_index, state| {
-                            return Padding {
-                                padding: (0, 0, 5, 0),
-                                child: Fader {
-                                    value: state,
-                                    color: Color::GREEN,
-                                },
-                            };
-                        },
-                    },
-                },
-                // Range Slider
-                Transform {
-                    position: (20, 50 + 120 - 5),
-                    size: (40 * 15, 40),
-                    child: RangeSlider {
-                        min: &mut self.range_start,
-                        max: &mut self.range_end,
-                        divisions: 16,
-                        color: Color::GREEN,
-                    },
-                },
-                // Dropdowns Row 1
-                Transform {
-                    position: (40, 205),
-                    size: (120 * 2, 85),
-                    child: GridBuilder {
-                        columns: 2,
-                        state: &mut self.dropdowns,
-                        builder: |index, state| {
-                            return Padding {
-                                padding: (0, 0, 10, 10),
-                                child: Dropdown {
-                                    index: state,
-                                    color: Color::GREEN,
-                                    elements: if index == 0 {
-                                        &[
-                                            "As Played",
-                                            "Chord",
-                                            "Up",
-                                            "Down",
-                                            "Up > Down",
-                                            "Down > Up",
-                                            "Random",
-                                        ] // Playback order
-                                    } else if index == 1 {
-                                        &["1/4", "1/4 t", "1/8", "1/8 t", "1/16", "1/16 t"]
-                                    // Rate
-                                    } else if index == 2 {
-                                        &["1 Octave", "2 Octaves", "3 Octaves", "4 Octaves"]
-                                    // Octaves
-                                    } else if index == 3 {
-                                        &["Unknown"]
-                                    } else {
-                                        panic!("Too many dropdowns in row");
-                                    },
-                                },
-                            };
-                        },
-                    },
-                },
-                // Knobs
-                Transform {
-                    position: (400, 205),
-                    size: (50, 70),
-                    child: Knob {
-                        text: "Length",
-                        color: Color::GREEN,
-                        value: &mut self.knob_1,
-                        feedback: Box::new(|v| format!("{:.2}", v)),
-                    },
-                },
-                Transform {
-                    position: (400 + 70, 205),
-                    size: (50, 70),
-                    child: Knob {
-                        text: "Jitter",
-                        color: Color::GREEN,
-                        value: &mut self.knob_2,
-                        feedback: Box::new(|v| format!("{:.2}", v)),
-                    },
-                },
-                Transform {
-                    position: (400 + 70 * 2, 205),
-                    size: (50, 70),
-                    child: Knob {
-                        text: "Unk",
-                        color: Color::GREEN,
-                        value: &mut self.knob_3,
-                        feedback: Box::new(|v| format!("{:.2}", v)),
-                    },
-                },
-            ),
-        });
+        return Box::new(
+            Stack {
+                children: (
+                    Transform {
+                        position: (35, 40),
+                        size: (130, 40),
+                        child: Dropdown {
+                            index: &mut self.mode,
+                            color: Color::GREEN,
+                            elements: &[
+                                "As Played",
+                                "Chord",
+                                "Up",
+                                "Down",
+                                "Up > Down",
+                                "Down > Up",
+                                "Random"
+                            ]
+                        }
+                    }
+                )
+            }
+        );
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /* Arpeggiator Inputs */
-
-        /*for event in &inputs.events[0] {
-            match event {
-                Event::NoteOn { note, offset: _ } => self.arp.note_on(*note),
-                Event::NoteOff { id } => self.arp.note_off(*id),
-                Event::Pitch { id, freq } => self.arp.note_pitch(*id, *freq),
-                Event::Pressure { id, pressure } => self.arp.note_pressure(*id, *pressure),
-                _ => (),
-            }
-        }*/
-
-        /* Set Indicators */
-
-        let rate: f64 = match self.dropdowns[1] {
-            0 => 1.0,
-            1 => 1.0 * 3.0 / 2.0,
-            2 => 2.0,
-            3 => 2.0 * 3.0 / 2.0,
-            4 => 4.0,
-            5 => 4.0 * 3.0 / 2.0,
-            _ => panic!("Rate out of range"),
-        };
-
-        let min = (self.range_start * 16.0).round() as usize;
-        let max = (self.range_end * 16.0).round() as usize;
-
-        let mut beat = 0;
-
-        if max == min {
-            beat = min; // Freeze if they're equal
-        } else {
-            beat = (((inputs.time[0].start() * rate).round() as usize) % (max - min)) + min;
-        }
-
-        if self.beat != beat {
-            self.beat = beat;
-
-            for (index, color) in self.indicators.iter_mut().enumerate() {
-                if index == beat {
-                    *color = Color::PURPLE;
-                } else {
-                    *color = Color::GREEN;
-                }
-            }
-
-            self.callback.trigger();
-
-            /* Step arpeggiator */
-
-            self.arp.set_mode(match self.dropdowns[0] {
-                0 => ArpMode::AsPlayed,
-                1 => ArpMode::Chord,
-                2 => ArpMode::Up,
-                3 => ArpMode::Down,
-                4 => ArpMode::UpDown,
-                5 => ArpMode::DownUp,
-                6 => ArpMode::Random,
-                _ => panic!("Invalid arp mode"),
-            });
-
-            self.arp.set_octaves(self.dropdowns[2] + 1);
-
-            self.arp.set_step(beat);
-        }
-
-        /* Arpeggiator Outputs */
-
-        /*for event in &mut outputs.events[0] {
-            *event = match self.arp.gen() {
-                Event::NoteOn { note, offset } => {
-                    println!("Pressure is {}", self.velocities[beat]);
-                    Event::NoteOn {
-                        note: note.with_pressure(self.velocities[beat]),
-                        offset,
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure } => {
+                    self.notes.push(
+                        Note {
+                            id: msg.id,
+                            pitch,
+                            pressure
+                        }
+                    );
+                },
+                Event::NoteOff => {
+                    self.notes.retain(
+                        | note | {
+                            note.id != msg.id
+                        }
+                    );
+                },
+                Event::Pitch(pitch) => {
+                    for note in &mut self.notes {
+                        if note.id == msg.id {
+                            note.pitch = pitch;
+                        }
+                    }
+                },
+                Event::Pressure(pressure) => {
+                    for note in &mut self.notes {
+                        if note.id == msg.id {
+                            note.pressure = pressure;
+                        }
                     }
                 }
-                e => e,
+                _ => ()
             }
-        }*/
+        }
+
+        inputs.time[0].on_each(1.0, | beat | {
+            for id in &voice.playing {
+                outputs.events[0].push(
+                    NoteMessage {
+                        id: *id,
+                        offset: 0,
+                        note: Event::NoteOff
+                    }
+                );
+            }
+
+            self.notes.sort_by(| a, b | {
+                if self.mode == 0 {
+                    Ordering::Less
+                } else if self.mode == 1 || self.mode == 2 {
+                    if a.pitch <= b.pitch {
+                        Ordering::Less
+                    } else {
+                        Ordering::Greater
+                    }
+                } else if self.mode == 3 {
+                    if a.pitch <= b.pitch {
+                        Ordering::Greater
+                    } else {
+                        Ordering::Less
+                    }
+                // } else if self.mode == 4 {
+                // } else if self.mode == 5 {
+                // } else if self.mode == 6 {
+                } else {
+                    Ordering::Less
+                }
+            });
+
+            if self.notes.len() > 0 {
+                if voice.index == 0 {
+                    println!("Beat {}", beat);
+
+                    let note = self.notes[beat % self.notes.len()];
+                    let id = Id::new();
+                    voice.playing.push(id);
+
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id,
+                            offset: 0,
+                            note: Event::NoteOn {
+                                pitch: note.pitch,
+                                pressure: note.pressure
+                            }
+                        }
+                    );
+                } else if self.mode == 1 {
+                    if beat < self.notes.len() {
+                        let note = self.notes[beat];
+                        let id = Id::new();
+                        voice.playing.push(id);
+
+                        outputs.events[0].push(
+                            NoteMessage {
+                                id: Id::new(),
+                                offset: 0,
+                                note: Event::NoteOn {
+                                    pitch: note.pitch,
+                                    pressure: note.pressure
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+        });
     }
 }
 

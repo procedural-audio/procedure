@@ -6,8 +6,22 @@ pub struct Scale {
 
 impl Scale {
     fn quantize(&self, pitch: f32) -> f32 {
-        // TODO: Implement pitch quantization
-        pitch
+        let num = pitch_to_num(pitch);
+        let mut quantized = num;
+        let mut delta = 127;
+
+        for n in 0..127 {
+            let k = n as usize % 12;
+            if self.keys[k].down {
+                let diff = u32::abs_diff(num, n);
+                if diff < delta {
+                    quantized = n;
+                    delta = diff;
+                }
+            }
+        }
+
+        num_to_pitch(quantized)
     }
 }
 
@@ -18,7 +32,7 @@ impl Module for Scale {
         title: "Scale",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(200, 120),
+        size: Size::Static(185, 120),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10),
@@ -44,7 +58,7 @@ impl Module for Scale {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Padding {
-            padding: (10, 35, 10, 10),
+            padding: (5, 35, 5, 5),
             child: widget::Keyboard {
                 keys: &mut self.keys,
                 on_event: | event, keys | {

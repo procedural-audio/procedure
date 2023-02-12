@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:metasampler/host.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
+import 'package:metasampler/views/topBar.dart';
 
 import 'views/info.dart';
 import 'views/settings.dart';
@@ -116,32 +117,35 @@ class _Window extends State<Window> {
         ),
         home: Scaffold(
             backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-            body: Stack(children: [
-              Stack(children: <Widget>[
-                Container(
-                    color: const Color.fromRGBO(10, 10, 10, 1.0),
-                    child: Stack(children: [
-                      ValueListenableBuilder<bool>(
-                          valueListenable: widget.instViewVisible,
-                          builder: (context, visible, w) {
-                            return Visibility(
-                              child: widget.instrumentView,
-                              visible: visible,
-                              maintainState: true,
-                            );
-                          }),
-                      ValueListenableBuilder<bool>(
-                          valueListenable: widget.instViewVisible,
-                          builder: (context, visible, w) {
-                            return Visibility(
-                              child: PatchingView(widget.host),
-                              visible: !visible,
-                              maintainState: true,
-                            );
-                          }),
-                      Bar(widget, widget.host)
-                    ]))
-              ])
+            body: Column(children: [
+              Expanded(
+                  child: Stack(children: [
+                Stack(children: <Widget>[
+                  Container(
+                      color: const Color.fromRGBO(10, 10, 10, 1.0),
+                      child: Stack(children: [
+                        ValueListenableBuilder<bool>(
+                            valueListenable: widget.instViewVisible,
+                            builder: (context, visible, w) {
+                              return Visibility(
+                                child: widget.instrumentView,
+                                visible: visible,
+                                maintainState: true,
+                              );
+                            }),
+                        ValueListenableBuilder<bool>(
+                            valueListenable: widget.instViewVisible,
+                            builder: (context, visible, w) {
+                              return Visibility(
+                                child: PatchingView(widget.host),
+                                visible: !visible,
+                                maintainState: true,
+                              );
+                            }),
+                        Bar(widget, widget.host)
+                      ]))
+                ])
+              ]))
             ])));
   }
 }
@@ -229,7 +233,8 @@ class _PatchingView extends State<PatchingView> {
             }
           }
         },*/
-        child: Stack(fit: StackFit.loose, children: [
+        child: ClipRect(
+            child: Stack(fit: StackFit.loose, children: [
           InteractiveViewer(
             transformationController: controller,
             child: grid,
@@ -330,7 +335,7 @@ class _PatchingView extends State<PatchingView> {
                     ));
               }),
           // Positioned(top: 0, bottom: 0, right: 0, child: CodeEditor())
-        ]));
+        ])));
   }
 }
 

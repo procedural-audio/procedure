@@ -46,22 +46,31 @@ impl Module for Pitch {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let new_pitch = inputs.control[0];
 
-        for event in &inputs.events[0] {
-            /*match event {
-                Event::NoteOn { note, offset } => {
-                    outputs.events[0].push(Event::NoteOn {
-                        note: note.with_pitch(new_pitch),
-                        offset: *offset,
-                    });
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch: _, pressure } => {
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::NoteOn {
+                                pitch: new_pitch,
+                                pressure
+                            }
+                        }
+                    );
+                },
+                Event::Pitch(_) => {
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::Pitch(new_pitch)
+                        }
+                    );
                 }
-                Event::Pitch { id, freq: _ } => {
-                    outputs.events[0].push(Event::Pitch {
-                        id: *id,
-                        freq: new_pitch,
-                    });
-                }
-                _ => outputs.events[0].push(*event),
-            }*/
+                _ => outputs.events[0].push(*msg),
+            }
         }
     }
 }

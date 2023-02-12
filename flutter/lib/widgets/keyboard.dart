@@ -21,9 +21,7 @@ void Function(FFIWidgetTrait, int) ffiKeyboardKeyRelease = core
     .asFunction();
 
 class KeyboardWidget extends ModuleWidget {
-  KeyboardWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
-    // color = Color(ffiKeyboardGetColor(widgetRaw.pointer));
-  }
+  KeyboardWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
 
   ScrollController controller = ScrollController();
 

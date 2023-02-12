@@ -3,7 +3,7 @@ use crate::*;
 use pa_dsp::*;
 
 pub struct AnalogFilter {
-    selected: u32,
+    selected: usize,
     cutoff: f32,
     resonance: f32,
 }

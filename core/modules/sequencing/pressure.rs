@@ -13,9 +13,11 @@ impl Module for Pressure {
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 15),
-            Pin::Control("Pressure (0-1)", 45),
+            Pin::Control("Pressure (0-1)", 45)
         ],
-        outputs: &[Pin::Notes("Notes Output", 30)],
+        outputs: &[
+            Pin::Notes("Notes Output", 30)
+        ],
         path: "Notes/Effects/Pressure",
         presets: Presets::NONE
     };
@@ -24,9 +26,11 @@ impl Module for Pressure {
     fn new() -> Self {
         Self
     }
+
     fn new_voice(&self, _index: u32) -> Self::Voice {
         ()
     }
+
     fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
@@ -46,22 +50,19 @@ impl Module for Pressure {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let new_pressure = inputs.control[0];
 
-        /*for event in &inputs.events[0] {
-            match event {
-                Event::NoteOn { note, offset } => {
-                    outputs.events[0].push(Event::NoteOn {
-                        note: note.with_pressure(new_pressure),
-                        offset: *offset,
-                    });
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::Pressure(_) => {
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::Pressure(new_pressure)
+                        }
+                    );
                 }
-                Event::Pressure { id, pressure: _ } => {
-                    outputs.events[0].push(Event::Pressure {
-                        id: *id,
-                        pressure: new_pressure,
-                    });
-                }
-                _ => outputs.events[0].push(*event),
+                _ => outputs.events[0].push(*msg),
             }
-        }*/
+        }
     }
 }

@@ -2,7 +2,7 @@ use pa_dsp::*;
 use crate::*;
 
 pub struct Tube {
-    selected: u32,
+    selected: usize,
     pregain: f32,
     gain: f32,
 }

@@ -471,7 +471,7 @@ impl<T> Bus<T> {
         self.channels.len()
     }
 
-    pub fn is_connected(&self, index: usize) -> bool {
+    pub fn connected(&self, index: usize) -> bool {
         self.channels[index].connected
     }
 }
@@ -528,7 +528,7 @@ impl<T> Channel<T> {
         Self { buffer, connected }
     }
 
-    pub fn is_connected(&self) -> bool {
+    pub fn connected(&self) -> bool {
         self.connected
     }
 

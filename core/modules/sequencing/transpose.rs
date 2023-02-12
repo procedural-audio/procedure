@@ -44,8 +44,8 @@ impl Module for Transpose {
                 feedback: Box::new(|v| {
                     let steps = f32::round(v * 24.0 - 12.0) as i32;
                     format!("{}", steps)
-                }),
-            },
+                })
+            }
         })
     }
 
@@ -54,7 +54,7 @@ impl Module for Transpose {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
-        if inputs.control.is_connected(0) {
+        if inputs.control.connected(0) {
             steps = f32::round(inputs.control[0]);
         }
 

@@ -9,7 +9,7 @@ impl Module for Accumulator {
     type Voice = u32;
 
     const INFO: Info = Info {
-        title: "Accum",
+        title: "Acc",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(100, 75),
@@ -44,7 +44,7 @@ impl Module for Accumulator {
             position: (32, 25),
             size: (36, 36),
             child: Icon {
-                path: "operations/multiply.svg",
+                path: "operations/add.svg",
                 color: Color::PURPLE,
             },
         })
