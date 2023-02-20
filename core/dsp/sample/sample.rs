@@ -284,7 +284,6 @@ impl<T: Frame> SamplePlayer<T> {
 
     pub fn play(&mut self) {
         self.playing = true;
-        println!("Playing from index {}", self.index);
     }
 
     pub fn pause(&mut self) {

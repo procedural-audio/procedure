@@ -21,7 +21,9 @@ class RowWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisSize: MainAxisSize.max, children: children);
+    return Row(
+        mainAxisSize: MainAxisSize.max,
+        children: children.map((e) => Expanded(child: e)).toList());
   }
 }
 
@@ -31,8 +33,8 @@ class ColumnWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: children,
-    );
+        mainAxisSize: MainAxisSize.max,
+        children: children.map((e) => Expanded(child: e)).toList());
   }
 }
 

@@ -52,7 +52,8 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     modules.push(module::<AudioTrack>());
     modules.push(module::<Sampler>());
     modules.push(module::<MultiSampler>());
-    // modules.push(module::<Granular>());
+    modules.push(module::<Granular>());
+    modules.push(module::<SampleRack>());
     // modules.push(module::<Slicer>());
     // modules.push(module::<SampleResynthesis>());
     // modules.push(module::<Looper>());

@@ -25,7 +25,6 @@ void Function(Pointer<CanvasFFI>) ffiCanvasDelete = core
     .lookup<NativeFunction<Void Function(Pointer<CanvasFFI>)>>(
         "ffi_canvas_delete")
     .asFunction();
-
 Pointer<PaintAction> Function(Pointer<CanvasFFI>) ffiCanvasGetActions = core
     .lookup<NativeFunction<Pointer<PaintAction> Function(Pointer<CanvasFFI>)>>(
         "ffi_canvas_get_actions")
@@ -141,7 +140,7 @@ class CanvasPainter extends CustomPainter {
   @override
   bool hitTest(Offset position) {
     // TODO: Make this user determined
-    return true;
+    return false;
   }
 
   @override

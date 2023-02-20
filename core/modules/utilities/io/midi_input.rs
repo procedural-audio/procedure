@@ -133,6 +133,7 @@ impl EventVoice {
 
 pub struct MidiInput {
     listener: NoteListener,
+    active: Vec<(u64, Id)>
 }
 
 pub struct MidiInputVoice {
@@ -162,6 +163,7 @@ impl Module for MidiInput {
     fn new() -> Self {
         Self {
             listener: NoteListener::new(),
+            active: Vec::with_capacity(64)
         }
     }
 
@@ -189,8 +191,49 @@ impl Module for MidiInput {
         self.listener.set_voice(voice.index as usize);
 
         for msg in &inputs.events[0] {
+            let mut msg = *msg;
+
+            match msg.note {
+                Event::NoteOn { pitch: _, pressure: _ } => {
+                    let old = msg.id.num();
+                    let new = Id::new();
+                    self.active.push((old, new));
+                    msg.id = new;
+                },
+                Event::NoteOff => {
+                    let mut found = false;
+                    self.active.retain(| (old, new) | {
+                        if *old == msg.id.num() {
+                            found = true;
+                            msg.id = *new;
+                            false
+                        } else {
+                            true
+                        }
+                    });
+
+                    if !found {
+                        println!("Error: Couldn't find playing id");
+                    }
+                },
+                _ => {
+                    let mut found = false;
+                    for (old, new) in &self.active {
+                        if *old == msg.id.num() {
+                            found = true;
+                            msg.id = *new;
+                            break;
+                        }
+                    }
+
+                    if !found {
+                        println!("Error: Couldn't find playing id");
+                    }
+                },
+            }
+
+            self.listener.push(msg);
             println!("NoteMessage: id: {}, offset: {}, note: {}", msg.id.num(), msg.offset, msg.note);
-            self.listener.push(*msg);
         }
 
         while let Some(msg) = self.listener.gen() {

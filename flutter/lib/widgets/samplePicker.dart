@@ -35,6 +35,7 @@ class SamplePickerWidget extends ModuleWidget {
   List<double> rightBuffer = [0.0];
 
   bool loadingSample = false;
+  bool hovering = false;
 
   void refreshBuffer() {
     leftBuffer.clear();
@@ -71,48 +72,62 @@ class SamplePickerWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: const BoxDecoration(
-            color: Color.fromRGBO(20, 20, 20, 1.0),
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: Stack(fit: StackFit.expand, children: [
-          CustomPaint(
-              painter: SamplePainter(
-                  leftBuffer: leftBuffer, rightBuffer: rightBuffer)),
-          Align(
-              alignment: Alignment.bottomRight,
-              child: IconButton(
-                  icon: const Icon(Icons.folder),
-                  iconSize: 18,
-                  color: Colors.blue,
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    setState(() {
-                      loadingSample = true;
-                    });
+    return MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
+        },
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: Container(
+            decoration: const BoxDecoration(
+                color: Color.fromRGBO(20, 20, 20, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(5))),
+            child: Stack(fit: StackFit.expand, children: [
+              CustomPaint(
+                  painter: SamplePainter(
+                      leftBuffer: leftBuffer, rightBuffer: rightBuffer)),
+              AnimatedOpacity(
+                  duration: const Duration(milliseconds: 100),
+                  opacity: hovering ? 1.0 : 0.0,
+                  child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: IconButton(
+                          icon: const Icon(Icons.folder),
+                          iconSize: 18,
+                          color: Colors.grey,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            setState(() {
+                              loadingSample = true;
+                            });
 
-                    browseForSample();
+                            browseForSample();
 
-                    setState(() {
-                      loadingSample = false;
-                    });
-                  })),
-          Visibility(
-              visible: loadingSample,
-              child: Container(
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Color.fromRGBO(0, 0, 0, 0.5),
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                  ),
-                  child: const SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: CircularProgressIndicator(
-                        color: Colors.blue,
-                      ))))
-        ]));
+                            setState(() {
+                              loadingSample = false;
+                            });
+                          }))),
+              Visibility(
+                  visible: loadingSample,
+                  child: Container(
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: Color.fromRGBO(0, 0, 0, 0.5),
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
+                      ),
+                      child: const SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(
+                            color: Colors.blue,
+                          ))))
+            ])));
   }
 }
 

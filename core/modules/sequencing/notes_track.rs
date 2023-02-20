@@ -6,7 +6,8 @@ pub struct NotesTrack {
     events: Vec<NoteEvent>,
     length: usize,
     beat: f64,
-    player: NotePlayer
+    player: NotePlayer,
+    callback: Callback
 }
 
 impl Module for NotesTrack {
@@ -22,8 +23,13 @@ impl Module for NotesTrack {
             max: (8000, 1200),
         },
         voicing: Voicing::Polyphonic,
-        inputs: &[Pin::Time("Time", 10)],
-        outputs: &[Pin::Notes("Notes Output", 10)],
+        inputs: &[
+            Pin::Notes("Notes Input", 10),
+            Pin::Time("Time", 10+25)
+        ],
+        outputs: &[
+            Pin::Notes("Notes Output", 10)
+        ],
         path: "Notes/Sources/Notes Track",
         presets: Presets::NONE
     };
@@ -63,7 +69,8 @@ impl Module for NotesTrack {
             ],
             length: 4 * 32,
             beat: 0.0,
-            player: NotePlayer::new()
+            player: NotePlayer::new(),
+            callback: Callback::new()
         }
     }
 
@@ -76,24 +83,56 @@ impl Module for NotesTrack {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {
-            padding: (10, 35, 10, 10),
-            child: _NotesTrack {
-                notes: &mut self.events,
-                beats: &mut self.length,
-                beat: &self.beat,
-            },
+            padding: (5, 35, 5, 5),
+            child: Refresh {
+                callback: &mut self.callback,
+                child: _NotesTrack {
+                    notes: &mut self.events,
+                    beats: &mut self.length,
+                    beat: &self.beat
+                }
+            }
         });
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if *voice == 0 {
-            let time = inputs.time[0];
-            self.beat = time.cycle(self.length as f64).start();
+        let time = inputs.time[0].cycle(self.length as f64);
+        self.beat = time.start();
 
+        for msg in &inputs.events[0] {
+            println!("Adding note at {}", time.start);
+
+            self.events.push(
+                NoteEvent {
+                    id: msg.id,
+                    time: time.start,
+                    note: msg.note
+                }
+            );
+
+            self.callback.trigger();
+
+            println!("======== start ========");
             for event in &self.events {
-                if time.cycle(self.length as f64).contains(event.time) {
+                match event.note {
+                    Event::NoteOn { pitch, pressure } => {
+                        println!("Has note on {}", event.id.num());
+                    },
+                    Event::NoteOff => {
+                        println!("Has note off {}", event.id.num());
+                    },
+                    _ => ()
+                }
+            }
+            println!("======== end ========");
+        }
+
+        if *voice == 0 {
+            for event in &self.events {
+                if time.contains(event.time) {
+                    println!("Playing message {}", event.id.num());
                     self.player.message(NoteMessage {
                         id: event.id,
                         offset: 0,
@@ -104,7 +143,6 @@ impl Module for NotesTrack {
         }
 
         self.player.generate(*voice, &mut outputs.events[0]);
-
     }
 }
 
