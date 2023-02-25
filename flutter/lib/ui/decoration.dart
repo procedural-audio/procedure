@@ -8,9 +8,135 @@ import 'common.dart';
 
 import 'dart:io';
 
-/* Text Widget */
+class TextUIWidget2 extends UIWidget2 {
+  TextUIWidget2(Host host, UITree tree) : super(host, tree);
 
-class TextUIWidget extends UIWidget {
+  @override
+  final String name = "Text";
+
+  String text = "Text Here";
+  double size = 14;
+  Color color = Colors.white;
+
+  TransformData data = TransformData(
+      width: 100,
+      height: 30,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
+
+  @override
+  Map<String, dynamic> getJson() {
+    return {
+      "text": text,
+      "size": size,
+      "color": color.value,
+      "transform": data.toJson()
+    };
+  }
+
+  @override
+  void setJson(Map<String, dynamic> json) {
+    text = json["text"];
+    size = json["size"];
+    color = Color(json["color"]);
+    data = TransformData.fromJson(json["transform"]);
+  }
+
+  @override
+  List<UIWidget2> getChildren() {
+    return [];
+  }
+
+  @override
+  Widget buildWidget(BuildContext context) {
+    return TransformWidget(
+        data: data,
+        child: Text(text,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: color, fontSize: size)));
+  }
+
+  @override
+  Widget buildWidgetEditing(BuildContext context) {
+    return TransformWidgetEditing(
+        data: data,
+        onTap: () {
+          // state.notifyListeners();
+        },
+        onUpdate: (t) {
+          setState(() {
+            data = t;
+          });
+        },
+        tree: tree,
+        child: Text(text,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: color, fontSize: size)));
+  }
+
+  @override
+  Widget buildWidgetEditor(BuildContext context) {
+    return Column(children: [
+      EditorTitle("Text"),
+      TransformWidgetEditor(
+          data: data,
+          onUpdate: (t) {
+            setState(() {
+              data = t;
+            });
+          },
+          tree: tree),
+      Section(
+          title: "Text",
+          child: Row(children: [
+            Field(
+              width: 260,
+              label: "",
+              initialValue: text,
+              onChanged: (s) {
+                setState(() {
+                  text = s;
+                });
+              },
+            )
+          ])),
+      Section(
+          title: "Style",
+          child: Column(children: [
+            FieldLabel(
+                text: "Font Size",
+                child: Field(
+                  width: 60,
+                  label: "",
+                  initialValue: size.toString(),
+                  onChanged: (s) {
+                    var newSize = double.tryParse(s);
+
+                    if (newSize != null) {
+                      size = newSize;
+                    }
+
+                    setState(() {});
+                  },
+                )),
+            FieldLabel(
+                text: "Color",
+                child: ColorField(
+                    width: 160,
+                    color: color,
+                    onChanged: (c) {
+                      setState(() {
+                        color = c;
+                      });
+                    }))
+          ]))
+    ]);
+  }
+}
+
+/*class TextUIWidget extends UIWidget {
   TextUIWidget(Host host, UITree tree) : super(host, tree);
 
   String text = "Text Here";
@@ -507,3 +633,4 @@ class _BoxUIWidget extends UIWidgetState<BoxUIWidget> {
     ]);
   }
 }
+*/

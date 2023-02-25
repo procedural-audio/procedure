@@ -15,9 +15,88 @@ import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';
 
+// import 'package:desktop_webview_window/desktop_webview_window.dart';
+
+class WebViewUIWidget extends UIWidget2 {
+  WebViewUIWidget(Host host, UITree tree) : super(host, tree) {
+    initWebView();
+  }
+
+  void initWebView() async {
+    // final webView = await WebviewWindow.create();
+    // webView.launch("chasekanipe.com");
+  }
+
+  @override
+  final String name = "Web View";
+
+  TransformData data = TransformData(
+      width: 100,
+      height: 30,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
+
+  @override
+  Map<String, dynamic> getJson() {
+    return {"transform": data.toJson()};
+  }
+
+  @override
+  void setJson(Map<String, dynamic> json) {
+    data = TransformData.fromJson(json["transform"]);
+  }
+
+  @override
+  List<UIWidget2> getChildren() {
+    return [];
+  }
+
+  @override
+  Widget buildWidget(BuildContext context) {
+    return TransformWidget(
+      data: data,
+      child: Container(color: Colors.blue),
+    );
+  }
+
+  @override
+  Widget buildWidgetEditing(BuildContext context) {
+    return TransformWidgetEditing(
+      data: data,
+      onTap: () {
+        // state.notifyListeners();
+      },
+      onUpdate: (t) {
+        setState(() {
+          data = t;
+        });
+      },
+      tree: tree,
+      child: Container(color: Colors.red),
+    );
+  }
+
+  @override
+  Widget buildWidgetEditor(BuildContext context) {
+    return Column(children: [
+      EditorTitle("Web View"),
+      TransformWidgetEditor(
+          data: data,
+          onUpdate: (t) {
+            setState(() {
+              data = t;
+            });
+          },
+          tree: tree)
+    ]);
+  }
+}
+
 /* Knob Widget */
 
-class KnobUIWidget extends UIWidget {
+/*class KnobUIWidget extends UIWidget {
   KnobUIWidget(Host host, UITree tree) : super(host, tree);
 
   ValueNotifier<String?> varName = ValueNotifier(null);
@@ -1421,3 +1500,4 @@ class _Button extends State<Button> {
     }));
   }
 }
+*/

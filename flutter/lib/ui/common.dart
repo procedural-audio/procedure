@@ -2202,7 +2202,7 @@ class ChildDragTarget extends StatefulWidget {
       required this.tree,
       required this.host});
 
-  void Function(UIWidget widget) onAddChild;
+  void Function(UIWidget2 widget) onAddChild;
   double? width;
   double? height;
   Widget? child;
@@ -2260,7 +2260,7 @@ class _ChildDragTarget extends State<ChildDragTarget> {
             return true;
           },
           onAccept: (name) {
-            UIWidget? child = createUIWidget(widget.host, name, widget.tree);
+            UIWidget2? child = createUIWidget(widget.host, name, widget.tree);
 
             if (child != null) {
               print("Creating child $name");

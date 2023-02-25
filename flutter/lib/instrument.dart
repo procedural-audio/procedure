@@ -155,15 +155,15 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
 class WidgetTreeElement extends StatelessWidget {
   WidgetTreeElement({required this.widget, required this.tree});
 
-  UIWidget widget;
+  UIWidget2 widget;
   UITree tree;
 
   @override
   Widget build(BuildContext context) {
-    List<UIWidget> children = [];
+    List<UIWidget2> children = [];
 
     for (var child in widget.getChildren()) {
-      if (child.getName() != "Empty") {
+      if (child.name != "Empty") {
         children.add(child);
       }
     }
@@ -171,10 +171,10 @@ class WidgetTreeElement extends StatelessWidget {
     return ExpansionTile(
       title: Row(children: [
         Text(
-          widget.getName(),
+          widget.name,
           style: const TextStyle(color: Colors.white, fontSize: 14),
         ),
-        widget.getName() == "Empty" || widget.getName() == "Root"
+        widget.name == "Empty" || widget.name == "Root"
             ? Container()
             : IconButton(
                 icon: const Icon(
@@ -273,6 +273,7 @@ class _WidgetMenu extends State<WidgetMenu> {
                       // WidgetMenuElement("Line", Icons.picture_as_pdf),
                     ]),
                     WidgetMenuSection(title: "Interactive", children: [
+                      WidgetMenuElement("Web View", Icons.window),
                       WidgetMenuElement("Dropdown", Icons.list),
                       WidgetMenuElement("Knob", Icons.king_bed_outlined),
                       WidgetMenuElement("Slider", Icons.slideshow_rounded),

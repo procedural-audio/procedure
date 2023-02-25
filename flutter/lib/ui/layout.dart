@@ -5,9 +5,80 @@ import 'common.dart';
 import 'ui.dart';
 import '../main.dart';
 
+class RootWidget extends UIWidget2 {
+  RootWidget(Host host, UITree tree) : super(host, tree);
+
+  @override
+  final String name = "Root";
+
+  double? width;
+  double? height;
+  Color color = const Color.fromRGBO(40, 40, 40, 1.0);
+  List<UIWidget2> children = [];
+
+  @override
+  Map<String, dynamic> getJson() {
+    return {
+      "width": width,
+      "height": height,
+      "color": color.value,
+      "children": saveChildren(children)
+    };
+  }
+
+  @override
+  void setJson(Map<String, dynamic> json) {
+    width = json["width"];
+    height = json["height"];
+    color = Color(json["color"]);
+    children = createChildren(json["children"]);
+  }
+
+  @override
+  List<UIWidget2> getChildren() {
+    return children;
+  }
+
+  @override
+  Widget buildWidget(BuildContext context) {
+    return Container(
+        width: width,
+        height: height,
+        color: color,
+        child: Stack(fit: StackFit.expand, children: children));
+  }
+
+  @override
+  Widget buildWidgetEditing(BuildContext context) {
+    return Container(
+        width: width,
+        height: height,
+        color: color,
+        child: GestureDetector(
+            onTap: () {
+              // toggleEditor();
+            },
+            child: ChildDragTarget(
+              tree: tree,
+              onAddChild: (child) {
+                print("Adding child");
+                children.add(child);
+                setState(() {});
+              },
+              child: Stack(fit: StackFit.expand, children: children),
+              host: host,
+            )));
+  }
+
+  @override
+  Widget buildWidgetEditor(BuildContext context) {
+    return Container();
+  }
+}
+
 /* Root Widget */
 
-class RootWidget extends UIWidget {
+/*class RootWidget extends UIWidget {
   RootWidget(Host host, UITree tree) : super(host, tree);
 
   double? width;
@@ -65,77 +136,63 @@ class _RootWidget extends UIWidgetState<RootWidget> {
   @override
   Widget buildWidget(BuildContext context) {
     return Container(
-      width: widget.width,
-      height: widget.height,
-      color: widget.color,
-      child: Stack(
-        fit: StackFit.expand,
-        children: widget.children
-      )
-    );
+        width: widget.width,
+        height: widget.height,
+        color: widget.color,
+        child: Stack(fit: StackFit.expand, children: widget.children));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return Container(
-      width: widget.width,
-      height: widget.height,
-      color: widget.color,
-      child: GestureDetector(
-        onTap: () {
-          toggleEditor();
-        },
-        child: ChildDragTarget(
-          tree: widget.tree,
-          onAddChild: (child) {
-            widget.children.add(child);
-            refreshWidget();
-          },
-          child: Stack(
-            fit: StackFit.expand,
-            children: widget.children
-          ),
-          host: widget.host,
-        )
-      )
-    );
+        width: widget.width,
+        height: widget.height,
+        color: widget.color,
+        child: GestureDetector(
+            onTap: () {
+              toggleEditor();
+            },
+            child: ChildDragTarget(
+              tree: widget.tree,
+              onAddChild: (child) {
+                widget.children.add(child);
+                refreshWidget();
+              },
+              child: Stack(fit: StackFit.expand, children: widget.children),
+              host: widget.host,
+            )));
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Root"),
-        Section(
+    return Column(children: [
+      EditorTitle("Root"),
+      Section(
           title: "Layout",
-          child: Row(
-            children: [
-              Field(
-                label: "WIDTH",
-                initialValue: widget.width == null ? "" : widget.width.toString(),
-                onChanged: (s) {
-                  setState(() {
-                    widget.width = double.tryParse(s);
-                  });
-                },
-              ),
-              Field(
+          child: Row(children: [
+            Field(
+              label: "WIDTH",
+              initialValue: widget.width == null ? "" : widget.width.toString(),
+              onChanged: (s) {
+                setState(() {
+                  widget.width = double.tryParse(s);
+                });
+              },
+            ),
+            Field(
                 label: "HEIGHT",
-                initialValue: widget.height == null ? "" : widget.height.toString(),
+                initialValue:
+                    widget.height == null ? "" : widget.height.toString(),
                 onChanged: (s) {
                   setState(() {
                     widget.height = double.tryParse(s);
                   });
-                }
-              )
-            ]
-          )
-        ),
-        Section(
+                })
+          ])),
+      Section(
           title: "Style",
-          child: Column(
-            children: [
-              FieldLabel(
+          child: Column(children: [
+            FieldLabel(
                 text: "Color",
                 child: ColorField(
                   width: 150,
@@ -145,19 +202,15 @@ class _RootWidget extends UIWidgetState<RootWidget> {
                       widget.color = color;
                     });
                   },
-                )
-              )
-            ]
-          )
-        )
-      ]
-    );
+                ))
+          ]))
+    ]);
   }
-}
+}*/
 
 /* Row Widget */
 
-class RowUIWidget extends UIWidget {
+/*class RowUIWidget extends UIWidget {
   RowUIWidget(Host host, UITree tree) : super(host, tree);
 
   List<UIWidget> children = [];
@@ -1127,3 +1180,4 @@ class _EmptyUIWidget extends UIWidgetState<EmptyUIWidget> {
     return IgnorePointer(child: Container());
   }
 }
+*/
