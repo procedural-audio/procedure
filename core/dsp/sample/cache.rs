@@ -66,7 +66,7 @@ fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>
         }
     );
 
-    let mut sample = SampleFile::from(Arc::new(buffer_new), None, sample_rate, path.to_string());
+    let mut sample = SampleFile::from(Arc::new(buffer_new), path.to_string());
     for note_name in event::NOTE_NAMES {
         if path.contains(note_name) {
             sample.pitch = Some(num_to_pitch(name_to_num(note_name).unwrap()));
@@ -78,7 +78,7 @@ fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>
 }
 
 fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
-    let sample_rate = reader.spec().sample_rate;
+    // let sample_rate = reader.spec().sample_rate;
     let size = reader.samples::<i32>().len();
     let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
 
@@ -97,10 +97,10 @@ fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>
         }
     );
 
-    let mut sample = SampleFile::from(Arc::new(buffer_new), None, sample_rate, path.to_string());
+    let mut sample = SampleFile::from(Arc::new(buffer_new), path.to_string());
     for note_name in event::NOTE_NAMES {
         if path.contains(note_name) {
-            sample.pitch = Some(num_to_pitch(name_to_num(note_name).unwrap()));
+            sample.set_pitch(num_to_pitch(name_to_num(note_name).unwrap()));
         }
     }
 

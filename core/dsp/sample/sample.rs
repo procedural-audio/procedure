@@ -6,6 +6,7 @@ pub use crate::cache::FileLoad;
 use crate::Generator;
 use crate::Pitched;
 use std::ops::{Deref, DerefMut};
+use rand::{rngs::ThreadRng, Rng};
 
 #[derive(Clone)]
 pub struct SampleFile<T: Frame> {
@@ -17,7 +18,7 @@ pub struct SampleFile<T: Frame> {
 }
 
 impl<T: Frame> SampleFile<T> {
-    pub fn from(buffer: Arc<Buffer<T>>, pitch: Option<f32>, sample_rate: u32, path: String) -> Self {
+    pub fn from(buffer: Arc<Buffer<T>>, path: String) -> Self {
         let start = 0;
         let end = buffer.len();
 
@@ -26,8 +27,16 @@ impl<T: Frame> SampleFile<T> {
             start,
             end,
             path,
-            pitch,
+            pitch: None,
         };
+    }
+
+    pub fn set_pitch(&mut self, hz: f32) {
+        self.pitch = Some(hz);
+    }
+
+    pub fn set_unpitched(&mut self) {
+        self.pitch = None;
     }
 
     pub fn path(&self) -> &str {
@@ -224,7 +233,9 @@ pub struct SamplePlayer<T: Frame> {
     sample: Option<SampleFile<T>>,
     playing: bool,
     index: usize,
-    sample_rate: u32
+    start: usize,
+    end: usize,
+    should_loop: bool
 }
 
 impl<T: Frame> SamplePlayer<T> {
@@ -233,25 +244,41 @@ impl<T: Frame> SamplePlayer<T> {
             sample: None,
             playing: false,
             index: 0,
-            sample_rate: 44100
+            start: 0,
+            end: 0,
+            should_loop: false
         }
     }
 
     pub fn set_sample(&mut self, sample: SampleFile<T>) {
         self.index = sample.start;
+        self.start = sample.start;
+        self.end = sample.end;
         self.sample = Some(sample);
+    }
+
+    pub fn set_loop(&mut self, should_loop: bool) {
+        self.should_loop = should_loop;
+    }
+
+    pub fn set_start(&mut self, start: usize) {
+        self.start = start;
+    }
+
+    pub fn set_end(&mut self, end: usize) {
+        self.end = end;
     }
 
     pub fn position(&self) -> usize {
         match &self.sample {
-            Some(sample) => self.index - sample.start,
+            Some(sample) => self.index - self.start,
             None => self.index
         }
     }
 
     pub fn set_position(&mut self, position: usize) {
         match &self.sample {
-            Some(sample) => self.index = position + sample.start,
+            Some(sample) => self.index = position + self.start,
             None => self.index = position
         }
     }
@@ -259,7 +286,7 @@ impl<T: Frame> SamplePlayer<T> {
     pub fn progress(&self) -> f32 {
         match &self.sample {
             Some(sample) => {
-                (self.index - sample.start) as f32 / (sample.end - sample.start) as f32
+                (self.index - self.start) as f32 / (self.end - self.start) as f32
             },
             None => {
                 0.0
@@ -267,20 +294,9 @@ impl<T: Frame> SamplePlayer<T> {
         }
     }
 
-    /*pub fn play_length(&self) -> usize {
-        match &self.sample {
-            Some(sample) => sample.end - sample.start,
-            None => 0
-        }
-    }*/
-
     pub fn playing(&self) -> bool {
         self.playing
     }
-
-    /*pub fn set_time(&mut self, time: TimeRange) {
-        time.start
-    }*/
 
     pub fn play(&mut self) {
         self.playing = true;
@@ -304,17 +320,21 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     type Item = T;
 
     fn reset(&mut self) {}
-
-    fn prepare(&mut self, sample_rate: u32, _: usize) {
-        self.sample_rate = sample_rate;
-    }
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn gen(&mut self) -> Self::Item {
-        if self.playing {
+
+        if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
-                if self.index < sample.end {
+                if self.should_loop {
                     self.index += 1;
-                    return sample.buffer[self.index - 1];
+
+                    return sample.buffer[self.start + (self.index - 1) % usize::max(self.end - self.start, 1)]
+                } else {
+                    if self.index < sample.end {
+                        self.index += 1;
+                        return sample.buffer[self.index - 1];
+                    }
                 }
             }
         }
@@ -323,15 +343,22 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     }
 
     fn generate_block(&mut self, output: &mut Buffer<T>) {
-        if self.playing {
+        if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
-                if self.index + output.len() < sample.end {
-                    let end = self.index + output.len();
-                    for (buf, out) in sample.buffer.as_slice()[self.index..end].iter().zip(&mut output.into_iter()) {
+                if self.should_loop {
+                    for (buf, out) in sample.buffer.as_slice()[self.start..self.end].iter().cycle().skip(self.index).zip(&mut output.into_iter()) {
                         *out = *buf;
+                        self.index += 1;
                     }
+                } else {
+                    if self.index + output.len() < sample.end {
+                        let end = self.index + output.len();
+                        for (buf, out) in sample.buffer.as_slice()[self.index..end].iter().zip(&mut output.into_iter()) {
+                            *out = *buf;
+                        }
 
-                    self.index += output.len();
+                        self.index += output.len();
+                    }
                 }
             }
         }
@@ -340,7 +367,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
 
 pub struct PitchedSamplePlayer<S: Frame> {
     pub player: Converter<SamplePlayer<S>, Linear<S>>,
-    pitch: f32
+    pitch: f32,
 }
 
 impl<T: Frame> PitchedSamplePlayer<T> {
@@ -405,5 +432,111 @@ impl<T: Frame> Deref for PitchedSamplePlayer<T> {
 impl<T: Frame> DerefMut for PitchedSamplePlayer<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.player.deref_mut()
+    }
+}
+
+pub struct GranularSamplePlayer<F: Frame> {
+    player: PitchedSamplePlayer<F>,
+    rng: ThreadRng,
+    start_delta: f32,
+}
+
+impl<F: Frame> GranularSamplePlayer<F> {
+    pub fn new() -> Self {
+        let mut player = PitchedSamplePlayer::<F>::new();
+        player.set_loop(true);
+
+        Self {
+            player,
+            rng: rand::thread_rng(),
+            start_delta: 0.0,
+        }
+    }
+
+    pub fn play(&mut self, grain_position: f32, grain_spread: f32, grain_length: f32) {
+        let length = match &self.sample {
+            Some(sample) => sample.len(),
+            None => 0
+        };
+
+        self.start_delta = self.rng.gen_range(
+            -grain_spread..=grain_spread
+        );
+
+        if let Some(sample) = &self.sample {
+            let start = usize::clamp(f32::round(
+                length as f32 * f32::clamp(
+                    grain_position + self.start_delta,
+                    0.0,
+                    1.0
+                )
+            ) as usize, 0, sample.len() - 1);
+
+            let end = usize::clamp(start + f32::round(
+                sample.len() as f32 * grain_length / 10.0,
+            ) as usize, 0, sample.len() - 1);
+
+            self.player.set_loop(true);
+            self.player.set_start(start);
+            self.player.set_end(end);
+            self.player.set_position(start);
+            self.player.play();
+        }
+    }
+
+    pub fn update(&mut self, grain_position: f32, grain_length: f32) {
+        let length = match &self.sample {
+            Some(sample) => sample.len(),
+            None => 0
+        };
+
+        if let Some(sample) = &self.sample {
+            let start = usize::clamp(f32::round(
+                length as f32 * f32::clamp(
+                    grain_position + self.start_delta,
+                    0.0,
+                    1.0
+                )
+            ) as usize, 0, sample.len() - 1);
+
+            let end = usize::clamp(start + f32::round(
+                sample.len() as f32 * grain_length / 10.0,
+            ) as usize, 0, sample.len() - 1);
+
+            self.player.set_start(start);
+            self.player.set_end(end);
+        }
+    }
+}
+
+impl<T: Frame> Generator for GranularSamplePlayer<T> {
+    type Item = T;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        self.player.prepare(sample_rate, block_size);
+    }
+
+    fn gen(&mut self) -> Self::Item {
+        self.player.gen()
+    }
+
+    fn generate_block(&mut self, output: &mut Buffer<T>) {
+        self.player.generate_block(output);
+    }
+}
+
+impl<T: Frame> Deref for GranularSamplePlayer<T> {
+    type Target = PitchedSamplePlayer<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.player
+    }
+}
+
+impl<T: Frame> DerefMut for GranularSamplePlayer<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.player
     }
 }
