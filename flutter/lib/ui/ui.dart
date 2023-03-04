@@ -95,9 +95,7 @@ class UITree {
 }
 
 abstract class UIWidget2 extends StatelessWidget {
-  UIWidget2(this.host, this.tree) {
-    // state = ValueNotifier(newState());
-  }
+  UIWidget2(this.host, this.tree);
 
   final Host host;
   final UITree tree;

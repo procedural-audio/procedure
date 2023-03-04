@@ -132,18 +132,21 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
         builder: (context, value, child) {
           return Container(
               width: 300,
+              padding: EdgeInsets.all(10),
               color: const Color.fromRGBO(30, 30, 30, 1.0),
-              child: Column(children: [
-                EditorTitle("Widget Tree"),
-                Expanded(
-                    child: SingleChildScrollView(
-                        controller: controller,
-                        child: widget.host.globals.rootWidget != null
-                            ? WidgetTreeElement(
-                                widget: widget.host.globals.rootWidget!,
-                                tree: widget.tree)
-                            : Container()))
-              ]));
+              child: ListTileTheme(
+                  dense: true,
+                  child: Column(children: [
+                    EditorTitle("Widget Tree"),
+                    Expanded(
+                        child: SingleChildScrollView(
+                            controller: controller,
+                            child: widget.host.globals.rootWidget != null
+                                ? WidgetTreeElement(
+                                    widget: widget.host.globals.rootWidget!,
+                                    tree: widget.tree)
+                                : Container()))
+                  ])));
         });
   }
 }
@@ -164,42 +167,52 @@ class WidgetTreeElement extends StatelessWidget {
       }
     }
 
-    return ExpansionTile(
-      title: Row(children: [
-        Text(
-          widget.name,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-        ),
-        widget.name == "Empty" || widget.name == "Root"
-            ? Container()
-            : IconButton(
-                icon: const Icon(
-                  Icons.delete,
-                  color: Colors.white,
-                  size: 16,
-                ),
-                onPressed: () {
-                  tree.delete(widget);
-                },
-              )
-      ]),
-      initiallyExpanded: true,
-      children: [
-        Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: Column(
-                children: children.map((child) {
-              return WidgetTreeElement(
-                widget: child,
-                tree: tree,
-              );
-            }).toList()))
-      ],
-      textColor: Colors.white,
-      collapsedTextColor: Colors.grey,
-      iconColor: Colors.grey,
-      collapsedIconColor: Colors.grey,
-    );
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+        child: ExpansionTile(
+          maintainState: true,
+          initiallyExpanded: true,
+          textColor: Colors.white,
+          collapsedTextColor: Colors.grey,
+          iconColor: Colors.grey,
+          collapsedIconColor: Colors.grey,
+          backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
+          collapsedBackgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+          tilePadding: const EdgeInsets.fromLTRB(15, 0, 10, 0),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10))),
+          collapsedShape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10))),
+          title: Row(children: [
+            Text(
+              widget.name,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            widget.name == "Empty" || widget.name == "Root"
+                ? Container()
+                : IconButton(
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.grey,
+                      size: 14,
+                    ),
+                    onPressed: () {
+                      tree.delete(widget);
+                    },
+                  )
+          ]),
+          children: [
+            Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                child: Column(
+                    children: children.map((child) {
+                  return WidgetTreeElement(
+                    widget: child,
+                    tree: tree,
+                  );
+                }).toList()))
+          ],
+        ));
   }
 }
 
