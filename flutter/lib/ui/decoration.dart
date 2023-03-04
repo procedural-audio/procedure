@@ -8,8 +8,8 @@ import 'common.dart';
 
 import 'dart:io';
 
-class TextUIWidget2 extends UIWidget2 {
-  TextUIWidget2(Host host, UITree tree) : super(host, tree);
+class TextUIWidget extends UIWidget2 {
+  TextUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
   final String name = "Text";
@@ -63,7 +63,7 @@ class TextUIWidget2 extends UIWidget2 {
     return TransformWidgetEditing(
         data: data,
         onTap: () {
-          // state.notifyListeners();
+          toggleEditor();
         },
         onUpdate: (t) {
           setState(() {

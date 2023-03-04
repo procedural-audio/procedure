@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:metasampler/ui/layout.dart';
 
 import '../host.dart';
 import 'decoration.dart';
@@ -9,16 +10,16 @@ UIWidget2? createUIWidget(Host host, String name, UITree tree) {
   /* Layout Widgets */
 
   if (name == "Text") {
-    return TextUIWidget2(host, tree);
+    return TextUIWidget(host, tree);
   } else if (name == "Web View") {
     return WebViewUIWidget(host, tree);
-    /*if (name == "Stack") {
+  } else if (name == "Stack") {
     return StackUIWidget(host, tree);
-    } else if (name == "Row") {
+  } else if (name == "Row") {
     return RowUIWidget(host, tree);
   } else if (name == "Column") {
     return ColumnUIWidget(host, tree);
-  } else if (name == "Grid") {
+    /*} else if (name == "Grid") {
     return GridUIWidget(host, tree);
 
     /* Decoration Widgets */
@@ -63,9 +64,32 @@ class UITree {
     editing.notifyListeners();
   }
 
+  bool deleteRecursive(UIWidget2 current, UIWidget2 item) {
+    if (current.getChildren().remove(item)) {
+      return true;
+    } else {
+      for (var child in current.getChildren()) {
+        if (deleteRecursive(child, item)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   void delete(UIWidget2 widget) {
-    // host.globals.rootWidget?.deleteChildRecursive(widget);
-    editorBuilder.value = null;
+    var root = host.globals.rootWidget;
+    if (root != null) {
+      if (!deleteRecursive(root, widget)) {
+        print("Failed to delete item");
+      }
+    }
+
+    if (editorBuilder.value == widget.buildWidgetEditor) {
+      editorBuilder.value = null;
+    }
+
     editing.notifyListeners();
   }
 }
@@ -88,6 +112,14 @@ abstract class UIWidget2 extends StatelessWidget {
   }
 
   List<UIWidget2> getChildren();
+
+  void toggleEditor() {
+    if (tree.editorBuilder.value == buildWidgetEditor) {
+      tree.editorBuilder.value = null;
+    } else {
+      tree.editorBuilder.value = buildWidgetEditor;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

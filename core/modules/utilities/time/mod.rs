@@ -1,10 +1,12 @@
 mod global_time;
+mod global_transport;
 mod local_time;
 mod rate;
 mod reverse;
 mod accumulate;
 
 pub use global_time::*;
+pub use global_transport::*;
 pub use local_time::*;
 pub use rate::*;
 pub use reverse::*;

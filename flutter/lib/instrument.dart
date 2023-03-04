@@ -131,23 +131,19 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
         valueListenable: widget.tree.editing,
         builder: (context, value, child) {
           return Container(
-            width: 300,
-            color: const Color.fromRGBO(30, 30, 30, 1.0),
-            child: Column(
-              children: [
+              width: 300,
+              color: const Color.fromRGBO(30, 30, 30, 1.0),
+              child: Column(children: [
                 EditorTitle("Widget Tree"),
                 Expanded(
                     child: SingleChildScrollView(
-                  controller: controller,
-                  child: widget.host.globals.rootWidget != null
-                      ? WidgetTreeElement(
-                          widget: widget.host.globals.rootWidget!,
-                          tree: widget.tree)
-                      : Container(),
-                ))
-              ],
-            ),
-          );
+                        controller: controller,
+                        child: widget.host.globals.rootWidget != null
+                            ? WidgetTreeElement(
+                                widget: widget.host.globals.rootWidget!,
+                                tree: widget.tree)
+                            : Container()))
+              ]));
         });
   }
 }

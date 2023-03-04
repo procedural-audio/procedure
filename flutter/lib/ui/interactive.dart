@@ -15,20 +15,23 @@ import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';
 
-// import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewUIWidget extends UIWidget2 {
-  WebViewUIWidget(Host host, UITree tree) : super(host, tree) {
-    initWebView();
-  }
-
-  void initWebView() async {
-    // final webView = await WebviewWindow.create();
-    // webView.launch("chasekanipe.com");
-  }
+  WebViewUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
   final String name = "Web View";
+
+  final GlobalKey webViewKey = GlobalKey();
+  /*InAppWebViewSettings settings = InAppWebViewSettings(
+      useShouldOverrideUrlLoading: true,
+      mediaPlaybackRequiresUserGesture: false,
+      allowsInlineMediaPlayback: true,
+      iframeAllow: "camera; microphone",
+      iframeAllowFullscreen: true);*/
+
+  InAppWebViewController? webViewController;
 
   TransformData data = TransformData(
       width: 100,
@@ -57,7 +60,18 @@ class WebViewUIWidget extends UIWidget2 {
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
       data: data,
-      child: Container(color: Colors.blue),
+      child: Container(
+        color: Colors.blue,
+        child: InAppWebView(
+          key: webViewKey,
+          initialUrlRequest: URLRequest(
+              // url: WebUri("/Users/chasekanipe/Github/nodus/index.html")),
+              url: WebUri("http://chasekanipe.com")),
+          onWebViewCreated: (controller) {
+            webViewController = controller;
+          },
+        ),
+      ),
     );
   }
 

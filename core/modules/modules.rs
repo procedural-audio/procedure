@@ -219,6 +219,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
 
     // Time
     modules.push(module::<GlobalTime>());
+    modules.push(module::<GlobalTransport>());
     modules.push(module::<Rate>());
     modules.push(module::<Reverse>());
     modules.push(module::<Accumulator>());

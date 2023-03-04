@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:metasampler/host.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
-import 'package:metasampler/views/topBar.dart';
 
 import 'views/info.dart';
 import 'views/settings.dart';

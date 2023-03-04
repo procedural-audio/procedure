@@ -56,7 +56,7 @@ class RootWidget extends UIWidget2 {
         color: color,
         child: GestureDetector(
             onTap: () {
-              // toggleEditor();
+              toggleEditor();
             },
             child: ChildDragTarget(
               tree: tree,
@@ -72,99 +72,6 @@ class RootWidget extends UIWidget2 {
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Container();
-  }
-}
-
-/* Root Widget */
-
-/*class RootWidget extends UIWidget {
-  RootWidget(Host host, UITree tree) : super(host, tree);
-
-  double? width;
-  double? height;
-  Color color = const Color.fromRGBO(40, 40, 40, 1.0);
-  List<UIWidget> children = [];
-
-  @override
-  String getName() {
-    return "Root";
-  }
-
-  @override
-  Map<String, dynamic> getJson() {
-    return {
-      "width": width,
-      "height": height,
-      "color": color.value,
-      "children": saveChildren(children)
-    };
-  }
-
-  @override
-  void setJson(Map<String, dynamic> json) {
-    width = json["width"];
-    height = json["height"];
-    color = Color(json["color"]);
-    children = createChildren(json["children"]);
-  }
-
-  @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return children;
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {
-    if (!children.remove(widget)) {
-      for (var child in children) {
-        child.deleteChildRecursive(widget);
-      }
-    }
-  }
-
-  @override
-  _RootWidget createState() => _RootWidget();
-}
-
-class _RootWidget extends UIWidgetState<RootWidget> {
-  @override
-  Widget buildWidget(BuildContext context) {
-    return Container(
-        width: widget.width,
-        height: widget.height,
-        color: widget.color,
-        child: Stack(fit: StackFit.expand, children: widget.children));
-  }
-
-  @override
-  Widget buildWidgetEditing(BuildContext context) {
-    return Container(
-        width: widget.width,
-        height: widget.height,
-        color: widget.color,
-        child: GestureDetector(
-            onTap: () {
-              toggleEditor();
-            },
-            child: ChildDragTarget(
-              tree: widget.tree,
-              onAddChild: (child) {
-                widget.children.add(child);
-                refreshWidget();
-              },
-              child: Stack(fit: StackFit.expand, children: widget.children),
-              host: widget.host,
-            )));
-  }
-
-  @override
-  Widget buildWidgetEditor(BuildContext context) {
     return Column(children: [
       EditorTitle("Root"),
       Section(
@@ -172,20 +79,19 @@ class _RootWidget extends UIWidgetState<RootWidget> {
           child: Row(children: [
             Field(
               label: "WIDTH",
-              initialValue: widget.width == null ? "" : widget.width.toString(),
+              initialValue: width == null ? "" : width.toString(),
               onChanged: (s) {
                 setState(() {
-                  widget.width = double.tryParse(s);
+                  width = double.tryParse(s);
                 });
               },
             ),
             Field(
                 label: "HEIGHT",
-                initialValue:
-                    widget.height == null ? "" : widget.height.toString(),
+                initialValue: height == null ? "" : height.toString(),
                 onChanged: (s) {
                   setState(() {
-                    widget.height = double.tryParse(s);
+                    height = double.tryParse(s);
                   });
                 })
           ])),
@@ -196,41 +102,38 @@ class _RootWidget extends UIWidgetState<RootWidget> {
                 text: "Color",
                 child: ColorField(
                   width: 150,
-                  color: widget.color,
-                  onChanged: (color) {
+                  color: color,
+                  onChanged: (c) {
                     setState(() {
-                      widget.color = color;
+                      color = c;
                     });
                   },
                 ))
           ]))
     ]);
   }
-}*/
+}
 
 /* Row Widget */
 
-/*class RowUIWidget extends UIWidget {
+class RowUIWidget extends UIWidget2 {
   RowUIWidget(Host host, UITree tree) : super(host, tree);
 
-  List<UIWidget> children = [];
+  List<UIWidget2> children = [];
 
   TransformData transform = TransformData(
-    width: null,
-    height: null,
-    left: 0,
-    top: 0,
-    alignment: Alignment.topLeft,
-    padding: EdgeInsets.zero
-  );
+      width: null,
+      height: null,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
 
   int columns = 2;
   EdgeInsets padding = EdgeInsets.zero;
 
   @override
-  String getName() {
-    return "Row";
-  }
+  final String name = "Row";
 
   @override
   Map<String, dynamic> getJson() {
@@ -250,259 +153,198 @@ class _RootWidget extends UIWidgetState<RootWidget> {
   }
 
   @override
+  List<UIWidget2> getChildren() {
+    return children;
+  }
+
+  @override
   void setJson(Map<String, dynamic> json) {
-    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"], json["padding_top"], json["padding_bottom"]);
+    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"],
+        json["padding_top"], json["padding_bottom"]);
+
     columns = json["columns"];
     children = createChildren(json["children"]);
     transform = TransformData.fromJson(json["transform"]);
   }
 
   @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return children;
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {
-    bool removed = false;
-
-    for (int i = 0; i < children.length; i++) {
-      if (children[i] == widget) {
-        children[i] = EmptyUIWidget(host, tree);
-        removed = true;
-      }
-    }
-
-    if (!removed) {
-      for (var child in children) {
-        child.deleteChildRecursive(widget);
-      }
-    }
-  }
-
-  @override
-  _RowUIWidget createState() => _RowUIWidget();
-}
-
-class _RowUIWidget extends UIWidgetState<RowUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
-    while (widget.children.length < widget.columns) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
+    while (children.length < columns) {
+      children.add(EmptyUIWidget(host, tree));
     }
 
-    while (widget.children.length > widget.columns) {
-      widget.children.removeLast();
+    while (children.length > columns) {
+      children.removeLast();
     }
 
     return GestureDetector(
-      onTap: () {
-        toggleEditor();
-      },
-      child: TransformWidget(
-        data: widget.transform,
-        child: Row(
-          children: widget.children.sublist(0, widget.columns).map((child) {
-            return Expanded(
-              child: Padding(
-                padding: widget.padding,
+        onTap: () {
+          toggleEditor();
+        },
+        child: TransformWidget(
+            data: transform,
+            child: Row(
+                children: children.sublist(0, columns).map((child) {
+              return Expanded(
+                  child: Padding(
+                padding: padding,
                 child: child,
-              )
-            );
-          }).toList()
-        )
-      )
-    );
+              ));
+            }).toList())));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
-    while (widget.children.length < widget.columns) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
+    while (children.length < columns) {
+      children.add(EmptyUIWidget(host, tree));
     }
 
-    while (widget.children.length > widget.columns) {
-      widget.children.removeLast();
+    while (children.length > columns) {
+      children.removeLast();
     }
 
     return TransformWidgetEditing(
-      data: widget.transform,
-      onTap: () {
-        toggleEditor();
-      },
-      onUpdate: (data) {
-        widget.transform = data;
-        refreshWidget();
-      },
-      tree: widget.tree,
-      child: Row(
-        children: widget.children.sublist(0, widget.columns).asMap().entries.map((entry) {
+        data: transform,
+        onTap: () {
+          toggleEditor();
+        },
+        onUpdate: (data) {
+          transform = data;
+          setState(() {});
+        },
+        tree: tree,
+        child: Row(
+            children: children.sublist(0, columns).asMap().entries.map((entry) {
           var index = entry.key;
           var child = entry.value;
 
           return Expanded(
-            child: ChildDragTarget(
-              onAddChild: (newChild) {
-                widget.children[index] = newChild;
-                refreshWidget();
-              },
-              child: Padding(
-                padding: widget.padding,
-                child: child,
-              ),
-              tree: widget.tree,
-              host: widget.host,
-            )
-          );
-        }).toList()
-      )
-    );
+              child: ChildDragTarget(
+            onAddChild: (newChild) {
+              children[index] = newChild;
+              setState(() {});
+            },
+            child: Padding(
+              padding: padding,
+              child: child,
+            ),
+            tree: tree,
+            host: host,
+          ));
+        }).toList()));
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Row"),
-        TransformWidgetEditor(
-          data: widget.transform,
-          onUpdate: (t) {
-            widget.transform = t;
-            refreshWidget();
-          },
-          tree: widget.tree,
-        ),
-        Section(
+    return Column(children: [
+      EditorTitle("Row"),
+      TransformWidgetEditor(
+        data: transform,
+        onUpdate: (t) {
+          transform = t;
+          setState(() {});
+        },
+        tree: tree,
+      ),
+      Section(
           title: "Layout",
           child: FieldLabel(
-            text: "Columns",
-            child: Field(
-              width: 50,
-              initialValue: widget.columns.toString(),
-              label: "",
-              onChanged: (s) {
-                widget.columns = int.tryParse(s) ?? 2;
+              text: "Columns",
+              child: Field(
+                width: 50,
+                initialValue: columns.toString(),
+                label: "",
+                onChanged: (s) {
+                  columns = int.tryParse(s) ?? 2;
 
-                while (widget.children.length < widget.columns) {
-                  widget.children.add(EmptyUIWidget(widget.host, widget.tree));
-                }
+                  while (children.length < columns) {
+                    children.add(EmptyUIWidget(host, tree));
+                  }
 
-                while (widget.children.length > widget.columns) {
-                  widget.children.removeLast();
-                }
+                  while (children.length > columns) {
+                    children.removeLast();
+                  }
 
-                refreshWidget();
-              },
-            )
-          )
-        ),
-        Section(
+                  setState(() {});
+                },
+              ))),
+      Section(
           title: "Padding",
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Field(
-                    label: "LEFT",
-                    initialValue: widget.padding.left.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.top,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
+          child: Column(children: [
+            Row(children: [
+              Field(
+                  label: "LEFT",
+                  initialValue: padding.left.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
+                        padding.top, padding.right, padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "RIGHT",
-                    initialValue: widget.padding.right.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.bottom
-                      );
+                    setState(() {});
+                  }),
+              Field(
+                  label: "RIGHT",
+                  initialValue: padding.right.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(padding.left, padding.top,
+                        double.tryParse(s) ?? 0.0, padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-              Row(
-                children: [
-                  Field(
-                    label: "TOP",
-                    initialValue: widget.padding.top.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding.left,
+                    setState(() {});
+                  })
+            ]),
+            Row(children: [
+              Field(
+                  label: "TOP",
+                  initialValue: padding.top.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(
+                        padding.left,
                         double.tryParse(s) ?? 0.0,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
+                        padding.right,
+                        padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "BOTTOM",
-                    initialValue: widget.padding.bottom.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        widget.padding.right,
-                        double.tryParse(s) ?? 0.0,
-                      );
+                    setState(() {});
+                  }),
+              Field(
+                  label: "BOTTOM",
+                  initialValue: padding.bottom.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(
+                      padding.left,
+                      padding.top,
+                      padding.right,
+                      double.tryParse(s) ?? 0.0,
+                    );
 
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-            ]
-          )
-        ),
-      ]
-    );
+                    setState(() {});
+                  })
+            ])
+          ]))
+    ]);
   }
 }
 
-/* Column Widget */
-
-class ColumnUIWidget extends UIWidget {
+class ColumnUIWidget extends UIWidget2 {
   ColumnUIWidget(Host host, UITree tree) : super(host, tree);
 
-  List<UIWidget> children = [];
-  int rows = 2;
-  EdgeInsets padding = EdgeInsets.zero;
+  List<UIWidget2> children = [];
 
   TransformData transform = TransformData(
-    width: null,
-    height: null,
-    left: 0,
-    top: 0,
-    alignment: Alignment.topLeft,
-    padding: EdgeInsets.zero
-  );
+      width: null,
+      height: null,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
+
+  int columns = 2;
+  EdgeInsets padding = EdgeInsets.zero;
 
   @override
-  String getName() {
-    return "Column";
-  }
+  final String name = "Column";
 
   @override
   Map<String, dynamic> getJson() {
-    while (children.length > rows) {
+    while (children.length > columns) {
       children.removeLast();
     }
 
@@ -512,233 +354,218 @@ class ColumnUIWidget extends UIWidget {
       "padding_right": padding.right,
       "padding_top": padding.top,
       "padding_bottom": padding.bottom,
-      "rows": rows,
+      "columns": columns,
       "children": saveChildren(children),
     };
   }
 
   @override
+  List<UIWidget2> getChildren() {
+    return children;
+  }
+
+  @override
   void setJson(Map<String, dynamic> json) {
-    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"], json["padding_top"], json["padding_bottom"]);
-    rows = json["rows"];
+    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"],
+        json["padding_top"], json["padding_bottom"]);
+
+    columns = json["columns"];
     children = createChildren(json["children"]);
     transform = TransformData.fromJson(json["transform"]);
   }
 
   @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return children;
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {
-    bool removed = false;
-
-    for (int i = 0; i < children.length; i++) {
-      if (children[i] == widget) {
-        children[i] = EmptyUIWidget(host, tree);
-        removed = true;
-      }
-    }
-
-    if (!removed) {
-      for (var child in children) {
-        child.deleteChildRecursive(widget);
-      }
-    }
-  }
-
-  @override
-  _ColumnUIWidget createState() => _ColumnUIWidget();
-}
-
-class _ColumnUIWidget extends UIWidgetState<ColumnUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
-    while (widget.children.length < widget.rows) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
+    while (children.length < columns) {
+      children.add(EmptyUIWidget(host, tree));
     }
 
-    while (widget.children.length > widget.rows) {
-      widget.children.removeLast();
+    while (children.length > columns) {
+      children.removeLast();
     }
 
-    return TransformWidget(
-      data: widget.transform,
-      child: Column(
-        children: widget.children.sublist(0, widget.rows).map((child) {
-          return Expanded(
-            child: Padding(
-              padding: widget.padding,
-              child: child,
-            )
-          );
-        }).toList()
-      )
-    );
+    return GestureDetector(
+        onTap: () {
+          toggleEditor();
+        },
+        child: TransformWidget(
+            data: transform,
+            child: Column(
+                children: children.sublist(0, columns).map((child) {
+              return Expanded(
+                  child: Padding(
+                padding: padding,
+                child: child,
+              ));
+            }).toList())));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
-    while (widget.children.length < widget.rows) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
+    while (children.length < columns) {
+      children.add(EmptyUIWidget(host, tree));
     }
 
-    while (widget.children.length > widget.rows) {
-      widget.children.removeLast();
+    while (children.length > columns) {
+      children.removeLast();
     }
 
     return TransformWidgetEditing(
-      data: widget.transform,
-      onTap: () {
-        toggleEditor();
-      },
-      onUpdate: (t) {
-        widget.transform = t;
-        refreshWidget();
-      },
-      tree: widget.tree,
-      child: Column(
-        children: widget.children.sublist(0, widget.rows).asMap().entries.map((entry) {
+        data: transform,
+        onTap: () {
+          toggleEditor();
+        },
+        onUpdate: (data) {
+          transform = data;
+          setState(() {});
+        },
+        tree: tree,
+        child: Column(
+            children: children.sublist(0, columns).asMap().entries.map((entry) {
           var index = entry.key;
           var child = entry.value;
 
           return Expanded(
-            child: ChildDragTarget(
-              onAddChild: (newChild) {
-                widget.children[index] = newChild;
-                refreshWidget();
-              },
-              child: Padding(
-                padding: widget.padding,
-                child: child,
-              ),
-              tree: widget.tree,
-              host: widget.host
-            )
-          );
-        }).toList()
-      )
-    );
+              child: ChildDragTarget(
+            onAddChild: (newChild) {
+              children[index] = newChild;
+              setState(() {});
+            },
+            child: Padding(
+              padding: padding,
+              child: child,
+            ),
+            tree: tree,
+            host: host,
+          ));
+        }).toList()));
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Column"),
-        TransformWidgetEditor(
-          data: widget.transform,
-          onUpdate: (t) {
-            widget.transform = t;
-            refreshWidget();
-          },
-          tree: widget.tree,
-        ),
-        Section(
+    return Column(children: [
+      EditorTitle("Column"),
+      TransformWidgetEditor(
+        data: transform,
+        onUpdate: (t) {
+          transform = t;
+          setState(() {});
+        },
+        tree: tree,
+      ),
+      Section(
           title: "Layout",
           child: FieldLabel(
-            text: "Rows",
-            child: Field(
-              width: 50,
-              initialValue: widget.rows.toString(),
-              label: "",
-              onChanged: (s) {
-                widget.rows = int.tryParse(s) ?? 2;
+              text: "Columns",
+              child: Field(
+                width: 50,
+                initialValue: columns.toString(),
+                label: "",
+                onChanged: (s) {
+                  columns = int.tryParse(s) ?? 2;
 
-                while (widget.children.length < widget.rows) {
-                  widget.children.add(EmptyUIWidget(widget.host, widget.tree));
-                }
+                  while (children.length < columns) {
+                    children.add(EmptyUIWidget(host, tree));
+                  }
 
-                while (widget.children.length > widget.rows) {
-                  widget.children.removeLast();
-                }
+                  while (children.length > columns) {
+                    children.removeLast();
+                  }
 
-                refreshWidget();
-              },
-            )
-          )
-        ),
-        Section(
+                  setState(() {});
+                },
+              ))),
+      Section(
           title: "Padding",
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Field(
-                    label: "LEFT",
-                    initialValue: widget.padding.left.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.top,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
+          child: Column(children: [
+            Row(children: [
+              Field(
+                  label: "LEFT",
+                  initialValue: padding.left.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
+                        padding.top, padding.right, padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "RIGHT",
-                    initialValue: widget.padding.right.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.bottom
-                      );
+                    setState(() {});
+                  }),
+              Field(
+                  label: "RIGHT",
+                  initialValue: padding.right.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(padding.left, padding.top,
+                        double.tryParse(s) ?? 0.0, padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-              Row(
-                children: [
-                  Field(
-                    label: "TOP",
-                    initialValue: widget.padding.top.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding.left,
+                    setState(() {});
+                  })
+            ]),
+            Row(children: [
+              Field(
+                  label: "TOP",
+                  initialValue: padding.top.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(
+                        padding.left,
                         double.tryParse(s) ?? 0.0,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
+                        padding.right,
+                        padding.bottom);
 
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "BOTTOM",
-                    initialValue: widget.padding.bottom.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        widget.padding.right,
-                        double.tryParse(s) ?? 0.0,
-                      );
+                    setState(() {});
+                  }),
+              Field(
+                  label: "BOTTOM",
+                  initialValue: padding.bottom.toString(),
+                  onChanged: (s) {
+                    padding = EdgeInsets.fromLTRB(
+                      padding.left,
+                      padding.top,
+                      padding.right,
+                      double.tryParse(s) ?? 0.0,
+                    );
 
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-            ]
-          )
-        ),
-      ]
-    );
+                    setState(() {});
+                  })
+            ])
+          ]))
+    ]);
   }
 }
+
+class EmptyUIWidget extends UIWidget2 {
+  EmptyUIWidget(Host host, UITree tree) : super(host, tree);
+
+  @override
+  String name = "Empty";
+
+  @override
+  List<UIWidget2> getChildren() {
+    return [];
+  }
+
+  @override
+  Map<String, dynamic> getJson() {
+    return {};
+  }
+
+  @override
+  void setJson(Map<String, dynamic> json) {}
+
+  @override
+  Widget buildWidget(BuildContext context) {
+    return IgnorePointer(child: Container());
+  }
+
+  @override
+  Widget buildWidgetEditing(BuildContext context) {
+    return IgnorePointer(child: Container());
+  }
+
+  @override
+  Widget buildWidgetEditor(BuildContext context) {
+    return IgnorePointer(child: Container());
+  }
+}
+
+/*
 
 /* Grid Widget */
 
@@ -1013,27 +840,25 @@ class _GridUIWidget extends UIWidgetState<GridUIWidget> {
     );
   }
 }
+*/
 
 /* Stack Widget */
 
-class StackUIWidget extends UIWidget {
+class StackUIWidget extends UIWidget2 {
   StackUIWidget(Host host, UITree tree) : super(host, tree);
 
-  TransformData transform = TransformData(
-    width: null,
-    height: null,
-    left: 0,
-    top: 0,
-    alignment: Alignment.topLeft,
-    padding: EdgeInsets.zero
-  );
-
-  List<UIWidget> children = [];
-
   @override
-  String getName() {
-    return "Stack";
-  }
+  final String name = "Stack";
+
+  List<UIWidget2> children = [];
+
+  TransformData transform = TransformData(
+      width: null,
+      height: null,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
 
   @override
   Map<String, dynamic> getJson() {
@@ -1050,35 +875,16 @@ class StackUIWidget extends UIWidget {
   }
 
   @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
+  List<UIWidget2> getChildren() {
     return children;
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {
-    if (!children.remove(widget)) {
-      for (var child in children) {
-        child.deleteChildRecursive(widget);
-      }
-    }
-  }
-
-  @override
-  _StackUIWidget createState() => _StackUIWidget();
-}
-
-class _StackUIWidget extends UIWidgetState<StackUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-      data: widget.transform,
+      data: transform,
       child: Stack(
-        children: widget.children,
+        children: children,
       ),
     );
   }
@@ -1086,98 +892,42 @@ class _StackUIWidget extends UIWidgetState<StackUIWidget> {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-      data: widget.transform,
-      onTap: () {
-        toggleEditor();
-      },
-      onUpdate: (transform) {
-        widget.transform = transform;
-        refreshWidget();
-      },
-      tree: widget.tree,
-      child: Stack(
-        children: <Widget>[
-          ChildDragTarget(
-            onAddChild: (child) {
-              widget.children.add(child);
-              refreshWidget();
-            },
-            child: null,
-            tree: widget.tree,
-            host: widget.host,
-          )
-        ] + widget.children
-      )
-    );
+        data: transform,
+        onTap: () {
+          toggleEditor();
+        },
+        onUpdate: (t) {
+          transform = t;
+          setState(() {});
+        },
+        tree: tree,
+        child: Stack(
+            children: <Widget>[
+                  ChildDragTarget(
+                    onAddChild: (child) {
+                      children.add(child);
+                      setState(() {});
+                    },
+                    child: null,
+                    tree: tree,
+                    host: host,
+                  )
+                ] +
+                children));
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Stack"),
-        TransformWidgetEditor(
-          data: widget.transform,
-          onUpdate: (transform) {
-            widget.transform = transform;
-            refreshWidget();
-          },
-          tree: widget.tree,
-        ),
-      ]
-    );
+    return Column(children: [
+      EditorTitle("Stack"),
+      TransformWidgetEditor(
+        data: transform,
+        onUpdate: (transform) {
+          transform = transform;
+          setState(() {});
+        },
+        tree: tree,
+      ),
+    ]);
   }
 }
-
-class EmptyUIWidget extends UIWidget {
-  EmptyUIWidget(Host host, UITree tree) : super(host, tree);
-
-  @override
-  String getName() {
-    return "Empty";
-  }
-
-  @override
-  Map<String, dynamic> getJson() {
-    return {};
-  }
-
-  @override
-  void setJson(Map<String, dynamic> json) {
-  }
-
-  @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return [];
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {
-  }
-
-  @override
-  _EmptyUIWidget createState() => _EmptyUIWidget();
-}
-
-class _EmptyUIWidget extends UIWidgetState<EmptyUIWidget> {
-  @override
-  Widget buildWidget(BuildContext context) {
-    return IgnorePointer(child: Container());
-  }
-
-  @override
-  Widget buildWidgetEditing(BuildContext context) {
-    return IgnorePointer(child: Container());
-  }
-
-  @override
-  Widget buildWidgetEditor(BuildContext context) {
-    return IgnorePointer(child: Container());
-  }
-}
-*/
