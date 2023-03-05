@@ -6,14 +6,10 @@ import '../host.dart';
 import 'decoration.dart';
 import 'interactive.dart';
 
-UIWidget2? createUIWidget(Host host, String name, UITree tree) {
+UIWidget? createUIWidget(Host host, String name, UITree tree) {
   /* Layout Widgets */
 
-  if (name == "Text") {
-    return TextUIWidget(host, tree);
-  } else if (name == "Web View") {
-    return WebViewUIWidget(host, tree);
-  } else if (name == "Stack") {
+  if (name == "Stack") {
     return StackUIWidget(host, tree);
   } else if (name == "Row") {
     return RowUIWidget(host, tree);
@@ -23,19 +19,20 @@ UIWidget2? createUIWidget(Host host, String name, UITree tree) {
     return GridUIWidget(host, tree);
 
     /* Decoration Widgets */
-
-    /*
-    /*} else if (name == "Box") {
-    return BoxUIWidget(host, tree);
   } else if (name == "Text") {
     return TextUIWidget(host, tree);
+  } else if (name == "Box") {
+    return BoxUIWidget(host, tree);
   } else if (name == "Image") {
     return ImageUIWidget(host, tree);
   } else if (name == "Icon") {
-    return IconUIWidget(host, tree);*/
+    return IconUIWidget(host, tree);
+  } else if (name == "Web View") {
+    return WebViewUIWidget(host, tree);
 
     /* Interactive Widgets */
 
+    /*
   } else if (name == "Knob") {
     return KnobUIWidget(host, tree);
   } else if (name == "Slider") {
@@ -65,7 +62,7 @@ class UITree {
     editing.notifyListeners();
   }
 
-  void deleteChild(UIWidget2 widget) {
+  void deleteChild(UIWidget widget) {
     var root = host.globals.rootWidget;
     if (root != null) {
       if (!root.deleteChildRecursive(widget)) {
@@ -81,8 +78,8 @@ class UITree {
   }
 }
 
-abstract class UIWidget2 extends StatelessWidget {
-  UIWidget2(this.host, this.tree);
+abstract class UIWidget extends StatelessWidget {
+  UIWidget(this.host, this.tree);
 
   final Host host;
   final UITree tree;
@@ -96,7 +93,7 @@ abstract class UIWidget2 extends StatelessWidget {
     notifier.value = notifier.value + 1;
   }
 
-  List<UIWidget2> getChildren();
+  List<UIWidget> getChildren();
 
   void toggleEditor() {
     if (tree.editorBuilder.value == buildWidgetEditor) {
@@ -131,7 +128,7 @@ abstract class UIWidget2 extends StatelessWidget {
   Widget buildWidgetEditing(BuildContext context);
   Widget buildWidgetEditor(BuildContext context);
 
-  UIWidget2? createChild(Map<String, dynamic>? json) {
+  UIWidget? createChild(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
     }
@@ -155,7 +152,7 @@ abstract class UIWidget2 extends StatelessWidget {
     }
   }
 
-  bool deleteChildRecursive(UIWidget2 item) {
+  bool deleteChildRecursive(UIWidget item) {
     if (getChildren().remove(item)) {
       return true;
     } else {
@@ -169,63 +166,9 @@ abstract class UIWidget2 extends StatelessWidget {
     return false;
   }
 
-  Map<String, dynamic>? saveChild(UIWidget2? widget) {
-    if (widget != null) {
-      return {"name": widget.name, "state": widget.getJson()};
-    } else {
-      return null;
-    }
-  }
-
-  List<UIWidget2> createChildren(List<dynamic> json) {
-    return json.map((j) => createChild(j)!).toList();
-  }
-
-  List<Map<String, dynamic>> saveChildren(List<UIWidget2> children) {
-    return children.map((child) => saveChild(child)!).toList();
-  }
-}
-
-/*abstract class UIWidget extends StatefulWidget {
-  UIWidget(this.host, this.tree) : super(key: UniqueKey());
-
-  Host host;
-  UITree tree;
-
-  String getName();
-
-  ValueNotifier<int> editRefresher = ValueNotifier(0);
-
-  Map<String, dynamic> getJson();
-  void setJson(Map<String, dynamic> json);
-
-  String getCode();
-
-  UIWidget? createChild(Map<String, dynamic>? json) {
-    if (json == null) {
-      return null;
-    }
-
-    var name = json["name"];
-    var state = json["state"];
-
-    var child = createUIWidget(host, name, tree);
-
-    if (child != null) {
-      if (state != null) {
-        child.setJson(state);
-        return child;
-      } else {
-        return child;
-      }
-    } else {
-      return null;
-    }
-  }
-
   Map<String, dynamic>? saveChild(UIWidget? widget) {
     if (widget != null) {
-      return {"name": widget.getName(), "state": widget.getJson()};
+      return {"name": widget.name, "state": widget.getJson()};
     } else {
       return null;
     }
@@ -238,55 +181,4 @@ abstract class UIWidget2 extends StatelessWidget {
   List<Map<String, dynamic>> saveChildren(List<UIWidget> children) {
     return children.map((child) => saveChild(child)!).toList();
   }
-
-  void refresh() {
-    editRefresher.notifyListeners();
-  }
-
-  void deleteChildRecursive(UIWidget widget);
-
-  List<UIWidget> getChildren();
-
-  @override
-  UIWidgetState createState();
 }
-
-abstract class UIWidgetState<T extends UIWidget> extends State<T> {
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-        valueListenable: widget.tree.editing,
-        builder: (context, editing, child) {
-          if (editing) {
-            return ValueListenableBuilder(
-                valueListenable: widget.editRefresher,
-                builder: (context, value, child) {
-                  return buildWidgetEditing(context);
-                });
-          } else {
-            widget.tree.editorBuilder.value = null;
-            return buildWidget(context);
-          }
-        });
-  }
-
-  void refreshWidget() {
-    widget.refresh();
-  }
-
-  void refreshEditor() {
-    widget.tree.editorBuilder.notifyListeners();
-  }
-
-  Widget buildWidget(BuildContext context);
-  Widget buildWidgetEditing(BuildContext context);
-  Widget buildWidgetEditor(BuildContext context);
-
-  void toggleEditor() {
-    if (widget.tree.editorBuilder.value == buildWidgetEditor) {
-      widget.tree.editorBuilder.value = null;
-    } else {
-      widget.tree.editorBuilder.value = buildWidgetEditor;
-    }
-  }
-}*/

@@ -5,7 +5,7 @@ import 'common.dart';
 import 'ui.dart';
 import '../main.dart';
 
-class RootWidget extends UIWidget2 {
+class RootWidget extends UIWidget {
   RootWidget(Host host, UITree tree) : super(host, tree);
 
   @override
@@ -14,7 +14,7 @@ class RootWidget extends UIWidget2 {
   double? width;
   double? height;
   Color color = const Color.fromRGBO(40, 40, 40, 1.0);
-  List<UIWidget2> children = [];
+  List<UIWidget> children = [];
 
   @override
   Map<String, dynamic> getJson() {
@@ -35,7 +35,7 @@ class RootWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return children;
   }
 
@@ -116,13 +116,13 @@ class RootWidget extends UIWidget2 {
 
 /* Stack Widget */
 
-class StackUIWidget extends UIWidget2 {
+class StackUIWidget extends UIWidget {
   StackUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
   final String name = "Stack";
 
-  List<UIWidget2> children = [];
+  List<UIWidget> children = [];
 
   TransformData transform = TransformData(
       width: null,
@@ -147,7 +147,7 @@ class StackUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return children;
   }
 
@@ -206,10 +206,10 @@ class StackUIWidget extends UIWidget2 {
 
 /* Row Widget */
 
-class RowUIWidget extends UIWidget2 {
+class RowUIWidget extends UIWidget {
   RowUIWidget(Host host, UITree tree) : super(host, tree);
 
-  List<UIWidget2> children = [];
+  List<UIWidget> children = [];
 
   TransformData transform = TransformData(
       width: null,
@@ -243,7 +243,7 @@ class RowUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return children;
   }
 
@@ -413,10 +413,10 @@ class RowUIWidget extends UIWidget2 {
   }
 }
 
-class ColumnUIWidget extends UIWidget2 {
+class ColumnUIWidget extends UIWidget {
   ColumnUIWidget(Host host, UITree tree) : super(host, tree);
 
-  List<UIWidget2> children = [];
+  List<UIWidget> children = [];
 
   TransformData transform = TransformData(
       width: null,
@@ -450,7 +450,7 @@ class ColumnUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return children;
   }
 
@@ -620,14 +620,14 @@ class ColumnUIWidget extends UIWidget2 {
   }
 }
 
-class EmptyUIWidget extends UIWidget2 {
+class EmptyUIWidget extends UIWidget {
   EmptyUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
   String name = "Empty";
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return [];
   }
 
@@ -657,7 +657,7 @@ class EmptyUIWidget extends UIWidget2 {
 
 /* Grid Widget */
 
-class GridUIWidget extends UIWidget2 {
+class GridUIWidget extends UIWidget {
   GridUIWidget(Host host, UITree tree) : super(host, tree);
 
   TransformData transform = TransformData(
@@ -668,7 +668,7 @@ class GridUIWidget extends UIWidget2 {
       alignment: Alignment.topLeft,
       padding: EdgeInsets.zero);
 
-  List<UIWidget2> children = [];
+  List<UIWidget> children = [];
   int rows = 2;
   int columns = 2;
   EdgeInsets padding = EdgeInsets.zero;
@@ -705,12 +705,12 @@ class GridUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return children;
   }
 
   @override
-  bool deleteChildRecursive(UIWidget2 item) {
+  bool deleteChildRecursive(UIWidget item) {
     var children = getChildren();
     if (children.contains(item)) {
       for (int i = 0; i < children.length; i++) {

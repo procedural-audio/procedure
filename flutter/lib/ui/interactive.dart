@@ -17,7 +17,7 @@ import 'common.dart';
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-class WebViewUIWidget extends UIWidget2 {
+class WebViewUIWidget extends UIWidget {
   WebViewUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
@@ -52,7 +52,7 @@ class WebViewUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return [];
   }
 

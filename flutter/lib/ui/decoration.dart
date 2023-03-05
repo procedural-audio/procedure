@@ -8,7 +8,7 @@ import 'common.dart';
 
 import 'dart:io';
 
-class TextUIWidget extends UIWidget2 {
+class TextUIWidget extends UIWidget {
   TextUIWidget(Host host, UITree tree) : super(host, tree);
 
   @override
@@ -45,7 +45,7 @@ class TextUIWidget extends UIWidget2 {
   }
 
   @override
-  List<UIWidget2> getChildren() {
+  List<UIWidget> getChildren() {
     return [];
   }
 
@@ -136,145 +136,6 @@ class TextUIWidget extends UIWidget2 {
   }
 }
 
-/*class TextUIWidget extends UIWidget {
-  TextUIWidget(Host host, UITree tree) : super(host, tree);
-
-  String text = "Text Here";
-  double size = 14;
-  Color color = Colors.white;
-
-  TransformData data = TransformData(
-      width: 100,
-      height: 30,
-      left: 0,
-      top: 0,
-      alignment: Alignment.topLeft,
-      padding: EdgeInsets.zero);
-
-  @override
-  String getName() {
-    return "Text";
-  }
-
-  @override
-  Map<String, dynamic> getJson() {
-    return {
-      "text": text,
-      "size": size,
-      "color": color.value,
-      "transform": data.toJson()
-    };
-  }
-
-  @override
-  void setJson(Map<String, dynamic> json) {
-    text = json["text"];
-    size = json["size"];
-    color = Color(json["color"]);
-    data = TransformData.fromJson(json["transform"]);
-  }
-
-  @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return [];
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {}
-
-  @override
-  _TextUIWidget createState() => _TextUIWidget();
-}
-
-class _TextUIWidget extends UIWidgetState<TextUIWidget> {
-  @override
-  Widget buildWidget(BuildContext context) {
-    return TransformWidget(
-        data: widget.data,
-        child: Text(widget.text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: widget.color, fontSize: widget.size)));
-  }
-
-  @override
-  Widget buildWidgetEditing(BuildContext context) {
-    return TransformWidgetEditing(
-        data: widget.data,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (t) {
-          widget.data = t;
-          refreshWidget();
-        },
-        tree: widget.tree,
-        child: Text(widget.text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: widget.color, fontSize: widget.size)));
-  }
-
-  @override
-  Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Text"),
-      TransformWidgetEditor(
-          data: widget.data,
-          onUpdate: (t) {
-            widget.data = t;
-            refreshWidget();
-          },
-          tree: widget.tree),
-      Section(
-          title: "Text",
-          child: Row(children: [
-            Field(
-              width: 260,
-              label: "",
-              initialValue: widget.text,
-              onChanged: (s) {
-                widget.text = s;
-                refreshWidget();
-              },
-            )
-          ])),
-      Section(
-          title: "Style",
-          child: Column(children: [
-            FieldLabel(
-                text: "Font Size",
-                child: Field(
-                  width: 60,
-                  label: "",
-                  initialValue: widget.size.toString(),
-                  onChanged: (s) {
-                    var size = double.tryParse(s);
-
-                    if (size != null) {
-                      widget.size = size;
-                    }
-
-                    refreshWidget();
-                  },
-                )),
-            FieldLabel(
-                text: "Color",
-                child: ColorField(
-                    width: 160,
-                    color: widget.color,
-                    onChanged: (color) {
-                      widget.color = color;
-                      refreshWidget();
-                    }))
-          ])),
-    ]);
-  }
-}
-
 /* Image Widget */
 
 class ImageUIWidget extends UIWidget {
@@ -292,9 +153,7 @@ class ImageUIWidget extends UIWidget {
       padding: EdgeInsets.zero);
 
   @override
-  String getName() {
-    return "Image";
-  }
+  final String name = "Image";
 
   @override
   Map<String, dynamic> getJson() {
@@ -308,31 +167,18 @@ class ImageUIWidget extends UIWidget {
   }
 
   @override
-  String getCode() {
-    return "";
-  }
-
-  @override
   List<UIWidget> getChildren() {
     return [];
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {}
-
-  @override
-  _ImageUIWidget createState() => _ImageUIWidget();
-}
-
-class _ImageUIWidget extends UIWidgetState<ImageUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: widget.data,
-        child: widget.path != null
+        data: data,
+        child: path != null
             ? Stack(fit: StackFit.expand, children: [
                 Image.file(
-                  File(widget.path!),
+                  File(path!),
                   repeat: ImageRepeat.noRepeat,
                   fit: BoxFit.fill,
                 )
@@ -343,18 +189,18 @@ class _ImageUIWidget extends UIWidgetState<ImageUIWidget> {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: widget.data,
+        data: data,
         onTap: () {
           toggleEditor();
         },
         onUpdate: (v) {
-          widget.data = v;
-          refreshWidget();
+          data = v;
+          setState(() {});
         },
-        tree: widget.tree,
-        child: widget.path != null
+        tree: tree,
+        child: path != null
             ? Image.file(
-                File(widget.path!),
+                File(path!),
                 repeat: ImageRepeat.noRepeat,
                 fit: BoxFit.fill,
               )
@@ -366,12 +212,12 @@ class _ImageUIWidget extends UIWidgetState<ImageUIWidget> {
     return Column(children: [
       EditorTitle("Image"),
       TransformWidgetEditor(
-        data: widget.data,
+        data: data,
         onUpdate: (v) {
-          widget.data = v;
-          refreshWidget();
+          data = v;
+          setState(() {});
         },
-        tree: widget.tree,
+        tree: tree,
       ),
       Section(
           title: "File",
@@ -379,10 +225,10 @@ class _ImageUIWidget extends UIWidgetState<ImageUIWidget> {
             FileField(
               width: 260,
               extensions: const ["png", "jpg", "jpeg"],
-              path: widget.path,
+              path: path,
               onChanged: (s) {
-                widget.path = s;
-                refreshWidget();
+                path = s;
+                setState(() {});
               },
             )
           ])),
@@ -416,9 +262,7 @@ class IconUIWidget extends UIWidget {
       padding: EdgeInsets.zero);
 
   @override
-  String getName() {
-    return "Icon";
-  }
+  final String name = "Icon";
 
   @override
   Map<String, dynamic> getJson() {
@@ -432,31 +276,18 @@ class IconUIWidget extends UIWidget {
   }
 
   @override
-  String getCode() {
-    return "";
-  }
-
-  @override
   List<UIWidget> getChildren() {
     return [];
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {}
-
-  @override
-  _IconUIWidget createState() => _IconUIWidget();
-}
-
-class _IconUIWidget extends UIWidgetState<IconUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: widget.data,
-        child: widget.path != null
+        data: data,
+        child: path != null
             ? SvgPicture.file(
-                File(widget.path!),
-                color: widget.color,
+                File(path!),
+                color: color,
               )
             : Container());
   }
@@ -464,19 +295,19 @@ class _IconUIWidget extends UIWidgetState<IconUIWidget> {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: widget.data,
+        data: data,
         onTap: () {
           toggleEditor();
         },
         onUpdate: (t) {
-          widget.data = t;
-          refreshWidget();
+          data = t;
+          setState(() {});
         },
-        tree: widget.tree,
-        child: widget.path != null
+        tree: tree,
+        child: path != null
             ? SvgPicture.file(
-                File(widget.path!),
-                color: widget.color,
+                File(path!),
+                color: color,
               )
             : Container());
   }
@@ -486,23 +317,23 @@ class _IconUIWidget extends UIWidgetState<IconUIWidget> {
     return Column(children: [
       EditorTitle("Icon"),
       TransformWidgetEditor(
-        data: widget.data,
+        data: data,
         onUpdate: (v) {
-          widget.data = v;
-          refreshWidget();
+          data = v;
+          setState(() {});
         },
-        tree: widget.tree,
+        tree: tree,
       ),
       Section(
           title: "Path",
           child: Row(children: [
             FileField(
               width: 260,
-              path: widget.path,
+              path: path,
               extensions: const ["svg"],
               onChanged: (s) {
-                widget.path = s;
-                refreshWidget();
+                path = s;
+                setState(() {});
               },
             )
           ])),
@@ -515,10 +346,10 @@ class _IconUIWidget extends UIWidgetState<IconUIWidget> {
             ),
             ColorField(
                 width: 160,
-                color: widget.color,
+                color: color,
                 onChanged: (color) {
-                  widget.color = color;
-                  refreshWidget();
+                  color = color;
+                  setState(() {});
                 })
           ])),
     ]);
@@ -529,6 +360,10 @@ class _IconUIWidget extends UIWidgetState<IconUIWidget> {
 
 class BoxUIWidget extends UIWidget {
   BoxUIWidget(Host host, UITree tree) : super(host, tree);
+
+  double borderRadius = 0.0;
+  double borderThickness = 0.0;
+  Color borderColor = Colors.grey;
 
   TransformData transform = TransformData(
       width: null,
@@ -541,14 +376,15 @@ class BoxUIWidget extends UIWidget {
   Color color = Colors.grey;
 
   @override
-  String getName() {
-    return "Box";
-  }
+  String name = "Box";
 
   @override
   Map<String, dynamic> getJson() {
     return {
       "transform": transform.toJson(),
+      "borderRadius": borderRadius,
+      "borderThickness": borderThickness,
+      "borderColor": borderColor.value,
       "color": color.value,
     };
   }
@@ -556,12 +392,10 @@ class BoxUIWidget extends UIWidget {
   @override
   void setJson(Map<String, dynamic> json) {
     transform = TransformData.fromJson(json["transform"]);
+    borderRadius = json["borderRadius"];
+    borderThickness = json["borderThickness"];
+    borderColor = Color(json["borderColor"]);
     color = Color(json["color"]);
-  }
-
-  @override
-  String getCode() {
-    return "";
   }
 
   @override
@@ -570,38 +404,35 @@ class BoxUIWidget extends UIWidget {
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {}
-
-  @override
-  _BoxUIWidget createState() => _BoxUIWidget();
-}
-
-class _BoxUIWidget extends UIWidgetState<BoxUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-      data: widget.transform,
-      child: Container(
-        color: widget.color,
-      ),
-    );
+        data: transform,
+        child: Container(
+            decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
+                border:
+                    Border.all(color: borderColor, width: borderThickness))));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: widget.transform,
+        data: transform,
         onTap: () {
           toggleEditor();
         },
         onUpdate: (transform) {
-          widget.transform = transform;
-          refreshWidget();
+          transform = transform;
+          setState(() {});
         },
-        tree: widget.tree,
+        tree: tree,
         child: Container(
-          color: widget.color,
-        ));
+            decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
+                border:
+                    Border.all(color: borderColor, width: borderThickness))));
   }
 
   @override
@@ -609,12 +440,12 @@ class _BoxUIWidget extends UIWidgetState<BoxUIWidget> {
     return Column(children: [
       EditorTitle("Container"),
       TransformWidgetEditor(
-        data: widget.transform,
+        data: transform,
         onUpdate: (transform) {
-          widget.transform = transform;
-          refreshWidget();
+          transform = transform;
+          setState(() {});
         },
-        tree: widget.tree,
+        tree: tree,
       ),
       Section(
           title: "Style",
@@ -622,15 +453,44 @@ class _BoxUIWidget extends UIWidgetState<BoxUIWidget> {
             FieldLabel(
                 text: "Color",
                 child: ColorField(
-                  width: 150,
-                  color: widget.color,
-                  onChanged: (color) {
-                    widget.color = color;
-                    refreshWidget();
-                  },
-                ))
+                    width: 150,
+                    color: color,
+                    onChanged: (c) {
+                      color = c;
+                      setState(() {});
+                    }))
+          ])),
+      Section(
+          title: "Border",
+          child: Column(children: [
+            FieldLabel(
+                text: "Radius",
+                child: Field(
+                    label: "PX",
+                    initialValue: borderRadius.toString(),
+                    onChanged: (s) {
+                      borderRadius = double.tryParse(s) ?? 0.0;
+                      setState(() {});
+                    })),
+            FieldLabel(
+                text: "Thickness",
+                child: Field(
+                    label: "PX",
+                    initialValue: borderThickness.toString(),
+                    onChanged: (s) {
+                      borderThickness = double.tryParse(s) ?? 0.0;
+                      setState(() {});
+                    })),
+            FieldLabel(
+                text: "Color",
+                child: ColorField(
+                    width: 150,
+                    color: color,
+                    onChanged: (c) {
+                      color = c;
+                      setState(() {});
+                    }))
           ]))
     ]);
   }
 }
-*/

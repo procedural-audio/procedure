@@ -130,23 +130,28 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
     return ValueListenableBuilder(
         valueListenable: widget.tree.editing,
         builder: (context, value, child) {
-          return Container(
-              width: 300,
-              padding: EdgeInsets.all(10),
-              color: const Color.fromRGBO(30, 30, 30, 1.0),
-              child: ListTileTheme(
-                  dense: true,
-                  child: Column(children: [
-                    EditorTitle("Widget Tree"),
-                    Expanded(
-                        child: SingleChildScrollView(
-                            controller: controller,
-                            child: widget.host.globals.rootWidget != null
-                                ? WidgetTreeElement(
-                                    widget: widget.host.globals.rootWidget!,
-                                    tree: widget.tree)
-                                : Container()))
-                  ])));
+          return ValueListenableBuilder(
+              valueListenable: widget.tree.editorBuilder,
+              builder: (context, editorBuilder, child) {
+                return Container(
+                    width: 300,
+                    padding: const EdgeInsets.all(10),
+                    color: const Color.fromRGBO(30, 30, 30, 1.0),
+                    child: ListTileTheme(
+                        dense: true,
+                        child: Column(children: [
+                          EditorTitle("Widget Tree"),
+                          Expanded(
+                              child: SingleChildScrollView(
+                                  controller: controller,
+                                  child: widget.host.globals.rootWidget != null
+                                      ? WidgetTreeElement(
+                                          widget:
+                                              widget.host.globals.rootWidget!,
+                                          tree: widget.tree)
+                                      : Container()))
+                        ])));
+              });
         });
   }
 }
@@ -154,12 +159,12 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
 class WidgetTreeElement extends StatelessWidget {
   WidgetTreeElement({required this.widget, required this.tree});
 
-  UIWidget2 widget;
+  UIWidget widget;
   UITree tree;
 
   @override
   Widget build(BuildContext context) {
-    List<UIWidget2> children = [];
+    List<UIWidget> children = [];
 
     for (var child in widget.getChildren()) {
       if (child.name != "Empty") {
@@ -172,8 +177,13 @@ class WidgetTreeElement extends StatelessWidget {
         child: ExpansionTile(
           maintainState: true,
           initiallyExpanded: true,
-          textColor: Colors.white,
-          collapsedTextColor: Colors.grey,
+          textColor: widget.buildWidgetEditor == tree.editorBuilder.value
+              ? Colors.blue
+              : Colors.white,
+          collapsedTextColor:
+              widget.buildWidgetEditor == tree.editorBuilder.value
+                  ? Colors.blue
+                  : Colors.grey,
           iconColor: Colors.grey,
           collapsedIconColor: Colors.grey,
           backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
@@ -288,7 +298,7 @@ class _WidgetMenu extends State<WidgetMenu> {
                       WidgetMenuElement("Slider", Icons.slideshow_rounded),
                       WidgetMenuElement("Button", Icons.radio_button_checked),
                       WidgetMenuElement("Envelope", Icons.graphic_eq),
-                      WidgetMenuElement("Mod Source", Icons.graphic_eq),
+                      // WidgetMenuElement("Mod Source", Icons.graphic_eq),
                     ]),
                     WidgetMenuSection(title: "Metering", children: [
                       WidgetMenuElement("RMS", Icons.king_bed_outlined),
