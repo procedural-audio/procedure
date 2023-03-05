@@ -114,6 +114,96 @@ class RootWidget extends UIWidget2 {
   }
 }
 
+/* Stack Widget */
+
+class StackUIWidget extends UIWidget2 {
+  StackUIWidget(Host host, UITree tree) : super(host, tree);
+
+  @override
+  final String name = "Stack";
+
+  List<UIWidget2> children = [];
+
+  TransformData transform = TransformData(
+      width: null,
+      height: null,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
+
+  @override
+  Map<String, dynamic> getJson() {
+    return {
+      "transform": transform.toJson(),
+      "children": saveChildren(children)
+    };
+  }
+
+  @override
+  void setJson(Map<String, dynamic> json) {
+    transform = TransformData.fromJson(json["transform"]);
+    children = createChildren(json["children"]);
+  }
+
+  @override
+  List<UIWidget2> getChildren() {
+    return children;
+  }
+
+  @override
+  Widget buildWidget(BuildContext context) {
+    return TransformWidget(
+      data: transform,
+      child: Stack(
+        children: children,
+      ),
+    );
+  }
+
+  @override
+  Widget buildWidgetEditing(BuildContext context) {
+    return TransformWidgetEditing(
+        data: transform,
+        onTap: () {
+          toggleEditor();
+        },
+        onUpdate: (t) {
+          transform = t;
+          setState(() {});
+        },
+        tree: tree,
+        child: Stack(
+            children: <Widget>[
+                  ChildDragTarget(
+                    onAddChild: (child) {
+                      children.add(child);
+                      setState(() {});
+                    },
+                    child: null,
+                    tree: tree,
+                    host: host,
+                  )
+                ] +
+                children));
+  }
+
+  @override
+  Widget buildWidgetEditor(BuildContext context) {
+    return Column(children: [
+      EditorTitle("Stack"),
+      TransformWidgetEditor(
+        data: transform,
+        onUpdate: (transform) {
+          transform = transform;
+          setState(() {});
+        },
+        tree: tree,
+      ),
+    ]);
+  }
+}
+
 /* Row Widget */
 
 class RowUIWidget extends UIWidget2 {
@@ -565,31 +655,26 @@ class EmptyUIWidget extends UIWidget2 {
   }
 }
 
-/*
-
 /* Grid Widget */
 
-class GridUIWidget extends UIWidget {
+class GridUIWidget extends UIWidget2 {
   GridUIWidget(Host host, UITree tree) : super(host, tree);
 
   TransformData transform = TransformData(
-    width: null,
-    height: null,
-    left: 0,
-    top: 0,
-    alignment: Alignment.topLeft,
-    padding: EdgeInsets.zero
-  );
+      width: null,
+      height: null,
+      left: 0,
+      top: 0,
+      alignment: Alignment.topLeft,
+      padding: EdgeInsets.zero);
 
-  List<UIWidget> children = [];
+  List<UIWidget2> children = [];
   int rows = 2;
   int columns = 2;
   EdgeInsets padding = EdgeInsets.zero;
 
   @override
-  String getName() {
-    return "Grid";
-  }
+  final String name = "Grid";
 
   @override
   Map<String, dynamic> getJson() {
@@ -611,267 +696,12 @@ class GridUIWidget extends UIWidget {
 
   @override
   void setJson(Map<String, dynamic> json) {
-    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"], json["padding_top"], json["padding_bottom"]);
+    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"],
+        json["padding_top"], json["padding_bottom"]);
     rows = json["rows"];
     columns = json["columns"];
     children = createChildren(json["children"]);
     transform = TransformData.fromJson(json["transform"]);
-  }
-
-  @override
-  String getCode() {
-    return "";
-  }
-
-  @override
-  List<UIWidget> getChildren() {
-    return children;
-  }
-
-  @override
-  void deleteChildRecursive(UIWidget widget) {
-    bool removed = false;
-
-    for (int i = 0; i < children.length; i++) {
-      if (children[i] == widget) {
-        children[i] = EmptyUIWidget(host, tree);
-        removed = true;
-      }
-    }
-
-    if (!removed) {
-      for (var child in children) {
-        child.deleteChildRecursive(widget);
-      }
-    }
-  }
-
-  @override
-  _GridUIWidget createState() => _GridUIWidget();
-}
-
-class _GridUIWidget extends UIWidgetState<GridUIWidget> {
-  @override
-  Widget buildWidget(BuildContext context) {
-    while (widget.children.length < widget.rows * widget.columns) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
-    }
-
-    while (widget.children.length > widget.rows * widget.columns) {
-      widget.children.removeLast();
-    }
-
-    return TransformWidget(
-      data: widget.transform,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return GridView.count(
-            crossAxisCount: widget.rows,
-            childAspectRatio: constraints.maxWidth / constraints.maxHeight * (widget.columns / widget.rows),
-            children: widget.children.sublist(0, widget.rows * widget.columns).map((child) {
-              return Padding(
-                padding: widget.padding,
-                child: child,
-              );
-            }).toList()
-          );
-        }
-      )
-    );
-
-  }
-
-  @override
-  Widget buildWidgetEditing(BuildContext context) {
-    while (widget.children.length < widget.rows * widget.columns) {
-      widget.children.add(EmptyUIWidget(widget.host, widget.tree));
-    }
-
-    while (widget.children.length > widget.rows * widget.columns) {
-      widget.children.removeLast();
-    }
-
-    return TransformWidgetEditing(
-      data: widget.transform,
-      onTap: () {
-        toggleEditor();
-      },
-      onUpdate: (t) {
-        widget.transform = t;
-        refreshWidget();
-      },
-      tree: widget.tree,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return GridView.count(
-            crossAxisCount: widget.rows,
-            childAspectRatio: constraints.maxWidth / constraints.maxHeight * (widget.columns / widget.rows),
-            children: widget.children.sublist(0, widget.rows * widget.columns).asMap().entries.map((entry) {
-              var index = entry.key;
-              var child = entry.value;
-
-              return ChildDragTarget(
-                onAddChild: (newChild) {
-                  widget.children[index] = newChild;
-                  refreshWidget();
-                },
-                child: Padding(
-                  padding: widget.padding,
-                  child: child,
-                ),
-                tree: widget.tree,
-                host: widget.host
-              );
-            }).toList()
-          );
-        }
-      )
-    );
-  }
-
-  @override
-  Widget buildWidgetEditor(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Grid"),
-        TransformWidgetEditor(
-          data: widget.transform,
-          onUpdate: (t) {
-            widget.transform = t;
-            refreshWidget();
-          },
-          tree: widget.tree,
-        ),
-        Section(
-          title: "Layout",
-          child: Row(
-            children: [
-              Field(
-                label: "COLS",
-                initialValue: widget.rows.toString(),
-                onChanged: (s) {
-                  widget.rows = int.tryParse(s) ?? 2;
-                  refreshWidget();
-                },
-              ),
-              Field(
-                label: "ROWS",
-                initialValue: widget.columns.toString(),
-                onChanged: (s) {
-                  widget.columns = int.tryParse(s) ?? 2;
-                  refreshWidget();
-                },
-              ),
-            ]
-          )
-        ),
-        Section(
-          title: "Padding",
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Field(
-                    label: "LEFT",
-                    initialValue: widget.padding.left.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.top,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
-
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "RIGHT",
-                    initialValue: widget.padding.right.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.bottom
-                      );
-
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-              Row(
-                children: [
-                  Field(
-                    label: "TOP",
-                    initialValue: widget.padding.top.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding.left,
-                        double.tryParse(s) ?? 0.0,
-                        widget.padding.right,
-                        widget.padding.bottom
-                      );
-
-                      refreshWidget();
-                    },
-                  ),
-                  Field(
-                    label: "BOTTOM",
-                    initialValue: widget.padding.bottom.toString(),
-                    onChanged: (s) {
-                      widget.padding = EdgeInsets.fromLTRB(
-                        widget.padding. left,
-                        widget.padding.top,
-                        widget.padding.right,
-                        double.tryParse(s) ?? 0.0,
-                      );
-
-                      refreshWidget();
-                    },
-                  ),
-                ]
-              ),
-            ]
-          )
-        ),
-      ]
-    );
-  }
-}
-*/
-
-/* Stack Widget */
-
-class StackUIWidget extends UIWidget2 {
-  StackUIWidget(Host host, UITree tree) : super(host, tree);
-
-  @override
-  final String name = "Stack";
-
-  List<UIWidget2> children = [];
-
-  TransformData transform = TransformData(
-      width: null,
-      height: null,
-      left: 0,
-      top: 0,
-      alignment: Alignment.topLeft,
-      padding: EdgeInsets.zero);
-
-  @override
-  Map<String, dynamic> getJson() {
-    return {
-      "transform": transform.toJson(),
-      "children": saveChildren(children)
-    };
-  }
-
-  @override
-  void setJson(Map<String, dynamic> json) {
-    transform = TransformData.fromJson(json["transform"]);
-    children = createChildren(json["children"]);
   }
 
   @override
@@ -880,17 +710,63 @@ class StackUIWidget extends UIWidget2 {
   }
 
   @override
+  bool deleteChildRecursive(UIWidget2 item) {
+    var children = getChildren();
+    if (children.contains(item)) {
+      for (int i = 0; i < children.length; i++) {
+        if (children[i] == item) {
+          children[i] = EmptyUIWidget(host, tree);
+          return true;
+        }
+      }
+    } else {
+      for (var child in children) {
+        if (child.deleteChildRecursive(item)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  @override
   Widget buildWidget(BuildContext context) {
+    while (children.length < rows * columns) {
+      children.add(EmptyUIWidget(host, tree));
+    }
+
+    while (children.length > rows * columns) {
+      children.removeLast();
+    }
+
     return TransformWidget(
-      data: transform,
-      child: Stack(
-        children: children,
-      ),
-    );
+        data: transform,
+        child: LayoutBuilder(builder: (context, constraints) {
+          return GridView.count(
+              crossAxisCount: rows,
+              childAspectRatio: constraints.maxWidth /
+                  constraints.maxHeight *
+                  (columns / rows),
+              children: children.sublist(0, rows * columns).map((child) {
+                return Padding(
+                  padding: padding,
+                  child: child,
+                );
+              }).toList());
+        }));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
+    while (children.length < rows * columns) {
+      children.add(EmptyUIWidget(host, tree));
+    }
+
+    while (children.length > rows * columns) {
+      children.removeLast();
+    }
+
     return TransformWidgetEditing(
         data: transform,
         onTap: () {
@@ -901,33 +777,119 @@ class StackUIWidget extends UIWidget2 {
           setState(() {});
         },
         tree: tree,
-        child: Stack(
-            children: <Widget>[
-                  ChildDragTarget(
-                    onAddChild: (child) {
-                      children.add(child);
+        child: LayoutBuilder(builder: (context, constraints) {
+          return GridView.count(
+              crossAxisCount: rows,
+              childAspectRatio: constraints.maxWidth /
+                  constraints.maxHeight *
+                  (columns / rows),
+              children: children
+                  .sublist(0, rows * columns)
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                var index = entry.key;
+                var child = entry.value;
+
+                return ChildDragTarget(
+                    onAddChild: (newChild) {
+                      children[index] = newChild;
                       setState(() {});
                     },
-                    child: null,
+                    child: Padding(
+                      padding: padding,
+                      child: child,
+                    ),
                     tree: tree,
-                    host: host,
-                  )
-                ] +
-                children));
+                    host: host);
+              }).toList());
+        }));
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
     return Column(children: [
-      EditorTitle("Stack"),
+      EditorTitle("Grid"),
       TransformWidgetEditor(
         data: transform,
-        onUpdate: (transform) {
-          transform = transform;
+        onUpdate: (t) {
+          transform = t;
           setState(() {});
         },
         tree: tree,
       ),
+      Section(
+          title: "Layout",
+          child: Row(children: [
+            Field(
+              label: "COLS",
+              initialValue: rows.toString(),
+              onChanged: (s) {
+                rows = int.tryParse(s) ?? 2;
+                setState(() {});
+              },
+            ),
+            Field(
+              label: "ROWS",
+              initialValue: columns.toString(),
+              onChanged: (s) {
+                columns = int.tryParse(s) ?? 2;
+                setState(() {});
+              },
+            ),
+          ])),
+      Section(
+          title: "Padding",
+          child: Column(children: [
+            Row(children: [
+              Field(
+                label: "LEFT",
+                initialValue: padding.left.toString(),
+                onChanged: (s) {
+                  padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
+                      padding.top, padding.right, padding.bottom);
+
+                  setState(() {});
+                },
+              ),
+              Field(
+                label: "RIGHT",
+                initialValue: padding.right.toString(),
+                onChanged: (s) {
+                  padding = EdgeInsets.fromLTRB(padding.left, padding.top,
+                      double.tryParse(s) ?? 0.0, padding.bottom);
+
+                  setState(() {});
+                },
+              ),
+            ]),
+            Row(children: [
+              Field(
+                label: "TOP",
+                initialValue: padding.top.toString(),
+                onChanged: (s) {
+                  padding = EdgeInsets.fromLTRB(padding.left,
+                      double.tryParse(s) ?? 0.0, padding.right, padding.bottom);
+
+                  setState(() {});
+                },
+              ),
+              Field(
+                label: "BOTTOM",
+                initialValue: padding.bottom.toString(),
+                onChanged: (s) {
+                  padding = EdgeInsets.fromLTRB(
+                    padding.left,
+                    padding.top,
+                    padding.right,
+                    double.tryParse(s) ?? 0.0,
+                  );
+
+                  setState(() {});
+                },
+              ),
+            ]),
+          ])),
     ]);
   }
 }

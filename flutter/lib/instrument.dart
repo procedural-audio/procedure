@@ -197,7 +197,7 @@ class WidgetTreeElement extends StatelessWidget {
                       size: 14,
                     ),
                     onPressed: () {
-                      tree.delete(widget);
+                      tree.deleteChild(widget);
                     },
                   )
           ]),

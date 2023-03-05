@@ -19,11 +19,12 @@ UIWidget2? createUIWidget(Host host, String name, UITree tree) {
     return RowUIWidget(host, tree);
   } else if (name == "Column") {
     return ColumnUIWidget(host, tree);
-    /*} else if (name == "Grid") {
+  } else if (name == "Grid") {
     return GridUIWidget(host, tree);
 
     /* Decoration Widgets */
 
+    /*
     /*} else if (name == "Box") {
     return BoxUIWidget(host, tree);
   } else if (name == "Text") {
@@ -64,24 +65,10 @@ class UITree {
     editing.notifyListeners();
   }
 
-  bool deleteRecursive(UIWidget2 current, UIWidget2 item) {
-    if (current.getChildren().remove(item)) {
-      return true;
-    } else {
-      for (var child in current.getChildren()) {
-        if (deleteRecursive(child, item)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  void delete(UIWidget2 widget) {
+  void deleteChild(UIWidget2 widget) {
     var root = host.globals.rootWidget;
     if (root != null) {
-      if (!deleteRecursive(root, widget)) {
+      if (!root.deleteChildRecursive(widget)) {
         print("Failed to delete item");
       }
     }
@@ -166,6 +153,20 @@ abstract class UIWidget2 extends StatelessWidget {
     } else {
       return null;
     }
+  }
+
+  bool deleteChildRecursive(UIWidget2 item) {
+    if (getChildren().remove(item)) {
+      return true;
+    } else {
+      for (var child in getChildren()) {
+        if (child.deleteChildRecursive(item)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   Map<String, dynamic>? saveChild(UIWidget2? widget) {
