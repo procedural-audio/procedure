@@ -450,8 +450,7 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
                                         setState(() {
                                           dragging = false;
                                         });
-                                        widget.tree.editorBuilder
-                                            .notifyListeners();
+                                        widget.tree.selected.notifyListeners();
                                       },
                                       child: widget.child,
                                     )),
@@ -948,7 +947,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
 
                     widget.data.alignment = a;
                     widget.onUpdate(widget.data);
-                    widget.tree.editorBuilder.notifyListeners();
+                    widget.tree.selected.notifyListeners();
                   },
                 ))),
         Section(

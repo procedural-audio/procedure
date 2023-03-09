@@ -131,8 +131,8 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
         valueListenable: widget.tree.editing,
         builder: (context, value, child) {
           return ValueListenableBuilder(
-              valueListenable: widget.tree.editorBuilder,
-              builder: (context, editorBuilder, child) {
+              valueListenable: widget.tree.selected,
+              builder: (context, selectedWidget, child) {
                 return Container(
                     width: 300,
                     padding: const EdgeInsets.all(10),
@@ -177,13 +177,9 @@ class WidgetTreeElement extends StatelessWidget {
         child: ExpansionTile(
           maintainState: true,
           initiallyExpanded: true,
-          textColor: widget.buildWidgetEditor == tree.editorBuilder.value
-              ? Colors.blue
-              : Colors.white,
+          textColor: widget == tree.selected.value ? Colors.blue : Colors.white,
           collapsedTextColor:
-              widget.buildWidgetEditor == tree.editorBuilder.value
-                  ? Colors.blue
-                  : Colors.grey,
+              widget == tree.selected.value ? Colors.blue : Colors.grey,
           iconColor: Colors.grey,
           collapsedIconColor: Colors.grey,
           backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
@@ -193,6 +189,9 @@ class WidgetTreeElement extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(10))),
           collapsedShape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10))),
+          onExpansionChanged: (v) {
+            tree.selected.value = widget;
+          },
           title: Row(children: [
             Text(
               widget.name,
@@ -243,14 +242,19 @@ class _WidgetEditorMenu extends State<WidgetEditorMenu> {
     return Container(
         width: 300,
         color: const Color.fromRGBO(30, 30, 30, 1.0),
-        child: ValueListenableBuilder<Widget Function(BuildContext)?>(
-            valueListenable: widget.tree.editorBuilder,
-            builder: (context, buildEditor, child) {
-              if (buildEditor == null) {
+        child: ValueListenableBuilder<UIWidget?>(
+            valueListenable: widget.tree.selected,
+            builder: (context, selectedWidget, child) {
+              if (selectedWidget == null) {
                 return Container();
               } else {
                 return SingleChildScrollView(
-                    controller: controller, child: buildEditor(context));
+                    controller: controller,
+                    child: ValueListenableBuilder<int>(
+                        valueListenable: selectedWidget.notifier,
+                        builder: (context, i, child) {
+                          return selectedWidget.buildWidgetEditor(context);
+                        }));
               }
             }));
   }

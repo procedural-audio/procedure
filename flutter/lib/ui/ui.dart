@@ -31,7 +31,8 @@ UIWidget? createUIWidget(Host host, String name, UITree tree) {
     return WebViewUIWidget(host, tree);
 
     /* Interactive Widgets */
-
+  } else if (name == "Button") {
+    return ButtonUIWidget(host, tree);
     /*
   } else if (name == "Knob") {
     return KnobUIWidget(host, tree);
@@ -55,8 +56,7 @@ class UITree {
   Host host;
 
   ValueNotifier<bool> editing = ValueNotifier(false);
-  ValueNotifier<Widget Function(BuildContext)?> editorBuilder =
-      ValueNotifier(null);
+  ValueNotifier<UIWidget?> selected = ValueNotifier(null);
 
   void refresh() {
     editing.notifyListeners();
@@ -70,8 +70,8 @@ class UITree {
       }
     }
 
-    if (editorBuilder.value == widget.buildWidgetEditor) {
-      editorBuilder.value = null;
+    if (selected.value == widget) {
+      selected.value = null;
     }
 
     editing.notifyListeners();
@@ -96,10 +96,10 @@ abstract class UIWidget extends StatelessWidget {
   List<UIWidget> getChildren();
 
   void toggleEditor() {
-    if (tree.editorBuilder.value == buildWidgetEditor) {
-      tree.editorBuilder.value = null;
+    if (tree.selected.value == this) {
+      tree.selected.value = null;
     } else {
-      tree.editorBuilder.value = buildWidgetEditor;
+      tree.selected.value = this;
     }
   }
 
@@ -114,7 +114,7 @@ abstract class UIWidget extends StatelessWidget {
                 if (editing) {
                   return buildWidgetEditing(context);
                 } else {
-                  tree.editorBuilder.value = null;
+                  tree.selected.value = null;
                   return buildWidget(context);
                 }
               });

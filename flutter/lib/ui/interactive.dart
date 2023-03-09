@@ -1324,6 +1324,7 @@ class TickPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
+*/
 
 /* Button Widget */
 
@@ -1331,6 +1332,7 @@ class ButtonUIWidget extends UIWidget {
   ButtonUIWidget(Host host, UITree tree) : super(host, tree);
 
   bool down = false;
+  bool isToggle = false;
 
   // Vital Knob
   var style = ButtonStyle(down: null, up: null);
@@ -1344,24 +1346,24 @@ class ButtonUIWidget extends UIWidget {
       padding: EdgeInsets.zero);
 
   @override
-  String getName() {
-    return "Button";
-  }
+  final String name = "Button";
 
   @override
   Map<String, dynamic> getJson() {
-    return {"transform": data.toJson(), "style": style.toJson()};
+    return {
+      "isToggle": isToggle,
+      "down": down,
+      "transform": data.toJson(),
+      "style": style.toJson()
+    };
   }
 
   @override
   void setJson(Map<String, dynamic> json) {
+    isToggle = json["isToggle"];
+    down = json["down"];
     data = TransformData.fromJson(json["transform"]);
     style = ButtonStyle.fromJson(json["style"]);
-  }
-
-  @override
-  String getCode() {
-    return "";
   }
 
   @override
@@ -1370,23 +1372,21 @@ class ButtonUIWidget extends UIWidget {
   }
 
   @override
-  void deleteChildRecursive(UIWidget widget) {}
-
-  @override
-  _ButtonUIWidget createState() => _ButtonUIWidget();
-}
-
-class _ButtonUIWidget extends UIWidgetState<ButtonUIWidget> {
-  @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: widget.data,
+        data: data,
         child: Button(
-          down: widget.down,
-          style: widget.style,
-          onUpdate: (v) {
-            widget.down = v;
-            refreshWidget();
+          down: down,
+          style: style,
+          onUpdate: (d) {
+            if (isToggle) {
+              if (d) {
+                down = !down;
+              }
+            } else {
+              down = d;
+            }
+            setState(() {});
           },
         ));
   }
@@ -1394,24 +1394,16 @@ class _ButtonUIWidget extends UIWidgetState<ButtonUIWidget> {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-      data: widget.data,
-      onTap: () {
-        toggleEditor();
-      },
-      onUpdate: (t) {
-        widget.data = t;
-        refreshWidget();
-      },
-      tree: widget.tree,
-      child: Button(
-        down: widget.down,
-        style: widget.style,
-        onUpdate: (v) {
-          widget.down = v;
-          refreshWidget();
+        data: data,
+        onTap: () {
+          toggleEditor();
         },
-      ),
-    );
+        onUpdate: (t) {
+          data = t;
+          setState(() {});
+        },
+        tree: tree,
+        child: Button(down: down, style: style, onUpdate: (v) {}));
   }
 
   @override
@@ -1419,33 +1411,45 @@ class _ButtonUIWidget extends UIWidgetState<ButtonUIWidget> {
     return Column(children: [
       EditorTitle("Button"),
       TransformWidgetEditor(
-          data: widget.data,
+          data: data,
           onUpdate: (t) {
-            widget.data = t;
-            refreshWidget();
+            data = t;
+            setState(() {});
           },
-          tree: widget.tree),
+          tree: tree),
       Section(
           title: "Style",
           child: Column(children: [
             FieldLabel(
                 text: "Down",
                 child: FileField(
-                    path: widget.style.down,
+                    path: style.down,
                     extensions: const ["jpg", "jpeg", "png"],
                     onChanged: (s) {
-                      widget.style.down = s;
-                      refreshWidget();
+                      style.down = s;
+                      setState(() {});
                     })),
             FieldLabel(
                 text: "Up",
                 child: FileField(
-                    path: widget.style.up,
+                    path: style.up,
                     extensions: const ["jpg", "jpeg", "png"],
                     onChanged: (s) {
-                      widget.style.up = s;
-                      refreshWidget();
-                    }))
+                      style.up = s;
+                      setState(() {});
+                    })),
+            FieldLabel(
+                text: "Toggle",
+                child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                    child: Checkbox(
+                        value: isToggle,
+                        onChanged: (b) {
+                          if (b != null) {
+                            isToggle = b;
+                            setState(() {});
+                          }
+                        })))
           ])),
     ]);
   }
@@ -1466,7 +1470,7 @@ class ButtonStyle {
   String? up;
 }
 
-class Button extends StatefulWidget {
+class Button extends StatelessWidget {
   Button({required this.down, required this.onUpdate, required this.style});
 
   final bool down;
@@ -1474,37 +1478,23 @@ class Button extends StatefulWidget {
   final ButtonStyle style;
 
   @override
-  State<Button> createState() => _Button();
-}
-
-class _Button extends State<Button> {
-  late bool down;
-
-  @override
-  void initState() {
-    super.initState();
-    down = widget.down;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Listener(onPointerDown: (e) {
-      setState(() {
-        widget.onUpdate(!down);
-        down = !down;
-      });
+      onUpdate(true);
+    }, onPointerUp: (e) {
+      onUpdate(false);
     }, child: Builder(builder: (context) {
       if (down) {
-        if (widget.style.down != null) {
-          return Image.file(File(widget.style.down!), fit: BoxFit.fill);
+        if (style.down != null) {
+          return Image.file(File(style.down!), fit: BoxFit.fill);
         } else {
           return Container(
             color: Colors.blue,
           );
         }
       } else {
-        if (widget.style.up != null) {
-          return Image.file(File(widget.style.up!), fit: BoxFit.fill);
+        if (style.up != null) {
+          return Image.file(File(style.up!), fit: BoxFit.fill);
         } else {
           return Container(
             color: Colors.grey,
@@ -1514,4 +1504,3 @@ class _Button extends State<Button> {
     }));
   }
 }
-*/
