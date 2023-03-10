@@ -141,8 +141,9 @@ class TextUIWidget extends UIWidget {
 class ImageUIWidget extends UIWidget {
   ImageUIWidget(Host host, UITree tree) : super(host, tree);
 
+  // String? path = "/home/chase/github/metasampler/content/assets/backgrounds/background_02.png";
   String? path =
-      "/home/chase/github/metasampler/content/assets/backgrounds/background_02.png";
+      "/Users/chasekanipe/Github/content/assets/backgrounds/background_02.png";
 
   TransformData data = TransformData(
       width: null,

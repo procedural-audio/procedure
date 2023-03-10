@@ -24,14 +24,12 @@ class Globals {
   /* Instruments */
 
   ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
-
   PresetInfo preset = PresetInfo(
       "Untitled Instrument",
       File(
           "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
 
   List<InstrumentInfo> instruments2 = [];
-
   ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
 
   /* Patching View */
@@ -41,9 +39,7 @@ class Globals {
   int selectedModule = -1;
 
   bool patchingScaleEnabled = true;
-
   Settings settings = Settings();
-
   RootWidget? rootWidget;
 }
 

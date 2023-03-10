@@ -291,18 +291,15 @@ class _WidgetMenu extends State<WidgetMenu> {
                       WidgetMenuElement("Text", Icons.text_fields),
                       WidgetMenuElement("Image", Icons.image),
                       WidgetMenuElement("Icon", Icons.picture_as_pdf),
-                      // WidgetMenuElement("Polygon", Icons.picture_as_pdf),
-                      // WidgetMenuElement("Square", Icons.picture_as_pdf),
-                      // WidgetMenuElement("Line", Icons.picture_as_pdf),
+                      // WidgetMenuElement("Text Edit", Icons.text_fields),
+                      // WidgetMenuElement("Line", Icons.add_box),
                     ]),
                     WidgetMenuSection(title: "Interactive", children: [
-                      WidgetMenuElement("Web View", Icons.window),
-                      WidgetMenuElement("Dropdown", Icons.list),
                       WidgetMenuElement("Knob", Icons.king_bed_outlined),
                       WidgetMenuElement("Slider", Icons.slideshow_rounded),
                       WidgetMenuElement("Button", Icons.radio_button_checked),
+                      WidgetMenuElement("Dropdown", Icons.list),
                       WidgetMenuElement("Envelope", Icons.graphic_eq),
-                      // WidgetMenuElement("Mod Source", Icons.graphic_eq),
                     ]),
                     WidgetMenuSection(title: "Metering", children: [
                       WidgetMenuElement("RMS", Icons.king_bed_outlined),
@@ -310,6 +307,9 @@ class _WidgetMenu extends State<WidgetMenu> {
                       WidgetMenuElement(
                           "Oscilliscope", Icons.radio_button_checked),
                       WidgetMenuElement("Meter", Icons.padding),
+                    ]),
+                    WidgetMenuSection(title: "Other", children: [
+                      WidgetMenuElement("Web View", Icons.window),
                     ])
                   ])))
         ]));
