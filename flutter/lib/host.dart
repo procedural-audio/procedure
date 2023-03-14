@@ -542,10 +542,8 @@ class Host extends ChangeNotifier {
         var s = uiFile.readAsStringSync();
         var data = jsonDecode(s);
 
-        print("SHOULD SET ROOTWIDGET JSON HERE");
-        // globals.rootWidget?.setJson(data);
-        print("SHOULD REFRESH TREE HERE");
-        // globals.instrumentView.tree.refresh();
+        globals.rootWidget?.setJson(data);
+        globals.rootWidget?.tree.refresh();
 
         print("Loaded UI:");
         print(data);
@@ -593,9 +591,7 @@ class Host extends ChangeNotifier {
 
     // Save UI
     File uiFile = File(path + "/ui.json");
-    print("SHOULD GET ROOTWIDGET JSON HERE");
-    // var data = globals.rootWidget?.getJson();
-    var data = null;
+    var data = globals.rootWidget?.getJson();
 
     if (data != null) {
       var s = jsonEncode(data);

@@ -32,6 +32,109 @@ class _Bar extends State<Bar> {
 
   @override
   Widget build(BuildContext context) {
+    return Stack(children: [
+      Align(
+          alignment: Alignment.topCenter,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            ValueListenableBuilder(
+                valueListenable: widget.window.instViewVisible,
+                builder: (context, visible, child) {
+                  return BarButton(
+                      borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(10.0)),
+                      iconData: widget.window.instViewVisible.value
+                          ? Icons.cable
+                          : Icons.piano,
+                      onTap: () {
+                        var vis = widget.window.instViewVisible;
+                        vis.value = !vis.value;
+                      });
+                }),
+            ValueListenableBuilder<InstrumentInfo>(
+                valueListenable: widget.host.loadedInstrument,
+                builder: (context, value, child) {
+                  return BarDropdown(
+                      width: 180,
+                      text: value.name,
+                      onTap: () {
+                        setState(() {
+                          instrumentBrowserExpanded =
+                              !instrumentBrowserExpanded;
+                          presetBrowserExpanded = false;
+                          variableViewVisible = false;
+                        });
+                      });
+                }),
+            ValueListenableBuilder(
+                // CHANGE TO LOADED PRESET
+                valueListenable: widget.host.loadedInstrument,
+                builder: (context, value, child) {
+                  return BarDropdown(
+                      width: 180,
+                      text: widget.host.globals.preset.name,
+                      onTap: () {
+                        setState(() {
+                          presetBrowserExpanded = !presetBrowserExpanded;
+                          instrumentBrowserExpanded = false;
+                          variableViewVisible = false;
+                        });
+                      });
+                })
+          ])),
+      Align(
+          alignment: Alignment.topCenter,
+          child: LayoutBuilder(builder: (context, constraints) {
+            if (instrumentBrowserExpanded ||
+                presetBrowserExpanded ||
+                variableViewVisible) {
+              return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 40, 0, 0),
+                  child: Container(
+                    width: barExpanded ? 710 : 525,
+                    height: 600,
+                    decoration: BoxDecoration(
+                        color: const Color.fromRGBO(40, 40, 40, 1.0),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(10)),
+                        border: Border.all(
+                            width: 1,
+                            color: const Color.fromRGBO(70, 70, 70, 1.0))),
+                    child: instrumentBrowserExpanded
+                        ? BrowserView(widget.host)
+                        : presetBrowserExpanded
+                            ? PresetsView(widget.host)
+                            : variableViewVisible
+                                ? widget.host.vars
+                                : Container(),
+                  ));
+            } else {
+              return const SizedBox(width: 0, height: 0);
+            }
+          }))
+    ]);
+  }
+}
+
+class Bar2 extends StatefulWidget {
+  Bar2(this.window, this.host);
+
+  Window window;
+  Host host;
+
+  @override
+  _Bar2 createState() => _Bar2();
+}
+
+class _Bar2 extends State<Bar2> {
+  bool barExpanded = false;
+
+  bool instrumentBrowserExpanded = false;
+  bool presetBrowserExpanded = false;
+
+  bool variableViewVisible = false;
+
+  @override
+  Widget build(BuildContext context) {
     const double barWidth = 500.0;
     const double barExpandedWidth = 700.0;
     const double expandedHeight = 500;
@@ -241,23 +344,13 @@ class _BarButton extends State<BarButton> {
           child: AnimatedContainer(
               duration: const Duration(milliseconds: 500),
               curve: Curves.fastLinearToSlowEaseIn,
-              width: hovering ? 50 : 45,
-              height: hovering ? 40 : 35,
+              width: 45,
+              height: 35,
               decoration: BoxDecoration(
                   color: hovering
-                      ? const Color.fromRGBO(50, 50, 50, 1.0)
-                      : const Color.fromRGBO(40, 40, 40, 1.0),
-                  borderRadius: hovering
-                      ? BorderRadius.only(
-                          topLeft: widget.borderRadius != null
-                              ? widget.borderRadius!.topLeft
-                              : Radius.zero,
-                          topRight: widget.borderRadius != null
-                              ? widget.borderRadius!.topRight
-                              : Radius.zero,
-                          bottomLeft: const Radius.circular(5),
-                          bottomRight: const Radius.circular(5))
-                      : widget.borderRadius),
+                      ? const Color.fromRGBO(60, 60, 60, 1.0)
+                      : const Color.fromRGBO(50, 50, 50, 1.0),
+                  borderRadius: widget.borderRadius),
               child: Icon(
                 widget.iconData,
                 color: hovering ? Colors.white : Colors.grey,
@@ -268,8 +361,9 @@ class _BarButton extends State<BarButton> {
 }
 
 class BarDropdown extends StatefulWidget {
-  BarDropdown({required this.text, required this.onTap});
+  BarDropdown({required this.text, required this.onTap, this.width});
 
+  double? width;
   String text;
   void Function() onTap;
 
@@ -293,10 +387,11 @@ class _BarDropdown extends State<BarDropdown> {
             onTap: widget.onTap,
             child: Container(
                 height: 35,
+                width: widget.width,
                 alignment: Alignment.center,
                 color: hovering
-                    ? const Color.fromRGBO(50, 50, 50, 1.0)
-                    : const Color.fromRGBO(40, 40, 40, 1.0),
+                    ? const Color.fromRGBO(60, 60, 60, 1.0)
+                    : const Color.fromRGBO(50, 50, 50, 1.0),
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Text(
                   widget.text,
@@ -395,8 +490,7 @@ class _ExtendedBar extends State<Bar> {
                                   color: const Color.fromRGBO(80, 80, 80, 0.5),
                                   borderRadius: BorderRadius.all(
                                       Radius.circular(radius))),
-                            ),
-                          )
+                            ))
                         : Container(),
                     Row(children: [
                       AnimatedSize(
@@ -405,24 +499,21 @@ class _ExtendedBar extends State<Bar> {
                         child: SizedBox(
                             width: expanded ? width * 5 : 0,
                             height: height,
-                            child: Row(
-                              children: [
-                                Container(
+                            child: Row(children: [
+                              Container(
                                   // Parameters
                                   width: width,
                                   alignment: Alignment.center,
                                   child: IconButton(
-                                    icon: const Icon(Icons.code),
-                                    iconSize: 20,
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      setState(() {
-                                        selected = 0;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Container(
+                                      icon: const Icon(Icons.code),
+                                      iconSize: 20,
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        setState(() {
+                                          selected = 0;
+                                        });
+                                      })),
+                              Container(
                                   // Samples
                                   width: width,
                                   alignment: Alignment.center,
@@ -435,55 +526,49 @@ class _ExtendedBar extends State<Bar> {
                                         selected = 1;
                                       });
                                     },
-                                  ),
+                                  )),
+                              Container(
+                                // Unknown
+                                width: width,
+                                alignment: Alignment.center,
+                                child: IconButton(
+                                  icon: const Icon(Icons.device_unknown),
+                                  iconSize: 18,
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    setState(() {
+                                      selected = 2;
+                                    });
+                                  },
                                 ),
-                                Container(
-                                  // Unknown
-                                  width: width,
-                                  alignment: Alignment.center,
-                                  child: IconButton(
-                                    icon: const Icon(Icons.device_unknown),
-                                    iconSize: 18,
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      setState(() {
-                                        selected = 2;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Container(
+                              ),
+                              Container(
                                   // Browser
                                   width: width,
                                   alignment: Alignment.center,
                                   child: IconButton(
-                                    icon: const Icon(Icons.view_module),
-                                    iconSize: 18,
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      setState(() {
-                                        selected = 3;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                Container(
+                                      icon: const Icon(Icons.view_module),
+                                      iconSize: 18,
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        setState(() {
+                                          selected = 3;
+                                        });
+                                      })),
+                              Container(
                                   // Settings
                                   width: width,
                                   alignment: Alignment.center,
                                   child: IconButton(
-                                    icon: const Icon(Icons.settings),
-                                    iconSize: 18,
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      setState(() {
-                                        selected = 4;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            )),
+                                      icon: const Icon(Icons.settings),
+                                      iconSize: 18,
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        setState(() {
+                                          selected = 4;
+                                        });
+                                      }))
+                            ])),
                       ),
                       expanded
                           ? Container(

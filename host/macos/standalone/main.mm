@@ -8,7 +8,7 @@ public:
 
     }
 
-    const juce::String getApplicationName() override       { return "Nodus"; }
+    const juce::String getApplicationName() override       { return "Procedural Audio Workstation"; }
     const juce::String getApplicationVersion() override    { return "0.0.0"; }
     bool moreThanOneInstanceAllowed() override             { return true; }
 
@@ -77,6 +77,7 @@ public:
         {
             setUsingNativeTitleBar (true);
             setContentOwned(new NodusEditor(processor), true);
+            setBackgroundColour(juce::Colour::fromRGB(90, 90, 90));
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
