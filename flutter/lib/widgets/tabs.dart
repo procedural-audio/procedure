@@ -66,14 +66,15 @@ class TabsWidget extends ModuleWidget {
           foregroundColor: Colors.red,
           backgroundColor: const Color.fromRGBO(50, 50, 50, 1.0),
           bottom: PreferredSize(
-              preferredSize: const ui.Size(200, 32),
-              child: Container(
-                child: TabBar(
-                  isScrollable: false,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  tabs: icons,
-                ),
-              )),
+            preferredSize: const ui.Size(200, 32),
+            child: Container(
+              child: TabBar(
+                isScrollable: false,
+                indicatorSize: TabBarIndicatorSize.label,
+                tabs: icons,
+              ),
+            ),
+          ),
         ),
         body: TabBarView(
             physics: const NeverScrollableScrollPhysics(), children: widgets),
