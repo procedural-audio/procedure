@@ -44,30 +44,78 @@ class RootWidget extends UIWidget {
     return Container(
         width: width,
         height: height,
-        color: color,
+        decoration: BoxDecoration(
+            color: color,
+            borderRadius: const BorderRadius.all(Radius.circular(5))),
         child: Stack(fit: StackFit.expand, children: children));
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return Container(
-        width: width,
-        height: height,
-        color: color,
-        child: GestureDetector(
-            onTap: () {
-              toggleEditor();
-            },
-            child: ChildDragTarget(
-              tree: tree,
-              onAddChild: (child) {
-                print("Adding child");
-                children.add(child);
-                setState(() {});
-              },
-              child: Stack(fit: StackFit.expand, children: children),
-              host: host,
-            )));
+        decoration: const BoxDecoration(boxShadow: [
+          BoxShadow(
+              blurRadius: 10,
+              spreadRadius: 10,
+              offset: Offset(5, 5),
+              color: Color.fromRGBO(0, 0, 0, 0.3))
+        ]),
+        child: Column(children: [
+          Container(
+              height: 30,
+              decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+                  color: Color.fromRGBO(60, 60, 60, 1.0)),
+              child: Row(children: [
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                      color: Colors.yellow,
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                )
+              ])),
+          Container(height: 1, color: const Color.fromRGBO(20, 20, 20, 1.0)),
+          Expanded(
+              child: Container(
+                  width: width,
+                  height: height,
+                  decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(5))),
+                  child: GestureDetector(
+                      onTap: () {
+                        toggleEditor();
+                      },
+                      child: ChildDragTarget(
+                        tree: tree,
+                        onAddChild: (child) {
+                          print("Adding child");
+                          children.add(child);
+                          setState(() {});
+                        },
+                        child: Stack(fit: StackFit.expand, children: children),
+                        host: host,
+                      ))))
+        ]));
   }
 
   @override

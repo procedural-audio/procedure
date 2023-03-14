@@ -79,7 +79,28 @@ class _Bar extends State<Bar> {
                           variableViewVisible = false;
                         });
                       });
-                })
+                }),
+            BarButton(
+                iconData: Icons.edit,
+                onTap: () {
+                  setState(() {
+                    widget.window.instrumentView.tree.editing.value =
+                        !widget.window.instrumentView.tree.editing.value;
+                  });
+                }),
+            ValueListenableBuilder(
+                valueListenable: widget.window.instViewVisible,
+                builder: (context, visible, child) {
+                  return BarButton(
+                      borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(10.0)),
+                      iconData: widget.window.instViewVisible.value
+                          ? Icons.arrow_drop_down
+                          : Icons.arrow_drop_up,
+                      onTap: () {
+                        print("Dropdown show");
+                      });
+                }),
           ])),
       Align(
           alignment: Alignment.topCenter,

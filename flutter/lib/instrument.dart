@@ -33,6 +33,13 @@ class _InstrumentView extends State<InstrumentView> {
 
   @override
   Widget build(BuildContext context) {
+    var root = widget.host.globals.rootWidget;
+    Color backgroundColor = const Color.fromRGBO(20, 20, 20, 1.0);
+    if (root != null) {
+      backgroundColor = Color.fromRGBO(root.color.red - 20,
+          root.color.green - 20, root.color.blue - 20, 1.0);
+    }
+
     return ValueListenableBuilder<bool>(
         valueListenable: widget.tree.editing,
         builder: (context, editing, child) {
@@ -42,25 +49,24 @@ class _InstrumentView extends State<InstrumentView> {
                 child: Row(mainAxisSize: MainAxisSize.max, children: [
                   WidgetMenu(),
                   Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      color: Colors.black,
-                      child: display,
-                    ),
-                  ),
+                      child: Container(
+                    alignment: Alignment.center,
+                    color: backgroundColor,
+                    child: display,
+                  )),
                   Column(
                     children: [
                       Expanded(child: WidgetTreeMenu(widget.tree, widget.host)),
                       Expanded(
                         child: WidgetEditorMenu(widget.tree),
-                      ),
+                      )
                     ],
                   )
                 ]));
           } else {
             return Container(
               alignment: Alignment.center,
-              color: Colors.black,
+              color: backgroundColor,
               child: display,
             );
           }
@@ -103,9 +109,8 @@ class _UIDisplay extends State<UIDisplay> {
                       scrollDirection: Axis.horizontal,
                       child: Container(
                         width: 1000,
-                        height: 1000,
+                        height: 800,
                         alignment: Alignment.center,
-                        color: Colors.grey,
                         child: widget.host.globals.rootWidget,
                       )))));
     });
