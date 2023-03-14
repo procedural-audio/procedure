@@ -265,25 +265,31 @@ class OtherView extends StatelessWidget {
           length: 4,
           child: Scaffold(
             backgroundColor: const Color.fromRGBO(80, 80, 80, 1.0),
-            appBar: AppBar(
-              toolbarHeight: 0,
-              foregroundColor: Colors.black,
-              backgroundColor: const Color.fromRGBO(50, 50, 50, 1.0),
-              bottom: const TabBar(
-                tabs: <Widget>[
-                  Tab(
-                    text: "Assets",
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: Theme(
+                data: ThemeData(splashFactory: NoSplash.splashFactory),
+                child: AppBar(
+                  toolbarHeight: 0,
+                  foregroundColor: Colors.black,
+                  backgroundColor: const Color.fromRGBO(50, 50, 50, 1.0),
+                  bottom: const TabBar(
+                    tabs: <Widget>[
+                      Tab(
+                        text: "Assets",
+                      ),
+                      Tab(
+                        text: "Samples",
+                      ),
+                      Tab(
+                        text: "Plugins",
+                      ),
+                      Tab(
+                        text: "Settings",
+                      ),
+                    ],
                   ),
-                  Tab(
-                    text: "Samples",
-                  ),
-                  Tab(
-                    text: "Plugins",
-                  ),
-                  Tab(
-                    text: "Settings",
-                  ),
-                ],
+                ),
               ),
             ),
             body: Container(
