@@ -7,11 +7,13 @@ import 'settings.dart';
 
 import '../host.dart';
 import '../config.dart';
+import '../ui/common.dart';
 
 class PresetsView extends StatelessWidget {
   PresetsView(this.host);
 
   Host host;
+  ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
 
   @override
   Widget build(BuildContext context) {
@@ -28,23 +30,25 @@ class PresetsView extends StatelessWidget {
                     UserInterfaceItem(
                       host,
                       text: "Interface 1",
+                      selectedItem: selectedItem,
                       children: [
-                        GraphItem(host, "Graph 1"),
-                        GraphItem(host, "Graph 2"),
-                        GraphItem(host, "Graph 3"),
-                        GraphItem(host, "Graph 4"),
+                        GraphItem(host, "Graph 1", selectedItem),
+                        GraphItem(host, "Graph 2", selectedItem),
+                        GraphItem(host, "Graph 3", selectedItem),
+                        GraphItem(host, "Graph 4", selectedItem),
                       ],
                     ),
                     UserInterfaceItem(
                       host,
                       text: "Interface 2",
+                      selectedItem: selectedItem,
                       children: [
-                        GraphItem(host, "Graph 5"),
-                        GraphItem(host, "Graph 6"),
+                        GraphItem(host, "Graph 5", selectedItem),
+                        GraphItem(host, "Graph 6", selectedItem),
                       ],
                     ),
-                    GraphItem(host, "Graph 1"),
-                    GraphItem(host, "Graph 2"),
+                    GraphItem(host, "Graph 1", selectedItem),
+                    GraphItem(host, "Graph 2", selectedItem),
 
                     /*CategoryItem("Category 1"),
                     CategoryItem("Category 2"),*/
@@ -62,11 +66,9 @@ class PresetsView extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(4),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color.fromRGBO(50, 50, 50, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-              ),
+            child: PresetsViewItemEditor(
+              host: host,
+              selectedItem: selectedItem,
             ),
           ),
         ),
@@ -75,12 +77,189 @@ class PresetsView extends StatelessWidget {
   }
 }
 
+class PresetsViewItemEditor extends StatelessWidget {
+  PresetsViewItemEditor({required this.host, required this.selectedItem});
+
+  Host host;
+  ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(50, 50, 50, 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        ),
+        child: ValueListenableBuilder<Widget?>(
+          valueListenable: selectedItem,
+          builder: (context, item, child) {
+            if (item == null) {
+              return const Center(
+                child: Text(
+                  "Select an item",
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              );
+            } else if (item is UserInterfaceItem) {
+              return UserInterfaceItemEditor(host, item);
+            } else if (item is GraphItem) {
+              return GraphItemEditor(host, item);
+            } else {
+              return Container();
+            }
+          },
+        ));
+  }
+}
+
+class UserInterfaceItemEditor extends StatelessWidget {
+  UserInterfaceItemEditor(this.host, this.item);
+
+  UserInterfaceItem item;
+  Host host;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        EditorTitle("User Interface"),
+      ],
+    );
+  }
+}
+
+class GraphItemEditor extends StatelessWidget {
+  GraphItemEditor(this.host, this.item);
+
+  GraphItem item;
+  Host host;
+  String text1 = "Some Stuff";
+  EdgeInsets padding = EdgeInsets.zero;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        EditorTitle("Graph"),
+        Section(
+          title: "Name",
+          child: Row(
+            children: [
+              Expanded(
+                child: Field(
+                  width: null,
+                  label: "",
+                  initialValue: text1,
+                  onChanged: (s) {
+                    text1 = s;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Section(
+          title: "Description",
+          child: Row(
+            children: [
+              Expanded(
+                child: Field(
+                  width: null,
+                  label: "",
+                  initialValue: text1,
+                  onChanged: (s) {
+                    text1 = s;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Section(
+          title: "Padding",
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Field(
+                      label: "LEFT",
+                      width: null,
+                      initialValue: padding.left.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
+                            padding.top, padding.right, padding.bottom);
+
+                        // setState(() {});
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Field(
+                      label: "RIGHT",
+                      width: null,
+                      initialValue: padding.right.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(padding.left, padding.top,
+                            double.tryParse(s) ?? 0.0, padding.bottom);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Field(
+                      label: "TOP",
+                      width: null,
+                      initialValue: padding.top.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(
+                            padding.left,
+                            double.tryParse(s) ?? 0.0,
+                            padding.right,
+                            padding.bottom);
+
+                        // setState(() {});
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Field(
+                      label: "BOTTOM",
+                      width: null,
+                      initialValue: padding.bottom.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(
+                          padding.left,
+                          padding.top,
+                          padding.right,
+                          double.tryParse(s) ?? 0.0,
+                        );
+
+                        // setState(() {});
+                      },
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class UserInterfaceItem extends StatelessWidget {
-  UserInterfaceItem(this.host, {required this.text, required this.children});
+  UserInterfaceItem(this.host,
+      {required this.text, required this.selectedItem, required this.children});
 
   final String text;
   final Host host;
   final List<GraphItem> children;
+  final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
@@ -92,11 +271,17 @@ class UserInterfaceItem extends StatelessWidget {
           size: 18,
           color: Colors.green,
         ),
-        onTap: () {},
+        onTap: () {
+          if (selectedItem.value == this) {
+            selectedItem.value = null;
+          } else {
+            selectedItem.value = this;
+          }
+        },
         children: // <Widget>[] +
             children
                 .map(
-                  (e) => GraphItem(host, e.text, isDense: true),
+                  (e) => GraphItem(host, e.text, selectedItem, isDense: true),
                 )
                 .toList() /*+
           <Widget>[
@@ -134,11 +319,12 @@ class UserInterfaceItem extends StatelessWidget {
 }*/
 
 class GraphItem extends StatelessWidget {
-  GraphItem(this.host, this.text, {this.isDense = false});
+  GraphItem(this.host, this.text, this.selectedItem, {this.isDense = false});
 
   final Host host;
   final String text;
   final bool isDense;
+  final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +336,11 @@ class GraphItem extends StatelessWidget {
           isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
       icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
       onTap: () {
-        print("Graph preset tap");
+        if (selectedItem.value == this) {
+          selectedItem.value = null;
+        } else {
+          selectedItem.value = this;
+        }
       },
       children: const [],
     );
@@ -158,9 +348,10 @@ class GraphItem extends StatelessWidget {
 }
 
 class CategoryItem extends StatelessWidget {
-  CategoryItem(this.text);
+  CategoryItem(this.text, {required this.selectedItem});
 
   final String text;
+  final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
@@ -172,16 +363,23 @@ class CategoryItem extends StatelessWidget {
         color: Colors.blue,
       ),
       expandable: true,
-      onTap: () {},
+      onTap: () {
+        if (selectedItem.value == this) {
+          selectedItem.value = null;
+        } else {
+          selectedItem.value = this;
+        }
+      },
       children: const [],
     );
   }
 }
 
 class PresetItem extends StatelessWidget {
-  PresetItem(this.text);
+  PresetItem(this.text, {required this.selectedItem});
 
   final String text;
+  final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +391,13 @@ class PresetItem extends StatelessWidget {
         size: 18,
         color: Colors.red,
       ),
-      onTap: () {},
+      onTap: () {
+        if (selectedItem.value == this) {
+          selectedItem.value = null;
+        } else {
+          selectedItem.value = this;
+        }
+      },
       children: const [],
     );
   }
@@ -240,7 +444,7 @@ class _PresetsViewItem extends State<PresetsViewItem> {
       },
       child: GestureDetector(
         onTap: () {
-          print("Selecte stuff");
+          widget.onTap();
         },
         child: Padding(
           padding: widget.padding,
@@ -283,6 +487,7 @@ class _PresetsViewItem extends State<PresetsViewItem> {
                               },
                               child: SizedBox(
                                 width: 35,
+                                height: 35,
                                 child: Icon(
                                   expanded
                                       ? Icons.arrow_drop_up
