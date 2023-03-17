@@ -100,6 +100,8 @@ class Library {
   static Library platformDefault() {
     if (Platform.isMacOS) {
       return Library(Directory("/Users/chasekanipe/Github/library/"));
+    } else if (Platform.isLinux) {
+      return Library(Directory("/home/chase/github/content/"));
     }
 
     print("Library not supported on platform");
@@ -164,7 +166,10 @@ class Patch {
 /* HOST */
 
 class Host extends ChangeNotifier {
-  Host({required this.core, required this.library,});
+  Host({required this.core, required this.library}) {
+    graph = Graph(core.raw, this);
+    vars = Vars(this);
+  }
 
   Core core;
   Library library;
