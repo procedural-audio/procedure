@@ -5,6 +5,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 import '../views/settings.dart';
 
@@ -22,7 +24,7 @@ int Function(FFIWidgetPointer) ffiSimplePadGetColor = core
     .asFunction();
 
 class SimplePadWidget extends ModuleWidget {
-  SimplePadWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  SimplePadWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   bool value = false;

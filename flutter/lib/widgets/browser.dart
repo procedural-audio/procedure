@@ -7,6 +7,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 /*double Function(FFIWidgetPointer) ffiFaderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -33,7 +35,7 @@ List<List<double>> getWavetable() {
 // https://www.didierboelens.com/2019/01/futures-isolates-event-loop/
 
 class BrowserWidget extends ModuleWidget {
-  BrowserWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  BrowserWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   String name = "Tempered Felt Piano";
   String author = "Chase Kanipe";
@@ -352,7 +354,7 @@ class BrowserListElement extends StatelessWidget {
 }
 
 class BrowserWidget2 extends ModuleWidget {
-  BrowserWidget2(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  BrowserWidget2(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

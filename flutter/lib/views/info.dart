@@ -19,7 +19,7 @@ class PatchInfo {
   String name;
   String description;
   String path;
-  Image background;
+  String background;
   List<String> tags = ["Tag 1", "Tag 2"];
 
   static Future<PatchInfo?> load(String path) async {
@@ -39,7 +39,7 @@ class PatchInfo {
       path: path,
       name: "Untitled Instrument",
       description: "Some description here",
-      background: Image.file(File("")),
+      background: "",
     );
 
     load(path).then((i) {
@@ -60,21 +60,21 @@ class PatchInfo {
   }
 
   static PatchInfo fromJson(String path, Map<String, dynamic> json) {
-    Image background = Image.file(File(""));
+    String background = "";
 
     File file1 = File(path + "/background.jpg");
     if (file1.existsSync()) {
-      background = Image.file(file1);
+      background = file1.path;
     }
 
     File file2 = File(path + "/background.png");
     if (file2.existsSync()) {
-      background = Image.file(file2);
+      background = file2.path;
     }
 
     File file3 = File(path + "/background.jpeg");
     if (file3.existsSync()) {
-      background = Image.file(file3);
+      background = file3.path;
     }
 
     return PatchInfo(

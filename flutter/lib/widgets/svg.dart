@@ -10,7 +10,7 @@ import '../host.dart';
 
 /*
 class SVG extends ModuleWidget {
-  SVG(FFINode m, FFIWidget w) : super(m, w);
+  SVG(RawNode m, FFIWidget w) : super(m, w);
 
   bool mouseOver = false;
 

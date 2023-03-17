@@ -6,6 +6,8 @@ import 'dart:ffi';
 
 import '../host.dart';
 import 'widget.dart';
+import '../core.dart';
+import '../module.dart';
 
 Pointer<Utf8> Function(FFIWidgetPointer) ffiTextGetText = core
     .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
@@ -23,7 +25,7 @@ int Function(FFIWidgetPointer) ffiTextGetSize = core
     .asFunction();
 
 class TextWidget extends ModuleWidget {
-  TextWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  TextWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {

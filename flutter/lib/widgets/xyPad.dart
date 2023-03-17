@@ -5,6 +5,8 @@ import 'dart:ffi';
 import '../host.dart';
 
 import 'dart:ui' as ui;
+import '../core.dart';
+import '../module.dart';
 
 double Function(FFIWidgetPointer) ffiXYPadGetX = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -24,7 +26,7 @@ double Function(FFIWidgetPointer, double) ffiXYPadSetY = core
     .asFunction();
 
 class XYPadWidget extends ModuleWidget {
-  XYPadWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  XYPadWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {

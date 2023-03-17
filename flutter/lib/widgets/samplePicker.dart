@@ -7,6 +7,8 @@ import 'dart:ffi';
 import '../host.dart';
 
 import 'dart:ui' as ui;
+import '../core.dart';
+import '../module.dart';
 
 int Function(FFIWidgetPointer) ffiSampleFilePickerGetBufferLength = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -27,7 +29,7 @@ void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleFilePickerSetSample =
         .asFunction();
 
 class SamplePickerWidget extends ModuleWidget {
-  SamplePickerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  SamplePickerWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     refreshBuffer();
   }
 

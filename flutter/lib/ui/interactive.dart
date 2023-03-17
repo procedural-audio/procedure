@@ -15,7 +15,7 @@ import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';
 
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+// import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewUIWidget extends UIWidget {
   WebViewUIWidget(Host host, UITree tree) : super(host, tree);
@@ -31,7 +31,7 @@ class WebViewUIWidget extends UIWidget {
       iframeAllow: "camera; microphone",
       iframeAllowFullscreen: true);*/
 
-  InAppWebViewController? webViewController;
+  // InAppWebViewController? webViewController;
 
   TransformData data = TransformData(
       width: 100,
@@ -58,7 +58,8 @@ class WebViewUIWidget extends UIWidget {
 
   @override
   Widget buildWidget(BuildContext context) {
-    return TransformWidget(
+    return Container();
+    /*return TransformWidget(
       data: data,
       child: Container(
         color: Colors.blue,
@@ -72,7 +73,7 @@ class WebViewUIWidget extends UIWidget {
           },
         ),
       ),
-    );
+    );*/
   }
 
   @override
@@ -590,7 +591,7 @@ class _Knob extends State<Knob> {
                                   (valueNotifier.value - e.delta.dy / 300)
                                       .clamp(0.0, 1.0);
                               if (index != null) {
-                                // ffiHostSetVarValueFloat(widget.host.host, index, valueNotifier.value);
+                                // RawCoreSetVarValueFloat(widget.host.host, index, valueNotifier.value);
                               }
                             }
                           },

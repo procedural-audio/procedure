@@ -11,6 +11,8 @@ import 'package:ffi/ffi.dart';
 import '../config.dart';
 
 import '../main.dart';
+import '../core.dart';
+import '../module.dart';
 
 bool Function(FFIWidgetPointer) ffiSvgButtonGetPressed = core
     .lookup<NativeFunction<Bool Function(FFIWidgetPointer)>>(
@@ -34,7 +36,7 @@ void Function(FFIWidgetPointer, bool) ffiSvgButtonOnChanged = core
     .asFunction();
 
 class ButtonSVG extends ModuleWidget {
-  ButtonSVG(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  ButtonSVG(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     var pathRaw = ffiSvgButtonGetPath(widgetRaw.pointer);
     path = contentPath + "/assets/icons/" + pathRaw.toDartString();
     calloc.free(pathRaw);
@@ -85,7 +87,7 @@ Pointer<Utf8> Function(FFIWidgetTrait) ffiSvgGetPath = core
     .asFunction();
 
 class SvgWidget extends ModuleWidget {
-  SvgWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  SvgWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     var pathRaw = ffiSvgGetPath(widgetRaw.getTrait());
     path = contentPath + "/assets/icons/" + pathRaw.toDartString();
     calloc.free(pathRaw);

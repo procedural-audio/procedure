@@ -8,6 +8,8 @@ import '../host.dart';
 import 'package:ffi/ffi.dart';
 
 import '../main.dart';
+import '../core.dart';
+import '../module.dart';
 
 int Function(FFIWidgetPointer) ffiGridGetColumns = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -15,7 +17,7 @@ int Function(FFIWidgetPointer) ffiGridGetColumns = core
     .asFunction();
 
 class GridWidget extends ModuleWidget {
-  GridWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  GridWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,7 @@ void Function(FFIWidget) ffiGridBuilderDestroyChild = core
     .asFunction();
 
 class GridBuilderWidget extends ModuleWidget {
-  GridBuilderWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  GridBuilderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   List<ModuleWidget> childWidgets = [];
 

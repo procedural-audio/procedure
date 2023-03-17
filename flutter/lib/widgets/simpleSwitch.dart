@@ -5,6 +5,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 import '../views/settings.dart';
 
@@ -26,7 +28,7 @@ int Function(FFIWidgetPointer) ffiSimpleSwitchGetColor = core
     .asFunction();
 
 class SimpleSwitchWidget extends ModuleWidget {
-  SimpleSwitchWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  SimpleSwitchWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   bool value = false;

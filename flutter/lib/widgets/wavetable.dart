@@ -7,6 +7,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 /*double Function(FFIWidgetPointer) ffiFaderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -30,7 +32,7 @@ List<List<double>> getWavetable() {
 }
 
 class WavetableWidget extends ModuleWidget {
-  WavetableWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  WavetableWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

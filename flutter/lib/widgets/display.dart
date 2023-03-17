@@ -9,6 +9,8 @@ import '../host.dart';
 import 'package:ffi/ffi.dart';
 
 import '../main.dart';
+import '../core.dart';
+import '../module.dart';
 
 Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
     .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetTrait)>>(
@@ -16,7 +18,7 @@ Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
     .asFunction();
 
 class DisplayWidget extends ModuleWidget {
-  DisplayWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  DisplayWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   ValueNotifier<String> text = ValueNotifier("");
 

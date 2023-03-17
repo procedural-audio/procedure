@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import '../host.dart';
+import '../core.dart';
+import '../module.dart';
 
 int Function(FFIWidgetTrait) ffiButtonGetColor = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetTrait)>>(
@@ -14,7 +16,7 @@ void Function(FFIWidgetTrait, bool) ffiButtonOnPressed = core
     .asFunction();
 
 class ButtonWidget extends ModuleWidget {
-  ButtonWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  ButtonWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     color = intToColor(ffiButtonGetColor(widgetRaw.getTrait()));
   }
 

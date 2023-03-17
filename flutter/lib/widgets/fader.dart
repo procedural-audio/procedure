@@ -5,6 +5,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 double Function(FFIWidgetPointer) ffiFaderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -24,7 +26,7 @@ int Function(FFIWidgetPointer) ffiFaderGetColor = core
     .asFunction();
 
 class FaderWidget extends ModuleWidget {
-  FaderWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  FaderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   double value = 0.5;
   String? labelText;

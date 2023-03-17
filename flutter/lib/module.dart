@@ -2,12 +2,230 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'dart:ffi';
+
 import 'main.dart';
 import 'host.dart';
 
 import 'widgets/widget.dart';
 import 'views/variables.dart';
 import 'views/settings.dart';
+
+import 'core.dart';
+
+class RawNode extends Struct {
+  @Int64()
+  external int pointer;
+
+  int getId() {
+    return _ffiNodeGetId(this);
+  }
+
+  String getName() {
+    var rawName = _ffiNodeGetName(this);
+    var name = rawName.toDartString();
+    calloc.free(rawName);
+    return name;
+  }
+
+  Color getColor() {
+    return Color(_ffiNodeGetColor(this));
+  }
+
+  int getX() {
+    return _ffiNodeGetX(this);
+  }
+
+  int getY() {
+    return _ffiNodeGetY(this);
+  }
+
+  void setX(int i) {
+    _ffiNodeSetX(this, i);
+  }
+
+  void setY(int i) {
+    _ffiNodeSetY(this, i);
+  }
+
+  double getWidth() {
+    return _ffiNodeGetWidth(this);
+  }
+
+  double getHeight() {
+    return _ffiNodeGetHeight(this);
+  }
+
+  int getMinWidth() {
+    return _ffiNodeGetMinWidth(this);
+  }
+
+  int getMaxWidth() {
+    return _ffiNodeGetMaxWidth(this);
+  }
+
+  int getMinHeight() {
+    return _ffiNodeGetMinHeight(this);
+  }
+
+  int getMaxHeight() {
+    return _ffiNodeGetMaxHeight(this);
+  }
+
+  bool getResizable() {
+    return _ffiNodeGetResizable(this);
+  }
+
+  int getInputPinsCount() {
+    return _ffiNodeGetInputPinsCount(this);
+  }
+
+  int getInputPinType(int i) {
+    return _ffiNodeGetInputPinType(this, i);
+  }
+
+  int getInputPinY(int i) {
+    return _ffiNodeGetInputPinY(this, i);
+  }
+
+  String getInputPinName(int i) {
+    var rawName = _ffiNodeGetInputPinName(this, i);
+    var name = rawName.toDartString();
+    calloc.free(rawName);
+    return name;
+  }
+
+  int getOutputPinsCount() {
+    return _ffiNodeGetOutputPinsCount(this);
+  }
+
+  int getOutputPinType(int i) {
+    return _ffiNodeGetOutputPinType(this, i);
+  }
+
+  int getOutputPinY(int i) {
+    return _ffiNodeGetOutputPinY(this, i);
+  }
+
+  String getOutputPinName(int i) {
+    var rawName = _ffiNodeGetOutputPinName(this, i);
+    var name = rawName.toDartString();
+    calloc.free(rawName);
+    return name;
+  }
+
+  FFIWidget getWidgetRoot() {
+    return _ffiNodeGetWidgetRoot(this);
+  }
+
+  bool shouldRebuild() {
+    return _ffiNodeShouldRebuild(this);
+  }
+
+  void setWidth(double width) {
+    _ffiNodeSetNodeWidth(this, width);
+  }
+
+  void setHeight(double height) {
+    _ffiNodeSetNodeHeight(this, height);
+  }
+}
+
+int Function(RawNode) _ffiNodeGetId = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_id")
+    .asFunction();
+Pointer<Utf8> Function(RawNode) _ffiNodeGetName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawNode)>>(
+        "ffi_node_get_name")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_color")
+    .asFunction();
+
+int Function(RawNode) _ffiNodeGetX = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_x")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetY = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_y")
+    .asFunction();
+void Function(RawNode, int) _ffiNodeSetX = core
+    .lookup<NativeFunction<Void Function(RawNode, Int32)>>("ffi_node_set_x")
+    .asFunction();
+void Function(RawNode, int) _ffiNodeSetY = core
+    .lookup<NativeFunction<Void Function(RawNode, Int32)>>("ffi_node_set_y")
+    .asFunction();
+
+double Function(RawNode) _ffiNodeGetWidth = core
+    .lookup<NativeFunction<Float Function(RawNode)>>("ffi_node_get_width")
+    .asFunction();
+double Function(RawNode) _ffiNodeGetHeight = core
+    .lookup<NativeFunction<Float Function(RawNode)>>("ffi_node_get_height")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetMinWidth = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_min_width")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetMinHeight = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_min_height")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetMaxWidth = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_max_width")
+    .asFunction();
+int Function(RawNode) _ffiNodeGetMaxHeight = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_max_height")
+    .asFunction();
+bool Function(RawNode) _ffiNodeGetResizable = core
+    .lookup<NativeFunction<Bool Function(RawNode)>>("ffi_node_get_resizable")
+    .asFunction();
+
+int Function(RawNode) _ffiNodeGetInputPinsCount = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>(
+        "ffi_node_get_input_pins_count")
+    .asFunction();
+int Function(RawNode, int) _ffiNodeGetInputPinType = core
+    .lookup<NativeFunction<Int32 Function(RawNode, Int32)>>(
+        "ffi_node_get_input_pin_type")
+    .asFunction();
+Pointer<Utf8> Function(RawNode, int) _ffiNodeGetInputPinName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawNode, Int32)>>(
+        "ffi_node_get_input_pin_name")
+    .asFunction();
+int Function(RawNode, int) _ffiNodeGetInputPinY = core
+    .lookup<NativeFunction<Int32 Function(RawNode, Int32)>>(
+        "ffi_node_get_input_pin_y")
+    .asFunction();
+
+int Function(RawNode) _ffiNodeGetOutputPinsCount = core
+    .lookup<NativeFunction<Int32 Function(RawNode)>>(
+        "ffi_node_get_output_pins_count")
+    .asFunction();
+int Function(RawNode, int) _ffiNodeGetOutputPinType = core
+    .lookup<NativeFunction<Int32 Function(RawNode, Int32)>>(
+        "ffi_node_get_output_pin_type")
+    .asFunction();
+Pointer<Utf8> Function(RawNode, int) _ffiNodeGetOutputPinName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawNode, Int32)>>(
+        "ffi_node_get_output_pin_name")
+    .asFunction();
+int Function(RawNode, int) _ffiNodeGetOutputPinY = core
+    .lookup<NativeFunction<Int32 Function(RawNode, Int32)>>(
+        "ffi_node_get_output_pin_y")
+    .asFunction();
+
+FFIWidget Function(RawNode) _ffiNodeGetWidgetRoot = core
+    .lookup<NativeFunction<FFIWidget Function(RawNode)>>(
+        "ffi_node_get_widget_root")
+    .asFunction();
+bool Function(RawNode) _ffiNodeShouldRebuild = core
+    .lookup<NativeFunction<Bool Function(RawNode)>>("ffi_node_should_rebuild")
+    .asFunction();
+
+void Function(RawNode, double) _ffiNodeSetNodeWidth = core
+    .lookup<NativeFunction<Void Function(RawNode, Float)>>("ffi_node_set_width")
+    .asFunction();
+void Function(RawNode, double) _ffiNodeSetNodeHeight = core
+    .lookup<NativeFunction<Void Function(RawNode, Float)>>(
+        "ffi_node_set_height")
+    .asFunction();
 
 class Module extends StatefulWidget {
   var id = 1;
@@ -18,40 +236,28 @@ class Module extends StatefulWidget {
   var widgets = <ModuleWidget>[];
   var color = Color(0x0);
 
-  final FFINode module;
+  final RawNode raw;
   final Host host;
 
-  Module(this.host, this.module) {
+  Module(this.host, this.raw) {
     print("Creating module now");
 
-    id = api.ffiNodeGetId(module);
-    print("  id: " + id.toString());
-    position =
-        Offset(api.ffiNodeGetX(module) + 0.0, api.ffiNodeGetY(module) + 0.0);
-    size = Offset(
-        api.ffiNodeGetWidth(module) + 0.0, api.ffiNodeGetHeight(module) + 0.0);
+    id = raw.getId();
+    position = Offset(raw.getX() + 0.0, raw.getY() + 0.0);
+    size = Offset(raw.getWidth() + 0.0, raw.getHeight() + 0.0);
 
-    int inputsCount = api.ffiNodeGetInputPinsCount(module);
-    int outputsCount = api.ffiNodeGetOutputPinsCount(module);
-
-    var tempName = api.ffiNodeGetName(module);
-    name = tempName.toDartString();
-    calloc.free(tempName);
-
-    int tempColor = api.ffiNodeGetColor(module);
-    color = Color(tempColor);
+    int inputsCount = raw.getInputPinsCount();
+    int outputsCount = raw.getOutputPinsCount();
+    String name = raw.getName();
+    Color color = raw.getColor();
 
     for (int i = 0; i < inputsCount; i++) {
       var pin = Pin();
 
       pin.moduleId = id;
       pin.index = i;
-
-      var nameRaw = api.ffiNodeGetInputPinName(module, i);
-      pin.name = nameRaw.toDartString();
-      calloc.free(nameRaw);
-
-      var kind = api.ffiNodeGetInputPinType(module, i);
+      pin.name = raw.getInputPinName(i);
+      var kind = raw.getInputPinType(i);
 
       if (kind == 1) {
         pin.type = IO.audio;
@@ -66,7 +272,7 @@ class Module extends StatefulWidget {
       }
 
       if (pin.type != IO.external) {
-        pin.offset = Offset(10, 0.0 + api.ffiNodeGetInputPinY(module, i));
+        pin.offset = Offset(10, 0.0 + raw.getInputPinY(i));
       }
 
       pin.isInput = true;
@@ -79,11 +285,8 @@ class Module extends StatefulWidget {
       pin.moduleId = id;
       pin.index = i + inputsCount;
 
-      var nameRaw = api.ffiNodeGetOutputPinName(module, i);
-      pin.name = nameRaw.toDartString();
-      calloc.free(nameRaw);
-
-      var kind = api.ffiNodeGetOutputPinType(module, i);
+      var name = raw.getOutputPinName(i);
+      var kind = raw.getOutputPinType(i);
 
       if (kind == 1) {
         pin.type = IO.audio;
@@ -98,16 +301,15 @@ class Module extends StatefulWidget {
       }
 
       if (pin.type != IO.external) {
-        pin.offset =
-            Offset(size.dx - 25, 0.0 + api.ffiNodeGetOutputPinY(module, i));
+        pin.offset = Offset(size.dx - 25, 0.0 + raw.getOutputPinY(i));
       }
 
       pin.isInput = false;
       pins.add(pin);
     }
 
-    var widgetRaw = api.ffiNodeGetWidgetRoot(module);
-    var widget = createWidget(host, module, widgetRaw);
+    var widgetRaw = raw.getWidgetRoot();
+    var widget = createWidget(host, raw, widgetRaw);
     if (widget != null) {
       widgets.add(widget);
     }
@@ -120,9 +322,9 @@ class Module extends StatefulWidget {
 class _Module extends State<Module> {
   @override
   Widget build(BuildContext context) {
-    bool resizable = api.ffiNodeGetResizable(widget.module);
-    var width = api.ffiNodeGetWidth(widget.module);
-    var height = api.ffiNodeGetHeight(widget.module);
+    bool resizable = widget.raw.getResizable();
+    var width = widget.raw.getWidth();
+    var height = widget.raw.getHeight();
 
     final inputPins = <PinWidget>[];
     final outputPins = <PinWidget>[];
@@ -219,8 +421,8 @@ class _Module extends State<Module> {
               print("Secondary tap module");
             },
             onPanUpdate: (details) {
-              api.ffiNodeSetX(widget.module, widget.position.dx.toInt());
-              api.ffiNodeSetY(widget.module, widget.position.dy.toInt());
+              widget.raw.setX(widget.position.dx.toInt());
+              widget.raw.setY(widget.position.dy.toInt());
 
               setState(() {
                 widget.position = Offset(widget.position.dx + details.delta.dx,
@@ -287,18 +489,10 @@ class _Module extends State<Module> {
                                               var h =
                                                   height + details.delta.dy * m;
 
-                                              var minWidth =
-                                                  api.ffiNodeGetMinWidth(
-                                                      widget.module);
-                                              var maxWidth =
-                                                  api.ffiNodeGetMaxWidth(
-                                                      widget.module);
-                                              var minHeight =
-                                                  api.ffiNodeGetMinHeight(
-                                                      widget.module);
-                                              var maxHeight =
-                                                  api.ffiNodeGetMaxHeight(
-                                                      widget.module);
+                                              var minWidth = widget.raw.getMinWidth();
+                                              var maxWidth = widget.raw.getMaxWidth();
+                                              var minHeight = widget.raw.getMinHeight();
+                                              var maxHeight = widget.raw.getMaxHeight();
 
                                               if (w < minWidth) {
                                                 w = minWidth.toDouble();
@@ -316,10 +510,9 @@ class _Module extends State<Module> {
                                                 h = maxHeight.toDouble();
                                               }
 
-                                              api.ffiNodeSetNodeWidth(
-                                                  widget.module, w);
-                                              api.ffiNodeSetNodeHeight(
-                                                  widget.module, h);
+                                              widget.raw.setWidth(w);
+                                              widget.raw.setHeight(h);
+
                                               widget.size = Offset(w, h);
                                             });
                                           },

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../host.dart';
 import 'widget.dart';
+import '../core.dart';
+import '../module.dart';
 
 import 'package:flutter/rendering.dart';
 
@@ -115,7 +117,7 @@ class NoteEvent {
 }
 
 class PianoRollWidget extends ModuleWidget {
-  PianoRollWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  PianoRollWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
   ValueNotifier<Rectangle?> selectedRegion = ValueNotifier(null);
   Offset selectedStart = const Offset(0.0, 0.0);
 

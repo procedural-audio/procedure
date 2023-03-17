@@ -1,7 +1,5 @@
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
-import 'dart:ffi';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
@@ -14,10 +12,10 @@ import 'views/variables.dart';
 import 'views/presets.dart';
 import 'views/info.dart';
 
-import '../config.dart';
 import 'core.dart';
 
 import 'package:flutter/services.dart';
+
 
 class AudioPluginsCategory {
   AudioPluginsCategory(this.name, this.plugins);
@@ -166,28 +164,25 @@ class Patch {
 /* HOST */
 
 class Host extends ChangeNotifier {
-  final FFIHost host;
+  Host({required this.core, required this.library,});
 
-  Library library = Library.platformDefault();
-
-  /* Old */
+  Core core;
+  Library library;
 
   late Graph graph;
   late Vars vars;
   late Timer ticker;
-  late AudioPlugins audioPlugins;
 
   Globals globals = Globals();
 
-  var patch = ValueNotifier(
+  var loadedInstrument = ValueNotifier(
     PatchInfo.loadSync(contentPath + "instruments/NewInstrument"),
   );
 
   var patches = ValueNotifier(<PatchInfo>[]);
-
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
 
-  Host(this.host) {
+  /*Host(this.host) {
     graph = Graph(host, this);
     vars = Vars(this);
     audioPlugins = AudioPlugins();
@@ -202,25 +197,7 @@ class Host extends ChangeNotifier {
 
     refreshInstruments();
     refreshModuleSpecs();
-
-    /*timer2 = Timer.periodic(const Duration(milliseconds: 300), (Timer t) {
-      var rebuilt = false;
-      for (var i = 0; i < graph.moduleWidgets.length; i++) {
-        if (api.ffiNodeShouldRebuild(graph.moduleWidgets[i].module.module)) {
-          print("Rebuilt a module");
-          // var moduleRaw = graph.moduleWidgets[i].module.module;
-          var module = Module(this, moduleRaw);
-          gGridState?.refresh();
-          rebuilt = true;
-        }
-      }
-
-      if (rebuilt) {
-        api.ffiHostRefresh(host);
-        gGridState?.refresh();
-      }
-    });*/
-  }
+  }*/
 
   void tick(Timer timer) {}
 
@@ -232,35 +209,32 @@ class Host extends ChangeNotifier {
 
   void refreshModuleSpecs() {
     List<ModuleSpec> specs = [];
-    var count = api.ffiHostGetModuleSpecCount(host);
+    var count = core.getModuleSpecCount();
 
     for (int i = 0; i < count; i++) {
-      var rawId = api.ffiHostGetModuleSpecId(host, i);
-      var rawPath = api.ffiHostGetModuleSpecPath(host, i);
-      var color = Color(api.ffiHostGetModuleSpecColor(host, i));
-
-      specs
-          .add(ModuleSpec(rawId.toDartString(), rawPath.toDartString(), color));
-
-      calloc.free(rawId);
-      calloc.free(rawPath);
+      var id = core.getModuleSpecId(i);
+      var path = core.getModuleSpecPath(i);
+      var color = core.getModuleSpecColor(i);
+      specs.add(ModuleSpec(id, path, color));
     }
 
     moduleSpecs.value = specs;
   }
 
   bool loadHost(String path) {
-    Pointer<Utf8> pathRaw = path.toNativeUtf8();
-    bool ret = _loadHost(host, pathRaw);
-    calloc.free(pathRaw);
-    return ret;
+    return core.load(path);
+    // Pointer<Utf8> pathRaw = path.toNativeUtf8();
+    // bool ret = _loadHost(host, pathRaw);
+    // calloc.free(pathRaw);
+    // return ret;
   }
 
   bool saveHost(String path) {
-    Pointer<Utf8> pathRaw = path.toNativeUtf8();
-    bool ret = _saveHost(host, pathRaw);
-    calloc.free(pathRaw);
-    return ret;
+    return core.save(path);
+    // Pointer<Utf8> pathRaw = path.toNativeUtf8();
+    // bool ret = _saveHost(host, pathRaw);
+    // calloc.free(pathRaw);
+    // return ret;
   }
 
   void loadInstrument(String path) {
@@ -268,7 +242,7 @@ class Host extends ChangeNotifier {
 
     Directory presetsDir = Directory(path + "/presets");
 
-    loadedInstrument.value = PatchInfo(File(path).name, path);
+    loadedInstrument.value = PatchInfo.loadSync(path);
 
     if (!presetsDir.existsSync()) {
       presetsDir.createSync();
@@ -387,7 +361,7 @@ class Host extends ChangeNotifier {
       if (await file.exists()) {
         print("Parsing " + file.path);
         var json = jsonDecode(await file.readAsString());
-        instruments.add(PatchInfo.fromJson(json, dir.path));
+        instruments.add(PatchInfo.fromJson(dir.path, json));
       } else {
         print("Couldn't find json for " + dir.path);
       }
@@ -449,7 +423,7 @@ class Graph {
   var modules = <Module>[];
   var connectors = <Connector>[];
 
-  final FFIHost raw;
+  final RawCore raw;
   Host host;
 
   Graph(this.raw, this.host) {
@@ -457,18 +431,16 @@ class Graph {
   }
 
   bool addModule(String name, Offset addPosition) {
-    var buffer = name.toNativeUtf8();
-    var ret = api.ffiHostAddModule(raw, buffer);
-    calloc.free(buffer);
+    var ret = host.core.addModule(name);
 
     if (ret) {
-      var moduleRaw = api.ffiHostGetNode(raw, api.ffiHostGetNodeCount(raw) - 1);
+      var moduleRaw = host.core.getNode(host.core.getNodeCount() - 1);
 
-      var x = addPosition.dx.toInt() - api.ffiNodeGetWidth(moduleRaw) ~/ 2;
-      var y = addPosition.dy.toInt() - api.ffiNodeGetHeight(moduleRaw) ~/ 2;
+      var x = addPosition.dx.toInt() - moduleRaw.getWidth() ~/ 2;
+      var y = addPosition.dy.toInt() - moduleRaw.getHeight() ~/ 2;
 
-      api.ffiNodeSetX(moduleRaw, x);
-      api.ffiNodeSetY(moduleRaw, y);
+      moduleRaw.setX(x);
+      moduleRaw.setY(y);
 
       modules.add(Module(host, moduleRaw));
     }
@@ -478,16 +450,13 @@ class Graph {
 
   void removeModule(int id) {
     modules.retainWhere((element) => element.id != id);
-
     connectors.retainWhere((element) => element.start.moduleId != id);
     connectors.retainWhere((element) => element.end.moduleId != id);
-
-    api.ffiHostRemoveNode(raw, id);
+    host.core.removeNode(id);
   }
 
   bool addConnection(Connector c) {
-    if (api.ffiHostAddConnector(
-        raw, c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
+    if (host.core.addConnector(c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
       connectors.add(c);
       return true;
     }
@@ -500,28 +469,28 @@ class Graph {
         element.start.index == pinIndex));
     connectors.retainWhere((element) =>
         !(element.end.moduleId == moduleId && element.end.index == pinIndex));
-    api.ffiHostRemoveConnector(raw, moduleId, pinIndex);
+    host.core.removeConnector(moduleId, pinIndex);
   }
 
   void refresh() {
     modules.clear();
     connectors.clear();
 
-    int moduleCount = api.ffiHostGetNodeCount(raw);
+    int moduleCount = host.core.getNodeCount();
 
     for (int i = 0; i < moduleCount; i++) {
-      var moduleRaw = api.ffiHostGetNode(raw, i);
+      var moduleRaw = host.core.getNode(i);
       var module = Module(host, moduleRaw);
       modules.add(module);
     }
 
-    int connectorCount = api.ffiHostGetConnectorCount(raw);
+    int connectorCount = host.core.getConnectorCount();
 
     for (int i = 0; i < connectorCount; i++) {
-      var startId = api.ffiHostGetConnectorStartId(raw, i);
-      var endId = api.ffiHostGetConnectorEndId(raw, i);
-      var startIndex = api.ffiHostGetConnectorStartIndex(raw, i);
-      var endIndex = api.ffiHostGetConnectorEndIndex(raw, i);
+      var startId = host.core.getConnectorStartId(i);
+      var endId = host.core.getConnectorEndId(i);
+      var startIndex = host.core.getConnectorStartIndex(i);
+      var endIndex = host.core.getConnectorEndIndex(i);
 
       var type = IO.audio;
 

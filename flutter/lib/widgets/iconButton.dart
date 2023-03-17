@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import '../host.dart';
+import '../core.dart';
+import '../module.dart';
 
 void Function(FFIWidgetTrait, bool) ffiIconButtonPressed = core
     .lookup<NativeFunction<Void Function(FFIWidgetTrait, Bool)>>(
@@ -11,7 +13,7 @@ void Function(FFIWidgetTrait, bool) ffiIconButtonPressed = core
     .asFunction();
 
 class IconButtonWidget extends ModuleWidget {
-  IconButtonWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  IconButtonWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   bool mouseOver = false;
 

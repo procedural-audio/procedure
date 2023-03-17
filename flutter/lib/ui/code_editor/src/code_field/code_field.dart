@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:linked_scroll_controller/linked_scroll_controller.dart';
+//import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 
 import '../code_theme/code_theme.dart';
 import '../line_numbers/line_number_controller.dart';
@@ -101,7 +101,7 @@ class CodeField extends StatefulWidget {
 
 class _CodeFieldState extends State<CodeField> {
   // Add a controller
-  LinkedScrollControllerGroup? _controllers;
+  // LinkedScrollControllerGroup? _controllers;
   ScrollController? _numberScroll;
   ScrollController? _codeScroll;
   LineNumberController? _numberController;
@@ -114,9 +114,9 @@ class _CodeFieldState extends State<CodeField> {
   @override
   void initState() {
     super.initState();
-    _controllers = LinkedScrollControllerGroup();
-    _numberScroll = _controllers?.addAndGet();
-    _codeScroll = _controllers?.addAndGet();
+    //_controllers = LinkedScrollControllerGroup();
+    //_numberScroll = _controllers?.addAndGet();
+    //_codeScroll = _controllers?.addAndGet();
     _numberController = LineNumberController(widget.lineNumberBuilder);
     widget.controller.addListener(_onTextChanged);
     _focusNode = widget.focusNode ?? FocusNode();

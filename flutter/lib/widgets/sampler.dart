@@ -8,6 +8,8 @@ import '../host.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import 'dart:ui' as ui;
+import '../core.dart';
+import '../module.dart';
 
 void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleMapperLoad = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Pointer<Utf8>)>>(
@@ -122,7 +124,7 @@ class _SampleAreaItem extends State<SampleAreaItem> {
 }
 
 class SampleEditorWidget extends ModuleWidget {
-  SampleEditorWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  SampleEditorWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +150,7 @@ class SampleEditorWidget extends ModuleWidget {
 }
 
 class SampleMapperWidget extends ModuleWidget {
-  SampleMapperWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  SampleMapperWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     refreshMap();
   }
 

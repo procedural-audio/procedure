@@ -3,6 +3,8 @@ import '../host.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import 'dart:ui' as ui;
+import '../core.dart';
+import '../module.dart';
 
 FFIWidget Function(FFIWidgetTrait, int) ffiTabsGetTabChild = core
     .lookup<NativeFunction<FFIWidget Function(FFIWidgetTrait, Int64)>>(
@@ -15,7 +17,7 @@ int Function(FFIWidgetTrait) ffiTabsGetTabCount = core
     .asFunction();
 
 class TabsWidget extends ModuleWidget {
-  TabsWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  TabsWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     int count = ffiTabsGetTabCount(w.getTrait());
 
     for (int i = 0; i < count; i++) {

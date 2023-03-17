@@ -9,6 +9,8 @@ import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
 import '../ui/code_editor/code_text_field.dart';
+import '../core.dart';
+import '../module.dart';
 
 /*double Function(FFIWidgetPointer) ffiSliderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -28,7 +30,7 @@ int Function(FFIWidgetPointer) ffiSliderGetColor = core
     .asFunction();*/
 
 class LuaEditorWidget extends ModuleWidget {
-  LuaEditorWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  LuaEditorWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {

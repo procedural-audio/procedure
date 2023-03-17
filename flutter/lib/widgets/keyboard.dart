@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 import 'widget.dart';
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 int Function(FFIWidgetTrait) ffiKeyboardGetKeyCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
@@ -21,7 +23,7 @@ void Function(FFIWidgetTrait, int) ffiKeyboardKeyRelease = core
     .asFunction();
 
 class KeyboardWidget extends ModuleWidget {
-  KeyboardWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  KeyboardWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   ScrollController controller = ScrollController();
 

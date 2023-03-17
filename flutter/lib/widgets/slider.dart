@@ -5,6 +5,8 @@ import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 double Function(FFIWidgetPointer) ffiSliderGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -28,7 +30,7 @@ int Function(FFIWidgetPointer) ffiSliderGetColor = core
     .asFunction();*/
 
 class SliderWidget extends ModuleWidget {
-  SliderWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  SliderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   double value = 0.5;
@@ -94,7 +96,7 @@ int Function(FFIWidgetPointer) ffiRangeSliderGetColor = core
     .asFunction();
 
 class RangeSliderWidget extends ModuleWidget {
-  RangeSliderWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  RangeSliderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   double value = 0.5;

@@ -8,32 +8,34 @@ import 'dart:ffi';
 
 import '../host.dart';
 import 'widget.dart';
+import '../core.dart';
+import '../module.dart';
 
 var knobValue = "value".toNativeUtf8();
 var colorValue = "color".toNativeUtf8();
 
-int Function(FFIWidgetPointer) ffiNodeSequencerGetNodeCount = core
+int Function(FFIWidgetPointer) RawNodeSequencerGetNodeCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
         "ffi_node_sequencer_get_node_count")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNodeSequencerGetNodeX = core
+int Function(FFIWidgetPointer, int) RawNodeSequencerGetNodeX = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
         "ffi_node_sequencer_get_node_x")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNodeSequencerGetNodeY = core
+int Function(FFIWidgetPointer, int) RawNodeSequencerGetNodeY = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
         "ffi_node_sequencer_get_node_y")
     .asFunction();
-int Function(FFIWidgetPointer, int, int) ffiNodeSequencerSetNodeX = core
+int Function(FFIWidgetPointer, int, int) RawNodeSequencerSetNodeX = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_set_node_x")
     .asFunction();
-int Function(FFIWidgetPointer, int, int) ffiNodeSequencerSetNodeY = core
+int Function(FFIWidgetPointer, int, int) RawNodeSequencerSetNodeY = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_set_node_y")
     .asFunction();
 
-void Function(FFIWidgetPointer, int, int) ffiNodeSequencerAddNode = core
+void Function(FFIWidgetPointer, int, int) RawNodeSequencerAddNode = core
     .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_add_node")
     .asFunction();
@@ -48,7 +50,7 @@ void Function(FFIWidgetPointer, int, int) ffiNodeSequencerAddNode = core
 const double spacing = 50.0;
 
 class NodeSequencerWidget extends ModuleWidget {
-  NodeSequencerWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {}
+  NodeSequencerWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {}
 
   var controller = TransformationController();
 
@@ -58,15 +60,15 @@ class NodeSequencerWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    int count = ffiNodeSequencerGetNodeCount(widgetRaw.pointer);
+    int count = RawNodeSequencerGetNodeCount(widgetRaw.pointer);
 
     nodes.clear();
 
     for (int i = 0; i < count; i++) {
       var state = NodeState(
           index: i,
-          x: ffiNodeSequencerGetNodeX(widgetRaw.pointer, i),
-          y: ffiNodeSequencerGetNodeY(widgetRaw.pointer, i),
+          x: RawNodeSequencerGetNodeX(widgetRaw.pointer, i),
+          y: RawNodeSequencerGetNodeY(widgetRaw.pointer, i),
           notes: []);
 
       nodes.add(Node(selected: selected, state: ValueNotifier(state)));
@@ -97,7 +99,7 @@ class NodeSequencerWidget extends ModuleWidget {
                                 int y = (details.localPosition.dy / spacing)
                                     .round();
 
-                                ffiNodeSequencerAddNode(
+                                RawNodeSequencerAddNode(
                                     widgetRaw.pointer, x, y);
                               });
                             },

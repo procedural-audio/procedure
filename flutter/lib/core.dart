@@ -1,15 +1,25 @@
+import 'dart:ui';
+
 import 'package:ffi/ffi.dart';
 
 import 'dart:ffi';
 import 'dart:io';
+import 'module.dart';
 
 class Core {
   Core(this.raw);
 
-  FFIHost raw;
+  final RawCore raw;
+
+  // class Graph
+  // class Plugins
 
   static Core create() {
     return Core(_ffiCreateHost());
+  }
+
+  static Core from(int addr) {
+    return Core(_ffiHackConvert(addr));
   }
 
   bool load(String path) {
@@ -35,6 +45,68 @@ class Core {
     var status = _ffiCoreAddModule(raw, rawPath);
     calloc.free(rawPath);
     return status;
+  }
+
+  bool removeNode(int i) {
+    return _ffiCoreRemoveNode(raw, i);
+  }
+
+  int getNodeCount() {
+    return _ffiCoreGetNodeCount(raw);
+  }
+
+  bool addConnector(int a, int b, int c, int d) {
+    return _ffiCoreAddConnector(raw, a, b, c, d);
+  }
+
+  bool removeConnector(int a, int b) {
+    return _ffiCoreRemoveConnector(raw, a, b);
+  }
+
+  int getConnectorCount() {
+    return _ffiCoreGetConnectorCount(raw);
+  }
+
+  int getConnectorStartId(int a) {
+    return _ffiCoreGetConnectorStartId(raw, a);
+  }
+
+  int getConnectorEndId(int a) {
+    return _ffiCoreGetConnectorEndId(raw, a);
+  }
+
+  int getConnectorStartIndex(int a) {
+    return _ffiCoreGetConnectorStartIndex(raw, a);
+  }
+
+  int getConnectorEndIndex(int a) {
+    return _ffiCoreGetConnectorEndIndex(raw, a);
+  }
+
+  RawNode getNode(int a) {
+    return _ffiCoreGetNode(raw, a);
+  }
+
+  int getModuleSpecCount() {
+    return _ffiCoreGetModuleSpecCount(raw);
+  }
+
+  String getModuleSpecId(int a) {
+    var rawId = _ffiCoreGetModuleSpecId(raw, a);
+    var id = rawId.toDartString();
+    calloc.free(rawId);
+    return id;
+  }
+
+  String getModuleSpecPath(int a) {
+    var rawId = _ffiCoreGetModuleSpecPath(raw, a);
+    var id = rawId.toDartString();
+    calloc.free(rawId);
+    return id;
+  }
+
+  Color getModuleSpecColor(int a) {
+    return Color(_ffiCoreGetModuleSpecColor(raw, a));
   }
 }
 
@@ -79,193 +151,97 @@ DynamicLibrary loadCoreLibrary() {
 
 /* Global */
 
-FFIHost Function() _ffiCreateHost = core
-    .lookup<NativeFunction<FFIHost Function()>>("ffi_create_host")
+RawCore Function(int) _ffiHackConvert = core
+    .lookup<NativeFunction<RawCore Function(Int64)>>("ffi_hack_convert")
     .asFunction();
 
-FFIHost Function(int) _ffiHackConvert = core
-    .lookup<NativeFunction<FFIHost Function(Int64)>>("ffi_hack_convert")
+RawCore Function() _ffiCreateHost = core
+    .lookup<NativeFunction<RawCore Function()>>("ffi_create_host")
     .asFunction();
 
 /* Core */
 
-bool Function(FFIHost, Pointer<Utf8>) _ffiCoreLoad = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
+bool Function(RawCore, Pointer<Utf8>) _ffiCoreLoad = core
+    .lookup<NativeFunction<Bool Function(RawCore, Pointer<Utf8>)>>(
         "ffi_host_load")
     .asFunction();
-bool Function(FFIHost, Pointer<Utf8>) _ffiCoreSave = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
+bool Function(RawCore, Pointer<Utf8>) _ffiCoreSave = core
+    .lookup<NativeFunction<Bool Function(RawCore, Pointer<Utf8>)>>(
         "ffi_host_save")
     .asFunction();
-void Function(FFIHost) _ffiCoreRefresh = core
-    .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_refresh")
+void Function(RawCore) _ffiCoreRefresh = core
+    .lookup<NativeFunction<Void Function(RawCore)>>("ffi_host_refresh")
     .asFunction();
-bool Function(FFIHost, Pointer<Utf8>) _ffiCoreAddModule = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
+bool Function(RawCore, Pointer<Utf8>) _ffiCoreAddModule = core
+    .lookup<NativeFunction<Bool Function(RawCore, Pointer<Utf8>)>>(
         "ffi_host_add_module")
     .asFunction();
-bool Function(FFIHost, int) _ffiHostRemoveNode = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Int32)>>(
+bool Function(RawCore, int) _ffiCoreRemoveNode = core
+    .lookup<NativeFunction<Bool Function(RawCore, Int32)>>(
         "ffi_host_remove_node")
     .asFunction();
-int Function(FFIHost) _ffiHostGetNodeCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost)>>("ffi_host_get_node_count")
-    .asFunction();
-FFIAudioPlugin Function(FFIHost, Pointer<Utf8>) _ffiHostCreatePlugin = core
-    .lookup<NativeFunction<FFIAudioPlugin Function(FFIHost, Pointer<Utf8>)>>(
-        "ffi_host_create_plugin")
+int Function(RawCore) _ffiCoreGetNodeCount = core
+    .lookup<NativeFunction<Int64 Function(RawCore)>>("ffi_host_get_node_count")
     .asFunction();
 
-bool Function(FFIHost, int, int, int, int) _ffiHostAddConnector = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Int32, Int32, Int32, Int32)>>(
+/*FFIAudioPlugin Function(RawCore, Pointer<Utf8>) _ffiCoreCreatePlugin = core
+    .lookup<NativeFunction<FFIAudioPlugin Function(RawCore, Pointer<Utf8>)>>(
+        "ffi_host_create_plugin")
+    .asFunction();*/
+
+bool Function(RawCore, int, int, int, int) _ffiCoreAddConnector = core
+    .lookup<NativeFunction<Bool Function(RawCore, Int32, Int32, Int32, Int32)>>(
         "ffi_host_add_connector")
     .asFunction();
-bool Function(FFIHost, int, int) _ffiHostRemoveConnector = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Int32, Int32)>>(
+bool Function(RawCore, int, int) _ffiCoreRemoveConnector = core
+    .lookup<NativeFunction<Bool Function(RawCore, Int32, Int32)>>(
         "ffi_host_remove_connector")
     .asFunction();
-int Function(FFIHost) _ffiHostGetConnectorCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost)>>(
+int Function(RawCore) _ffiCoreGetConnectorCount = core
+    .lookup<NativeFunction<Int64 Function(RawCore)>>(
         "ffi_host_get_connector_count")
     .asFunction();
 
-int Function(FFIHost, int) _ffiHostGetConnectorStartId = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
+int Function(RawCore, int) _ffiCoreGetConnectorStartId = core
+    .lookup<NativeFunction<Int32 Function(RawCore, Int64)>>(
         "ffi_host_get_connector_start_id")
     .asFunction();
-int Function(FFIHost, int) _ffiHostGetConnectorEndId = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
+int Function(RawCore, int) _ffiCoreGetConnectorEndId = core
+    .lookup<NativeFunction<Int32 Function(RawCore, Int64)>>(
         "ffi_host_get_connector_end_id")
     .asFunction();
-int Function(FFIHost, int) _ffiHostGetConnectorStartIndex = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
+int Function(RawCore, int) _ffiCoreGetConnectorStartIndex = core
+    .lookup<NativeFunction<Int32 Function(RawCore, Int64)>>(
         "ffi_host_get_connector_start_index")
     .asFunction();
-int Function(FFIHost, int) _ffiHostGetConnectorEndIndex = core
-    .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
+int Function(RawCore, int) _ffiCoreGetConnectorEndIndex = core
+    .lookup<NativeFunction<Int32 Function(RawCore, Int64)>>(
         "ffi_host_get_connector_end_index")
     .asFunction();
 
-FFINode Function(FFIHost, int) _ffiHostGetNode = core
-    .lookup<NativeFunction<FFINode Function(FFIHost, Int64)>>(
+RawNode Function(RawCore, int) _ffiCoreGetNode = core
+    .lookup<NativeFunction<RawNode Function(RawCore, Int64)>>(
         "ffi_host_get_node")
     .asFunction();
 
 /* Modules */
 
-int Function(FFIHost) _ffiHostGetModuleSpecCount = core
-    .lookup<NativeFunction<Int64 Function(FFIHost)>>(
+int Function(RawCore) _ffiCoreGetModuleSpecCount = core
+    .lookup<NativeFunction<Int64 Function(RawCore)>>(
         "ffi_host_get_module_spec_count")
     .asFunction();
-Pointer<Utf8> Function(FFIHost, int) _ffiHostGetModuleSpecId = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
+Pointer<Utf8> Function(RawCore, int) _ffiCoreGetModuleSpecId = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawCore, Int64)>>(
         "ffi_host_get_module_spec_id")
     .asFunction();
-Pointer<Utf8> Function(FFIHost, int) _ffiHostGetModuleSpecPath = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
+
+Pointer<Utf8> Function(RawCore, int) _ffiCoreGetModuleSpecPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawCore, Int64)>>(
         "ffi_host_get_module_spec_path")
     .asFunction();
-int Function(FFIHost, int) _ffiHostGetModuleSpecColor = core
-    .lookup<NativeFunction<Int64 Function(FFIHost, Int32)>>(
+int Function(RawCore, int) _ffiCoreGetModuleSpecColor = core
+    .lookup<NativeFunction<Int64 Function(RawCore, Int32)>>(
         "ffi_host_get_module_spec_color")
-    .asFunction();
-
-/* Node */
-
-int Function(FFINode) _ffiNodeGetId = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_id")
-    .asFunction();
-Pointer<Utf8> Function(FFINode) _ffiNodeGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFINode)>>(
-        "ffi_node_get_name")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_color")
-    .asFunction();
-
-int Function(FFINode) _ffiNodeGetX = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_x")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetY = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_y")
-    .asFunction();
-void Function(FFINode, int) _ffiNodeSetX = core
-    .lookup<NativeFunction<Void Function(FFINode, Int32)>>("ffi_node_set_x")
-    .asFunction();
-void Function(FFINode, int) _ffiNodeSetY = core
-    .lookup<NativeFunction<Void Function(FFINode, Int32)>>("ffi_node_set_y")
-    .asFunction();
-
-double Function(FFINode) _ffiNodeGetWidth = core
-    .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_width")
-    .asFunction();
-double Function(FFINode) _ffiNodeGetHeight = core
-    .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_height")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetMinWidth = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_min_width")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetMinHeight = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_min_height")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetMaxWidth = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_max_width")
-    .asFunction();
-int Function(FFINode) _ffiNodeGetMaxHeight = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_max_height")
-    .asFunction();
-bool Function(FFINode) _ffiNodeGetResizable = core
-    .lookup<NativeFunction<Bool Function(FFINode)>>("ffi_node_get_resizable")
-    .asFunction();
-
-int Function(FFINode) _ffiNodeGetInputPinsCount = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>(
-        "ffi_node_get_input_pins_count")
-    .asFunction();
-int Function(FFINode, int) _ffiNodeGetInputPinType = core
-    .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-        "ffi_node_get_input_pin_type")
-    .asFunction();
-Pointer<Utf8> Function(FFINode, int) _ffiNodeGetInputPinName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int32)>>(
-        "ffi_node_get_input_pin_name")
-    .asFunction();
-int Function(FFINode, int) _ffiNodeGetInputPinY = core
-    .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-        "ffi_node_get_input_pin_y")
-    .asFunction();
-
-int Function(FFINode) _ffiNodeGetOutputPinsCount = core
-    .lookup<NativeFunction<Int32 Function(FFINode)>>(
-        "ffi_node_get_output_pins_count")
-    .asFunction();
-int Function(FFINode, int) _ffiNodeGetOutputPinType = core
-    .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-        "ffi_node_get_output_pin_type")
-    .asFunction();
-Pointer<Utf8> Function(FFINode, int) _ffiNodeGetOutputPinName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int32)>>(
-        "ffi_node_get_output_pin_name")
-    .asFunction();
-int Function(FFINode, int) _ffiNodeGetOutputPinY = core
-    .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-        "ffi_node_get_output_pin_y")
-    .asFunction();
-
-FFIWidget Function(FFINode) _ffiNodeGetWidgetRoot = core
-    .lookup<NativeFunction<FFIWidget Function(FFINode)>>(
-        "ffi_node_get_widget_root")
-    .asFunction();
-bool Function(FFINode) _ffiNodeShouldRebuild = core
-    .lookup<NativeFunction<Bool Function(FFINode)>>("ffi_node_should_rebuild")
-    .asFunction();
-
-void Function(FFINode, double) _ffiNodeSetNodeWidth = core
-    .lookup<NativeFunction<Void Function(FFINode, Float)>>("ffi_node_set_width")
-    .asFunction();
-void Function(FFINode, double) _ffiNodeSetNodeHeight = core
-    .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-        "ffi_node_set_height")
     .asFunction();
 
 /* Widget */
@@ -274,15 +250,15 @@ FFIWidgetTrait Function(FFIWidget) _ffiWidgetGetTrait = core
     .lookup<NativeFunction<FFIWidgetTrait Function(FFIWidget)>>(
         "ffi_widget_get_trait")
     .asFunction();
-Pointer<Utf8> Function(FFIWidget) _ffiWidgetGetName = core
+Pointer<Utf8> Function(FFIWidget) ffiWidgetGetName = core
     .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidget)>>(
         "ffi_widget_get_name")
     .asFunction();
-int Function(FFIWidget) _ffiWidgetGetChildCount = core
+int Function(FFIWidget) ffiWidgetGetChildCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidget)>>(
         "ffi_widget_get_child_count")
     .asFunction();
-FFIWidget Function(FFIWidget, int) _ffiWidgetGetChild = core
+FFIWidget Function(FFIWidget, int) ffiWidgetGetChild = core
     .lookup<NativeFunction<FFIWidget Function(FFIWidget, Int64)>>(
         "ffi_widget_get_child")
     .asFunction();
@@ -299,12 +275,7 @@ class FFIBuffer extends Struct {
   external int length;
 }
 
-class FFIHost extends Struct {
-  @Int64()
-  external int pointer;
-}
-
-class FFINode extends Struct {
+class RawCore extends Struct {
   @Int64()
   external int pointer;
 }

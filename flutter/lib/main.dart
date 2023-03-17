@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:ffi';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/host.dart';
@@ -16,6 +18,8 @@ import 'module.dart';
 
 import 'widgets/widget.dart';
 import 'ui/layout.dart';
+import 'core.dart';
+
 
 class Globals {
   ValueNotifier<String> pinLabel = ValueNotifier("");
@@ -57,7 +61,11 @@ void main(List<String> args) {
   print("Found " + args.length.toString() + " args in main()");
 
   if (args.isEmpty) {
-    Host core = Host(api.ffiCreateHost());
+    // Host core = Host(api.ffiCreateHost());
+    Host core = Host(
+      core: Core.create(),
+      library: Library.platformDefault()
+    );
 
     core.graph.refresh();
 
@@ -70,9 +78,12 @@ void main(List<String> args) {
 
     runApp(Window(core));
   } else {
-    var hostAddr = int.parse(args[0].split(": ").last);
+    var addr = int.parse(args[0].split(": ").last);
 
-    Host core = Host(api.ffiHackConvert(hostAddr));
+    Host core = Host(
+      core: Core.from(addr),
+      library: Library.platformDefault()
+    );
 
     core.graph.refresh();
 
@@ -586,7 +597,7 @@ class _GridState extends State<Grid> {
       width: 40000,
       height: 20000,
       child: CustomPaint(
-        size: const Size(40000, 20000),
+        size: const ui.Size(40000, 20000),
         painter: GridPainter(),
         child: Stack(
           children: [
@@ -663,7 +674,7 @@ class _TempConnectorState extends State<TempConnectorWidget> {
     gTempConnectorState = this;
 
     return CustomPaint(
-      size: const Size(4000, 2000),
+      size: const ui.Size(4000, 2000),
       painter: TempConnectorPainter(widget.host),
     );
   }
@@ -675,7 +686,7 @@ class TempConnectorPainter extends CustomPainter {
   Host host;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, ui.Size size) {
     final paintBlue = Paint()
       ..style = PaintingStyle.stroke
       ..color = MyTheme.audio
@@ -783,7 +794,7 @@ class _ConnectorsState extends State<Connectors> {
     gConnectorsState = this;
 
     return CustomPaint(
-      size: const Size(4000, 2000),
+      size: const ui.Size(4000, 2000),
       painter: ConnectorsPainter(widget.host),
     );
   }
@@ -795,7 +806,7 @@ class ConnectorsPainter extends CustomPainter {
   Host host;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, ui.Size size) {
     var paint = Paint()
       ..style = PaintingStyle.stroke
       ..color = Colors.blue
@@ -906,7 +917,7 @@ class ConnectorsPainter extends CustomPainter {
 
 class GridPainter extends CustomPainter {
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, ui.Size size) {
     const spacing = 25;
     final paint = Paint()
       ..color = const Color.fromRGBO(25, 25, 25, 1.0)

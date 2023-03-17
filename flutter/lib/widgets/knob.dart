@@ -5,6 +5,8 @@ import '../views/variables.dart';
 import 'widget.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
+import '../core.dart';
+import '../module.dart';
 
 import '../views/settings.dart';
 
@@ -30,7 +32,7 @@ int Function(FFIWidgetPointer) ffiKnobGetColor = core
     .asFunction();
 
 class KnobWidget extends ModuleWidget {
-  KnobWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  KnobWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   Color color = Colors.blue;
   String labelText = "";

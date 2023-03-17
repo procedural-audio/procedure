@@ -5,6 +5,8 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import '../host.dart';
 import 'widget.dart';
+import '../core.dart';
+import '../module.dart';
 
 int Function(FFIWidgetPointer) ffiNotesTrackGetNoteCount = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -75,7 +77,7 @@ class DragInfo {
 }
 
 class PianoRollWidget extends ModuleWidget {
-  PianoRollWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  PianoRollWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   final ScrollController controller = ScrollController();
   ValueNotifier<DragInfo> info = ValueNotifier(DragInfo());

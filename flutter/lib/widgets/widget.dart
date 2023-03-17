@@ -10,6 +10,8 @@ import 'dart:ui' as ui;
 import 'dart:async';
 
 import '../host.dart';
+import '../core.dart';
+import '../module.dart';
 
 import '../views/variables.dart';
 import 'knob.dart';
@@ -36,7 +38,6 @@ import 'fader.dart';
 import 'input.dart';
 import 'wavetable.dart';
 import 'display.dart';
-import 'audioPlugin.dart';
 import 'buttonGrid.dart';
 import 'searchableDropdown.dart';
 import 'luaEditor.dart';
@@ -44,8 +45,8 @@ import 'painter.dart';
 import 'mouseListener.dart';
 import 'xyPad.dart';
 
-ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
-  var nameRaw = api.ffiWidgetGetName(widgetRaw);
+ModuleWidget? createWidget(Host host, RawNode moduleRaw, FFIWidget widgetRaw) {
+  var nameRaw = ffiWidgetGetName(widgetRaw);
   var name = nameRaw.toDartString();
   calloc.free(nameRaw);
 
@@ -139,8 +140,6 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
     return DisplayWidget(host, moduleRaw, widgetRaw);
   } else if (name == "SearchableDropdown") {
     return SearchableDropdownWidget(host, moduleRaw, widgetRaw);
-  } else if (name == "AudioPlugin") {
-    return AudioPluginWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Browser") {
     return BrowserWidget(host, moduleRaw, widgetRaw);
   } else if (name == "Painter") {
@@ -154,7 +153,7 @@ ModuleWidget? createWidget(Host host, FFINode moduleRaw, FFIWidget widgetRaw) {
 }
 
 class EmptyWidget extends ModuleWidget {
-  EmptyWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w);
+  EmptyWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +162,7 @@ class EmptyWidget extends ModuleWidget {
 }
 
 abstract class ModuleWidget extends StatefulWidget {
-  final FFINode moduleRaw;
+  final RawNode moduleRaw;
   final FFIWidget widgetRaw;
   final Host host;
 
@@ -171,10 +170,10 @@ abstract class ModuleWidget extends StatefulWidget {
   _ModuleWidgetState state = _ModuleWidgetState();
 
   ModuleWidget(this.host, this.moduleRaw, this.widgetRaw) {
-    int childCount = api.ffiWidgetGetChildCount(widgetRaw);
+    int childCount = ffiWidgetGetChildCount(widgetRaw);
 
     for (int i = 0; i < childCount; i++) {
-      var childRaw = api.ffiWidgetGetChild(widgetRaw, i);
+      var childRaw = ffiWidgetGetChild(widgetRaw, i);
       ModuleWidget? widget = createWidget(host, moduleRaw, childRaw);
 
       if (widget != null) {

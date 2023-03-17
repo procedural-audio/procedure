@@ -11,7 +11,7 @@ import '../host.dart';
 
 /*
 class ButtonText extends ModuleWidget {
-  ButtonText(FFINode m, FFIWidget w) : super(m, w);
+  ButtonText(RawNode m, FFIWidget w) : super(m, w);
 
   bool mouseOver = false;
 

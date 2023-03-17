@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
@@ -270,7 +271,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
                     ClipRRect(
                         borderRadius:
                             const BorderRadius.all(Radius.circular(5)),
-                        child: Image.file(widget.info.image,
+                        child: Image.file(File(widget.info.background),
                             width: 290, fit: BoxFit.cover)),
                     Center(
                         child: AnimatedOpacity(

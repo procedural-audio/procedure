@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 
 import 'widget.dart';
+import '../core.dart';
+import '../module.dart';
 
 double Function(FFIWidgetPointer) ffiLevelMeterGetLeft = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -27,7 +29,7 @@ int Function(FFIWidgetPointer) ffiLevelMeterGetColor2 = core
     .asFunction();
 
 class LevelMeterWidget extends ModuleWidget {
-  LevelMeterWidget(Host h, FFINode m, FFIWidget w) : super(h, m, w) {
+  LevelMeterWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
     color1 = Color(ffiLevelMeterGetColor1(widgetRaw.pointer));
     color2 = Color(ffiLevelMeterGetColor2(widgetRaw.pointer));
   }
