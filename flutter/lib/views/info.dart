@@ -4,50 +4,88 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
-import 'package:metasampler/ui/interactive.dart';
 import 'settings.dart';
 import '../host.dart';
 import '../config.dart';
 
-@JsonSerializable()
-class InstrumentInfo {
-  InstrumentInfo(this.name, this.path);
+class PatchInfo {
+  PatchInfo({
+    required this.path,
+    required this.name,
+    required this.description,
+    required this.background,
+  });
 
-  String name = "Untitled Instrument";
-  String description =
-      "Here is a paragraph that can go below the title. It is here to fill some space.\n";
-  String path = "";
-  File image =
-      File("/home/chase/github/content/assets/backgrounds/background_01.png");
+  String name;
+  String description;
+  String path;
+  Image background;
   List<String> tags = ["Tag 1", "Tag 2"];
 
-  int rating = -1;
+  static Future<PatchInfo?> load(String path) async {
+    File file = File(path);
 
-  InstrumentInfo.fromJson(Map<String, dynamic> json, String dirPath) {
-    name = json['name'];
-    description = json['description'];
-    rating = json['rating'];
-    path = dirPath;
-
-    File file1 = File(path + "/info/background.jpg");
-    if (file1.existsSync()) {
-      image = file1;
+    if (file.existsSync()) {
+      String contents = await file.readAsString();
+      Map<String, dynamic> json = jsonDecode(contents);
+      return PatchInfo.fromJson(path, json);
     }
 
-    File file2 = File(path + "/info/background.png");
-    if (file2.existsSync()) {
-      image = file2;
-    }
-
-    File file3 = File(path + "/info/background.jpeg");
-    if (file3.existsSync()) {
-      image = file3;
-    }
+    return null;
   }
 
-  Map<String, dynamic> toJson() =>
-      {'name': name, 'description': description, 'rating': rating};
+  static PatchInfo loadSync(String path) {
+    PatchInfo info = PatchInfo(
+      path: path,
+      name: "Untitled Instrument",
+      description: "Some description here",
+      background: Image.file(File("")),
+    );
+
+    load(path).then((i) {
+      if (i != null) {
+        info = i;
+      } else {
+        print("Failed to load instrument");
+      }
+    });
+
+    return info;
+  }
+
+  void save() async {
+    File file = File(path);
+    String contents = jsonEncode(toJson());
+    file.writeAsString(contents);
+  }
+
+  static PatchInfo fromJson(String path, Map<String, dynamic> json) {
+    Image background = Image.file(File(""));
+
+    File file1 = File(path + "/background.jpg");
+    if (file1.existsSync()) {
+      background = Image.file(file1);
+    }
+
+    File file2 = File(path + "/background.png");
+    if (file2.existsSync()) {
+      background = Image.file(file2);
+    }
+
+    File file3 = File(path + "/background.jpeg");
+    if (file3.existsSync()) {
+      background = Image.file(file3);
+    }
+
+    return PatchInfo(
+      path: path,
+      name: json['name'],
+      description: json['description'],
+      background: background,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'name': name, 'description': description};
 }
 
 class InfoContentsWidget extends StatefulWidget {
@@ -55,7 +93,7 @@ class InfoContentsWidget extends StatefulWidget {
       {required this.instrument, required this.onClose, Key? key})
       : super(key: key);
 
-  InstrumentInfo instrument;
+  PatchInfo instrument;
   Host host;
   void Function() onClose;
 

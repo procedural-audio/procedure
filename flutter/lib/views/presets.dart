@@ -117,12 +117,47 @@ class UserInterfaceItemEditor extends StatelessWidget {
 
   UserInterfaceItem item;
   Host host;
+  String text1 = "Text 1";
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         EditorTitle("User Interface"),
+        Section(
+          title: "Name",
+          child: Row(
+            children: [
+              Expanded(
+                child: Field(
+                  width: null,
+                  label: "",
+                  initialValue: text1,
+                  onChanged: (s) {
+                    text1 = s;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Section(
+          title: "Description",
+          child: Row(
+            children: [
+              Expanded(
+                child: Field(
+                  width: null,
+                  label: "",
+                  initialValue: text1,
+                  onChanged: (s) {
+                    text1 = s;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

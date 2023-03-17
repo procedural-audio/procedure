@@ -49,7 +49,7 @@ class _Bar extends State<Bar> {
                   );
                 },
               ),
-              ValueListenableBuilder<InstrumentInfo>(
+              ValueListenableBuilder<PatchInfo>(
                 valueListenable: widget.host.loadedInstrument,
                 builder: (context, value, child) {
                   return BarDropdown(

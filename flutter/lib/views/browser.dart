@@ -41,10 +41,10 @@ class _BrowserView extends State<BrowserView> {
             })),
         const SizedBox(height: 10),
         Expanded(
-            child: ValueListenableBuilder<List<InstrumentInfo>>(
+            child: ValueListenableBuilder<List<PatchInfo>>(
                 valueListenable: widget.host.globals.instruments,
                 builder: (context, instruments, w) {
-                  List<InstrumentInfo> filteredInstruments = [];
+                  List<PatchInfo> filteredInstruments = [];
 
                   if (searchText == "") {
                     filteredInstruments = instruments;
@@ -211,7 +211,7 @@ class BrowserViewElement extends StatefulWidget {
       required this.onTap});
 
   int index;
-  InstrumentInfo info;
+  PatchInfo info;
   ValueNotifier<int> selectedIndex;
   void Function(double x, double y) onTap;
 

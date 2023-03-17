@@ -23,13 +23,13 @@ class Globals {
 
   /* Instruments */
 
-  ValueNotifier<List<InstrumentInfo>> instruments = ValueNotifier([]);
+  ValueNotifier<List<PatchInfo>> instruments = ValueNotifier([]);
   PresetInfo preset = PresetInfo(
       "Untitled Instrument",
       File(
           "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
 
-  List<InstrumentInfo> instruments2 = [];
+  List<PatchInfo> instruments2 = [];
   ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
 
   /* Patching View */
@@ -65,7 +65,7 @@ void main(List<String> args) {
         File(contentPath + "/instruments/UntitledInstrument/info/info.json")
             .readAsStringSync());
 
-    core.globals.instrument = InstrumentInfo.fromJson(
+    core.globals.instrument = PatchInfo.fromJson(
         json, contentPath + "/instruments/UntitledInstrument");*/
 
     runApp(Window(core));
@@ -80,7 +80,7 @@ void main(List<String> args) {
         File(contentPath + "/instruments/UntitledInstrument/info/info.json")
             .readAsStringSync());
 
-    core.globals.instrument = InstrumentInfo.fromJson(
+    core.globals.instrument = PatchInfo.fromJson(
         json, contentPath + "/instruments/UntitledInstrument");*/
 
     runApp(Window(core));

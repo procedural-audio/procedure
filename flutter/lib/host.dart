@@ -14,317 +14,10 @@ import 'views/variables.dart';
 import 'views/presets.dart';
 import 'views/info.dart';
 
+import '../config.dart';
+import 'core.dart';
+
 import 'package:flutter/services.dart';
-
-var core = getCore();
-var api = FFIApi();
-
-DynamicLibrary getCore() {
-  var executable = DynamicLibrary.executable();
-
-  if (executable.providesSymbol("ffi_create_host")) {
-    return executable;
-  } else {
-    DynamicLibrary library;
-
-    if (Platform.isLinux) {
-      library = DynamicLibrary.open(
-          "/home/chase/github/nodus/build/out/core/release/libtonevision_core.so");
-
-      if (library.providesSymbol("ffi_create_host")) {
-        print("Loaded core dynamically");
-        return library;
-      } else {
-        print("Failed to initialise core");
-        exit(1);
-      }
-    } else if (Platform.isMacOS) {
-      print("Using dylib from incorrect folder");
-      library = DynamicLibrary.open(
-          "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib");
-
-      if (library.providesSymbol("ffi_create_host")) {
-        print("Loaded core dynamically");
-        return library;
-      } else {
-        print("Failed to initialise core");
-        exit(1);
-      }
-    } else {
-      exit(1);
-    }
-  }
-}
-
-bool Function(FFIHost, Pointer<Utf8>) _loadHost = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
-        "ffi_host_load")
-    .asFunction();
-
-bool Function(FFIHost, Pointer<Utf8>) _saveHost = core
-    .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
-        "ffi_host_save")
-    .asFunction();
-
-class FFIApi {
-  /* Global */
-
-  FFIHost Function() ffiCreateHost = core
-      .lookup<NativeFunction<FFIHost Function()>>("ffi_create_host")
-      .asFunction();
-
-  /* Host */
-
-  FFIHost Function(int) ffiHackConvert = core
-      .lookup<NativeFunction<FFIHost Function(Int64)>>("ffi_hack_convert")
-      .asFunction();
-
-  void Function(FFIHost) ffiHostRefresh = core
-      .lookup<NativeFunction<Void Function(FFIHost)>>("ffi_host_refresh")
-      .asFunction();
-  bool Function(FFIHost, Pointer<Utf8>) ffiHostAddModule = core
-      .lookup<NativeFunction<Bool Function(FFIHost, Pointer<Utf8>)>>(
-          "ffi_host_add_module")
-      .asFunction();
-  bool Function(FFIHost, int) ffiHostRemoveNode = core
-      .lookup<NativeFunction<Bool Function(FFIHost, Int32)>>(
-          "ffi_host_remove_node")
-      .asFunction();
-  int Function(FFIHost) ffiHostGetNodeCount = core
-      .lookup<NativeFunction<Int64 Function(FFIHost)>>(
-          "ffi_host_get_node_count")
-      .asFunction();
-  FFIAudioPlugin Function(FFIHost, Pointer<Utf8>) ffiHostCreatePlugin = core
-      .lookup<NativeFunction<FFIAudioPlugin Function(FFIHost, Pointer<Utf8>)>>(
-          "ffi_host_create_plugin")
-      .asFunction();
-
-  bool Function(FFIHost, int, int, int, int) ffiHostAddConnector = core
-      .lookup<
-          NativeFunction<
-              Bool Function(FFIHost, Int32, Int32, Int32,
-                  Int32)>>("ffi_host_add_connector")
-      .asFunction();
-  bool Function(FFIHost, int, int) ffiHostRemoveConnector = core
-      .lookup<NativeFunction<Bool Function(FFIHost, Int32, Int32)>>(
-          "ffi_host_remove_connector")
-      .asFunction();
-  int Function(FFIHost) ffiHostGetConnectorCount = core
-      .lookup<NativeFunction<Int64 Function(FFIHost)>>(
-          "ffi_host_get_connector_count")
-      .asFunction();
-
-  int Function(FFIHost, int) ffiHostGetConnectorStartId = core
-      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
-          "ffi_host_get_connector_start_id")
-      .asFunction();
-  int Function(FFIHost, int) ffiHostGetConnectorEndId = core
-      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
-          "ffi_host_get_connector_end_id")
-      .asFunction();
-  int Function(FFIHost, int) ffiHostGetConnectorStartIndex = core
-      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
-          "ffi_host_get_connector_start_index")
-      .asFunction();
-  int Function(FFIHost, int) ffiHostGetConnectorEndIndex = core
-      .lookup<NativeFunction<Int32 Function(FFIHost, Int64)>>(
-          "ffi_host_get_connector_end_index")
-      .asFunction();
-
-  FFINode Function(FFIHost, int) ffiHostGetNode = core
-      .lookup<NativeFunction<FFINode Function(FFIHost, Int64)>>(
-          "ffi_host_get_node")
-      .asFunction();
-
-  /* Modules */
-
-  int Function(FFIHost) ffiHostGetModuleSpecCount = core
-      .lookup<NativeFunction<Int64 Function(FFIHost)>>(
-          "ffi_host_get_module_spec_count")
-      .asFunction();
-  Pointer<Utf8> Function(FFIHost, int) ffiHostGetModuleSpecId = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
-          "ffi_host_get_module_spec_id")
-      .asFunction();
-  Pointer<Utf8> Function(FFIHost, int) ffiHostGetModuleSpecPath = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFIHost, Int64)>>(
-          "ffi_host_get_module_spec_path")
-      .asFunction();
-  int Function(FFIHost, int) ffiHostGetModuleSpecColor = core
-      .lookup<NativeFunction<Int64 Function(FFIHost, Int32)>>(
-          "ffi_host_get_module_spec_color")
-      .asFunction();
-
-  /* Node */
-
-  int Function(FFINode) ffiNodeGetId = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_id")
-      .asFunction();
-  Pointer<Utf8> Function(FFINode) ffiNodeGetName = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFINode)>>(
-          "ffi_node_get_name")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetColor = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_color")
-      .asFunction();
-
-  int Function(FFINode) ffiNodeGetX = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_x")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetY = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_y")
-      .asFunction();
-  void Function(FFINode, int) ffiNodeSetX = core
-      .lookup<NativeFunction<Void Function(FFINode, Int32)>>("ffi_node_set_x")
-      .asFunction();
-  void Function(FFINode, int) ffiNodeSetY = core
-      .lookup<NativeFunction<Void Function(FFINode, Int32)>>("ffi_node_set_y")
-      .asFunction();
-
-  double Function(FFINode) ffiNodeGetWidth = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_width")
-      .asFunction();
-  double Function(FFINode) ffiNodeGetHeight = core
-      .lookup<NativeFunction<Float Function(FFINode)>>("ffi_node_get_height")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetMinWidth = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_min_width")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetMinHeight = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>(
-          "ffi_node_get_min_height")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetMaxWidth = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>("ffi_node_get_max_width")
-      .asFunction();
-  int Function(FFINode) ffiNodeGetMaxHeight = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>(
-          "ffi_node_get_max_height")
-      .asFunction();
-  bool Function(FFINode) ffiNodeGetResizable = core
-      .lookup<NativeFunction<Bool Function(FFINode)>>("ffi_node_get_resizable")
-      .asFunction();
-
-  int Function(FFINode) ffiNodeGetInputPinsCount = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>(
-          "ffi_node_get_input_pins_count")
-      .asFunction();
-  int Function(FFINode, int) ffiNodeGetInputPinType = core
-      .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-          "ffi_node_get_input_pin_type")
-      .asFunction();
-  Pointer<Utf8> Function(FFINode, int) ffiNodeGetInputPinName = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int32)>>(
-          "ffi_node_get_input_pin_name")
-      .asFunction();
-  int Function(FFINode, int) ffiNodeGetInputPinY = core
-      .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-          "ffi_node_get_input_pin_y")
-      .asFunction();
-
-  int Function(FFINode) ffiNodeGetOutputPinsCount = core
-      .lookup<NativeFunction<Int32 Function(FFINode)>>(
-          "ffi_node_get_output_pins_count")
-      .asFunction();
-  int Function(FFINode, int) ffiNodeGetOutputPinType = core
-      .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-          "ffi_node_get_output_pin_type")
-      .asFunction();
-  Pointer<Utf8> Function(FFINode, int) ffiNodeGetOutputPinName = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFINode, Int32)>>(
-          "ffi_node_get_output_pin_name")
-      .asFunction();
-  int Function(FFINode, int) ffiNodeGetOutputPinY = core
-      .lookup<NativeFunction<Int32 Function(FFINode, Int32)>>(
-          "ffi_node_get_output_pin_y")
-      .asFunction();
-
-  FFIWidget Function(FFINode) ffiNodeGetWidgetRoot = core
-      .lookup<NativeFunction<FFIWidget Function(FFINode)>>(
-          "ffi_node_get_widget_root")
-      .asFunction();
-  bool Function(FFINode) ffiNodeShouldRebuild = core
-      .lookup<NativeFunction<Bool Function(FFINode)>>("ffi_node_should_rebuild")
-      .asFunction();
-
-  void Function(FFINode, double) ffiNodeSetNodeWidth = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_width")
-      .asFunction();
-  void Function(FFINode, double) ffiNodeSetNodeHeight = core
-      .lookup<NativeFunction<Void Function(FFINode, Float)>>(
-          "ffi_node_set_height")
-      .asFunction();
-
-  /* Widget */
-
-  FFIWidgetTrait Function(FFIWidget) ffiWidgetGetTrait = core
-      .lookup<NativeFunction<FFIWidgetTrait Function(FFIWidget)>>(
-          "ffi_widget_get_trait")
-      .asFunction();
-  Pointer<Utf8> Function(FFIWidget) ffiWidgetGetName = core
-      .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidget)>>(
-          "ffi_widget_get_name")
-      .asFunction();
-  int Function(FFIWidget) ffiWidgetGetChildCount = core
-      .lookup<NativeFunction<Int64 Function(FFIWidget)>>(
-          "ffi_widget_get_child_count")
-      .asFunction();
-  FFIWidget Function(FFIWidget, int) ffiWidgetGetChild = core
-      .lookup<NativeFunction<FFIWidget Function(FFIWidget, Int64)>>(
-          "ffi_widget_get_child")
-      .asFunction();
-
-  void Function(FFIWidget, int) ffiKnobSetValue = core
-      .lookup<NativeFunction<Void Function(FFIWidget, Int32)>>(
-          "ffi_knob_set_value")
-      .asFunction();
-}
-
-class FFIBuffer extends Struct {
-  external Pointer<Float> pointer;
-
-  @Int64()
-  external int length;
-}
-
-class FFIHost extends Struct {
-  @Int64()
-  external int pointer;
-}
-
-class FFINode extends Struct {
-  @Int64()
-  external int pointer;
-}
-
-class FFIAudioPlugin extends Struct {
-  @Int64()
-  external int pointer;
-}
-
-class FFIWidgetPointer extends Struct {
-  @Int64()
-  external int pointer;
-}
-
-class FFIWidget extends Struct {
-  external FFIWidgetPointer pointer;
-
-  @Int64()
-  external int metadata;
-
-  FFIWidgetTrait getTrait() {
-    return api.ffiWidgetGetTrait(this);
-  }
-}
-
-class FFIWidgetTrait extends Struct {
-  external FFIWidgetPointer pointer;
-
-  @Int64()
-  external int metadata;
-}
 
 class AudioPluginsCategory {
   AudioPluginsCategory(this.name, this.plugins);
@@ -395,22 +88,104 @@ class ModuleSpec {
   Color color;
 }
 
+/* LIBRARY */
+
+class Library {
+  Library(Directory directory) {
+    projects = Projects(Directory(directory.path + "/projects"));
+    assets = Assets(Directory(directory.path + "/assets"));
+  }
+
+  late Projects projects;
+  late Assets assets;
+
+  static Library platformDefault() {
+    if (Platform.isMacOS) {
+      return Library(Directory("/Users/chasekanipe/Github/library/"));
+    }
+
+    print("Library not supported on platform");
+    exit(1);
+  }
+}
+
+// HOW TO MAKE THIS ASYNC COMPATIBLE ???
+
+class Projects {
+  Projects(this.directory);
+
+  final Directory directory;
+
+  Project? load(String name) {
+    // loadAsync(name);
+    print("Loading project");
+    return null;
+  }
+}
+
+class ProjectInfo {
+  ProjectInfo({required this.directory, required this.name});
+
+  Directory directory;
+  String name;
+}
+
+class Project {
+  Project(this.info);
+
+  ProjectInfo info;
+  List<Patch> patches = [];
+  List<UserInterface> uis = [];
+}
+
+class Assets {
+  Assets(this.directory);
+
+  final Directory directory;
+
+  Image? loadImage(String name) {
+    print("Loading image asset");
+    return null;
+  }
+}
+
+class UserInterface {
+  UserInterface(this.path);
+
+  String path;
+  List<Patch> patches = [];
+  List<Preset> presets = [];
+}
+
+class Patch {
+  Patch(this.path);
+
+  String path;
+}
+
+/* HOST */
+
 class Host extends ChangeNotifier {
   final FFIHost host;
+
+  Library library = Library.platformDefault();
+
+  /* Old */
+
   late Graph graph;
   late Vars vars;
+  late Timer ticker;
+  late AudioPlugins audioPlugins;
 
   Globals globals = Globals();
 
-  var loadedInstrument = ValueNotifier(InstrumentInfo("Untitled Instrument",
-      "/Users/chasekanipe/Github/content/instruments/UntitledInstrument"));
+  var patch = ValueNotifier(
+    PatchInfo.loadSync(contentPath + "instruments/NewInstrument"),
+  );
+
+  var patches = ValueNotifier(<PatchInfo>[]);
 
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
-
-  late Timer ticker;
-  //late Timer timer2;
-
-  late AudioPlugins audioPlugins;
 
   Host(this.host) {
     graph = Graph(host, this);
@@ -452,8 +227,6 @@ class Host extends ChangeNotifier {
   @override
   void dispose() {
     ticker.cancel();
-    //timer2.cancel();
-
     super.dispose();
   }
 
@@ -495,7 +268,7 @@ class Host extends ChangeNotifier {
 
     Directory presetsDir = Directory(path + "/presets");
 
-    loadedInstrument.value = InstrumentInfo(File(path).name, path);
+    loadedInstrument.value = PatchInfo(File(path).name, path);
 
     if (!presetsDir.existsSync()) {
       presetsDir.createSync();
@@ -604,7 +377,7 @@ class Host extends ChangeNotifier {
   }
 
   void refreshInstruments() async {
-    List<InstrumentInfo> instruments = [];
+    List<PatchInfo> instruments = [];
 
     final instDir = Directory(contentPath + "/instruments");
     var dirs = await instDir.list(recursive: false).toList();
@@ -614,7 +387,7 @@ class Host extends ChangeNotifier {
       if (await file.exists()) {
         print("Parsing " + file.path);
         var json = jsonDecode(await file.readAsString());
-        instruments.add(InstrumentInfo.fromJson(json, dir.path));
+        instruments.add(PatchInfo.fromJson(json, dir.path));
       } else {
         print("Couldn't find json for " + dir.path);
       }
