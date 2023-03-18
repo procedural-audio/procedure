@@ -20,7 +20,6 @@ import 'widgets/widget.dart';
 import 'ui/layout.dart';
 import 'core.dart';
 
-
 class Globals {
   ValueNotifier<String> pinLabel = ValueNotifier("");
   Offset labelPosition = const Offset(0.0, 0.0);
@@ -64,7 +63,7 @@ void main(List<String> args) {
     // Host core = Host(api.ffiCreateHost());
     Host core = Host(
       core: Core.create(),
-      library: Library.platformDefault()
+      assets: Assets.platformDefault()
     );
 
     core.graph.refresh();
@@ -82,7 +81,7 @@ void main(List<String> args) {
 
     Host core = Host(
       core: Core.from(addr),
-      library: Library.platformDefault()
+      assets: Assets.platformDefault()
     );
 
     core.graph.refresh();
@@ -95,6 +94,24 @@ void main(List<String> args) {
         json, contentPath + "/instruments/UntitledInstrument");*/
 
     runApp(Window(core));
+  }
+}
+
+class MainWindow extends StatelessWidget {
+  MainWindow(this.host);
+
+  Host host;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        theme: ThemeData(
+          splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
+        ),
+        home: Scaffold(
+            backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+            body: Window(host)
+            ));
   }
 }
 
@@ -117,42 +134,31 @@ class Window extends StatefulWidget {
 class _Window extends State<Window> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        theme: ThemeData(
-          splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
-        ),
-        home: Scaffold(
-            backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-            body: Column(children: [
-              Expanded(
-                  child: Stack(children: [
-                Stack(children: <Widget>[
-                  Container(
-                      color: const Color.fromRGBO(10, 10, 10, 1.0),
-                      child: Stack(children: [
-                        ValueListenableBuilder<bool>(
-                            valueListenable: widget.instViewVisible,
-                            builder: (context, visible, w) {
-                              return Visibility(
-                                child: widget.instrumentView,
-                                visible: visible,
-                                maintainState: true,
-                              );
-                            }),
-                        ValueListenableBuilder<bool>(
-                            valueListenable: widget.instViewVisible,
-                            builder: (context, visible, w) {
-                              return Visibility(
-                                child: PatchingView(widget.host),
-                                visible: !visible,
-                                maintainState: true,
-                              );
-                            }),
-                        Bar(widget, widget.host)
-                      ]))
-                ])
-              ]))
-            ])));
+        return Stack(children: <Widget>[
+          Container(
+              color: const Color.fromRGBO(10, 10, 10, 1.0),
+              child: Stack(children: [
+                ValueListenableBuilder<bool>(
+                    valueListenable: widget.instViewVisible,
+                    builder: (context, visible, w) {
+                      return Visibility(
+                        child: widget.instrumentView,
+                        visible: visible,
+                        maintainState: true,
+                      );
+                    }),
+                ValueListenableBuilder<bool>(
+                    valueListenable: widget.instViewVisible,
+                    builder: (context, visible, w) {
+                      return Visibility(
+                        child: PatchingView(widget.host),
+                        visible: !visible,
+                        maintainState: true,
+                      );
+                    }),
+                Bar(widget, widget.host)
+              ],),),
+        ],);
   }
 }
 

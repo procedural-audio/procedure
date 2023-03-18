@@ -87,20 +87,18 @@ class ModuleSpec {
 
 /* LIBRARY */
 
-class Library {
-  Library(Directory directory) {
-    projects = Projects(Directory(directory.path + "/projects"));
-    assets = Assets(Directory(directory.path + "/assets"));
+class Assets {
+  Assets(String path) {
+    projects = Projects(Directory(path + "projects"));
   }
 
-  late Projects projects;
-  late Assets assets;
+  late final Projects projects;
 
-  static Library platformDefault() {
+  static Assets platformDefault() {
     if (Platform.isMacOS) {
-      return Library(Directory("/Users/chasekanipe/Github/library/"));
+      return Assets("/Users/chasekanipe/Github/library/");
     } else if (Platform.isLinux) {
-      return Library(Directory("/home/chase/github/content/"));
+      return Assets("/home/chase/github/content/");
     }
 
     print("Library not supported on platform");
@@ -115,7 +113,7 @@ class Projects {
 
   final Directory directory;
 
-  Project? load(String name) {
+  Future<Project?> load(String name) async {
     // loadAsync(name);
     print("Loading project");
     return null;
@@ -137,8 +135,8 @@ class Project {
   List<UserInterface> uis = [];
 }
 
-class Assets {
-  Assets(this.directory);
+class Images {
+  Images(this.directory);
 
   final Directory directory;
 
@@ -165,7 +163,7 @@ class Patch {
 /* HOST */
 
 class Host extends ChangeNotifier {
-  Host({required this.core, required this.library}) {
+  Host({required this.core, required this.assets}) {
     graph = Graph(core.raw, this);
     vars = Vars(this);
 
@@ -182,7 +180,7 @@ class Host extends ChangeNotifier {
   }
 
   Core core;
-  Library library;
+  Assets assets;
 
   late Graph graph;
   late Vars vars;
