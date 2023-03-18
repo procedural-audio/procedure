@@ -16,7 +16,6 @@ import 'core.dart';
 
 import 'package:flutter/services.dart';
 
-
 class AudioPluginsCategory {
   AudioPluginsCategory(this.name, this.plugins);
 
@@ -169,6 +168,17 @@ class Host extends ChangeNotifier {
   Host({required this.core, required this.library}) {
     graph = Graph(core.raw, this);
     vars = Vars(this);
+
+    ticker = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+      for (var module in graph.modules) {
+        for (var widget in module.widgets) {
+          callTickRecursive(widget);
+        }
+      }
+    });
+
+    refreshInstruments();
+    refreshModuleSpecs();
   }
 
   Core core;
@@ -186,23 +196,6 @@ class Host extends ChangeNotifier {
 
   var patches = ValueNotifier(<PatchInfo>[]);
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
-
-  /*Host(this.host) {
-    graph = Graph(host, this);
-    vars = Vars(this);
-    audioPlugins = AudioPlugins();
-
-    ticker = Timer.periodic(const Duration(milliseconds: 30), (timer) {
-      for (var module in graph.modules) {
-        for (var widget in module.widgets) {
-          callTickRecursive(widget);
-        }
-      }
-    });
-
-    refreshInstruments();
-    refreshModuleSpecs();
-  }*/
 
   void tick(Timer timer) {}
 
@@ -461,7 +454,8 @@ class Graph {
   }
 
   bool addConnection(Connector c) {
-    if (host.core.addConnector(c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
+    if (host.core.addConnector(
+        c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
       connectors.add(c);
       return true;
     }
