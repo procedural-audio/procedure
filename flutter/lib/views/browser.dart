@@ -8,11 +8,12 @@ import 'package:metasampler/views/info.dart';
 
 import '../host.dart';
 import 'settings.dart';
+import '../main.dart';
 
 class BrowserView extends StatefulWidget {
-  BrowserView(this.host);
+  BrowserView(this.app);
 
-  Host host;
+  App app;
 
   @override
   State<BrowserView> createState() => _BrowserView();
@@ -21,120 +22,183 @@ class BrowserView extends StatefulWidget {
 class _BrowserView extends State<BrowserView> {
   bool expanded = false;
   String searchText = "";
-  ValueNotifier<int> selectedIndex = ValueNotifier(-1);
   bool infoVisible = false;
   bool showInfo = false;
   bool showEnabled = true;
+  ProjectInfo? selectedProject;
 
   ScrollController controller = ScrollController();
+
+  late Future<List<ProjectInfo>> futureProjects;
+
+  @override
+  void initState() {
+    futureProjects = widget.app.assets.projects.scan();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      Column(children: [
-        const SizedBox(height: 10),
-        Padding(
+      Column(
+        children: [
+          const SizedBox(height: 10),
+          Padding(
             padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-            child: BrowserSearchBar(onFilter: (s) {
-              setState(() {
-                searchText = s;
-              });
-            })),
-        const SizedBox(height: 10),
-        Expanded(
-            child: ValueListenableBuilder<List<PatchInfo>>(
-                valueListenable: widget.host.globals.instruments,
-                builder: (context, instruments, w) {
-                  List<PatchInfo> filteredInstruments = [];
-
+            child: BrowserSearchBar(
+              onFilter: (s) {
+                setState(() {
+                  searchText = s;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: FutureBuilder<List<ProjectInfo>>(
+              future: futureProjects,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var projects = snapshot.data!;
+                  List<ProjectInfo> filteredProjects = [];
                   if (searchText == "") {
-                    filteredInstruments = instruments;
+                    filteredProjects = projects;
                   } else {
-                    for (var instrument in instruments) {
-                      if (instrument.name
+                    for (var project in projects) {
+                      if (project.name
                               .toLowerCase()
                               .contains(searchText.toLowerCase()) ||
-                          instrument.description
+                          project.description
                               .toLowerCase()
                               .contains(searchText.toLowerCase())) {
-                        filteredInstruments.add(instrument);
+                        filteredProjects.add(project);
                       }
                     }
                   }
 
-                  if (filteredInstruments.isEmpty) {
+                  if (filteredProjects.isEmpty) {
                     return Container();
                   }
 
                   return GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-                      controller: controller,
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              childAspectRatio: 1.0,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 15),
-                      itemCount: filteredInstruments.length,
-                      itemBuilder: (BuildContext ctx, index) {
-                        return BrowserViewElement(
-                            index: index,
-                            info: filteredInstruments[index],
-                            selectedIndex: selectedIndex,
-                            onTap: (x, y) {
-                              setState(() {
-                                showInfo = true;
-                                infoVisible = true;
-                              });
-                              selectedIndex.value = index;
-                            });
-                      });
-                }))
-      ]),
+                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                    controller: controller,
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            childAspectRatio: 1.0,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 15),
+                    itemCount: filteredProjects.length,
+                    itemBuilder: (BuildContext ctx, index) {
+                      return BrowserViewElement(
+                        index: index,
+                        project: filteredProjects[index],
+                        // selectedIndex: selectedIndex,
+                        onTap: (e) {
+                          setState(() {
+                            showInfo = true;
+                            infoVisible = true;
+                          });
+
+                          selectedProject = e;
+                        },
+                      );
+                    },
+                  );
+                } else {
+                  return Container();
+                }
+              },
+            ),
+          ),
+        ],
+      ),
       Visibility(
-          visible: infoVisible,
-          maintainState: true,
-          maintainAnimation: true,
-          child: LayoutBuilder(builder: (context, constraints) {
+        visible: infoVisible,
+        maintainState: true,
+        maintainAnimation: true,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
             return AnimatedPadding(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.fastLinearToSlowEaseIn,
+              padding: EdgeInsets.fromLTRB(
+                showInfo ? 0 : 200,
+                showInfo ? 0 : 200,
+                0,
+                0,
+              ),
+              child: AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.fastLinearToSlowEaseIn,
-                padding: EdgeInsets.fromLTRB(
-                    showInfo ? 0 : 200, showInfo ? 0 : 200, 0, 0),
-                child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
+                width: showInfo ? constraints.maxWidth : 200,
+                height: showInfo ? constraints.maxHeight : 200,
+                child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 600),
                     curve: Curves.fastLinearToSlowEaseIn,
-                    width: showInfo ? constraints.maxWidth : 200,
-                    height: showInfo ? constraints.maxHeight : 200,
-                    child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.fastLinearToSlowEaseIn,
-                        opacity: showInfo ? 1.0 : 0.0,
-                        child: ValueListenableBuilder<int>(
-                            valueListenable: selectedIndex,
-                            builder: (context, index, child) {
-                              if (index < 0) {
-                                index = 0;
-                              }
+                    opacity: showInfo ? 1.0 : 0.0,
+                    child: Builder(
+                      builder: (context) {
+                        if (selectedProject != null) {
+                          return InfoContentsWidget(
+                            widget.app,
+                            project: selectedProject!,
+                            onClose: () {
+                              setState(() {
+                                showInfo = false;
+                              });
 
-                              return InfoContentsWidget(widget.host,
-                                  onClose: () {
+                              Future.delayed(const Duration(milliseconds: 500),
+                                  () {
+                                if (!showInfo) {
+                                  setState(() {
+                                    infoVisible = false;
+                                  });
+                                }
+                              });
+                            },
+                          );
+                        } else {
+                          return Container();
+                        }
+                      },
+                    )
+                    /*child: ValueListenableBuilder<ProjectInfo?>(
+                    valueListenable: selectedProject,
+                    builder: (context, index, child) {
+                      if (index < 0) {
+                        index = 0;
+                      }
+
+                      return InfoContentsWidget(
+                        widget.app,
+                        onClose: () {
+                          setState(() {
+                            showInfo = false;
+                          });
+
+                          Future.delayed(
+                            const Duration(milliseconds: 500),
+                            () {
+                              if (!showInfo) {
                                 setState(() {
-                                  showInfo = false;
+                                  infoVisible = false;
                                 });
-                                Future.delayed(
-                                    const Duration(milliseconds: 500), () {
-                                  if (!showInfo) {
-                                    setState(() {
-                                      infoVisible = false;
-                                    });
-                                  }
-                                });
-                              },
-                                  instrument: widget
-                                      .host.globals.instruments.value[index]);
-                            }))));
-          }))
+                              }
+                            },
+                          );
+                        },
+                        instrument: widget.app.projects.value[index],
+                      );
+                    },
+                  ),*/
+                    ),
+              ),
+            );
+          },
+        ),
+      ),
     ]);
   }
 }
@@ -146,34 +210,40 @@ class BrowserSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Container(
+    return Row(
+      children: [
+        Container(
           width: 200,
           height: 26,
           decoration: const BoxDecoration(
-              color: Color.fromRGBO(30, 30, 30, 1.0),
-              borderRadius: BorderRadius.all(Radius.circular(5))),
+            color: Color.fromRGBO(30, 30, 30, 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
           child: TextField(
-              maxLines: 1,
-              style: const TextStyle(
-                color: Color.fromRGBO(220, 220, 220, 1.0),
-                fontSize: 14,
+            maxLines: 1,
+            style: const TextStyle(
+              color: Color.fromRGBO(220, 220, 220, 1.0),
+              fontSize: 14,
+            ),
+            decoration: const InputDecoration(
+              isDense: true,
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.all(8),
+              prefixIconColor: Colors.grey,
+              prefixIcon: Icon(
+                Icons.search,
               ),
-              decoration: const InputDecoration(
-                  isDense: true,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(8),
-                  prefixIconColor: Colors.grey,
-                  prefixIcon: Icon(
-                    Icons.search,
-                  )),
-              onChanged: (text) {
-                onFilter(text);
-              })),
-      Expanded(
+            ),
+            onChanged: (text) {
+              onFilter(text);
+            },
+          ),
+        ),
+        Expanded(
           child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(children: [
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
                 TagDropdown(
                     value: "Type",
                     tags: const [
@@ -199,22 +269,27 @@ class BrowserSearchBar extends StatelessWidget {
                       "Generative",
                     ],
                     onSelect: (s) {}),
-              ])))
-    ]);
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
 class BrowserViewElement extends StatefulWidget {
-  BrowserViewElement(
-      {required this.index,
-      required this.info,
-      required this.selectedIndex,
-      required this.onTap});
+  BrowserViewElement({
+    required this.index,
+    required this.project,
+    // required this.selectedProject,
+    required this.onTap,
+  });
 
   int index;
-  PatchInfo info;
-  ValueNotifier<int> selectedIndex;
-  void Function(double x, double y) onTap;
+  ProjectInfo project;
+  // ValueNotifier<ProjectInfo> selectedProject;
+  void Function(ProjectInfo) onTap;
 
   @override
   State<BrowserViewElement> createState() => _BrowserViewElement();
@@ -230,107 +305,126 @@ class _BrowserViewElement extends State<BrowserViewElement>
   void initState() {
     super.initState();
     controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-        onEnter: (details) {
-          setState(() {
-            mouseOver = true;
-          });
-        },
-        onExit: (details) {
-          setState(() {
-            mouseOver = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: () => widget.onTap(0.0, 0.0),
-            child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 290,
-                height: mouseOver ? 300 : 200,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(5)),
-                    color: mouseOver
-                        ? const Color.fromRGBO(70, 70, 70, 1.0)
-                        : const Color.fromRGBO(50, 50, 50, 1.0),
-                    boxShadow: [
-                      BoxShadow(
-                          blurRadius: 3,
-                          spreadRadius: 3,
-                          offset: const Offset(0, 3),
-                          color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0))
-                    ]),
-                child: Column(children: [
-                  Expanded(
-                      child: Stack(children: [
+      onEnter: (details) {
+        setState(() {
+          mouseOver = true;
+        });
+      },
+      onExit: (details) {
+        setState(() {
+          mouseOver = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () => widget.onTap(widget.project),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 290,
+          height: mouseOver ? 300 : 200,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(5)),
+            color: mouseOver
+                ? const Color.fromRGBO(70, 70, 70, 1.0)
+                : const Color.fromRGBO(50, 50, 50, 1.0),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 3,
+                spreadRadius: 3,
+                offset: const Offset(0, 3),
+                color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
                     ClipRRect(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5)),
-                        child: Image.file(File(widget.info.background),
-                            width: 290, fit: BoxFit.cover)),
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      child: Image.file(File(widget.project.background),
+                          width: 290, fit: BoxFit.cover),
+                    ),
                     Center(
-                        child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 200),
-                            opacity: mouseOver ? 1.0 : 0.0,
-                            child: GestureDetector(
-                                onTap: () {
-                                  if (playing) {
-                                    controller.reverse();
-                                  } else {
-                                    controller.forward();
-                                  }
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 200),
+                        opacity: mouseOver ? 1.0 : 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (playing) {
+                              controller.reverse();
+                            } else {
+                              controller.forward();
+                            }
 
-                                  playing = !playing;
-                                },
-                                child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    alignment: Alignment.center,
-                                    decoration: const BoxDecoration(
-                                        color:
-                                            Color.fromRGBO(150, 150, 150, 0.5),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(25))),
-                                    child: AnimatedIcon(
-                                      progress: controller,
-                                      icon: AnimatedIcons.play_pause,
-                                      color: const Color.fromRGBO(
-                                          220, 220, 220, 1.0),
-                                    )))))
-                  ])),
-                  Container(
-                      height: 56,
-                      alignment: Alignment.topLeft,
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 2),
-                            Text(widget.info.name,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(220, 220, 220, 1.0))),
-                            const SizedBox(height: 4),
-                            Text(
-                                widget.info.description.substring(
-                                        0,
-                                        min(40,
-                                            widget.info.description.length)) +
-                                    (widget.info.description.length < 40
-                                        ? ""
-                                        : "..."),
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.grey)),
-                          ]))
-                ]))));
+                            playing = !playing;
+                          },
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                                color: Color.fromRGBO(150, 150, 150, 0.5),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(25))),
+                            child: AnimatedIcon(
+                              progress: controller,
+                              icon: AnimatedIcons.play_pause,
+                              color: const Color.fromRGBO(220, 220, 220, 1.0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 56,
+                alignment: Alignment.topLeft,
+                padding: const EdgeInsets.all(4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.project.name,
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color.fromRGBO(220, 220, 220, 1.0)),
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: Text(
+                        widget.project.description.substring(
+                                0, min(40, widget.project.description.length)) +
+                            (widget.project.description.length < 40
+                                ? ""
+                                : "..."),
+                        style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

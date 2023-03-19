@@ -10,6 +10,7 @@ import 'package:ffi/ffi.dart';
 import '../main.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 int Function(FFIWidgetPointer) ffiGridGetColumns = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -17,7 +18,7 @@ int Function(FFIWidgetPointer) ffiGridGetColumns = core
     .asFunction();
 
 class GridWidget extends ModuleWidget {
-  GridWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  GridWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ void Function(FFIWidget) ffiGridBuilderDestroyChild = core
     .asFunction();
 
 class GridBuilderWidget extends ModuleWidget {
-  GridBuilderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  GridBuilderWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   List<ModuleWidget> childWidgets = [];
 
@@ -60,8 +61,11 @@ class GridBuilderWidget extends ModuleWidget {
     int count = ffiGridBuilderGetCount(trait);
 
     for (int i = 0; i < count; i++) {
-      var widget = createWidget(host,
-          moduleRaw, ffiGridBuilderCreateChild(widgetRaw.getTrait(), i));
+      var widget = createWidget(
+        app,
+        moduleRaw,
+        ffiGridBuilderCreateChild(widgetRaw.getTrait(), i),
+      );
 
       if (widget != null) {
         childWidgets.add(widget);

@@ -10,6 +10,7 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 var knobValue = "value".toNativeUtf8();
 var colorValue = "color".toNativeUtf8();
@@ -50,7 +51,7 @@ void Function(FFIWidgetPointer, int, int) RawNodeSequencerAddNode = core
 const double spacing = 50.0;
 
 class NodeSequencerWidget extends ModuleWidget {
-  NodeSequencerWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {}
+  NodeSequencerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {}
 
   var controller = TransformationController();
 

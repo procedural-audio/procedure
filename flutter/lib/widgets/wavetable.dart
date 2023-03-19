@@ -32,7 +32,7 @@ List<List<double>> getWavetable() {
 }
 
 class WavetableWidget extends ModuleWidget {
-  WavetableWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  WavetableWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

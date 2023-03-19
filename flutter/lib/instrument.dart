@@ -7,11 +7,11 @@ import 'ui/layout.dart';
 import 'main.dart';
 
 class InstrumentView extends StatefulWidget {
-  InstrumentView(this.host) {
-    tree = UITree(host);
+  InstrumentView(this.app) {
+    tree = UITree(app);
   }
 
-  Host host;
+  App app;
   late UITree tree;
 
   @override
@@ -26,14 +26,14 @@ class _InstrumentView extends State<InstrumentView> {
 
   @override
   void initState() {
-    display = UIDisplay(widget.tree, widget.host);
+    display = UIDisplay(widget.tree, widget.app);
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    var root = widget.host.globals.rootWidget;
+    var root = widget.app.rootWidget;
     Color backgroundColor = const Color.fromRGBO(20, 20, 20, 1.0);
     if (root != null) {
       backgroundColor = Color.fromRGBO(root.color.red - 20,
@@ -56,7 +56,7 @@ class _InstrumentView extends State<InstrumentView> {
                   )),
                   Column(
                     children: [
-                      Expanded(child: WidgetTreeMenu(widget.tree, widget.host)),
+                      Expanded(child: WidgetTreeMenu(widget.tree, widget.app)),
                       Expanded(
                         child: WidgetEditorMenu(widget.tree),
                       )
@@ -75,10 +75,10 @@ class _InstrumentView extends State<InstrumentView> {
 }
 
 class UIDisplay extends StatefulWidget {
-  UIDisplay(this.tree, this.host);
+  UIDisplay(this.tree, this.app);
 
   UITree tree;
-  Host host;
+  App app;
 
   @override
   State<UIDisplay> createState() => _UIDisplay();
@@ -90,7 +90,7 @@ class _UIDisplay extends State<UIDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    widget.host.globals.rootWidget ??= RootWidget(widget.host, widget.tree);
+    widget.app.rootWidget ??= RootWidget(widget.app, widget.tree);
 
     return LayoutBuilder(builder: (context, constraints) {
       return Scrollbar(
@@ -111,17 +111,17 @@ class _UIDisplay extends State<UIDisplay> {
                         width: 1000,
                         height: 800,
                         alignment: Alignment.center,
-                        child: widget.host.globals.rootWidget,
+                        child: widget.app.rootWidget,
                       )))));
     });
   }
 }
 
 class WidgetTreeMenu extends StatefulWidget {
-  WidgetTreeMenu(this.tree, this.host);
+  WidgetTreeMenu(this.tree, this.app);
 
   UITree tree;
-  Host host;
+  App app;
 
   @override
   State<WidgetTreeMenu> createState() => _WidgetTreeMenu();
@@ -149,10 +149,9 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
                           Expanded(
                               child: SingleChildScrollView(
                                   controller: controller,
-                                  child: widget.host.globals.rootWidget != null
+                                  child: widget.app.rootWidget != null
                                       ? WidgetTreeElement(
-                                          widget:
-                                              widget.host.globals.rootWidget!,
+                                          widget: widget.app.rootWidget!,
                                           tree: widget.tree)
                                       : Container()))
                         ])));
@@ -245,23 +244,27 @@ class _WidgetEditorMenu extends State<WidgetEditorMenu> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: 300,
-        color: const Color.fromRGBO(30, 30, 30, 1.0),
-        child: ValueListenableBuilder<UIWidget?>(
-            valueListenable: widget.tree.selected,
-            builder: (context, selectedWidget, child) {
-              if (selectedWidget == null) {
-                return Container();
-              } else {
-                return SingleChildScrollView(
-                    controller: controller,
-                    child: ValueListenableBuilder<int>(
-                        valueListenable: selectedWidget.notifier,
-                        builder: (context, i, child) {
-                          return selectedWidget.buildWidgetEditor(context);
-                        }));
-              }
-            }));
+      width: 300,
+      color: const Color.fromRGBO(30, 30, 30, 1.0),
+      child: ValueListenableBuilder<UIWidget?>(
+        valueListenable: widget.tree.selected,
+        builder: (context, selectedWidget, child) {
+          if (selectedWidget == null) {
+            return Container();
+          } else {
+            return SingleChildScrollView(
+              controller: controller,
+              child: ValueListenableBuilder<int>(
+                valueListenable: selectedWidget.notifier,
+                builder: (context, i, child) {
+                  return selectedWidget.buildWidgetEditor(context);
+                },
+              ),
+            );
+          }
+        },
+      ),
+    );
   }
 }
 

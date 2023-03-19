@@ -9,6 +9,7 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 double Function(FFIWidgetPointer) ffiDynamicLineGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -24,7 +25,7 @@ int Function(FFIWidgetPointer) ffiDynamicLineGetColor = core
     .asFunction();
 
 class DynamicLineWidget extends ModuleWidget {
-  DynamicLineWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
+  DynamicLineWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
     color = Color(ffiDynamicLineGetColor(w.pointer));
   }
 

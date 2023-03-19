@@ -6,6 +6,7 @@ import 'dart:ffi';
 import '../host.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 void Function(FFIWidgetTrait, bool) ffiIconButtonPressed = core
     .lookup<NativeFunction<Void Function(FFIWidgetTrait, Bool)>>(
@@ -13,7 +14,7 @@ void Function(FFIWidgetTrait, bool) ffiIconButtonPressed = core
     .asFunction();
 
 class IconButtonWidget extends ModuleWidget {
-  IconButtonWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  IconButtonWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   bool mouseOver = false;
 

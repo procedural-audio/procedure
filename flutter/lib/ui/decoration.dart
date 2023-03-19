@@ -5,11 +5,12 @@ import '../host.dart';
 import 'ui.dart';
 import 'layout.dart';
 import 'common.dart';
+import '../main.dart';
 
 import 'dart:io';
 
 class TextUIWidget extends UIWidget {
-  TextUIWidget(Host host, UITree tree) : super(host, tree);
+  TextUIWidget(App app, UITree tree) : super(app, tree);
 
   @override
   final String name = "Text";
@@ -139,7 +140,7 @@ class TextUIWidget extends UIWidget {
 /* Image Widget */
 
 class ImageUIWidget extends UIWidget {
-  ImageUIWidget(Host host, UITree tree) : super(host, tree);
+  ImageUIWidget(App app, UITree tree) : super(app, tree);
 
   // String? path = "/home/chase/github/metasampler/content/assets/backgrounds/background_02.png";
   String? path =
@@ -248,7 +249,7 @@ class ImageUIWidget extends UIWidget {
 /* Icon Widget */
 
 class IconUIWidget extends UIWidget {
-  IconUIWidget(Host host, UITree tree) : super(host, tree);
+  IconUIWidget(App app, UITree tree) : super(app, tree);
 
   String? path =
       "/home/chase/github/metasampler/content/assets/icons/clock.svg";
@@ -360,7 +361,7 @@ class IconUIWidget extends UIWidget {
 /* Box Widget */
 
 class BoxUIWidget extends UIWidget {
-  BoxUIWidget(Host host, UITree tree) : super(host, tree);
+  BoxUIWidget(App app, UITree tree) : super(app, tree);
 
   double borderRadius = 0.0;
   double borderThickness = 0.0;

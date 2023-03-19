@@ -12,9 +12,9 @@ import 'package:flutter/material.dart';
 import '../config.dart';
 
 class SamplesView extends StatefulWidget {
-  SamplesView(this.host);
+  SamplesView(this.app);
 
-  Host host;
+  App app;
 
   @override
   State<SamplesView> createState() => _SamplesView();
@@ -22,7 +22,7 @@ class SamplesView extends StatefulWidget {
 
 class _SamplesView extends State<SamplesView> {
   _SamplesView() {
-    view1 = SamplesBrowserWidget(widget.host);
+    view1 = SamplesBrowserWidget(widget.app);
   }
 
   bool fileView = true;
@@ -178,9 +178,9 @@ class _SamplesView extends State<SamplesView> {
 }
 
 class SamplesBrowserWidget extends StatefulWidget {
-  SamplesBrowserWidget(this.host);
+  SamplesBrowserWidget(this.app);
 
-  Host host;
+  App app;
 
   @override
   State<SamplesBrowserWidget> createState() => _SamplesBrowserWidgetState();

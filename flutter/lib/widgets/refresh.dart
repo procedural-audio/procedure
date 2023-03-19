@@ -5,6 +5,7 @@ import 'widget.dart';
 import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 bool Function(FFIWidgetTrait) ffiRefreshGetShouldRefresh = core
     .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(
@@ -17,7 +18,7 @@ void Function(FFIWidgetTrait, bool) ffiRefreshSetShouldRefresh = core
     .asFunction();
 
 class RefreshWidget extends ModuleWidget {
-  RefreshWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  RefreshWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   void refreshCallback() {
     children[0].refreshRecursive();
@@ -48,10 +49,10 @@ void Function(FFIWidgetTrait, bool) ffiRebuildSetShouldRefresh = core
     .asFunction();
 
 class RebuildWidget extends ModuleWidget {
-  RebuildWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  RebuildWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   void rebuildCallback() {
-    var newChild = RebuildWidget(host, moduleRaw, widgetRaw);
+    var newChild = RebuildWidget(app, moduleRaw, widgetRaw);
     children[0] = newChild.children[0];
     refresh();
   }
@@ -76,7 +77,7 @@ int Function(FFIWidgetPointer) ffiIndicatorGetColor = core
     .asFunction();
 
 class IndicatorWidget extends ModuleWidget {
-  IndicatorWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  IndicatorWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {

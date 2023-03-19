@@ -24,7 +24,7 @@ int Function(FFIWidgetPointer) ffiSimplePadGetColor = core
     .asFunction();
 
 class SimplePadWidget extends ModuleWidget {
-  SimplePadWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  SimplePadWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   Color color = Colors.blue;
   bool value = false;

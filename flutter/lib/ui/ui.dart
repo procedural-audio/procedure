@@ -5,55 +5,56 @@ import 'package:metasampler/ui/layout.dart';
 import '../host.dart';
 import 'decoration.dart';
 import 'interactive.dart';
+import '../main.dart';
 
-UIWidget? createUIWidget(Host host, String name, UITree tree) {
+UIWidget? createUIWidget(App app, String name, UITree tree) {
   /* Layout Widgets */
 
   if (name == "Stack") {
-    return StackUIWidget(host, tree);
+    return StackUIWidget(app, tree);
   } else if (name == "Row") {
-    return RowUIWidget(host, tree);
+    return RowUIWidget(app, tree);
   } else if (name == "Column") {
-    return ColumnUIWidget(host, tree);
+    return ColumnUIWidget(app, tree);
   } else if (name == "Grid") {
-    return GridUIWidget(host, tree);
+    return GridUIWidget(app, tree);
 
     /* Decoration Widgets */
   } else if (name == "Text") {
-    return TextUIWidget(host, tree);
+    return TextUIWidget(app, tree);
   } else if (name == "Box") {
-    return BoxUIWidget(host, tree);
+    return BoxUIWidget(app, tree);
   } else if (name == "Image") {
-    return ImageUIWidget(host, tree);
+    return ImageUIWidget(app, tree);
   } else if (name == "Icon") {
-    return IconUIWidget(host, tree);
+    return IconUIWidget(app, tree);
   } else if (name == "Web View") {
-    return WebViewUIWidget(host, tree);
+    return WebViewUIWidget(app, tree);
 
     /* Interactive Widgets */
   } else if (name == "Button") {
-    return ButtonUIWidget(host, tree);
+    return ButtonUIWidget(app, tree);
     /*
   } else if (name == "Knob") {
-    return KnobUIWidget(host, tree);
+    return KnobUIWidget(app, tree);
   } else if (name == "Slider") {
-    return SliderUIWidget(host, tree);
+    return SliderUIWidget(app, tree);
   } else if (name == "Button") {
-    return ButtonUIWidget(host, tree);
+    return ButtonUIWidget(app, tree);
 
     /* Other Widgets */
 
   } else if (name == "Empty") {
-    return EmptyUIWidget(host, tree);*/
+    return EmptyUIWidget(app, tree);*/
   } else {
     return null;
   }
 }
 
 class UITree {
-  UITree(this.host);
+  UITree(this.app);
 
-  Host host;
+  App app;
 
   ValueNotifier<bool> editing = ValueNotifier(false);
   ValueNotifier<UIWidget?> selected = ValueNotifier(null);
@@ -63,7 +64,7 @@ class UITree {
   }
 
   void deleteChild(UIWidget widget) {
-    var root = host.globals.rootWidget;
+    var root = app.rootWidget;
     if (root != null) {
       if (!root.deleteChildRecursive(widget)) {
         print("Failed to delete item");
@@ -79,9 +80,9 @@ class UITree {
 }
 
 abstract class UIWidget extends StatelessWidget {
-  UIWidget(this.host, this.tree);
+  UIWidget(this.app, this.tree);
 
-  final Host host;
+  final App app;
   final UITree tree;
 
   abstract final String name;
@@ -136,7 +137,7 @@ abstract class UIWidget extends StatelessWidget {
     var name = json["name"];
     var state = json["state"];
 
-    var child = createUIWidget(host, name, tree);
+    var child = createUIWidget(app, name, tree);
 
     if (child != null) {
       if (state != null) {

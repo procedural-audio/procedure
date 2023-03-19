@@ -15,6 +15,35 @@ import 'views/info.dart';
 import 'core.dart';
 
 import 'package:flutter/services.dart';
+import 'ui/layout.dart';
+import 'views/settings.dart';
+import '../main.dart';
+
+class Globals {
+  ValueNotifier<String> pinLabel = ValueNotifier("");
+  Offset labelPosition = const Offset(0.0, 0.0);
+
+  /* Instruments */
+
+  ValueNotifier<List<ProjectInfo>> instruments = ValueNotifier([]);
+  PresetInfo preset = PresetInfo(
+      "Untitled Instrument",
+      File(
+          "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
+
+  List<ProjectInfo> instruments2 = [];
+  ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
+
+  /* Patching View */
+
+  double zoom = 1.0;
+  TempConnector? tempConnector;
+  int selectedModule = -1;
+
+  bool patchingScaleEnabled = true;
+  Settings settings = Settings();
+  RootWidget? rootWidget;
+}
 
 class AudioPluginsCategory {
   AudioPluginsCategory(this.name, this.plugins);
@@ -96,17 +125,15 @@ class Assets {
 
   static Assets platformDefault() {
     if (Platform.isMacOS) {
-      return Assets("/Users/chasekanipe/Github/library/");
+      return Assets("/Users/chasekanipe/Github/assets/");
     } else if (Platform.isLinux) {
       return Assets("/home/chase/github/content/");
     }
 
-    print("Library not supported on platform");
+    print("Assets not found in default platform location");
     exit(1);
   }
 }
-
-// HOW TO MAKE THIS ASYNC COMPATIBLE ???
 
 class Projects {
   Projects(this.directory);
@@ -114,17 +141,23 @@ class Projects {
   final Directory directory;
 
   Future<Project?> load(String name) async {
-    // loadAsync(name);
-    print("Loading project");
     return null;
   }
-}
 
-class ProjectInfo {
-  ProjectInfo({required this.directory, required this.name});
+  Future<List<ProjectInfo>> scan() async {
+    print("Scanning projects");
+    List<ProjectInfo> projects = [];
+    var list = await directory.list().toList();
 
-  Directory directory;
-  String name;
+    for (var item in list) {
+      var projectInfo = await ProjectInfo.load(item.path);
+      if (projectInfo != null) {
+        projects.add(projectInfo);
+      }
+    }
+
+    return projects;
+  }
 }
 
 class Project {
@@ -162,10 +195,10 @@ class Patch {
 
 /* HOST */
 
-class Host extends ChangeNotifier {
+/*class Host extends ChangeNotifier {
   Host({required this.core, required this.assets}) {
-    graph = Graph(core.raw, this);
-    vars = Vars(this);
+    // graph = Graph(core.raw, this);
+    // vars = Vars(this);
 
     ticker = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       for (var module in graph.modules) {
@@ -189,10 +222,10 @@ class Host extends ChangeNotifier {
   Globals globals = Globals();
 
   var loadedInstrument = ValueNotifier(
-    PatchInfo.loadSync(contentPath + "instruments/NewInstrument"),
+    ProjectInfo.loadSync(contentPath + "instruments/NewInstrument"),
   );
 
-  var patches = ValueNotifier(<PatchInfo>[]);
+  var patches = ValueNotifier(<ProjectInfo>[]);
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
 
   void tick(Timer timer) {}
@@ -238,7 +271,7 @@ class Host extends ChangeNotifier {
 
     Directory presetsDir = Directory(path + "/presets");
 
-    loadedInstrument.value = PatchInfo.loadSync(path);
+    loadedInstrument.value = ProjectInfo.loadSync(path);
 
     if (!presetsDir.existsSync()) {
       presetsDir.createSync();
@@ -347,7 +380,7 @@ class Host extends ChangeNotifier {
   }
 
   void refreshInstruments() async {
-    List<PatchInfo> instruments = [];
+    List<ProjectInfo> instruments = [];
 
     final instDir = Directory(contentPath + "/instruments");
     var dirs = await instDir.list(recursive: false).toList();
@@ -357,7 +390,7 @@ class Host extends ChangeNotifier {
       if (await file.exists()) {
         print("Parsing " + file.path);
         var json = jsonDecode(await file.readAsString());
-        instruments.add(PatchInfo.fromJson(dir.path, json));
+        instruments.add(ProjectInfo.fromJson(dir.path, json));
       } else {
         print("Couldn't find json for " + dir.path);
       }
@@ -401,7 +434,7 @@ class Host extends ChangeNotifier {
     print("SHOUDL REFRESH HERE");
     // globals.window.presetsView.refresh();
   }
-}
+}*/
 
 extension FileExtention on FileSystemEntity {
   String get name {
@@ -420,17 +453,17 @@ class Graph {
   var connectors = <Connector>[];
 
   final RawCore raw;
-  Host host;
+  App app;
 
-  Graph(this.raw, this.host) {
+  Graph(this.raw, this.app) {
     refresh();
   }
 
   bool addModule(String name, Offset addPosition) {
-    var ret = host.core.addModule(name);
+    var ret = app.core.addModule(name);
 
     if (ret) {
-      var moduleRaw = host.core.getNode(host.core.getNodeCount() - 1);
+      var moduleRaw = app.core.getNode(app.core.getNodeCount() - 1);
 
       var x = addPosition.dx.toInt() - moduleRaw.getWidth() ~/ 2;
       var y = addPosition.dy.toInt() - moduleRaw.getHeight() ~/ 2;
@@ -438,7 +471,7 @@ class Graph {
       moduleRaw.setX(x);
       moduleRaw.setY(y);
 
-      modules.add(Module(host, moduleRaw));
+      modules.add(Module(app, moduleRaw));
     }
 
     return ret;
@@ -448,11 +481,11 @@ class Graph {
     modules.retainWhere((element) => element.id != id);
     connectors.retainWhere((element) => element.start.moduleId != id);
     connectors.retainWhere((element) => element.end.moduleId != id);
-    host.core.removeNode(id);
+    app.core.removeNode(id);
   }
 
   bool addConnection(Connector c) {
-    if (host.core.addConnector(
+    if (app.core.addConnector(
         c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
       connectors.add(c);
       return true;
@@ -466,28 +499,28 @@ class Graph {
         element.start.index == pinIndex));
     connectors.retainWhere((element) =>
         !(element.end.moduleId == moduleId && element.end.index == pinIndex));
-    host.core.removeConnector(moduleId, pinIndex);
+    app.core.removeConnector(moduleId, pinIndex);
   }
 
   void refresh() {
     modules.clear();
     connectors.clear();
 
-    int moduleCount = host.core.getNodeCount();
+    int moduleCount = app.core.getNodeCount();
 
     for (int i = 0; i < moduleCount; i++) {
-      var moduleRaw = host.core.getNode(i);
-      var module = Module(host, moduleRaw);
+      var moduleRaw = app.core.getNode(i);
+      var module = Module(app, moduleRaw);
       modules.add(module);
     }
 
-    int connectorCount = host.core.getConnectorCount();
+    int connectorCount = app.core.getConnectorCount();
 
     for (int i = 0; i < connectorCount; i++) {
-      var startId = host.core.getConnectorStartId(i);
-      var endId = host.core.getConnectorEndId(i);
-      var startIndex = host.core.getConnectorStartIndex(i);
-      var endIndex = host.core.getConnectorEndIndex(i);
+      var startId = app.core.getConnectorStartId(i);
+      var endId = app.core.getConnectorEndId(i);
+      var startIndex = app.core.getConnectorStartIndex(i);
+      var endIndex = app.core.getConnectorEndIndex(i);
 
       var type = IO.audio;
 

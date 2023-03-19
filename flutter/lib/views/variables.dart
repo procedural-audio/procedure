@@ -11,9 +11,9 @@ import '../common.dart';
 import 'dart:ffi';
 
 class Vars extends StatefulWidget {
-  Vars(this.host);
+  Vars(this.app);
 
-  Host host;
+  App app;
   final ValueNotifier<List<VarEntry>> _entries = ValueNotifier([]);
   ValueNotifier<Var?> selectedVar = ValueNotifier(null);
 
@@ -153,12 +153,13 @@ class _Vars extends State<Vars> {
                                           }
 
                                           widget.addVar(Var(
-                                              host: widget.host,
-                                              name: ValueNotifier(name),
-                                              listIndex: widget.count(),
-                                              selectedVar: widget.selectedVar,
-                                              id: 0,
-                                              notifier: ValueNotifier(0.0)));
+                                            app: widget.app,
+                                            name: ValueNotifier(name),
+                                            listIndex: widget.count(),
+                                            selectedVar: widget.selectedVar,
+                                            id: 0,
+                                            notifier: ValueNotifier(0.0),
+                                          ));
                                         },
                                       )),
                                   SizedBox(
@@ -195,245 +196,268 @@ class _Vars extends State<Vars> {
                               } else {
                                 return SingleChildScrollView(
                                     child: Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                  const Padding(
-                                      padding: EdgeInsets.all(10),
-                                      child: Text(
-                                        "Variable Details",
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 15),
-                                      )),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
-                                            const Text(
-                                              "Name",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
-                                            ),
-                                            Container(
-                                              width: 140,
-                                              height: 28,
-                                              padding: const EdgeInsets.all(5),
-                                              decoration: BoxDecoration(
-                                                  color: const Color.fromRGBO(
-                                                      20, 20, 20, 1.0),
-                                                  border: Border.all(
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                      const Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: Text(
+                                            "Variable Details",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15),
+                                          )),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                const Text(
+                                                  "Name",
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 14),
+                                                ),
+                                                Container(
+                                                  width: 140,
+                                                  height: 28,
+                                                  padding:
+                                                      const EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
                                                       color:
                                                           const Color.fromRGBO(
+                                                              20, 20, 20, 1.0),
+                                                      border: Border.all(
+                                                          color: const Color
+                                                                  .fromRGBO(
                                                               80, 80, 80, 1.0),
-                                                      width: 1),
+                                                          width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                                  .all(
+                                                              Radius.circular(
+                                                                  5))),
+                                                  child: EditableText(
+                                                    focusNode: FocusNode(),
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.white),
+                                                    cursorColor: Colors.blue,
+                                                    backgroundCursorColor:
+                                                        Colors.red,
+                                                    controller:
+                                                        TextEditingController(
+                                                            text: selectedVar
+                                                                .name.value),
+                                                    onChanged: (value) {
+                                                      selectedVar.name.value =
+                                                          value;
+                                                    },
+                                                  ),
+                                                ),
+                                              ])),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Type",
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 14),
+                                                ),
+                                                SearchableDropdown(
+                                                    width: 140,
+                                                    height: 30,
+                                                    value: selectedVar.notifier
+                                                        .value.runtimeType
+                                                        .toString(),
+                                                    categories: [
+                                                      Category(
+                                                          name: "Basic",
+                                                          elements: [
+                                                            CategoryElement(
+                                                                "Boolean"),
+                                                            CategoryElement(
+                                                                "Float"),
+                                                            CategoryElement(
+                                                                "Integer")
+                                                          ]),
+                                                      Category(
+                                                          name: "Files",
+                                                          elements: [
+                                                            CategoryElement(
+                                                                "Sample"),
+                                                            CategoryElement(
+                                                                "Multi-sample"),
+                                                            CategoryElement(
+                                                                "Wavetable")
+                                                          ]),
+                                                    ],
+                                                    onSelect: (s) {
+                                                      if (s == "Boolean") {
+                                                        selectedVar.notifier
+                                                            .value = false;
+                                                      } else if (s == "Float") {
+                                                        selectedVar.notifier
+                                                            .value = false;
+                                                        selectedVar.notifier
+                                                            .value = 0.0;
+                                                      } else if (s ==
+                                                          "Integer") {
+                                                        selectedVar.notifier
+                                                            .value = false;
+                                                        selectedVar.notifier
+                                                            .value = 0.toInt();
+                                                      } else {
+                                                        print(
+                                                            "Unknown supported type");
+                                                      }
+
+                                                      setState(() {});
+                                                      print("Type is " +
+                                                          selectedVar.notifier
+                                                              .value.runtimeType
+                                                              .toString());
+                                                    })
+                                              ])),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Value",
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 14),
+                                                ),
+                                                ValueListenableBuilder(
+                                                    valueListenable:
+                                                        selectedVar.notifier,
+                                                    builder: (context, value,
+                                                        child) {
+                                                      return Text(
+                                                        formatValue(value),
+                                                        style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 14),
+                                                      );
+                                                    })
+                                              ])),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  "Parameter Assignments",
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 14),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Container(
+                                                  height: 100,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                          color: Color.fromRGBO(
+                                                              30,
+                                                              30,
+                                                              30,
+                                                              1.0),
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          5))),
+                                                )
+                                              ])),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  "Widget Assignments",
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 14),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Container(
+                                                  height: 100,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                          color: Color.fromRGBO(
+                                                              30,
+                                                              30,
+                                                              30,
+                                                              1.0),
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          5))),
+                                                )
+                                              ])),
+                                      const Divider(
+                                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                                        height: 1,
+                                      ),
+                                      Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Container(
+                                              decoration: BoxDecoration(
                                                   borderRadius:
                                                       const BorderRadius.all(
-                                                          Radius.circular(5))),
-                                              child: EditableText(
-                                                focusNode: FocusNode(),
-                                                style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.white),
-                                                cursorColor: Colors.blue,
-                                                backgroundCursorColor:
-                                                    Colors.red,
-                                                controller:
-                                                    TextEditingController(
-                                                        text: selectedVar
-                                                            .name.value),
-                                                onChanged: (value) {
-                                                  selectedVar.name.value =
-                                                      value;
+                                                          Radius.circular(5)),
+                                                  border: Border.all(
+                                                      width: 2,
+                                                      color: Colors.red)),
+                                              child: TextButton(
+                                                onPressed: () {
+                                                  widget.deleteVar(selectedVar);
                                                 },
-                                              ),
-                                            ),
-                                          ])),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              "Type",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
-                                            ),
-                                            SearchableDropdown(
-                                                width: 140,
-                                                height: 30,
-                                                value: selectedVar
-                                                    .notifier.value.runtimeType
-                                                    .toString(),
-                                                categories: [
-                                                  Category(
-                                                      name: "Basic",
-                                                      elements: [
-                                                        CategoryElement(
-                                                            "Boolean"),
-                                                        CategoryElement(
-                                                            "Float"),
-                                                        CategoryElement(
-                                                            "Integer")
-                                                      ]),
-                                                  Category(
-                                                      name: "Files",
-                                                      elements: [
-                                                        CategoryElement(
-                                                            "Sample"),
-                                                        CategoryElement(
-                                                            "Multi-sample"),
-                                                        CategoryElement(
-                                                            "Wavetable")
-                                                      ]),
-                                                ],
-                                                onSelect: (s) {
-                                                  if (s == "Boolean") {
-                                                    selectedVar.notifier.value =
-                                                        false;
-                                                  } else if (s == "Float") {
-                                                    selectedVar.notifier.value =
-                                                        false;
-                                                    selectedVar.notifier.value =
-                                                        0.0;
-                                                  } else if (s == "Integer") {
-                                                    selectedVar.notifier.value =
-                                                        false;
-                                                    selectedVar.notifier.value =
-                                                        0.toInt();
-                                                  } else {
-                                                    print(
-                                                        "Unknown supported type");
-                                                  }
-
-                                                  setState(() {});
-                                                  print("Type is " +
-                                                      selectedVar.notifier.value
-                                                          .runtimeType
-                                                          .toString());
-                                                })
-                                          ])),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              "Value",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
-                                            ),
-                                            ValueListenableBuilder(
-                                                valueListenable:
-                                                    selectedVar.notifier,
-                                                builder:
-                                                    (context, value, child) {
-                                                  return Text(
-                                                    formatValue(value),
-                                                    style: const TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 14),
-                                                  );
-                                                })
-                                          ])),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "Parameter Assignments",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              height: 100,
-                                              decoration: const BoxDecoration(
-                                                  color: Color.fromRGBO(
-                                                      30, 30, 30, 1.0),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(5))),
-                                            )
-                                          ])),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              "Widget Assignments",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            Container(
-                                              height: 100,
-                                              decoration: const BoxDecoration(
-                                                  color: Color.fromRGBO(
-                                                      30, 30, 30, 1.0),
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(5))),
-                                            )
-                                          ])),
-                                  const Divider(
-                                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                                    height: 1,
-                                  ),
-                                  Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Container(
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(5)),
-                                              border: Border.all(
-                                                  width: 2, color: Colors.red)),
-                                          child: TextButton(
-                                            onPressed: () {
-                                              widget.deleteVar(selectedVar);
-                                            },
-                                            child: const Text(
-                                              "Delete",
-                                              style: TextStyle(
-                                                  color: Colors.red,
-                                                  fontSize: 14),
-                                            ),
-                                          ))),
-                                ]));
+                                                child: const Text(
+                                                  "Delete",
+                                                  style: TextStyle(
+                                                      color: Colors.red,
+                                                      fontSize: 14),
+                                                ),
+                                              ))),
+                                    ]));
                               }
                             })))
               ]);
@@ -466,16 +490,16 @@ class _VarEntry extends State<VarEntry> {
 }
 
 class VarGroup extends StatefulWidget {
-  VarGroup(
-      {required this.host,
-      required this.name,
-      required this.vars,
-      required this.index})
-      : super(key: UniqueKey());
+  VarGroup({
+    required this.app,
+    required this.name,
+    required this.vars,
+    required this.index,
+  }) : super(key: UniqueKey());
   String name;
   List<Var> vars;
   int index;
-  Host host;
+  App app;
 
   @override
   _VarGroup createState() => _VarGroup();
@@ -586,16 +610,16 @@ class VarAssignment {
 }
 
 class Var extends StatefulWidget {
-  Var(
-      {required this.host,
-      required this.id,
-      required this.name,
-      required this.notifier,
-      required this.selectedVar,
-      required this.listIndex})
-      : super(key: UniqueKey());
+  Var({
+    required this.app,
+    required this.id,
+    required this.name,
+    required this.notifier,
+    required this.selectedVar,
+    required this.listIndex,
+  }) : super(key: UniqueKey());
 
-  Host host;
+  App app;
   int id;
   ValueNotifier<String> name;
   ValueNotifier<dynamic> notifier;

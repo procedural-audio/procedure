@@ -30,7 +30,7 @@ int Function(FFIWidgetPointer) ffiSliderGetColor = core
     .asFunction();*/
 
 class LuaEditorWidget extends ModuleWidget {
-  LuaEditorWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  LuaEditorWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {

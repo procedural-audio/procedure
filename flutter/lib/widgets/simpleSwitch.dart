@@ -28,7 +28,7 @@ int Function(FFIWidgetPointer) ffiSimpleSwitchGetColor = core
     .asFunction();
 
 class SimpleSwitchWidget extends ModuleWidget {
-  SimpleSwitchWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  SimpleSwitchWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   Color color = Colors.blue;
   bool value = false;

@@ -14,11 +14,12 @@ import '../host.dart';
 import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';
+import '../main.dart';
 
 // import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewUIWidget extends UIWidget {
-  WebViewUIWidget(Host host, UITree tree) : super(host, tree);
+  WebViewUIWidget(App app, UITree tree) : super(app, tree);
 
   @override
   final String name = "Web View";
@@ -112,7 +113,7 @@ class WebViewUIWidget extends UIWidget {
 /* Knob Widget */
 
 /*class KnobUIWidget extends UIWidget {
-  KnobUIWidget(Host host, UITree tree) : super(host, tree);
+  KnobUIWidget(App app, UITree tree) : super(app, tree);
 
   ValueNotifier<String?> varName = ValueNotifier(null);
 
@@ -523,7 +524,7 @@ class Knob extends StatefulWidget {
   final ValueListenable<String?> varName;
   final KnobStyle style;
   final Future<ui.Image>? image;
-  final Host host;
+  final App app;
 
   @override
   State<Knob> createState() => _Knob();
@@ -754,7 +755,7 @@ class ImageKnobPainter extends CustomPainter {
 /* Slider Widget */
 
 class SliderUIWidget extends UIWidget {
-  SliderUIWidget(Host host, UITree tree) : super(host, tree);
+  SliderUIWidget(App app, UITree tree) : super(app, tree);
 
   double value = 0.6;
 
@@ -1330,7 +1331,7 @@ class TickPainter extends CustomPainter {
 /* Button Widget */
 
 class ButtonUIWidget extends UIWidget {
-  ButtonUIWidget(Host host, UITree tree) : super(host, tree);
+  ButtonUIWidget(App app, UITree tree) : super(app, tree);
 
   bool down = false;
   bool isToggle = false;

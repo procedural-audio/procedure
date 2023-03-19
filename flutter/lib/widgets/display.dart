@@ -18,7 +18,7 @@ Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
     .asFunction();
 
 class DisplayWidget extends ModuleWidget {
-  DisplayWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  DisplayWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   ValueNotifier<String> text = ValueNotifier("");
 

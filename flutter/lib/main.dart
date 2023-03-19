@@ -19,32 +19,7 @@ import 'module.dart';
 import 'widgets/widget.dart';
 import 'ui/layout.dart';
 import 'core.dart';
-
-class Globals {
-  ValueNotifier<String> pinLabel = ValueNotifier("");
-  Offset labelPosition = const Offset(0.0, 0.0);
-
-  /* Instruments */
-
-  ValueNotifier<List<PatchInfo>> instruments = ValueNotifier([]);
-  PresetInfo preset = PresetInfo(
-      "Untitled Instrument",
-      File(
-          "/Users/chasekanipe/Github/content/instruments/Untitled Instrument"));
-
-  List<PatchInfo> instruments2 = [];
-  ValueNotifier<Widget?> selectedWidgetEditor = ValueNotifier(null);
-
-  /* Patching View */
-
-  double zoom = 1.0;
-  TempConnector? tempConnector;
-  int selectedModule = -1;
-
-  bool patchingScaleEnabled = true;
-  Settings settings = Settings();
-  RootWidget? rootWidget;
-}
+import 'host.dart';
 
 void callTickRecursive(ModuleWidget widget) {
   widget.tick();
@@ -57,115 +32,107 @@ void callTickRecursive(ModuleWidget widget) {
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
 
-  print("Found " + args.length.toString() + " args in main()");
-
   if (args.isEmpty) {
-    // Host core = Host(api.ffiCreateHost());
-    Host core = Host(
+    runApp(App(
       core: Core.create(),
-      assets: Assets.platformDefault()
-    );
-
-    core.graph.refresh();
-
-    /*var json = jsonDecode(
-        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
-            .readAsStringSync());
-
-    core.globals.instrument = PatchInfo.fromJson(
-        json, contentPath + "/instruments/UntitledInstrument");*/
-
-    runApp(Window(core));
+      assets: Assets.platformDefault(),
+    ));
   } else {
     var addr = int.parse(args[0].split(": ").last);
 
-    Host core = Host(
+    runApp(App(
       core: Core.from(addr),
-      assets: Assets.platformDefault()
-    );
-
-    core.graph.refresh();
-
-    /*var json = jsonDecode(
-        File(contentPath + "/instruments/UntitledInstrument/info/info.json")
-            .readAsStringSync());
-
-    core.globals.instrument = PatchInfo.fromJson(
-        json, contentPath + "/instruments/UntitledInstrument");*/
-
-    runApp(Window(core));
+      assets: Assets.platformDefault(),
+    ));
   }
 }
 
-class MainWindow extends StatelessWidget {
-  MainWindow(this.host);
+class App extends StatefulWidget {
+  App({required this.core, required this.assets}) {
+    graph = Graph(core.raw, this);
+  }
 
-  Host host;
+  Core core;
+  late Graph graph;
+  Assets assets;
+
+  ValueNotifier<int> selectedModule = ValueNotifier(-1);
+  ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
+
+  // TODO: Change this
+  var loadedInstrument = ValueNotifier(
+    ProjectInfo.loadSync(
+        "/Users/chasekanipe/Github/assets/projects/UntitledInstrument"),
+  );
+
+  // TODO: Change this
+  var loadedPreset = ValueNotifier(PresetInfo("", File("")));
+
+  ValueNotifier<List<ProjectInfo>> projects = ValueNotifier([]);
+  ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
+
+  RootWidget? rootWidget;
+  bool patchingScaleEnabled = true;
+
+  double zoom = 1.0;
+  TempConnector? tempConnector;
+
+  ValueNotifier<String> pinLabel = ValueNotifier("");
+  Offset labelPosition = const Offset(0.0, 0.0);
+
+  @override
+  State<App> createState() => _App();
+}
+
+class _App extends State<App> {
+  bool instViewVisible = true;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        theme: ThemeData(
-          splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
-        ),
-        home: Scaffold(
-            backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-            body: Window(host)
-            ));
-  }
-}
-
-/* ========== Main Code ========== */
-
-class Window extends StatefulWidget {
-  Window(this.host) {
-    instrumentView = InstrumentView(host);
-  }
-
-  Host host;
-  late InstrumentView instrumentView;
-
-  ValueNotifier<bool> instViewVisible = ValueNotifier(true);
-
-  @override
-  State<Window> createState() => _Window();
-}
-
-class _Window extends State<Window> {
-  @override
-  Widget build(BuildContext context) {
-        return Stack(children: <Widget>[
-          Container(
+      theme: ThemeData(splashColor: const Color.fromRGBO(20, 20, 20, 1.0)),
+      home: Scaffold(
+        backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+        body: Stack(
+          children: <Widget>[
+            Container(
               color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: Stack(children: [
-                ValueListenableBuilder<bool>(
-                    valueListenable: widget.instViewVisible,
-                    builder: (context, visible, w) {
-                      return Visibility(
-                        child: widget.instrumentView,
-                        visible: visible,
-                        maintainState: true,
-                      );
-                    }),
-                ValueListenableBuilder<bool>(
-                    valueListenable: widget.instViewVisible,
-                    builder: (context, visible, w) {
-                      return Visibility(
-                        child: PatchingView(widget.host),
-                        visible: !visible,
-                        maintainState: true,
-                      );
-                    }),
-                Bar(widget, widget.host)
-              ],),),
-        ],);
+              child: Stack(
+                children: [
+                  Visibility(
+                    child: InstrumentView(widget),
+                    visible: instViewVisible,
+                    maintainState: true,
+                  ),
+                  Visibility(
+                    child: PatchingView(widget),
+                    visible: !instViewVisible,
+                    maintainState: true,
+                  ),
+                  Bar(
+                    app: widget,
+                    instViewVisible: instViewVisible,
+                    onViewSwitch: () {
+                      setState(() {
+                        instViewVisible = !instViewVisible;
+                      });
+                    },
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
 class PatchingView extends StatefulWidget {
-  PatchingView(this.host);
+  PatchingView(this.app);
 
-  Host host;
+  // Window window;
+  App app;
 
   @override
   State<PatchingView> createState() => _PatchingView();
@@ -186,9 +153,11 @@ class _PatchingView extends State<PatchingView> {
 
   TransformationController controller = TransformationController();
 
+  double zoom = 1.0;
+
   @override
   void initState() {
-    grid = Grid(widget.host);
+    grid = Grid(widget.app);
     super.initState();
   }
 
@@ -253,16 +222,18 @@ class _PatchingView extends State<PatchingView> {
             minScale: 0.1,
             maxScale: 1.5,
             panEnabled: true,
-            scaleEnabled: widget.host.globals.patchingScaleEnabled,
+            scaleEnabled: true, // widget.app.patchingScaleEnabled,
             clipBehavior: Clip.none,
             constrained: false,
             onInteractionUpdate: (details) {
-              widget.host.globals.zoom *= details.scale;
-              if (widget.host.globals.zoom < 0.1) {
-                widget.host.globals.zoom = 0.1;
-              } else if (widget.host.globals.zoom > 1.5) {
-                widget.host.globals.zoom = 1.5;
-              }
+              setState(() {
+                zoom *= details.scale;
+                if (zoom < 0.1) {
+                  zoom = 0.1;
+                } else if (zoom > 1.5) {
+                  zoom = 1.5;
+                }
+              });
             },
           ),
           GestureDetector(
@@ -271,7 +242,7 @@ class _PatchingView extends State<PatchingView> {
               onSecondaryTap: () {
                 print("Secondary tap right-click menu");
 
-                if (widget.host.globals.selectedModule == -1) {
+                if (widget.app.selectedModule.value == -1) {
                   righttClickOffset = mouseOffset;
                   setState(() {
                     rightClickVisible = true;
@@ -289,8 +260,8 @@ class _PatchingView extends State<PatchingView> {
               child: Positioned(
                   left: righttClickOffset.dx,
                   top: righttClickOffset.dy,
-                  child: RightClickView(widget.host,
-                      specs: widget.host.moduleSpecs,
+                  child: RightClickView(widget.app,
+                      specs: widget.app.moduleSpecs,
                       addPosition: Offset(
                           righttClickOffset.dx -
                               controller.value.getTranslation().x,
@@ -308,13 +279,11 @@ class _PatchingView extends State<PatchingView> {
             // Hide right-click menu
             behavior: HitTestBehavior.translucent,
             onPointerDown: (event) {
-              if (rightClickVisible &&
-                  widget.host.globals.patchingScaleEnabled) {
+              if (rightClickVisible && widget.app.patchingScaleEnabled) {
                 setState(() {
                   rightClickVisible = false;
                 });
-              } else if (moduleMenuVisible &&
-                  widget.host.globals.patchingScaleEnabled) {
+              } else if (moduleMenuVisible && widget.app.patchingScaleEnabled) {
                 setState(() {
                   moduleMenuVisible = false;
                 });
@@ -336,13 +305,13 @@ class _PatchingView extends State<PatchingView> {
                 // print(mouseOffset.toString());
               }),
           ValueListenableBuilder<String>(
-              valueListenable: widget.host.globals.pinLabel,
+              valueListenable: widget.app.pinLabel,
               builder: (context, value, w) {
                 return Visibility(
                     visible: value != "",
                     child: Positioned(
-                      left: widget.host.globals.labelPosition.dx,
-                      top: widget.host.globals.labelPosition.dy,
+                      left: widget.app.labelPosition.dx,
+                      top: widget.app.labelPosition.dy,
                       child: PinLabel(value),
                     ));
               }),
@@ -582,9 +551,9 @@ class _ModuleWheel extends State<ModuleWheel> {
 _GridState? gGridState;
 
 class Grid extends StatefulWidget {
-  Grid(this.host);
+  Grid(this.app);
 
-  Host host;
+  App app;
 
   @override
   _GridState createState() => _GridState();
@@ -607,10 +576,10 @@ class _GridState extends State<Grid> {
         painter: GridPainter(),
         child: Stack(
           children: [
-            TempConnectorWidget(widget.host),
-            Connectors(widget.host),
+            TempConnectorWidget(widget.app),
+            Connectors(widget.app),
             Stack(
-              children: widget.host.graph.modules,
+              children: widget.app.graph.modules,
             ),
             DragTarget(
               builder: (BuildContext context, List<dynamic> accepted,
@@ -623,8 +592,8 @@ class _GridState extends State<Grid> {
                     behavior: HitTestBehavior.deferToChild,
                     onTap: () {
                       print("TODO: Fixup tap");
-                      /*var oldWidget = widget.host.globals.selectedModule;
-                      widget.host.globals.selectedModule = -1;
+                      /*var oldWidget = widget.app.selectedModule;
+                      widget.app.selectedModule = -1;
                       for (var widget in widget.host.graph.moduleWidgets) {
                         if (widget.module.id == oldWidget) {
                           widget.refresh();
@@ -662,9 +631,9 @@ class TempConnector {
 _TempConnectorState? gTempConnectorState;
 
 class TempConnectorWidget extends StatefulWidget {
-  TempConnectorWidget(this.host);
+  TempConnectorWidget(this.app);
 
-  Host host;
+  App app;
 
   @override
   _TempConnectorState createState() => _TempConnectorState();
@@ -681,15 +650,15 @@ class _TempConnectorState extends State<TempConnectorWidget> {
 
     return CustomPaint(
       size: const ui.Size(4000, 2000),
-      painter: TempConnectorPainter(widget.host),
+      painter: TempConnectorPainter(widget.app),
     );
   }
 }
 
 class TempConnectorPainter extends CustomPainter {
-  TempConnectorPainter(this.host);
+  TempConnectorPainter(this.app);
 
-  Host host;
+  App app;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -710,13 +679,13 @@ class TempConnectorPainter extends CustomPainter {
       ..color = Colors.deepPurpleAccent
       ..strokeWidth = 4;
 
-    var connector = host.globals.tempConnector ?? TempConnector();
+    var connector = app.tempConnector ?? TempConnector();
 
-    if (host.globals.tempConnector == null) {
+    if (app.tempConnector == null) {
       return;
     }
 
-    for (var module1 in host.graph.modules) {
+    for (var module1 in app.graph.modules) {
       if (connector.moduleId == module1.id) {
         var pin1 = module1.pins[connector.pinIndex];
 
@@ -782,9 +751,9 @@ class TempConnectorPainter extends CustomPainter {
 _ConnectorsState? gConnectorsState;
 
 class Connectors extends StatefulWidget {
-  Connectors(this.host);
+  Connectors(this.app);
 
-  Host host;
+  App app;
 
   @override
   _ConnectorsState createState() => _ConnectorsState();
@@ -801,15 +770,15 @@ class _ConnectorsState extends State<Connectors> {
 
     return CustomPaint(
       size: const ui.Size(4000, 2000),
-      painter: ConnectorsPainter(widget.host),
+      painter: ConnectorsPainter(widget.app),
     );
   }
 }
 
 class ConnectorsPainter extends CustomPainter {
-  ConnectorsPainter(this.host);
+  ConnectorsPainter(this.app);
 
-  Host host;
+  App app;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -818,10 +787,10 @@ class ConnectorsPainter extends CustomPainter {
       ..color = Colors.blue
       ..strokeWidth = 4;
 
-    for (var connector in host.graph.connectors) {
-      for (var module1 in host.graph.modules) {
+    for (var connector in app.graph.connectors) {
+      for (var module1 in app.graph.modules) {
         if (connector.start.moduleId == module1.id) {
-          for (var module2 in host.graph.modules) {
+          for (var module2 in app.graph.modules) {
             if (connector.end.moduleId == module2.id) {
               var pin1 = module1.pins[connector.start.index];
               var pin2 = module2.pins[connector.end.index];
@@ -870,8 +839,8 @@ class ConnectorsPainter extends CustomPainter {
 
               //canvas.drawShadow(path, MyTheme.audio, 2.0, false);
 
-              bool selected = module1.id == host.globals.selectedModule ||
-                  module2.id == host.globals.selectedModule;
+              bool selected = module1.id == app.selectedModule ||
+                  module2.id == app.selectedModule;
 
               if (connector.type == IO.audio) {
                 if (selected) {

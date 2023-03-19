@@ -5,6 +5,7 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 int Function(FFIWidgetPointer) ffiDropdownGetColor = core
     .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
@@ -28,7 +29,7 @@ void Function(FFIWidgetPointer, int) ffiDropdownSetIndex = core
     .asFunction();
 
 class DropdownWidget extends ModuleWidget {
-  DropdownWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
+  DropdownWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
     int widgetCount = ffiDropdownGetElementCount(widgetRaw.pointer);
     for (int i = 0; i < widgetCount; i++) {
       Pointer<Utf8> nameRaw = ffiDropdownGetElement(widgetRaw.pointer, i);

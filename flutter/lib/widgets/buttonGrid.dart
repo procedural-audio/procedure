@@ -9,6 +9,7 @@ import 'dart:io';
 import '../config.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 int Function(FFIWidgetPointer) ffiButtonGridGetIndex = core
     .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
@@ -36,7 +37,7 @@ Pointer<Utf8> Function(FFIWidgetPointer, int) ffiButtonGridIconGetPath = core
     .asFunction();
 
 class ButtonGridWidget extends ModuleWidget {
-  ButtonGridWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
+  ButtonGridWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
     color = intToColor(ffiButtonGridGetColor(widgetRaw.pointer));
     rowCount = ffiButtonGridGetRowCount(widgetRaw.pointer);
 

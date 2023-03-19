@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:metasampler/main.dart';
@@ -25,22 +24,13 @@ class MyTheme {
   static const Color textColorLight = Color.fromRGBO(200, 200, 200, 1);
 
   static const TextStyle textStyleHeading = TextStyle(
-    color: textColorLight,
-    fontSize: 18,
-    fontWeight: FontWeight.w300
-  );
+      color: textColorLight, fontSize: 18, fontWeight: FontWeight.w300);
 
   static const TextStyle textStyleSubHeading = TextStyle(
-    color: textColorLight,
-    fontSize: 16,
-    fontWeight: FontWeight.w300
-  );
+      color: textColorLight, fontSize: 16, fontWeight: FontWeight.w300);
 
-  static const TextStyle textStyleParagraph = TextStyle(
-    color: textColorMid,
-    fontSize: 14,
-    fontWeight: FontWeight.w300
-  );
+  static const TextStyle textStyleParagraph =
+      TextStyle(color: textColorMid, fontSize: 14, fontWeight: FontWeight.w300);
 
   static Color audio = Colors.blue;
   static Color midi = Colors.green;
@@ -48,7 +38,6 @@ class MyTheme {
   static Color data = Colors.purple;
 
   static const Color icon = textColorLight;
-
 }
 
 class Settings {
@@ -56,9 +45,9 @@ class Settings {
 }
 
 class SettingsView extends StatefulWidget {
-  SettingsView(this.host);
+  SettingsView(this.app);
 
-  Host host;
+  App app;
 
   @override
   State<SettingsView> createState() => _SettingsView();
@@ -72,23 +61,20 @@ class _SettingsView extends State<SettingsView> {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(50),
-        child: ConstrainedBox (
-          constraints: const BoxConstraints(
-            maxWidth: 1000,
-            maxHeight: 900
-          ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000, maxHeight: 900),
           child: Container(
             decoration: BoxDecoration(
               color: MyTheme.grey30,
               borderRadius: BorderRadius.circular(10.0),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
-                  spreadRadius: 5,
-                  blurRadius: 10,
-                  offset: const Offset(0, 5)
-                ),
-                const BoxShadow(color: Color.fromRGBO(200, 200, 200, 0.3), spreadRadius: 1),
+                    color: Colors.black.withOpacity(0.4),
+                    spreadRadius: 5,
+                    blurRadius: 10,
+                    offset: const Offset(0, 5)),
+                const BoxShadow(
+                    color: Color.fromRGBO(200, 200, 200, 0.3), spreadRadius: 1),
               ],
             ),
             child: Row(
@@ -97,16 +83,13 @@ class _SettingsView extends State<SettingsView> {
                   children: [
                     Container(
                       child: const Center(
-                        child: Text(
-                          "Settings",
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontStyle: FontStyle.normal,
-                            fontSize: 24,
-                            color: Colors.white,
-                            decoration: TextDecoration.none
-                          )
-                        ),
+                        child: Text("Settings",
+                            style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontStyle: FontStyle.normal,
+                                fontSize: 24,
+                                color: Colors.white,
+                                decoration: TextDecoration.none)),
                       ),
                       height: 60,
                       width: 400,
@@ -127,15 +110,14 @@ class _SettingsView extends State<SettingsView> {
                                   fontSize: 18,
                                 ),
                               ),
-
                               IconButton(
                                 icon: Icon(Icons.color_lens),
                                 iconSize: 30,
                                 color: Colors.white,
                                 onPressed: () {
                                   print("SHOULD TOGGLE THEME EDITOR HERE");
-                                  /*widget.host.globals.window.setState(() {
-                                    widget.host.globals.window.themeViewVisible = !widget.host.globals.window.themeViewVisible;
+                                  /*widget.app.window.setState(() {
+                                    widget.app.window.themeViewVisible = !widget.app.window.themeViewVisible;
                                   });*/
                                 },
                               ),
@@ -160,7 +142,12 @@ class _SettingsView extends State<SettingsView> {
 }
 
 class SettingsCard extends StatelessWidget {
-  SettingsCard({required this.icon, required this.text, required this.type, required this.index, required this.onTap});
+  SettingsCard(
+      {required this.icon,
+      required this.text,
+      required this.type,
+      required this.index,
+      required this.onTap});
 
   final int type;
   final int index;
@@ -173,15 +160,17 @@ class SettingsCard extends StatelessWidget {
     return Card(
       color: MyTheme.grey20,
       child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-        leading: icon,
-        title: text,
-        minLeadingWidth: 26,
-        textColor: type == index ? Colors.white : Colors.white30,
-        iconColor: type == index ? Colors.white : Colors.white30,
-        tileColor: type == index ? const Color.fromRGBO(255, 255, 255, 0.1) : MyTheme.grey20,
-        onTap: onTap
-      ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+          leading: icon,
+          title: text,
+          minLeadingWidth: 26,
+          textColor: type == index ? Colors.white : Colors.white30,
+          iconColor: type == index ? Colors.white : Colors.white30,
+          tileColor: type == index
+              ? const Color.fromRGBO(255, 255, 255, 0.1)
+              : MyTheme.grey20,
+          onTap: onTap),
     );
   }
 }

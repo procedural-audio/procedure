@@ -5,9 +5,10 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 class StackWidget extends ModuleWidget {
-  StackWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  StackWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class StackWidget extends ModuleWidget {
 }
 
 class RowWidget extends ModuleWidget {
-  RowWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  RowWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class RowWidget extends ModuleWidget {
 }
 
 class ColumnWidget extends ModuleWidget {
-  ColumnWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  ColumnWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,7 @@ int Function(FFIWidget) ffiPositionedGetY = core
     .asFunction();
 
 class PositionedWidget extends ModuleWidget {
-  PositionedWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  PositionedWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +71,7 @@ int Function(FFIWidget) ffiSizedBoxGetHeight = core
     .asFunction();
 
 class SizedBoxWidget extends ModuleWidget {
-  SizedBoxWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  SizedBoxWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,7 @@ int Function(FFIWidgetPointer) ffiTransformGetHeight = core
     .asFunction();
 
 class TransformWidget extends ModuleWidget {
-  TransformWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  TransformWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +134,7 @@ int Function(FFIWidgetPointer) ffiPaddingGetBottom = core
     .asFunction();
 
 class PaddingWidget extends ModuleWidget {
-  PaddingWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  PaddingWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {

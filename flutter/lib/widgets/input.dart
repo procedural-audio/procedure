@@ -6,6 +6,7 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 double Function(FFIWidgetPointer) ffiInputGetValue = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -17,7 +18,7 @@ void Function(FFIWidgetPointer, double) ffiInputSetValue = core
     .asFunction();
 
 class InputWidget extends ModuleWidget {
-  InputWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
+  InputWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
     knobValue = ffiInputGetValue(widgetRaw.pointer);
   }
 

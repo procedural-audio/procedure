@@ -7,6 +7,7 @@ import 'widget.dart';
 import '../common.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 void Function(FFIWidgetTrait, Pointer<Utf8>) ffiSearchableDropdownOnSelect =
     core
@@ -15,7 +16,7 @@ void Function(FFIWidgetTrait, Pointer<Utf8>) ffiSearchableDropdownOnSelect =
         .asFunction();
 
 class SearchableDropdownWidget extends ModuleWidget {
-  SearchableDropdownWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {
+  SearchableDropdownWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
     /*int widgetCount = ffiDropdownGetElementCount(widgetRaw.pointer);
     for (int i = 0; i < widgetCount; i++) {
       Pointer<Utf8> nameRaw = ffiDropdownGetElement(widgetRaw.pointer, i);

@@ -11,6 +11,7 @@ import 'package:ffi/ffi.dart';
 import 'dart:ui' as ui;
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 bool Function(FFIWidgetTrait) ffiPainterShouldPaint = core
     .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(
@@ -37,7 +38,7 @@ int Function(Pointer<CanvasFFI>) ffiCanvasGetActionsCount = core
     .asFunction();
 
 class PainterWidget extends ModuleWidget {
-  PainterWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  PainterWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   late Pointer<CanvasFFI> canvasRaw;
 

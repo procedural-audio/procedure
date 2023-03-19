@@ -237,9 +237,9 @@ class Module extends StatefulWidget {
   var color = Color(0x0);
 
   final RawNode raw;
-  final Host host;
+  final App app;
 
-  Module(this.host, this.raw) {
+  Module(this.app, this.raw) {
     print("Creating module now");
 
     id = raw.getId();
@@ -309,7 +309,7 @@ class Module extends StatefulWidget {
     }
 
     var widgetRaw = raw.getWidgetRoot();
-    var widget = createWidget(host, raw, widgetRaw);
+    var widget = createWidget(app, raw, widgetRaw);
     if (widget != null) {
       widgets.add(widget);
     }
@@ -382,14 +382,14 @@ class _Module extends State<Module> {
       if (pin.isInput) {
         if (pin.type != IO.external) {
           inputPins.add(PinWidget(widget.id, pin.index, pin.type, 10,
-              pin.offset.dy, pin.name, pin.isInput, widget.host));
+              pin.offset.dy, pin.name, pin.isInput, widget.app));
         }
       } else {
         pin.offset = Offset(width - 25, pin.offset.dy);
 
         if (pin.type != IO.external) {
           outputPins.add(PinWidget(widget.id, pin.index, pin.type, width - 25,
-              pin.offset.dy, pin.name, pin.isInput, widget.host));
+              pin.offset.dy, pin.name, pin.isInput, widget.app));
         }
       }
     }
@@ -401,14 +401,14 @@ class _Module extends State<Module> {
             behavior: HitTestBehavior.translucent,
             onTap: () {
               print("TODO: Tap module");
-              /*if (widget.host.globals.selectedModule == widget.id) {
-                widget.host.globals.selectedModule = -1;
+              /*if (widget.app.selectedModule == widget.id) {
+                widget.app.selectedModule = -1;
                 setState(() {});
               } else {
-                var oldModule = widget.host.globals.selectedModule;
-                widget.host.globals.selectedModule = widget.id;
+                var oldModule = widget.app.selectedModule;
+                widget.app.selectedModule = widget.id;
 
-                for (var moduleWidget in widget.host.graph.moduleWidgets) {
+                for (var moduleWidget in widget.app.graph.moduleWidgets) {
                   if (moduleWidget.module.id == oldModule) {
                     moduleWidget.refresh();
                   }
@@ -441,7 +441,7 @@ class _Module extends State<Module> {
                         topRight: Radius.circular(10),
                         bottomLeft: Radius.circular(10),
                         bottomRight: Radius.circular(10)),
-                    boxShadow: widget.host.globals.selectedModule == widget.id
+                    boxShadow: widget.app.selectedModule == widget.id
                         ? [
                             BoxShadow(
                                 color: Colors.white.withOpacity(0.5),
@@ -481,18 +481,21 @@ class _Module extends State<Module> {
                                           ),
                                           onPanUpdate: (details) {
                                             setState(() {
-                                              var m =
-                                                  widget.host.globals.zoom * 10;
+                                              var m = widget.app.zoom * 10;
 
                                               var w =
                                                   width + details.delta.dx * m;
                                               var h =
                                                   height + details.delta.dy * m;
 
-                                              var minWidth = widget.raw.getMinWidth();
-                                              var maxWidth = widget.raw.getMaxWidth();
-                                              var minHeight = widget.raw.getMinHeight();
-                                              var maxHeight = widget.raw.getMaxHeight();
+                                              var minWidth =
+                                                  widget.raw.getMinWidth();
+                                              var maxWidth =
+                                                  widget.raw.getMaxWidth();
+                                              var minHeight =
+                                                  widget.raw.getMinHeight();
+                                              var maxHeight =
+                                                  widget.raw.getMaxHeight();
 
                                               if (w < minWidth) {
                                                 w = minWidth.toDouble();
@@ -580,9 +583,16 @@ class PinLabel extends StatelessWidget {
 }
 
 class PinWidget extends StatefulWidget {
-  PinWidget(int moduleId1, int pinIndex1, IO io1, double x1, double y1,
-      String n, bool isInput, this.host)
-      : super(key: UniqueKey()) {
+  PinWidget(
+    int moduleId1,
+    int pinIndex1,
+    IO io1,
+    double x1,
+    double y1,
+    String n,
+    bool isInput,
+    this.app,
+  ) : super(key: UniqueKey()) {
     io = io1;
     x = x1;
     y = y1;
@@ -592,7 +602,7 @@ class PinWidget extends StatefulWidget {
     input = isInput;
   }
 
-  Host host;
+  App app;
 
   double x = 0;
   double y = 0;
@@ -625,7 +635,7 @@ class _PinState extends State<PinWidget> {
       color = Colors.deepPurpleAccent;
     }
 
-    for (var connector in widget.host.graph.connectors) {
+    for (var connector in widget.app.graph.connectors) {
       if (connector.start.moduleId == widget.moduleId &&
           connector.start.index == widget.pinIndex) {
         connected = true;
@@ -646,62 +656,59 @@ class _PinState extends State<PinWidget> {
         height: 15,
         child: MouseRegion(
             onEnter: (PointerEnterEvent event) {
-              widget.host.globals.pinLabel.value = widget.name;
+              widget.app.pinLabel.value = widget.name;
 
               if (widget.input) {
-                widget.host.globals.labelPosition = Offset(
+                widget.app.labelPosition = Offset(
                     event.position.dx -
                         50 -
-                        widget.host.globals.pinLabel.value.length * 7,
+                        widget.app.pinLabel.value.length * 7,
                     event.position.dy - 15);
               } else {
-                widget.host.globals.labelPosition =
+                widget.app.labelPosition =
                     Offset(event.position.dx + 30, event.position.dy - 15);
               }
 
               setState(() {
                 hovering = true;
-                widget.host.globals.tempConnector?.hoveringId = widget.moduleId;
-                widget.host.globals.tempConnector?.hoveringIndex =
-                    widget.pinIndex;
+                widget.app.tempConnector?.hoveringId = widget.moduleId;
+                widget.app.tempConnector?.hoveringIndex = widget.pinIndex;
               });
             },
             onExit: (PointerExitEvent event) {
-              widget.host.globals.pinLabel.value = "";
+              widget.app.pinLabel.value = "";
 
               setState(() {
                 hovering = false;
-                widget.host.globals.tempConnector?.hoveringId = -1;
-                widget.host.globals.tempConnector?.hoveringIndex = -1;
+                widget.app.tempConnector?.hoveringId = -1;
+                widget.app.tempConnector?.hoveringIndex = -1;
               });
             },
             child: GestureDetector(
               onPanStart: (details) {
                 setState(() {
                   dragging = true;
-                  widget.host.globals.tempConnector = TempConnector();
-                  widget.host.globals.tempConnector?.moduleId = widget.moduleId;
-                  widget.host.globals.tempConnector?.pinIndex = widget.pinIndex;
-                  widget.host.globals.tempConnector?.type = widget.io;
+                  widget.app.tempConnector = TempConnector();
+                  widget.app.tempConnector?.moduleId = widget.moduleId;
+                  widget.app.tempConnector?.pinIndex = widget.pinIndex;
+                  widget.app.tempConnector?.type = widget.io;
                 });
               },
               onPanUpdate: (details) {
-                widget.host.globals.tempConnector?.endX =
-                    details.localPosition.dx;
-                widget.host.globals.tempConnector?.endY =
-                    details.localPosition.dy;
+                widget.app.tempConnector?.endX = details.localPosition.dx;
+                widget.app.tempConnector?.endY = details.localPosition.dy;
                 gTempConnectorState?.refresh();
               },
               onPanEnd: (details) {
-                var c = widget.host.globals.tempConnector ?? TempConnector();
+                var c = widget.app.tempConnector ?? TempConnector();
                 if (c.hoveringId != -1) {
-                  if (widget.host.graph.addConnection(Connector(c.moduleId,
+                  if (widget.app.graph.addConnection(Connector(c.moduleId,
                       c.pinIndex, c.hoveringId, c.hoveringIndex, c.type))) {
                     gConnectorsState?.refreshConnectors();
                   }
                 }
 
-                widget.host.globals.tempConnector = null;
+                widget.app.tempConnector = null;
                 gTempConnectorState?.refresh();
 
                 setState(() {
@@ -709,7 +716,7 @@ class _PinState extends State<PinWidget> {
                 });
               },
               onDoubleTap: () {
-                widget.host.graph
+                widget.app.graph
                     .removeConnection(widget.moduleId, widget.pinIndex);
                 gConnectorsState?.refreshConnectors();
               },

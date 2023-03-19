@@ -35,7 +35,7 @@ List<List<double>> getWavetable() {
 // https://www.didierboelens.com/2019/01/futures-isolates-event-loop/
 
 class BrowserWidget extends ModuleWidget {
-  BrowserWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  BrowserWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   String name = "Tempered Felt Piano";
   String author = "Chase Kanipe";
@@ -354,7 +354,7 @@ class BrowserListElement extends StatelessWidget {
 }
 
 class BrowserWidget2 extends ModuleWidget {
-  BrowserWidget2(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  BrowserWidget2(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

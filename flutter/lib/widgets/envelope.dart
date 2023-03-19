@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 double Function(FFIWidgetPointer) ffiEnvelopeGetAttack = core
     .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
@@ -48,7 +49,7 @@ void Function(FFIWidgetPointer, double) ffiEnvelopeSetMult = core
     .asFunction();
 
 class EnvelopeWidget extends ModuleWidget {
-  EnvelopeWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w) {}
+  EnvelopeWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {}
 
   double attack = 0.0;
   double mult = 1.0;

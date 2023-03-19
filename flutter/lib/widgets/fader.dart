@@ -26,7 +26,7 @@ int Function(FFIWidgetPointer) ffiFaderGetColor = core
     .asFunction();
 
 class FaderWidget extends ModuleWidget {
-  FaderWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  FaderWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   double value = 0.5;
   String? labelText;

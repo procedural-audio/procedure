@@ -3,16 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'settings.dart';
-
-import '../host.dart';
+import '../main.dart';
 import '../config.dart';
 import '../ui/common.dart';
 
 class PresetsView extends StatelessWidget {
-  PresetsView(this.host);
+  PresetsView(this.app);
 
-  Host host;
+  App app;
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
 
   @override
@@ -28,27 +26,27 @@ class PresetsView extends StatelessWidget {
                 child: Column(
                   children: [
                     UserInterfaceItem(
-                      host,
+                      app,
                       text: "Interface 1",
                       selectedItem: selectedItem,
                       children: [
-                        GraphItem(host, "Graph 1", selectedItem),
-                        GraphItem(host, "Graph 2", selectedItem),
-                        GraphItem(host, "Graph 3", selectedItem),
-                        GraphItem(host, "Graph 4", selectedItem),
+                        GraphItem(app, "Graph 1", selectedItem),
+                        GraphItem(app, "Graph 2", selectedItem),
+                        GraphItem(app, "Graph 3", selectedItem),
+                        GraphItem(app, "Graph 4", selectedItem),
                       ],
                     ),
                     UserInterfaceItem(
-                      host,
+                      app,
                       text: "Interface 2",
                       selectedItem: selectedItem,
                       children: [
-                        GraphItem(host, "Graph 5", selectedItem),
-                        GraphItem(host, "Graph 6", selectedItem),
+                        GraphItem(app, "Graph 5", selectedItem),
+                        GraphItem(app, "Graph 6", selectedItem),
                       ],
                     ),
-                    GraphItem(host, "Graph 1", selectedItem),
-                    GraphItem(host, "Graph 2", selectedItem),
+                    GraphItem(app, "Graph 1", selectedItem),
+                    GraphItem(app, "Graph 2", selectedItem),
 
                     /*CategoryItem("Category 1"),
                     CategoryItem("Category 2"),*/
@@ -67,7 +65,7 @@ class PresetsView extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(4),
             child: PresetsViewItemEditor(
-              host: host,
+              app: app,
               selectedItem: selectedItem,
             ),
           ),
@@ -78,9 +76,12 @@ class PresetsView extends StatelessWidget {
 }
 
 class PresetsViewItemEditor extends StatelessWidget {
-  PresetsViewItemEditor({required this.host, required this.selectedItem});
+  PresetsViewItemEditor({
+    required this.app,
+    required this.selectedItem,
+  });
 
-  Host host;
+  App app;
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
 
   @override
@@ -101,9 +102,9 @@ class PresetsViewItemEditor extends StatelessWidget {
                 ),
               );
             } else if (item is UserInterfaceItem) {
-              return UserInterfaceItemEditor(host, item);
+              return UserInterfaceItemEditor(app, item);
             } else if (item is GraphItem) {
-              return GraphItemEditor(host, item);
+              return GraphItemEditor(app, item);
             } else {
               return Container();
             }
@@ -113,10 +114,10 @@ class PresetsViewItemEditor extends StatelessWidget {
 }
 
 class UserInterfaceItemEditor extends StatelessWidget {
-  UserInterfaceItemEditor(this.host, this.item);
+  UserInterfaceItemEditor(this.app, this.item);
 
   UserInterfaceItem item;
-  Host host;
+  App app;
   String text1 = "Text 1";
 
   @override
@@ -164,10 +165,10 @@ class UserInterfaceItemEditor extends StatelessWidget {
 }
 
 class GraphItemEditor extends StatelessWidget {
-  GraphItemEditor(this.host, this.item);
+  GraphItemEditor(this.app, this.item);
 
   GraphItem item;
-  Host host;
+  App app;
   String text1 = "Some Stuff";
   EdgeInsets padding = EdgeInsets.zero;
 
@@ -288,11 +289,15 @@ class GraphItemEditor extends StatelessWidget {
 }
 
 class UserInterfaceItem extends StatelessWidget {
-  UserInterfaceItem(this.host,
-      {required this.text, required this.selectedItem, required this.children});
+  UserInterfaceItem(
+    this.app, {
+    required this.text,
+    required this.selectedItem,
+    required this.children,
+  });
 
   final String text;
-  final Host host;
+  final App app;
   final List<GraphItem> children;
   final ValueNotifier<Widget?> selectedItem;
 
@@ -316,7 +321,7 @@ class UserInterfaceItem extends StatelessWidget {
         children: // <Widget>[] +
             children
                 .map(
-                  (e) => GraphItem(host, e.text, selectedItem, isDense: true),
+                  (e) => GraphItem(app, e.text, selectedItem, isDense: true),
                 )
                 .toList() /*+
           <Widget>[
@@ -354,9 +359,9 @@ class UserInterfaceItem extends StatelessWidget {
 }*/
 
 class GraphItem extends StatelessWidget {
-  GraphItem(this.host, this.text, this.selectedItem, {this.isDense = false});
+  GraphItem(this.app, this.text, this.selectedItem, {this.isDense = false});
 
-  final Host host;
+  final App app;
   final String text;
   final bool isDense;
   final ValueNotifier<Widget?> selectedItem;

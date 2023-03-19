@@ -9,9 +9,9 @@ import 'package:metasampler/widgets/samplePicker.dart';
 import 'dart:ui' as ui;
 import 'dart:async';
 
-import '../host.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 import '../views/variables.dart';
 import 'knob.dart';
@@ -45,7 +45,7 @@ import 'painter.dart';
 import 'mouseListener.dart';
 import 'xyPad.dart';
 
-ModuleWidget? createWidget(Host host, RawNode moduleRaw, FFIWidget widgetRaw) {
+ModuleWidget? createWidget(App app, RawNode moduleRaw, FFIWidget widgetRaw) {
   var nameRaw = ffiWidgetGetName(widgetRaw);
   var name = nameRaw.toDartString();
   calloc.free(nameRaw);
@@ -53,99 +53,99 @@ ModuleWidget? createWidget(Host host, RawNode moduleRaw, FFIWidget widgetRaw) {
   print("Creating " + name);
 
   if (name == "Knob") {
-    return KnobWidget(host, moduleRaw, widgetRaw);
+    return KnobWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Stack") {
-    return StackWidget(host, moduleRaw, widgetRaw);
+    return StackWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Row") {
-    return RowWidget(host, moduleRaw, widgetRaw);
+    return RowWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Column") {
-    return ColumnWidget(host, moduleRaw, widgetRaw);
+    return ColumnWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Transform") {
-    return TransformWidget(host, moduleRaw, widgetRaw);
+    return TransformWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Positioned") {
-    return PositionedWidget(host, moduleRaw, widgetRaw);
+    return PositionedWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Padding") {
-    return PaddingWidget(host, moduleRaw, widgetRaw);
+    return PaddingWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SizedBox") {
-    return SizedBoxWidget(host, moduleRaw, widgetRaw);
+    return SizedBoxWidget(app, moduleRaw, widgetRaw);
   } else if (name == "IconButton") {
-    return IconButtonWidget(host, moduleRaw, widgetRaw);
+    return IconButtonWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SvgButton") {
-    return ButtonSVG(host, moduleRaw, widgetRaw);
+    return ButtonSVG(app, moduleRaw, widgetRaw);
   } else if (name == "Svg") {
-    return SvgWidget(host, moduleRaw, widgetRaw);
+    return SvgWidget(app, moduleRaw, widgetRaw);
   } else if (name == "ButtonGrid") {
-    return ButtonGridWidget(host, moduleRaw, widgetRaw);
+    return ButtonGridWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
-    return DropdownWidget(host, moduleRaw, widgetRaw);
+    return DropdownWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Slider") {
-    return SliderWidget(host, moduleRaw, widgetRaw);
+    return SliderWidget(app, moduleRaw, widgetRaw);
   } else if (name == "RangeSlider") {
-    return RangeSliderWidget(host, moduleRaw, widgetRaw);
+    return RangeSliderWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SimpleButton") {
-    return SimpleButtonWidget(host, moduleRaw, widgetRaw);
+    return SimpleButtonWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SimpleSwitch") {
-    return SimpleSwitchWidget(host, moduleRaw, widgetRaw);
+    return SimpleSwitchWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
-    return SimplePadWidget(host, moduleRaw, widgetRaw);
+    return SimplePadWidget(app, moduleRaw, widgetRaw);
   } else if (name == "XYPad") {
-    return XYPadWidget(host, moduleRaw, widgetRaw);
+    return XYPadWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Text") {
-    return TextWidget(host, moduleRaw, widgetRaw);
+    return TextWidget(app, moduleRaw, widgetRaw);
   } else if (name == "NotesTrack") {
-    return PianoRollWidget(host, moduleRaw, widgetRaw);
+    return PianoRollWidget(app, moduleRaw, widgetRaw);
   } else if (name == "StepSequencer") {
-    return StepSequencerWidget(host, moduleRaw, widgetRaw);
+    return StepSequencerWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Envelope") {
-    return EnvelopeWidget(host, moduleRaw, widgetRaw);
+    return EnvelopeWidget(app, moduleRaw, widgetRaw);
   } else if (name == "LevelMeter") {
-    return LevelMeterWidget(host, moduleRaw, widgetRaw);
+    return LevelMeterWidget(app, moduleRaw, widgetRaw);
   } else if (name == "MouseListener") {
-    return MouseListenerWidget(host, moduleRaw, widgetRaw);
+    return MouseListenerWidget(app, moduleRaw, widgetRaw);
   } else if (name == "DynamicLine") {
-    return DynamicLineWidget(host, moduleRaw, widgetRaw);
+    return DynamicLineWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Keyboard") {
-    return KeyboardWidget(host, moduleRaw, widgetRaw);
+    return KeyboardWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SampleMapper") {
-    return SampleMapperWidget(host, moduleRaw, widgetRaw);
+    return SampleMapperWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SampleEditor") {
-    return SampleEditorWidget(host, moduleRaw, widgetRaw);
+    return SampleEditorWidget(app, moduleRaw, widgetRaw);
   } else if (name == "LuaEditor") {
-    return LuaEditorWidget(host, moduleRaw, widgetRaw);
+    return LuaEditorWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Tabs") {
-    return TabsWidget(host, moduleRaw, widgetRaw);
+    return TabsWidget(app, moduleRaw, widgetRaw);
   } else if (name == "NodeSequencer") {
-    return NodeSequencerWidget(host, moduleRaw, widgetRaw);
+    return NodeSequencerWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SamplePicker") {
-    return SamplePickerWidget(host, moduleRaw, widgetRaw);
+    return SamplePickerWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
-    return RefreshWidget(host, moduleRaw, widgetRaw);
+    return RefreshWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Rebuild") {
-    return RebuildWidget(host, moduleRaw, widgetRaw);
+    return RebuildWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Button") {
-    return ButtonWidget(host, moduleRaw, widgetRaw);
+    return ButtonWidget(app, moduleRaw, widgetRaw);
   } else if (name == "GridBuilder") {
-    return GridBuilderWidget(host, moduleRaw, widgetRaw);
+    return GridBuilderWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Grid") {
-    return GridWidget(host, moduleRaw, widgetRaw);
+    return GridWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Fader") {
-    return FaderWidget(host, moduleRaw, widgetRaw);
+    return FaderWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Input") {
-    return InputWidget(host, moduleRaw, widgetRaw);
+    return InputWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Indicator") {
-    return IndicatorWidget(host, moduleRaw, widgetRaw);
+    return IndicatorWidget(app, moduleRaw, widgetRaw);
   } else if (name == "WavetablePicker") {
-    return WavetableWidget(host, moduleRaw, widgetRaw);
+    return WavetableWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Display") {
-    return DisplayWidget(host, moduleRaw, widgetRaw);
+    return DisplayWidget(app, moduleRaw, widgetRaw);
   } else if (name == "SearchableDropdown") {
-    return SearchableDropdownWidget(host, moduleRaw, widgetRaw);
+    return SearchableDropdownWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Browser") {
-    return BrowserWidget(host, moduleRaw, widgetRaw);
+    return BrowserWidget(app, moduleRaw, widgetRaw);
   } else if (name == "Painter") {
-    return PainterWidget(host, moduleRaw, widgetRaw);
+    return PainterWidget(app, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
-    return EmptyWidget(host, moduleRaw, widgetRaw);
+    return EmptyWidget(app, moduleRaw, widgetRaw);
   } else {
     print("Unknown widget " + name);
     return null;
@@ -153,7 +153,7 @@ ModuleWidget? createWidget(Host host, RawNode moduleRaw, FFIWidget widgetRaw) {
 }
 
 class EmptyWidget extends ModuleWidget {
-  EmptyWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  EmptyWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -164,17 +164,17 @@ class EmptyWidget extends ModuleWidget {
 abstract class ModuleWidget extends StatefulWidget {
   final RawNode moduleRaw;
   final FFIWidget widgetRaw;
-  final Host host;
+  final App app;
 
   late List<ModuleWidget> children = [];
   _ModuleWidgetState state = _ModuleWidgetState();
 
-  ModuleWidget(this.host, this.moduleRaw, this.widgetRaw) {
+  ModuleWidget(this.app, this.moduleRaw, this.widgetRaw) {
     int childCount = ffiWidgetGetChildCount(widgetRaw);
 
     for (int i = 0; i < childCount; i++) {
       var childRaw = ffiWidgetGetChild(widgetRaw, i);
-      ModuleWidget? widget = createWidget(host, moduleRaw, childRaw);
+      ModuleWidget? widget = createWidget(app, moduleRaw, childRaw);
 
       if (widget != null) {
         children.add(widget);

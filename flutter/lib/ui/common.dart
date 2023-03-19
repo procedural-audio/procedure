@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../host.dart';
 import '../views/variables.dart';
+import '../main.dart';
 
 class TransformData {
   TransformData(
@@ -2226,13 +2227,14 @@ class _FieldLabel extends State<FieldLabel> {
 }
 
 class ChildDragTarget extends StatefulWidget {
-  ChildDragTarget(
-      {this.width,
-      this.height,
-      this.child,
-      required this.onAddChild,
-      required this.tree,
-      required this.host});
+  ChildDragTarget({
+    this.width,
+    this.height,
+    this.child,
+    required this.onAddChild,
+    required this.tree,
+    required this.app,
+  });
 
   void Function(UIWidget widget) onAddChild;
   double? width;
@@ -2240,7 +2242,7 @@ class ChildDragTarget extends StatefulWidget {
   Widget? child;
 
   UITree tree;
-  Host host;
+  App app;
 
   @override
   State<ChildDragTarget> createState() => _ChildDragTarget();
@@ -2292,7 +2294,7 @@ class _ChildDragTarget extends State<ChildDragTarget> {
             return true;
           },
           onAccept: (name) {
-            UIWidget? child = createUIWidget(widget.host, name, widget.tree);
+            UIWidget? child = createUIWidget(widget.app, name, widget.tree);
 
             if (child != null) {
               print("Creating child $name");
@@ -2307,9 +2309,9 @@ class _ChildDragTarget extends State<ChildDragTarget> {
 }
 
 class VarField extends StatefulWidget {
-  VarField({required this.host, required this.varName});
+  VarField({required this.app, required this.varName});
 
-  Host host;
+  App app;
   ValueNotifier<String?> varName;
 
   @override

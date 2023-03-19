@@ -6,7 +6,7 @@ import 'ui.dart';
 import '../main.dart';
 
 class RootWidget extends UIWidget {
-  RootWidget(Host host, UITree tree) : super(host, tree);
+  RootWidget(App app, UITree tree) : super(app, tree);
 
   @override
   final String name = "Root";
@@ -113,7 +113,7 @@ class RootWidget extends UIWidget {
                           setState(() {});
                         },
                         child: Stack(fit: StackFit.expand, children: children),
-                        host: host,
+                        app: app,
                       ))))
         ]));
   }
@@ -165,7 +165,7 @@ class RootWidget extends UIWidget {
 /* Stack Widget */
 
 class StackUIWidget extends UIWidget {
-  StackUIWidget(Host host, UITree tree) : super(host, tree);
+  StackUIWidget(App app, UITree tree) : super(app, tree);
 
   @override
   final String name = "Stack";
@@ -230,7 +230,7 @@ class StackUIWidget extends UIWidget {
                     },
                     child: null,
                     tree: tree,
-                    host: host,
+                    app: app,
                   )
                 ] +
                 children));
@@ -255,7 +255,7 @@ class StackUIWidget extends UIWidget {
 /* Row Widget */
 
 class RowUIWidget extends UIWidget {
-  RowUIWidget(Host host, UITree tree) : super(host, tree);
+  RowUIWidget(App app, UITree tree) : super(app, tree);
 
   List<UIWidget> children = [];
 
@@ -308,7 +308,7 @@ class RowUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > columns) {
@@ -334,7 +334,7 @@ class RowUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > columns) {
@@ -367,7 +367,7 @@ class RowUIWidget extends UIWidget {
               child: child,
             ),
             tree: tree,
-            host: host,
+            app: app,
           ));
         }).toList()));
   }
@@ -396,7 +396,7 @@ class RowUIWidget extends UIWidget {
                   columns = int.tryParse(s) ?? 2;
 
                   while (children.length < columns) {
-                    children.add(EmptyUIWidget(host, tree));
+                    children.add(EmptyUIWidget(app, tree));
                   }
 
                   while (children.length > columns) {
@@ -462,7 +462,7 @@ class RowUIWidget extends UIWidget {
 }
 
 class ColumnUIWidget extends UIWidget {
-  ColumnUIWidget(Host host, UITree tree) : super(host, tree);
+  ColumnUIWidget(App app, UITree tree) : super(app, tree);
 
   List<UIWidget> children = [];
 
@@ -515,7 +515,7 @@ class ColumnUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > columns) {
@@ -541,7 +541,7 @@ class ColumnUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > columns) {
@@ -574,7 +574,7 @@ class ColumnUIWidget extends UIWidget {
               child: child,
             ),
             tree: tree,
-            host: host,
+            app: app,
           ));
         }).toList()));
   }
@@ -603,7 +603,7 @@ class ColumnUIWidget extends UIWidget {
                   columns = int.tryParse(s) ?? 2;
 
                   while (children.length < columns) {
-                    children.add(EmptyUIWidget(host, tree));
+                    children.add(EmptyUIWidget(app, tree));
                   }
 
                   while (children.length > columns) {
@@ -669,7 +669,7 @@ class ColumnUIWidget extends UIWidget {
 }
 
 class EmptyUIWidget extends UIWidget {
-  EmptyUIWidget(Host host, UITree tree) : super(host, tree);
+  EmptyUIWidget(App app, UITree tree) : super(app, tree);
 
   @override
   String name = "Empty";
@@ -706,7 +706,7 @@ class EmptyUIWidget extends UIWidget {
 /* Grid Widget */
 
 class GridUIWidget extends UIWidget {
-  GridUIWidget(Host host, UITree tree) : super(host, tree);
+  GridUIWidget(App app, UITree tree) : super(app, tree);
 
   TransformData transform = TransformData(
       width: null,
@@ -763,7 +763,7 @@ class GridUIWidget extends UIWidget {
     if (children.contains(item)) {
       for (int i = 0; i < children.length; i++) {
         if (children[i] == item) {
-          children[i] = EmptyUIWidget(host, tree);
+          children[i] = EmptyUIWidget(app, tree);
           return true;
         }
       }
@@ -781,7 +781,7 @@ class GridUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < rows * columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > rows * columns) {
@@ -808,7 +808,7 @@ class GridUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < rows * columns) {
-      children.add(EmptyUIWidget(host, tree));
+      children.add(EmptyUIWidget(app, tree));
     }
 
     while (children.length > rows * columns) {
@@ -849,7 +849,7 @@ class GridUIWidget extends UIWidget {
                       child: child,
                     ),
                     tree: tree,
-                    host: host);
+                    app: app);
               }).toList());
         }));
   }

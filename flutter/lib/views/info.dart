@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'settings.dart';
 import '../host.dart';
 import '../config.dart';
+import '../main.dart';
 
-class PatchInfo {
-  PatchInfo({
+class ProjectInfo {
+  ProjectInfo({
     required this.path,
     required this.name,
     required this.description,
@@ -22,20 +23,20 @@ class PatchInfo {
   String background;
   List<String> tags = ["Tag 1", "Tag 2"];
 
-  static Future<PatchInfo?> load(String path) async {
-    File file = File(path);
+  static Future<ProjectInfo?> load(String path) async {
+    File file = File(path + "/project.json");
 
-    if (file.existsSync()) {
+    if (await file.exists()) {
       String contents = await file.readAsString();
       Map<String, dynamic> json = jsonDecode(contents);
-      return PatchInfo.fromJson(path, json);
+      return ProjectInfo.fromJson(path, json);
     }
 
     return null;
   }
 
-  static PatchInfo loadSync(String path) {
-    PatchInfo info = PatchInfo(
+  static ProjectInfo loadSync(String path) {
+    ProjectInfo info = ProjectInfo(
       path: path,
       name: "Untitled Instrument",
       description: "Some description here",
@@ -59,8 +60,9 @@ class PatchInfo {
     file.writeAsString(contents);
   }
 
-  static PatchInfo fromJson(String path, Map<String, dynamic> json) {
-    String background = "";
+  static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
+    String background =
+        "/Users/chasekanipe/Github/assets/images/backgrounds/background_01.png";
 
     File file1 = File(path + "/background.jpg");
     if (file1.existsSync()) {
@@ -77,7 +79,7 @@ class PatchInfo {
       background = file3.path;
     }
 
-    return PatchInfo(
+    return ProjectInfo(
       path: path,
       name: json['name'],
       description: json['description'],
@@ -89,12 +91,15 @@ class PatchInfo {
 }
 
 class InfoContentsWidget extends StatefulWidget {
-  InfoContentsWidget(this.host,
-      {required this.instrument, required this.onClose, Key? key})
-      : super(key: key);
+  InfoContentsWidget(
+    this.app, {
+    required this.project,
+    required this.onClose,
+    Key? key,
+  }) : super(key: key);
 
-  PatchInfo instrument;
-  Host host;
+  App app;
+  ProjectInfo project;
   void Function() onClose;
 
   @override
@@ -111,11 +116,11 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
   bool mouseOverImage = false;
 
   void savePressed(String title, String description) {
-    var instruments = widget.host.globals.instruments2;
+    var instruments = widget.app.projects.value;
 
     /* Save the instrument */
     for (int i = 0; i < instruments.length; i++) {
-      if (instruments[i].path == widget.instrument.path) {
+      if (instruments[i].path == widget.project.path) {
         instruments[i].description = description;
 
         /* Rename instrument */
@@ -152,11 +157,11 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         }
 
         /* Update loaded instrument */
-        if (widget.instrument.path == widget.host.loadedInstrument.value.path) {
-          widget.host.loadedInstrument.value = instruments[i];
+        if (widget.project.path == widget.app.loadedInstrument.value.path) {
+          widget.app.loadedInstrument.value = instruments[i];
         }
 
-        widget.instrument = instruments[i];
+        widget.project = instruments[i];
 
         /* Update info json */
         File file = File(instruments[i].path + "/info/info.json");
@@ -168,7 +173,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
     setState(() {
       if (editing) {
         /* Update local instrument metadata */
-        widget.instrument.description = description;
+        widget.project.description = description;
         editing = false;
       } else {
         /* Start editing */
@@ -185,7 +190,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
     final markdownViewer = Padding(
         padding: const EdgeInsets.fromLTRB(15, 10, 0, 0),
         child: Text(
-          widget.instrument.description,
+          widget.project.description,
           style: const TextStyle(
               fontWeight: FontWeight.w300,
               fontStyle: FontStyle.normal,
@@ -197,7 +202,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
     /* Markdown Editor */
     var markdownEditor = EditableText(
         controller: TextEditingController.fromValue(
-            TextEditingValue(text: widget.instrument.description)),
+            TextEditingValue(text: widget.project.description)),
         focusNode: FocusNode(),
         cursorColor: Colors.grey,
         backgroundCursorColor: Colors.grey,
@@ -210,7 +215,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
             decoration: TextDecoration.none));
 
     TextEditingController titleController = TextEditingController.fromValue(
-        TextEditingValue(text: widget.instrument.name));
+        TextEditingValue(text: widget.project.name));
 
     /* Title Editor */
 
@@ -231,7 +236,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                   Stack(children: [
                     InfoViewImage(
                       editing: editing,
-                      path: widget.instrument.path,
+                      path: widget.project.path,
                       onUpdate: () => setState(() {}),
                     ),
                     Padding(
@@ -247,7 +252,8 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                     children: [
                       TextButton(
                           onPressed: () {
-                            widget.host.loadInstrument(widget.instrument.path);
+                            print("TODO: IMPLEMENT LOAD INSTRUMENT");
+                            // widget.app.loadInstrument(widget.instrument.path);
                           },
                           child: const Text("Load")),
                       TextButton(
@@ -383,7 +389,8 @@ class InfoViewImage extends StatefulWidget {
       return file3;
     }
 
-    return File(contentPath + "/assets/images/logo.png");
+    return File(
+        "/Users/chasekanipe/Github/assets/images/backgrounds/background_01.png");
   }
 
   void browserForImage() async {

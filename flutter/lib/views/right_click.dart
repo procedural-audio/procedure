@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:io';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:metasampler/host.dart';
 
 import '../main.dart';
 import 'settings.dart';
 
 class RightClickView extends StatefulWidget {
-  RightClickView(this.host, {required this.addPosition, required this.specs});
+  RightClickView(this.app, {required this.addPosition, required this.specs});
 
   Offset addPosition;
-  Host host;
+  App app;
   ValueNotifier<List<ModuleSpec>> specs;
 
   @override
@@ -37,8 +34,14 @@ class _RightClickView extends State<RightClickView> {
               var categoryName = path[0];
               var elementName = path[1];
 
-              var element = RightClickElement(widget.host, spec, Icons.piano,
-                  spec.color, 20, widget.addPosition);
+              var element = RightClickElement(
+                widget.app,
+                spec,
+                Icons.piano,
+                spec.color,
+                20,
+                widget.addPosition,
+              );
 
               bool foundCategory = false;
               for (var category in categories) {
@@ -57,8 +60,14 @@ class _RightClickView extends State<RightClickView> {
               var subCategoryName = path[1];
               var elementName = path[2];
 
-              var element = RightClickElement(widget.host, spec, Icons.piano,
-                  spec.color, 30, widget.addPosition);
+              var element = RightClickElement(
+                widget.app,
+                spec,
+                Icons.piano,
+                spec.color,
+                30,
+                widget.addPosition,
+              );
 
               bool foundCategory = false;
               for (var category in categories) {
@@ -118,10 +127,10 @@ class _RightClickView extends State<RightClickView> {
 
           return MouseRegion(
               onEnter: (event) {
-                widget.host.globals.patchingScaleEnabled = false;
+                widget.app.patchingScaleEnabled = false;
               },
               onExit: (event) {
-                widget.host.globals.patchingScaleEnabled = true;
+                widget.app.patchingScaleEnabled = true;
               },
               child: Container(
                 width: 300,
@@ -269,10 +278,16 @@ class RightClickElement extends StatefulWidget {
   final Color color;
   final Offset addPosition;
 
-  Host host;
+  App app;
 
-  RightClickElement(this.host, this.spec, this.icon, this.color, this.indent,
-      this.addPosition);
+  RightClickElement(
+    this.app,
+    this.spec,
+    this.icon,
+    this.color,
+    this.indent,
+    this.addPosition,
+  );
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();
@@ -298,7 +313,7 @@ class _RightClickElementState extends State<RightClickElement> {
         },
         child: GestureDetector(
             onTap: () {
-              if (widget.host.graph
+              if (widget.app.graph
                   .addModule(widget.spec.id, widget.addPosition)) {
                 gGridState?.refresh();
               } else {

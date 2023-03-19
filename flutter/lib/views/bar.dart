@@ -8,10 +8,15 @@ import 'browser.dart';
 import 'info.dart';
 
 class Bar extends StatefulWidget {
-  Bar(this.window, this.host);
+  Bar({
+    required this.app,
+    required this.instViewVisible,
+    required this.onViewSwitch,
+  });
 
-  Window window;
-  Host host;
+  App app;
+  bool instViewVisible;
+  void Function() onViewSwitch;
 
   @override
   _Bar createState() => _Bar();
@@ -33,24 +38,16 @@ class _Bar extends State<Bar> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ValueListenableBuilder(
-                valueListenable: widget.window.instViewVisible,
-                builder: (context, visible, child) {
-                  return BarButton(
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(10.0)),
-                    iconData: widget.window.instViewVisible.value
-                        ? Icons.cable
-                        : Icons.piano,
-                    onTap: () {
-                      var vis = widget.window.instViewVisible;
-                      vis.value = !vis.value;
-                    },
-                  );
+              BarButton(
+                borderRadius:
+                    const BorderRadius.only(bottomLeft: Radius.circular(10.0)),
+                iconData: widget.instViewVisible ? Icons.cable : Icons.piano,
+                onTap: () {
+                  widget.onViewSwitch();
                 },
               ),
-              ValueListenableBuilder<PatchInfo>(
-                valueListenable: widget.host.loadedInstrument,
+              ValueListenableBuilder<ProjectInfo>(
+                valueListenable: widget.app.loadedInstrument,
                 builder: (context, value, child) {
                   return BarDropdown(
                     width: 180,
@@ -67,11 +64,11 @@ class _Bar extends State<Bar> {
               ),
               ValueListenableBuilder(
                 // CHANGE TO LOADED PRESET
-                valueListenable: widget.host.loadedInstrument,
+                valueListenable: widget.app.loadedInstrument,
                 builder: (context, value, child) {
                   return BarDropdown(
                     width: 180,
-                    text: widget.host.globals.preset.name,
+                    text: widget.app.loadedPreset.value.name,
                     onTap: () {
                       setState(() {
                         showPresetView = !showPresetView;
@@ -86,8 +83,9 @@ class _Bar extends State<Bar> {
                 iconData: Icons.edit,
                 onTap: () {
                   setState(() {
-                    var editing = widget.window.instrumentView.tree.editing;
-                    editing.value = !editing.value;
+                    // var editing = widget.window.instrumentView.tree.editing;
+                    // editing.value = !editing.value;
+                    print("Edit not implemented");
                   });
                 },
               ),
@@ -129,13 +127,13 @@ class _Bar extends State<Bar> {
                       children: [
                         Visibility(
                             visible: showInstrumentView,
-                            child: BrowserView(widget.host)),
+                            child: BrowserView(widget.app)),
                         Visibility(
                             visible: showPresetView,
-                            child: PresetsView(widget.host)),
+                            child: PresetsView(widget.app)),
                         Visibility(
                             visible: showOtherView,
-                            child: OtherView(widget.host)),
+                            child: OtherView(widget.app)),
                       ],
                     ),
                   ),
@@ -247,9 +245,9 @@ class _BarDropdown extends State<BarDropdown> {
 }
 
 class OtherView extends StatelessWidget {
-  OtherView(this.host, {super.key});
+  OtherView(this.app, {super.key});
 
-  Host host;
+  App app;
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +292,7 @@ class OtherView extends StatelessWidget {
             ),
             body: Container(
               color: const Color.fromRGBO(40, 40, 40, 1.0),
-              child: TabBarView(
+              child: const TabBarView(
                 children: <Widget>[
                   Center(
                     child: Text("It's cloudy here"),

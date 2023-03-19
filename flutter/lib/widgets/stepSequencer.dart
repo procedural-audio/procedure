@@ -6,6 +6,7 @@ import '../host.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
+import '../main.dart';
 
 bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPadDown = core
     .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
@@ -33,7 +34,7 @@ int Function(FFIWidgetTrait) ffiStepSequencerGetCols = core
     .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
-  StepSequencerWidget(Host h, RawNode m, FFIWidget w) : super(h, m, w);
+  StepSequencerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
 
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController();
