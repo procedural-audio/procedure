@@ -635,7 +635,7 @@ class _PinState extends State<PinWidget> {
       color = Colors.deepPurpleAccent;
     }
 
-    for (var connector in widget.app.graph.connectors) {
+    for (var connector in widget.app.project.value.patch.value.connectors) {
       if (connector.start.moduleId == widget.moduleId &&
           connector.start.index == widget.pinIndex) {
         connected = true;
@@ -702,8 +702,9 @@ class _PinState extends State<PinWidget> {
               onPanEnd: (details) {
                 var c = widget.app.tempConnector ?? TempConnector();
                 if (c.hoveringId != -1) {
-                  if (widget.app.graph.addConnection(Connector(c.moduleId,
-                      c.pinIndex, c.hoveringId, c.hoveringIndex, c.type))) {
+                  if (widget.app.project.value.patch.value.addConnection(
+                      Connector(c.moduleId, c.pinIndex, c.hoveringId,
+                          c.hoveringIndex, c.type))) {
                     gConnectorsState?.refreshConnectors();
                   }
                 }
@@ -716,7 +717,7 @@ class _PinState extends State<PinWidget> {
                 });
               },
               onDoubleTap: () {
-                widget.app.graph
+                widget.app.project.value.patch.value
                     .removeConnection(widget.moduleId, widget.pinIndex);
                 gConnectorsState?.refreshConnectors();
               },

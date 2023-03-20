@@ -17,16 +17,18 @@ class CategoryElement {
 }
 
 class SearchableDropdown extends StatefulWidget {
-  SearchableDropdown(
-      {required this.value,
-      required this.categories,
-      required this.onSelect,
-      this.width,
-      this.height,
-      this.titleStyle = const TextStyle(fontSize: 14, color: Colors.grey),
-      this.decoration = const BoxDecoration(
-          color: Color.fromRGBO(20, 20, 20, 1.0),
-          borderRadius: BorderRadius.all(Radius.circular(3)))});
+  SearchableDropdown({
+    required this.value,
+    required this.categories,
+    required this.onSelect,
+    this.width,
+    this.height,
+    this.titleStyle = const TextStyle(fontSize: 14, color: Colors.grey),
+    this.decoration = const BoxDecoration(
+      color: Color.fromRGBO(20, 20, 20, 1.0),
+      borderRadius: BorderRadius.all(Radius.circular(3)),
+    ),
+  });
 
   String? value;
   List<Category> categories;

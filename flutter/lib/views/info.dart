@@ -4,10 +4,11 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'settings.dart';
+
 import '../host.dart';
-import '../config.dart';
 import '../main.dart';
+
+import 'settings.dart';
 
 class ProjectInfo {
   ProjectInfo({
@@ -17,7 +18,7 @@ class ProjectInfo {
     required this.background,
   });
 
-  String name;
+  ValueNotifier<String> name;
   String description;
   String path;
   String background;
@@ -38,7 +39,7 @@ class ProjectInfo {
   static ProjectInfo loadSync(String path) {
     ProjectInfo info = ProjectInfo(
       path: path,
-      name: "Untitled Instrument",
+      name: ValueNotifier("Untitled Instrument"),
       description: "Some description here",
       background: "",
     );
@@ -81,13 +82,14 @@ class ProjectInfo {
 
     return ProjectInfo(
       path: path,
-      name: json['name'],
+      name: ValueNotifier(json['name']),
       description: json['description'],
       background: background,
     );
   }
 
-  Map<String, dynamic> toJson() => {'name': name, 'description': description};
+  Map<String, dynamic> toJson() =>
+      {'name': name.value, 'description': description};
 }
 
 class InfoContentsWidget extends StatefulWidget {
@@ -116,7 +118,8 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
   bool mouseOverImage = false;
 
   void savePressed(String title, String description) {
-    var instruments = widget.app.projects.value;
+    print("THIS SAVE NOT IMPLEMENTED");
+    /*var instruments = widget.app.projects.value;
 
     /* Save the instrument */
     for (int i = 0; i < instruments.length; i++) {
@@ -157,8 +160,8 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         }
 
         /* Update loaded instrument */
-        if (widget.project.path == widget.app.loadedInstrument.value.path) {
-          widget.app.loadedInstrument.value = instruments[i];
+        if (widget.project.path == widget.app.loadedProject.value.path) {
+          widget.app.loadedProject.value = instruments[i];
         }
 
         widget.project = instruments[i];
@@ -181,7 +184,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
         // ^^^ Need this ???
         editing = true;
       }
-    });
+    });*/
   }
 
   @override
@@ -215,7 +218,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
             decoration: TextDecoration.none));
 
     TextEditingController titleController = TextEditingController.fromValue(
-        TextEditingValue(text: widget.project.name));
+        TextEditingValue(text: widget.project.name.value));
 
     /* Title Editor */
 

@@ -1,8 +1,7 @@
 import 'package:metasampler/views/presets.dart';
-
-import '../host.dart';
-import '../main.dart';
 import 'package:flutter/material.dart';
+
+import '../main.dart';
 
 import 'browser.dart';
 import 'info.dart';
@@ -46,25 +45,30 @@ class _Bar extends State<Bar> {
                   widget.onViewSwitch();
                 },
               ),
-              ValueListenableBuilder<ProjectInfo>(
-                valueListenable: widget.app.loadedInstrument,
-                builder: (context, value, child) {
-                  return BarDropdown(
-                    width: 180,
-                    text: value.name,
-                    onTap: () {
-                      setState(() {
-                        showInstrumentView = !showInstrumentView;
-                        showPresetView = false;
-                        showOtherView = false;
-                      });
+              ValueListenableBuilder<Project>(
+                valueListenable: widget.app.project,
+                builder: (context, project, child) {
+                  return ValueListenableBuilder<String>(
+                    valueListenable: project.info.name,
+                    builder: (context, name, child) {
+                      return BarDropdown(
+                        width: 180,
+                        text: name,
+                        onTap: () {
+                          setState(() {
+                            showInstrumentView = !showInstrumentView;
+                            showPresetView = false;
+                            showOtherView = false;
+                          });
+                        },
+                      );
                     },
                   );
                 },
               ),
-              ValueListenableBuilder(
+              ValueListenableBuilder<Project>(
                 // CHANGE TO LOADED PRESET
-                valueListenable: widget.app.loadedInstrument,
+                valueListenable: widget.app.project,
                 builder: (context, value, child) {
                   return BarDropdown(
                     width: 180,

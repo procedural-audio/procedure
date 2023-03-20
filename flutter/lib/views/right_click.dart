@@ -313,7 +313,7 @@ class _RightClickElementState extends State<RightClickElement> {
         },
         child: GestureDetector(
             onTap: () {
-              if (widget.app.graph
+              if (widget.app.project.value.patch.value
                   .addModule(widget.spec.id, widget.addPosition)) {
                 gGridState?.refresh();
               } else {

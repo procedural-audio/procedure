@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:ffi';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -19,56 +18,84 @@ import 'module.dart';
 import 'widgets/widget.dart';
 import 'ui/layout.dart';
 import 'core.dart';
-import 'host.dart';
-
-void callTickRecursive(ModuleWidget widget) {
-  widget.tick();
-
-  for (var child in widget.children) {
-    callTickRecursive(child);
-  }
-}
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (args.isEmpty) {
-    runApp(App(
-      core: Core.create(),
-      assets: Assets.platformDefault(),
-    ));
+    runApp(
+      App(
+        core: Core.create(),
+        assets: Assets.platformDefault(),
+      ),
+    );
   } else {
     var addr = int.parse(args[0].split(": ").last);
 
-    runApp(App(
-      core: Core.from(addr),
-      assets: Assets.platformDefault(),
-    ));
+    runApp(
+      App(
+        core: Core.from(addr),
+        assets: Assets.platformDefault(),
+      ),
+    );
   }
+}
+
+class Project {
+  Project({
+    required this.app,
+    required this.info,
+    required this.patch,
+  });
+
+  static Project untitled(App app) {
+    return Project(
+      app: app,
+      info: ProjectInfo.loadSync(
+        "/Users/chasekanipe/Github/assets/projects/UntitledInstrument",
+      ),
+      patch: ValueNotifier(
+        Patch(app),
+      ),
+    );
+  }
+
+  final ProjectInfo info;
+  final ValueNotifier<Patch> patch;
+  final App app;
+
+  bool rename(String name) {
+    print("Project rename not implemented");
+
+    if (!app.assets.projects.contains(name)) {
+      info.name.value = name;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // ValueNotifier<PresetInfo> preset;
+  // ValueNotifier<Graph> graph;
 }
 
 class App extends StatefulWidget {
   App({required this.core, required this.assets}) {
-    graph = Graph(core.raw, this);
+    project = ValueNotifier(Project.untitled(this));
   }
 
   Core core;
-  late Graph graph;
   Assets assets;
+
+  late ValueNotifier<Project> project;
+
+  // ======= Other stuff =======
 
   ValueNotifier<int> selectedModule = ValueNotifier(-1);
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
 
-  // TODO: Change this
-  var loadedInstrument = ValueNotifier(
-    ProjectInfo.loadSync(
-        "/Users/chasekanipe/Github/assets/projects/UntitledInstrument"),
-  );
-
-  // TODO: Change this
   var loadedPreset = ValueNotifier(PresetInfo("", File("")));
 
-  ValueNotifier<List<ProjectInfo>> projects = ValueNotifier([]);
   ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
 
   RootWidget? rootWidget;
@@ -128,10 +155,17 @@ class _App extends State<App> {
   }
 }
 
+void callTickRecursive(ModuleWidget widget) {
+  widget.tick();
+
+  for (var child in widget.children) {
+    callTickRecursive(child);
+  }
+}
+
 class PatchingView extends StatefulWidget {
   PatchingView(this.app);
 
-  // Window window;
   App app;
 
   @override
@@ -166,8 +200,8 @@ class _PatchingView extends State<PatchingView> {
     FocusScope.of(context).requestFocus(focusNode);
 
     return RawKeyboardListener(
-        focusNode: focusNode,
-        /*onKey: (event) {
+      focusNode: focusNode,
+      /*onKey: (event) {
           if (rightClickVisible) {
             return;
           }
@@ -214,29 +248,31 @@ class _PatchingView extends State<PatchingView> {
             }
           }
         },*/
-        child: ClipRect(
-            child: Stack(fit: StackFit.loose, children: [
-          InteractiveViewer(
-            transformationController: controller,
-            child: grid,
-            minScale: 0.1,
-            maxScale: 1.5,
-            panEnabled: true,
-            scaleEnabled: true, // widget.app.patchingScaleEnabled,
-            clipBehavior: Clip.none,
-            constrained: false,
-            onInteractionUpdate: (details) {
-              setState(() {
-                zoom *= details.scale;
-                if (zoom < 0.1) {
-                  zoom = 0.1;
-                } else if (zoom > 1.5) {
-                  zoom = 1.5;
-                }
-              });
-            },
-          ),
-          GestureDetector(
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.loose,
+          children: [
+            InteractiveViewer(
+              transformationController: controller,
+              child: grid,
+              minScale: 0.1,
+              maxScale: 1.5,
+              panEnabled: true,
+              scaleEnabled: true, // widget.app.patchingScaleEnabled,
+              clipBehavior: Clip.none,
+              constrained: false,
+              onInteractionUpdate: (details) {
+                setState(() {
+                  zoom *= details.scale;
+                  if (zoom < 0.1) {
+                    zoom = 0.1;
+                  } else if (zoom > 1.5) {
+                    zoom = 1.5;
+                  }
+                });
+              },
+            ),
+            GestureDetector(
               // Right click menu region
               behavior: HitTestBehavior.translucent,
               onSecondaryTap: () {
@@ -253,58 +289,67 @@ class _PatchingView extends State<PatchingView> {
                     moduleMenuVisible = true;
                   });
                 }
-              }),
-          Visibility(
+              },
+            ),
+            Visibility(
               // Right click menu
               visible: rightClickVisible,
               child: Positioned(
-                  left: righttClickOffset.dx,
-                  top: righttClickOffset.dy,
-                  child: RightClickView(widget.app,
-                      specs: widget.app.moduleSpecs,
-                      addPosition: Offset(
-                          righttClickOffset.dx -
-                              controller.value.getTranslation().x,
-                          righttClickOffset.dy -
-                              controller.value.getTranslation().y)))),
-          Visibility(
-            // Right click menu
-            visible: moduleMenuVisible,
-            child: Positioned(
                 left: righttClickOffset.dx,
                 top: righttClickOffset.dy,
-                child: ModuleMenu()),
-          ),
-          Listener(
-            // Hide right-click menu
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: (event) {
-              if (rightClickVisible && widget.app.patchingScaleEnabled) {
-                setState(() {
-                  rightClickVisible = false;
-                });
-              } else if (moduleMenuVisible && widget.app.patchingScaleEnabled) {
-                setState(() {
-                  moduleMenuVisible = false;
-                });
-              }
-            },
-          ),
-          Visibility(
-            // Module wheel
-            visible: wheelVisible,
-            child: Positioned(
+                child: RightClickView(
+                  widget.app,
+                  specs: widget.app.moduleSpecs,
+                  addPosition: Offset(
+                      righttClickOffset.dx -
+                          controller.value.getTranslation().x,
+                      righttClickOffset.dy -
+                          controller.value.getTranslation().y),
+                ),
+              ),
+            ),
+            Visibility(
+              // Right click menu
+              visible: moduleMenuVisible,
+              child: Positioned(
+                left: righttClickOffset.dx,
+                top: righttClickOffset.dy,
+                child: ModuleMenu(),
+              ),
+            ),
+            Listener(
+              // Hide right-click menu
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (event) {
+                if (rightClickVisible && widget.app.patchingScaleEnabled) {
+                  setState(() {
+                    rightClickVisible = false;
+                  });
+                } else if (moduleMenuVisible &&
+                    widget.app.patchingScaleEnabled) {
+                  setState(() {
+                    moduleMenuVisible = false;
+                  });
+                }
+              },
+            ),
+            Visibility(
+              // Module wheel
+              visible: wheelVisible,
+              child: Positioned(
                 left: mouseOffset.dx - 150,
                 top: mouseOffset.dy - 100,
-                child: ModuleWheel(wheelModules)),
-          ),
-          MouseRegion(
+                child: ModuleWheel(wheelModules),
+              ),
+            ),
+            MouseRegion(
               opaque: false,
               onHover: (event) {
                 mouseOffset = event.localPosition;
                 // print(mouseOffset.toString());
-              }),
-          ValueListenableBuilder<String>(
+              },
+            ),
+            ValueListenableBuilder<String>(
               valueListenable: widget.app.pinLabel,
               builder: (context, value, w) {
                 return Visibility(
@@ -314,9 +359,13 @@ class _PatchingView extends State<PatchingView> {
                       top: widget.app.labelPosition.dy,
                       child: PinLabel(value),
                     ));
-              }),
-          // Positioned(top: 0, bottom: 0, right: 0, child: CodeEditor())
-        ])));
+              },
+            ),
+            // Positioned(top: 0, bottom: 0, right: 0, child: CodeEditor())
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -579,7 +628,7 @@ class _GridState extends State<Grid> {
             TempConnectorWidget(widget.app),
             Connectors(widget.app),
             Stack(
-              children: widget.app.graph.modules,
+              children: widget.app.project.value.patch.value.modules,
             ),
             DragTarget(
               builder: (BuildContext context, List<dynamic> accepted,
@@ -685,7 +734,7 @@ class TempConnectorPainter extends CustomPainter {
       return;
     }
 
-    for (var module1 in app.graph.modules) {
+    for (var module1 in app.project.value.patch.value.modules) {
       if (connector.moduleId == module1.id) {
         var pin1 = module1.pins[connector.pinIndex];
 
@@ -787,10 +836,10 @@ class ConnectorsPainter extends CustomPainter {
       ..color = Colors.blue
       ..strokeWidth = 4;
 
-    for (var connector in app.graph.connectors) {
-      for (var module1 in app.graph.modules) {
+    for (var connector in app.project.value.patch.value.connectors) {
+      for (var module1 in app.project.value.patch.value.modules) {
         if (connector.start.moduleId == module1.id) {
-          for (var module2 in app.graph.modules) {
+          for (var module2 in app.project.value.patch.value.modules) {
             if (connector.end.moduleId == module2.id) {
               var pin1 = module1.pins[connector.start.index];
               var pin2 = module2.pins[connector.end.index];

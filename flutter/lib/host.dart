@@ -136,36 +136,44 @@ class Assets {
 }
 
 class Projects {
-  Projects(this.directory);
+  Projects(this.directory) {
+    scan();
+  }
 
   final Directory directory;
+
+  final ValueNotifier<List<ProjectInfo>> _projects = ValueNotifier([]);
 
   Future<Project?> load(String name) async {
     return null;
   }
 
-  Future<List<ProjectInfo>> scan() async {
-    print("Scanning projects");
-    List<ProjectInfo> projects = [];
+  ValueNotifier<List<ProjectInfo>> list() {
+    return _projects;
+  }
+
+  void scan() async {
     var list = await directory.list().toList();
+    _projects.value = [];
 
     for (var item in list) {
       var projectInfo = await ProjectInfo.load(item.path);
       if (projectInfo != null) {
-        projects.add(projectInfo);
+        _projects.value.add(projectInfo);
+        _projects.notifyListeners();
+      }
+    }
+  }
+
+  bool contains(String name) {
+    for (var project in _projects.value) {
+      if (project.name == name) {
+        return true;
       }
     }
 
-    return projects;
+    return false;
   }
-}
-
-class Project {
-  Project(this.info);
-
-  ProjectInfo info;
-  List<Patch> patches = [];
-  List<UserInterface> uis = [];
 }
 
 class Images {
@@ -183,14 +191,7 @@ class UserInterface {
   UserInterface(this.path);
 
   String path;
-  List<Patch> patches = [];
   List<Preset> presets = [];
-}
-
-class Patch {
-  Patch(this.path);
-
-  String path;
 }
 
 /* HOST */
@@ -448,14 +449,13 @@ class Instrument {
 
 class Preset {}
 
-class Graph {
+class Patch {
   var modules = <Module>[];
   var connectors = <Connector>[];
 
-  final RawCore raw;
   App app;
 
-  Graph(this.raw, this.app) {
+  Patch(this.app) {
     refresh();
   }
 

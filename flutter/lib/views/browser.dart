@@ -29,14 +29,6 @@ class _BrowserView extends State<BrowserView> {
 
   ScrollController controller = ScrollController();
 
-  late Future<List<ProjectInfo>> futureProjects;
-
-  @override
-  void initState() {
-    futureProjects = widget.app.assets.projects.scan();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -55,60 +47,54 @@ class _BrowserView extends State<BrowserView> {
           ),
           const SizedBox(height: 10),
           Expanded(
-            child: FutureBuilder<List<ProjectInfo>>(
-              future: futureProjects,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  var projects = snapshot.data!;
-                  List<ProjectInfo> filteredProjects = [];
-                  if (searchText == "") {
-                    filteredProjects = projects;
-                  } else {
-                    for (var project in projects) {
-                      if (project.name
-                              .toLowerCase()
-                              .contains(searchText.toLowerCase()) ||
-                          project.description
-                              .toLowerCase()
-                              .contains(searchText.toLowerCase())) {
-                        filteredProjects.add(project);
-                      }
+            child: ValueListenableBuilder<List<ProjectInfo>>(
+              valueListenable: widget.app.assets.projects.list(),
+              builder: (context, projects, child) {
+                List<ProjectInfo> filteredProjects = [];
+                if (searchText == "") {
+                  filteredProjects = projects;
+                } else {
+                  for (var project in projects) {
+                    if (project.name.value
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase()) ||
+                        project.description
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase())) {
+                      filteredProjects.add(project);
                     }
                   }
+                }
 
-                  if (filteredProjects.isEmpty) {
-                    return Container();
-                  }
-
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-                    controller: controller,
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 15),
-                    itemCount: filteredProjects.length,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return BrowserViewElement(
-                        index: index,
-                        project: filteredProjects[index],
-                        // selectedIndex: selectedIndex,
-                        onTap: (e) {
-                          setState(() {
-                            showInfo = true;
-                            infoVisible = true;
-                          });
-
-                          selectedProject = e;
-                        },
-                      );
-                    },
-                  );
-                } else {
+                if (filteredProjects.isEmpty) {
                   return Container();
                 }
+
+                return GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                  controller: controller,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200,
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 15),
+                  itemCount: filteredProjects.length,
+                  itemBuilder: (BuildContext ctx, index) {
+                    return BrowserViewElement(
+                      index: index,
+                      project: filteredProjects[index],
+                      // selectedIndex: selectedIndex,
+                      onTap: (e) {
+                        setState(() {
+                          showInfo = true;
+                          infoVisible = true;
+                        });
+
+                        selectedProject = e;
+                      },
+                    );
+                  },
+                );
               },
             ),
           ),
@@ -282,13 +268,11 @@ class BrowserViewElement extends StatefulWidget {
   BrowserViewElement({
     required this.index,
     required this.project,
-    // required this.selectedProject,
     required this.onTap,
   });
 
   int index;
   ProjectInfo project;
-  // ValueNotifier<ProjectInfo> selectedProject;
   void Function(ProjectInfo) onTap;
 
   @override
@@ -397,7 +381,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
                   children: [
                     const SizedBox(height: 2),
                     Text(
-                      widget.project.name,
+                      widget.project.name.value,
                       style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
