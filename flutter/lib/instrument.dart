@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/ui/common.dart';
 import 'package:metasampler/ui/ui.dart';
 
-import 'host.dart';
 import 'ui/layout.dart';
 import 'main.dart';
 
