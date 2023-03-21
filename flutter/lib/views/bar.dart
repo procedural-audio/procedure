@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 
 import 'browser.dart';
-import 'info.dart';
 
 class Bar extends StatefulWidget {
   Bar({

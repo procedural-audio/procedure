@@ -11,9 +11,6 @@ class Core {
 
   final RawCore raw;
 
-  // class Graph
-  // class Plugins
-
   static Core create() {
     return Core(_ffiCreateHost());
   }

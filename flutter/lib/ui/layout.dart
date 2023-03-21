@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../host.dart';
+import '../main.dart';
+
 import 'common.dart';
 import 'ui.dart';
-import '../main.dart';
 
 class UserInterface extends UIWidget {
   UserInterface(App app, UITree tree) : super(app, tree);
@@ -42,111 +42,141 @@ class UserInterface extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-            color: color,
-            borderRadius: const BorderRadius.all(Radius.circular(5))),
-        child: Stack(fit: StackFit.expand, children: children));
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: children,
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return Container(
-        decoration: const BoxDecoration(boxShadow: [
+      decoration: const BoxDecoration(
+        boxShadow: [
           BoxShadow(
-              blurRadius: 10,
-              spreadRadius: 10,
-              offset: Offset(5, 5),
-              color: Color.fromRGBO(0, 0, 0, 0.3))
-        ]),
-        child: Column(children: [
+            blurRadius: 10,
+            spreadRadius: 10,
+            offset: Offset(5, 5),
+            color: Color.fromRGBO(0, 0, 0, 0.3),
+          )
+        ],
+      ),
+      child: Column(
+        children: [
           Container(
-              height: 30,
-              decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
-                  color: Color.fromRGBO(60, 60, 60, 1.0)),
-              child: Row(children: [
+            height: 30,
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+                color: Color.fromRGBO(60, 60, 60, 1.0)),
+            child: Row(
+              children: [
                 const SizedBox(width: 10),
                 Container(
                   width: 12,
                   height: 12,
                   decoration: const BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                    color: Colors.red,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Container(
                   width: 12,
                   height: 12,
                   decoration: const BoxDecoration(
-                      color: Colors.yellow,
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                    color: Colors.yellow,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Container(
                   width: 12,
                   height: 12,
                   decoration: const BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
-                )
-              ])),
-          Container(height: 1, color: const Color.fromRGBO(20, 20, 20, 1.0)),
+                    color: Colors.green,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 1,
+            color: const Color.fromRGBO(20, 20, 20, 1.0),
+          ),
           Expanded(
-              child: Container(
-                  width: width,
-                  height: height,
-                  decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(5))),
-                  child: GestureDetector(
-                      onTap: () {
-                        toggleEditor();
-                      },
-                      child: ChildDragTarget(
-                        tree: tree,
-                        onAddChild: (child) {
-                          print("Adding child");
-                          children.add(child);
-                          setState(() {});
-                        },
-                        child: Stack(fit: StackFit.expand, children: children),
-                        app: app,
-                      ))))
-        ]));
+            child: Container(
+              width: width,
+              height: height,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(5)),
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  toggleEditor();
+                },
+                child: ChildDragTarget(
+                  tree: tree,
+                  onAddChild: (child) {
+                    print("Adding child");
+                    children.add(child);
+                    setState(() {});
+                  },
+                  child: Stack(fit: StackFit.expand, children: children),
+                  app: app,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Root"),
-      Section(
+    return Column(
+      children: [
+        EditorTitle("Root"),
+        Section(
           title: "Layout",
-          child: Row(children: [
-            Field(
-              label: "WIDTH",
-              initialValue: width == null ? "" : width.toString(),
-              onChanged: (s) {
-                setState(() {
-                  width = double.tryParse(s);
-                });
-              },
-            ),
-            Field(
+          child: Row(
+            children: [
+              Field(
+                label: "WIDTH",
+                initialValue: width == null ? "" : width.toString(),
+                onChanged: (s) {
+                  setState(() {
+                    width = double.tryParse(s);
+                  });
+                },
+              ),
+              Field(
                 label: "HEIGHT",
                 initialValue: height == null ? "" : height.toString(),
                 onChanged: (s) {
                   setState(() {
                     height = double.tryParse(s);
                   });
-                })
-          ])),
-      Section(
+                },
+              ),
+            ],
+          ),
+        ),
+        Section(
           title: "Style",
-          child: Column(children: [
-            FieldLabel(
+          child: Column(
+            children: [
+              FieldLabel(
                 text: "Color",
                 child: ColorField(
                   width: 150,
@@ -156,9 +186,13 @@ class UserInterface extends UIWidget {
                       color = c;
                     });
                   },
-                ))
-          ]))
-    ]);
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -212,43 +246,47 @@ class StackUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: transform,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (t) {
-          transform = t;
-          setState(() {});
-        },
-        tree: tree,
-        child: Stack(
-            children: <Widget>[
-                  ChildDragTarget(
-                    onAddChild: (child) {
-                      children.add(child);
-                      setState(() {});
-                    },
-                    child: null,
-                    tree: tree,
-                    app: app,
-                  )
-                ] +
-                children));
+      data: transform,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (t) {
+        transform = t;
+        setState(() {});
+      },
+      tree: tree,
+      child: Stack(
+        children: <Widget>[
+              ChildDragTarget(
+                onAddChild: (child) {
+                  children.add(child);
+                  setState(() {});
+                },
+                child: null,
+                tree: tree,
+                app: app,
+              )
+            ] +
+            children,
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Stack"),
-      TransformWidgetEditor(
-        data: transform,
-        onUpdate: (transform) {
-          transform = transform;
-          setState(() {});
-        },
-        tree: tree,
-      ),
-    ]);
+    return Column(
+      children: [
+        EditorTitle("Stack"),
+        TransformWidgetEditor(
+          data: transform,
+          onUpdate: (transform) {
+            transform = transform;
+            setState(() {});
+          },
+          tree: tree,
+        ),
+      ],
+    );
   }
 }
 
@@ -316,19 +354,25 @@ class RowUIWidget extends UIWidget {
     }
 
     return GestureDetector(
-        onTap: () {
-          toggleEditor();
-        },
-        child: TransformWidget(
-            data: transform,
-            child: Row(
-                children: children.sublist(0, columns).map((child) {
+      onTap: () {
+        toggleEditor();
+      },
+      child: TransformWidget(
+        data: transform,
+        child: Row(
+          children: children.sublist(0, columns).map(
+            (child) {
               return Expanded(
-                  child: Padding(
-                padding: padding,
-                child: child,
-              ));
-            }).toList())));
+                child: Padding(
+                  padding: padding,
+                  child: child,
+                ),
+              );
+            },
+          ).toList(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -342,122 +386,150 @@ class RowUIWidget extends UIWidget {
     }
 
     return TransformWidgetEditing(
-        data: transform,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (data) {
-          transform = data;
-          setState(() {});
-        },
-        tree: tree,
-        child: Row(
-            children: children.sublist(0, columns).asMap().entries.map((entry) {
-          var index = entry.key;
-          var child = entry.value;
+      data: transform,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (data) {
+        transform = data;
+        setState(() {});
+      },
+      tree: tree,
+      child: Row(
+        children: children.sublist(0, columns).asMap().entries.map(
+          (entry) {
+            var index = entry.key;
+            var child = entry.value;
 
-          return Expanded(
+            return Expanded(
               child: ChildDragTarget(
-            onAddChild: (newChild) {
-              children[index] = newChild;
-              setState(() {});
-            },
-            child: Padding(
-              padding: padding,
-              child: child,
-            ),
-            tree: tree,
-            app: app,
-          ));
-        }).toList()));
+                onAddChild: (newChild) {
+                  children[index] = newChild;
+                  setState(() {});
+                },
+                child: Padding(
+                  padding: padding,
+                  child: child,
+                ),
+                tree: tree,
+                app: app,
+              ),
+            );
+          },
+        ).toList(),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Row"),
-      TransformWidgetEditor(
-        data: transform,
-        onUpdate: (t) {
-          transform = t;
-          setState(() {});
-        },
-        tree: tree,
-      ),
-      Section(
+    return Column(
+      children: [
+        EditorTitle("Row"),
+        TransformWidgetEditor(
+          data: transform,
+          onUpdate: (t) {
+            transform = t;
+            setState(() {});
+          },
+          tree: tree,
+        ),
+        Section(
           title: "Layout",
           child: FieldLabel(
-              text: "Columns",
-              child: Field(
-                width: 50,
-                initialValue: columns.toString(),
-                label: "",
-                onChanged: (s) {
-                  columns = int.tryParse(s) ?? 2;
+            text: "Columns",
+            child: Field(
+              width: 50,
+              initialValue: columns.toString(),
+              label: "",
+              onChanged: (s) {
+                columns = int.tryParse(s) ?? 2;
 
-                  while (children.length < columns) {
-                    children.add(EmptyUIWidget(app, tree));
-                  }
+                while (children.length < columns) {
+                  children.add(EmptyUIWidget(app, tree));
+                }
 
-                  while (children.length > columns) {
-                    children.removeLast();
-                  }
+                while (children.length > columns) {
+                  children.removeLast();
+                }
 
-                  setState(() {});
-                },
-              ))),
-      Section(
+                setState(() {});
+              },
+            ),
+          ),
+        ),
+        Section(
           title: "Padding",
-          child: Column(children: [
-            Row(children: [
-              Field(
-                  label: "LEFT",
-                  initialValue: padding.left.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
-                        padding.top, padding.right, padding.bottom);
-
-                    setState(() {});
-                  }),
-              Field(
-                  label: "RIGHT",
-                  initialValue: padding.right.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(padding.left, padding.top,
-                        double.tryParse(s) ?? 0.0, padding.bottom);
-
-                    setState(() {});
-                  })
-            ]),
-            Row(children: [
-              Field(
-                  label: "TOP",
-                  initialValue: padding.top.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(
-                        padding.left,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                    label: "LEFT",
+                    initialValue: padding.left.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
                         double.tryParse(s) ?? 0.0,
+                        padding.top,
                         padding.right,
-                        padding.bottom);
+                        padding.bottom,
+                      );
 
-                    setState(() {});
-                  }),
-              Field(
-                  label: "BOTTOM",
-                  initialValue: padding.bottom.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(
-                      padding.left,
-                      padding.top,
-                      padding.right,
-                      double.tryParse(s) ?? 0.0,
-                    );
+                      setState(() {});
+                    },
+                  ),
+                  Field(
+                    label: "RIGHT",
+                    initialValue: padding.right.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                        padding.left,
+                        padding.top,
+                        double.tryParse(s) ?? 0.0,
+                        padding.bottom,
+                      );
 
-                    setState(() {});
-                  })
-            ])
-          ]))
-    ]);
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Field(
+                      label: "TOP",
+                      initialValue: padding.top.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(
+                          padding.left,
+                          double.tryParse(s) ?? 0.0,
+                          padding.right,
+                          padding.bottom,
+                        );
+
+                        setState(() {});
+                      }),
+                  Field(
+                    label: "BOTTOM",
+                    initialValue: padding.bottom.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                        padding.left,
+                        padding.top,
+                        padding.right,
+                        double.tryParse(s) ?? 0.0,
+                      );
+
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -523,19 +595,25 @@ class ColumnUIWidget extends UIWidget {
     }
 
     return GestureDetector(
-        onTap: () {
-          toggleEditor();
-        },
-        child: TransformWidget(
-            data: transform,
-            child: Column(
-                children: children.sublist(0, columns).map((child) {
+      onTap: () {
+        toggleEditor();
+      },
+      child: TransformWidget(
+        data: transform,
+        child: Column(
+          children: children.sublist(0, columns).map(
+            (child) {
               return Expanded(
-                  child: Padding(
-                padding: padding,
-                child: child,
-              ));
-            }).toList())));
+                child: Padding(
+                  padding: padding,
+                  child: child,
+                ),
+              );
+            },
+          ).toList(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -549,122 +627,141 @@ class ColumnUIWidget extends UIWidget {
     }
 
     return TransformWidgetEditing(
-        data: transform,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (data) {
-          transform = data;
-          setState(() {});
-        },
-        tree: tree,
-        child: Column(
-            children: children.sublist(0, columns).asMap().entries.map((entry) {
-          var index = entry.key;
-          var child = entry.value;
+      data: transform,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (data) {
+        transform = data;
+        setState(() {});
+      },
+      tree: tree,
+      child: Column(
+        children: children.sublist(0, columns).asMap().entries.map(
+          (entry) {
+            var index = entry.key;
+            var child = entry.value;
 
-          return Expanded(
+            return Expanded(
               child: ChildDragTarget(
-            onAddChild: (newChild) {
-              children[index] = newChild;
-              setState(() {});
-            },
-            child: Padding(
-              padding: padding,
-              child: child,
-            ),
-            tree: tree,
-            app: app,
-          ));
-        }).toList()));
+                onAddChild: (newChild) {
+                  children[index] = newChild;
+                  setState(() {});
+                },
+                child: Padding(
+                  padding: padding,
+                  child: child,
+                ),
+                tree: tree,
+                app: app,
+              ),
+            );
+          },
+        ).toList(),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Column"),
-      TransformWidgetEditor(
-        data: transform,
-        onUpdate: (t) {
-          transform = t;
-          setState(() {});
-        },
-        tree: tree,
-      ),
-      Section(
+    return Column(
+      children: [
+        EditorTitle("Column"),
+        TransformWidgetEditor(
+          data: transform,
+          onUpdate: (t) {
+            transform = t;
+            setState(() {});
+          },
+          tree: tree,
+        ),
+        Section(
           title: "Layout",
           child: FieldLabel(
-              text: "Columns",
-              child: Field(
-                width: 50,
-                initialValue: columns.toString(),
-                label: "",
-                onChanged: (s) {
-                  columns = int.tryParse(s) ?? 2;
+            text: "Columns",
+            child: Field(
+              width: 50,
+              initialValue: columns.toString(),
+              label: "",
+              onChanged: (s) {
+                columns = int.tryParse(s) ?? 2;
 
-                  while (children.length < columns) {
-                    children.add(EmptyUIWidget(app, tree));
-                  }
+                while (children.length < columns) {
+                  children.add(EmptyUIWidget(app, tree));
+                }
 
-                  while (children.length > columns) {
-                    children.removeLast();
-                  }
+                while (children.length > columns) {
+                  children.removeLast();
+                }
 
-                  setState(() {});
-                },
-              ))),
-      Section(
+                setState(() {});
+              },
+            ),
+          ),
+        ),
+        Section(
           title: "Padding",
-          child: Column(children: [
-            Row(children: [
-              Field(
-                  label: "LEFT",
-                  initialValue: padding.left.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
-                        padding.top, padding.right, padding.bottom);
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                      label: "LEFT",
+                      initialValue: padding.left.toString(),
+                      onChanged: (s) {
+                        padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
+                            padding.top, padding.right, padding.bottom);
 
-                    setState(() {});
-                  }),
-              Field(
-                  label: "RIGHT",
-                  initialValue: padding.right.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(padding.left, padding.top,
-                        double.tryParse(s) ?? 0.0, padding.bottom);
+                        setState(() {});
+                      }),
+                  Field(
+                    label: "RIGHT",
+                    initialValue: padding.right.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(padding.left, padding.top,
+                          double.tryParse(s) ?? 0.0, padding.bottom);
 
-                    setState(() {});
-                  })
-            ]),
-            Row(children: [
-              Field(
-                  label: "TOP",
-                  initialValue: padding.top.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Field(
+                    label: "TOP",
+                    initialValue: padding.top.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                          padding.left,
+                          double.tryParse(s) ?? 0.0,
+                          padding.right,
+                          padding.bottom);
+
+                      setState(() {});
+                    },
+                  ),
+                  Field(
+                    label: "BOTTOM",
+                    initialValue: padding.bottom.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
                         padding.left,
-                        double.tryParse(s) ?? 0.0,
+                        padding.top,
                         padding.right,
-                        padding.bottom);
+                        double.tryParse(s) ?? 0.0,
+                      );
 
-                    setState(() {});
-                  }),
-              Field(
-                  label: "BOTTOM",
-                  initialValue: padding.bottom.toString(),
-                  onChanged: (s) {
-                    padding = EdgeInsets.fromLTRB(
-                      padding.left,
-                      padding.top,
-                      padding.right,
-                      double.tryParse(s) ?? 0.0,
-                    );
-
-                    setState(() {});
-                  })
-            ])
-          ]))
-    ]);
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -789,20 +886,25 @@ class GridUIWidget extends UIWidget {
     }
 
     return TransformWidget(
-        data: transform,
-        child: LayoutBuilder(builder: (context, constraints) {
+      data: transform,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
           return GridView.count(
-              crossAxisCount: rows,
-              childAspectRatio: constraints.maxWidth /
-                  constraints.maxHeight *
-                  (columns / rows),
-              children: children.sublist(0, rows * columns).map((child) {
+            crossAxisCount: rows,
+            childAspectRatio:
+                constraints.maxWidth / constraints.maxHeight * (columns / rows),
+            children: children.sublist(0, rows * columns).map(
+              (child) {
                 return Padding(
                   padding: padding,
                   child: child,
                 );
-              }).toList());
-        }));
+              },
+            ).toList(),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -816,128 +918,153 @@ class GridUIWidget extends UIWidget {
     }
 
     return TransformWidgetEditing(
-        data: transform,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (t) {
-          transform = t;
-          setState(() {});
-        },
-        tree: tree,
-        child: LayoutBuilder(builder: (context, constraints) {
+      data: transform,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (t) {
+        transform = t;
+        setState(() {});
+      },
+      tree: tree,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
           return GridView.count(
-              crossAxisCount: rows,
-              childAspectRatio: constraints.maxWidth /
-                  constraints.maxHeight *
-                  (columns / rows),
-              children: children
-                  .sublist(0, rows * columns)
-                  .asMap()
-                  .entries
-                  .map((entry) {
+            crossAxisCount: rows,
+            childAspectRatio:
+                constraints.maxWidth / constraints.maxHeight * (columns / rows),
+            children: children.sublist(0, rows * columns).asMap().entries.map(
+              (entry) {
                 var index = entry.key;
                 var child = entry.value;
 
                 return ChildDragTarget(
-                    onAddChild: (newChild) {
-                      children[index] = newChild;
-                      setState(() {});
-                    },
-                    child: Padding(
-                      padding: padding,
-                      child: child,
-                    ),
-                    tree: tree,
-                    app: app);
-              }).toList());
-        }));
+                  onAddChild: (newChild) {
+                    children[index] = newChild;
+                    setState(() {});
+                  },
+                  child: Padding(
+                    padding: padding,
+                    child: child,
+                  ),
+                  tree: tree,
+                  app: app,
+                );
+              },
+            ).toList(),
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Grid"),
-      TransformWidgetEditor(
-        data: transform,
-        onUpdate: (t) {
-          transform = t;
-          setState(() {});
-        },
-        tree: tree,
-      ),
-      Section(
+    return Column(
+      children: [
+        EditorTitle("Grid"),
+        TransformWidgetEditor(
+          data: transform,
+          onUpdate: (t) {
+            transform = t;
+            setState(() {});
+          },
+          tree: tree,
+        ),
+        Section(
           title: "Layout",
-          child: Row(children: [
-            Field(
-              label: "COLS",
-              initialValue: rows.toString(),
-              onChanged: (s) {
-                rows = int.tryParse(s) ?? 2;
-                setState(() {});
-              },
-            ),
-            Field(
-              label: "ROWS",
-              initialValue: columns.toString(),
-              onChanged: (s) {
-                columns = int.tryParse(s) ?? 2;
-                setState(() {});
-              },
-            ),
-          ])),
-      Section(
+          child: Row(
+            children: [
+              Field(
+                label: "COLS",
+                initialValue: rows.toString(),
+                onChanged: (s) {
+                  rows = int.tryParse(s) ?? 2;
+                  setState(() {});
+                },
+              ),
+              Field(
+                label: "ROWS",
+                initialValue: columns.toString(),
+                onChanged: (s) {
+                  columns = int.tryParse(s) ?? 2;
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        ),
+        Section(
           title: "Padding",
-          child: Column(children: [
-            Row(children: [
-              Field(
-                label: "LEFT",
-                initialValue: padding.left.toString(),
-                onChanged: (s) {
-                  padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
-                      padding.top, padding.right, padding.bottom);
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                    label: "LEFT",
+                    initialValue: padding.left.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                        double.tryParse(s) ?? 0.0,
+                        padding.top,
+                        padding.right,
+                        padding.bottom,
+                      );
 
-                  setState(() {});
-                },
-              ),
-              Field(
-                label: "RIGHT",
-                initialValue: padding.right.toString(),
-                onChanged: (s) {
-                  padding = EdgeInsets.fromLTRB(padding.left, padding.top,
-                      double.tryParse(s) ?? 0.0, padding.bottom);
+                      setState(() {});
+                    },
+                  ),
+                  Field(
+                    label: "RIGHT",
+                    initialValue: padding.right.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                        padding.left,
+                        padding.top,
+                        double.tryParse(s) ?? 0.0,
+                        padding.bottom,
+                      );
 
-                  setState(() {});
-                },
+                      setState(() {});
+                    },
+                  ),
+                ],
               ),
-            ]),
-            Row(children: [
-              Field(
-                label: "TOP",
-                initialValue: padding.top.toString(),
-                onChanged: (s) {
-                  padding = EdgeInsets.fromLTRB(padding.left,
-                      double.tryParse(s) ?? 0.0, padding.right, padding.bottom);
+              Row(
+                children: [
+                  Field(
+                    label: "TOP",
+                    initialValue: padding.top.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                          padding.left,
+                          double.tryParse(s) ?? 0.0,
+                          padding.right,
+                          padding.bottom);
 
-                  setState(() {});
-                },
-              ),
-              Field(
-                label: "BOTTOM",
-                initialValue: padding.bottom.toString(),
-                onChanged: (s) {
-                  padding = EdgeInsets.fromLTRB(
-                    padding.left,
-                    padding.top,
-                    padding.right,
-                    double.tryParse(s) ?? 0.0,
-                  );
+                      setState(() {});
+                    },
+                  ),
+                  Field(
+                    label: "BOTTOM",
+                    initialValue: padding.bottom.toString(),
+                    onChanged: (s) {
+                      padding = EdgeInsets.fromLTRB(
+                        padding.left,
+                        padding.top,
+                        padding.right,
+                        double.tryParse(s) ?? 0.0,
+                      );
 
-                  setState(() {});
-                },
+                      setState(() {});
+                    },
+                  ),
+                ],
               ),
-            ]),
-          ])),
-    ]);
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

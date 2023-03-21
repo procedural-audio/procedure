@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:metasampler/ui/layout.dart';
 
-import '../host.dart';
+import '../main.dart';
+
 import 'decoration.dart';
 import 'interactive.dart';
-import '../main.dart';
 
 UIWidget? createUIWidget(App app, String name, UITree tree) {
   /* Layout Widgets */
@@ -107,19 +107,21 @@ abstract class UIWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-        valueListenable: tree.editing,
-        builder: (context, editing, child) {
-          return ValueListenableBuilder(
-              valueListenable: notifier,
-              builder: (context, value, child) {
-                if (editing) {
-                  return buildWidgetEditing(context);
-                } else {
-                  tree.selected.value = null;
-                  return buildWidget(context);
-                }
-              });
-        });
+      valueListenable: tree.editing,
+      builder: (context, editing, child) {
+        return ValueListenableBuilder(
+          valueListenable: notifier,
+          builder: (context, value, child) {
+            if (editing) {
+              return buildWidgetEditing(context);
+            } else {
+              tree.selected.value = null;
+              return buildWidget(context);
+            }
+          },
+        );
+      },
+    );
   }
 
   Map<String, dynamic> getJson();
