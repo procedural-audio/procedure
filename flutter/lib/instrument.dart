@@ -18,15 +18,11 @@ class InstrumentView extends StatefulWidget {
 }
 
 class _InstrumentView extends State<InstrumentView> {
-  // ValueNotifier<Widget Function(BuildContext)?> editorBuilder = ValueNotifier(null);
-  // File file = File("/home/chase/github/metasampler/content/temp.ui");
-
   late Widget display;
 
   @override
   void initState() {
     display = UIDisplay(widget.tree, widget.app);
-
     super.initState();
   }
 
