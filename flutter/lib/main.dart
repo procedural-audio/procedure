@@ -65,7 +65,6 @@ class Project {
   final App app;
   final ProjectInfo info;
   final ValueNotifier<Patch> patch;
-  // final ValueNotifier<UserInterface?> ui;
   final ValueNotifier<UserInterface?> ui;
 
   bool rename(String name) {
@@ -371,12 +370,13 @@ class _PatchingView extends State<PatchingView> {
               valueListenable: widget.app.pinLabel,
               builder: (context, value, w) {
                 return Visibility(
-                    visible: value != "",
-                    child: Positioned(
-                      left: widget.app.labelPosition.dx,
-                      top: widget.app.labelPosition.dy,
-                      child: PinLabel(value),
-                    ));
+                  visible: value != "",
+                  child: Positioned(
+                    left: widget.app.labelPosition.dx,
+                    top: widget.app.labelPosition.dy,
+                    child: PinLabel(value),
+                  ),
+                );
               },
             ),
           ],
@@ -417,27 +417,35 @@ class _CodeEditor extends State<CodeEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(children: [
-        Container(
-            width: 400,
-            height: 30,
-            decoration: const BoxDecoration(color: Colors.grey)),
-        Container(
-            width: 400,
-            height: constraints.maxHeight - 30,
-            child: CodeField(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          children: [
+            Container(
+                width: 400,
+                height: 30,
+                decoration: const BoxDecoration(color: Colors.grey)),
+            Container(
+              width: 400,
+              height: constraints.maxHeight - 30,
+              child: CodeField(
                 isDense: true,
                 controller: codeController,
                 lineNumberStyle: const LineNumberStyle(
-                    width: 30,
-                    textStyle: TextStyle(
-                        color: Color.fromRGBO(100, 100, 100, 1.0),
-                        fontSize: 10)),
-                textStyle:
-                    const TextStyle(fontSize: 14, color: Color(0xffc9d1d9))))
-      ]);
-    });
+                  width: 30,
+                  textStyle: TextStyle(
+                      color: Color.fromRGBO(100, 100, 100, 1.0), fontSize: 10),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xffc9d1d9),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -508,36 +516,38 @@ class _ModuleMenuItem extends State<ModuleMenuItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: 30,
-        decoration: BoxDecoration(
-          color: MyTheme.grey20,
-        ),
-        child: GestureDetector(
-          child: Row(
-            children: [
-              SizedBox(
-                width: 40,
-                child: Icon(
-                  widget.iconData,
-                  color: Colors.white,
-                  size: 14,
-                ),
+      height: 30,
+      decoration: BoxDecoration(
+        color: MyTheme.grey20,
+      ),
+      child: GestureDetector(
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Icon(
+                widget.iconData,
+                color: Colors.white,
+                size: 14,
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    widget.text,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w300),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Text(
+                  widget.text,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
-              )
-            ],
-          ),
-        ));
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -568,21 +578,23 @@ class _ModuleWheel extends State<ModuleWheel> {
       double x = sin(angle) * radius - (elementWidth / 2);
       double y = cos(angle) * radius - (elementHeight / 2);
 
-      children.add(Positioned(
-        left: x + width / 2,
-        top: y + height / 2,
-        child: Container(
-          width: elementWidth,
-          height: elementHeight,
-          alignment: Alignment.center,
-          child: Text(module,
-              style: const TextStyle(color: Colors.white, fontSize: 14)),
-          decoration: const BoxDecoration(
-            color: Color.fromRGBO(60, 60, 60, 0.5),
-            borderRadius: BorderRadius.all(Radius.circular(5)),
+      children.add(
+        Positioned(
+          left: x + width / 2,
+          top: y + height / 2,
+          child: Container(
+            width: elementWidth,
+            height: elementHeight,
+            alignment: Alignment.center,
+            child: Text(module,
+                style: const TextStyle(color: Colors.white, fontSize: 14)),
+            decoration: const BoxDecoration(
+              color: Color.fromRGBO(60, 60, 60, 0.5),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
           ),
         ),
-      ));
+      );
 
       angle += gap;
     }
@@ -601,11 +613,13 @@ class _ModuleWheel extends State<ModuleWheel> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                      color: const Color.fromRGBO(100, 100, 100, 0.5),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      border: Border.all(
-                          color: const Color.fromRGBO(200, 200, 200, 0.5),
-                          width: 2.0)),
+                    color: const Color.fromRGBO(100, 100, 100, 0.5),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(
+                      color: const Color.fromRGBO(200, 200, 200, 0.5),
+                      width: 2.0,
+                    ),
+                  ),
                 ),
               )
             ],
