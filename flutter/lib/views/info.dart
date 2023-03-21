@@ -191,82 +191,97 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
   Widget build(BuildContext context) {
     /* Markdown Viewer */
     final markdownViewer = Padding(
-        padding: const EdgeInsets.fromLTRB(15, 10, 0, 0),
-        child: Text(
-          widget.project.description,
-          style: const TextStyle(
-              fontWeight: FontWeight.w300,
-              fontStyle: FontStyle.normal,
-              fontSize: 14,
-              color: Colors.white70,
-              decoration: TextDecoration.none),
-        ));
+      padding: const EdgeInsets.fromLTRB(15, 10, 0, 0),
+      child: Text(
+        widget.project.description,
+        style: const TextStyle(
+          fontWeight: FontWeight.w300,
+          fontStyle: FontStyle.normal,
+          fontSize: 14,
+          color: Colors.white70,
+          decoration: TextDecoration.none,
+        ),
+      ),
+    );
 
     /* Markdown Editor */
     var markdownEditor = EditableText(
-        controller: TextEditingController.fromValue(
-            TextEditingValue(text: widget.project.description)),
-        focusNode: FocusNode(),
-        cursorColor: Colors.grey,
-        backgroundCursorColor: Colors.grey,
-        maxLines: 20,
-        style: const TextStyle(
-            fontWeight: FontWeight.w300,
-            fontStyle: FontStyle.normal,
-            fontSize: 14,
-            color: Colors.white,
-            decoration: TextDecoration.none));
+      controller: TextEditingController.fromValue(
+        TextEditingValue(
+          text: widget.project.description,
+        ),
+      ),
+      focusNode: FocusNode(),
+      cursorColor: Colors.grey,
+      backgroundCursorColor: Colors.grey,
+      maxLines: 20,
+      style: const TextStyle(
+        fontWeight: FontWeight.w300,
+        fontStyle: FontStyle.normal,
+        fontSize: 14,
+        color: Colors.white,
+        decoration: TextDecoration.none,
+      ),
+    );
 
     TextEditingController titleController = TextEditingController.fromValue(
-        TextEditingValue(text: widget.project.name.value));
+      TextEditingValue(text: widget.project.name.value),
+    );
 
     /* Title Editor */
 
-    return LayoutBuilder(builder: (context, constraints) {
-      double width = constraints.maxWidth;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
 
-      return Container(
+        return Container(
           padding: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
               color: Color.fromRGBO(40, 40, 40, 1.0)),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
                 child: SingleChildScrollView(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                  Stack(children: [
-                    InfoViewImage(
-                      editing: editing,
-                      path: widget.project.path,
-                      onUpdate: () => setState(() {}),
-                    ),
-                    Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: IconButton(
-                            icon: const Icon(Icons.chevron_left),
-                            iconSize: 24,
-                            color: Colors.grey,
-                            onPressed: () => widget.onClose()))
-                  ]),
-                  Container(height: 20),
-                  Row(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      TextButton(
-                          onPressed: () {
-                            print("TODO: IMPLEMENT LOAD INSTRUMENT");
-                            // widget.app.loadInstrument(widget.instrument.path);
-                          },
-                          child: const Text("Load")),
-                      TextButton(
-                          onPressed: () {
-                            print("Delete instrument");
-                          },
-                          child: const Text("Delete")),
-                    ],
-                  )
-                  /*Container(
+                      Stack(
+                        children: [
+                          InfoViewImage(
+                            editing: editing,
+                            path: widget.project.path,
+                            onUpdate: () => setState(() {}),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: IconButton(
+                              icon: const Icon(Icons.chevron_left),
+                              iconSize: 24,
+                              color: Colors.grey,
+                              onPressed: () => widget.onClose(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(height: 20),
+                      Row(
+                        children: [
+                          TextButton(
+                              onPressed: () {
+                                print("TODO: IMPLEMENT LOAD INSTRUMENT");
+                                // widget.app.loadInstrument(widget.instrument.path);
+                              },
+                              child: const Text("Load")),
+                          TextButton(
+                              onPressed: () {
+                                print("Delete instrument");
+                              },
+                              child: const Text("Delete")),
+                        ],
+                      )
+                      /*Container(
                       padding: editing
                           ? const EdgeInsets.fromLTRB(23, 30, 20, 0)
                           : const EdgeInsets.fromLTRB(30, 30, 20, 0),
@@ -290,8 +305,8 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                                     markdownEditor.controller.text))
                           ])),*/
 
-                  /* Description Container */
-                  /*Padding(
+                      /* Description Container */
+                      /*Padding(
                       padding: !editing
                           ? const EdgeInsets.fromLTRB(0, 0, 15, 15)
                           : const EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -305,16 +320,25 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                                   color: MyTheme.grey40,
                                   border: Border.all(
                                       color: Colors.grey, width: 1))))*/
-                ]))),
-            SizedBox(
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
                 width: min(max(width - 200, 0), 200),
-                child: Column(children: [
-                  AuthorView(),
-                  const AudioPreview(path: ""),
-                  Expanded(child: TagView())
-                ]))
-          ]));
-    });
+                child: Column(
+                  children: [
+                    AuthorView(),
+                    const AudioPreview(path: ""),
+                    Expanded(child: TagView())
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -329,42 +353,49 @@ class InfoViewTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        width: 300,
-        height: 40,
-        child: Stack(children: [
+      width: 300,
+      height: 40,
+      child: Stack(
+        children: [
           Visibility(
-              visible: !editing,
-              child: Text(
-                name,
-                style: const TextStyle(
-                    fontWeight: FontWeight.normal,
-                    fontStyle: FontStyle.normal,
-                    fontSize: 18,
-                    color: Colors.white,
-                    decoration: TextDecoration.none),
-              )),
+            visible: !editing,
+            child: Text(
+              name,
+              style: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontStyle: FontStyle.normal,
+                  fontSize: 18,
+                  color: Colors.white,
+                  decoration: TextDecoration.none),
+            ),
+          ),
           Visibility(
-              visible: editing,
-              child: Container(
-                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                  height: 30,
-                  child: EditableText(
-                      controller: TextEditingController(text: name),
-                      onChanged: (s) {},
-                      focusNode: FocusNode(),
-                      cursorColor: Colors.grey,
-                      backgroundCursorColor: Colors.grey,
-                      maxLines: 20,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontStyle: FontStyle.normal,
-                          fontSize: 18,
-                          color: Colors.white,
-                          decoration: TextDecoration.none)),
-                  decoration: BoxDecoration(
-                      color: MyTheme.grey40,
-                      border: Border.all(color: Colors.grey, width: 1))))
-        ]));
+            visible: editing,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+              height: 30,
+              child: EditableText(
+                  controller: TextEditingController(text: name),
+                  onChanged: (s) {},
+                  focusNode: FocusNode(),
+                  cursorColor: Colors.grey,
+                  backgroundCursorColor: Colors.grey,
+                  maxLines: 20,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 18,
+                      color: Colors.white,
+                      decoration: TextDecoration.none)),
+              decoration: BoxDecoration(
+                color: MyTheme.grey40,
+                border: Border.all(color: Colors.grey, width: 1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -444,57 +475,70 @@ class _InfoViewImage extends State<InfoViewImage> {
   @override
   Widget build(BuildContext context) {
     /* Main image */
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Padding(
           padding: const EdgeInsets.all(10),
-          child: Stack(children: [
-            ClipRRect(
+          child: Stack(
+            children: [
+              ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(5)),
                 child: Image.file(
                   widget.getBackgroundImage(),
                   width: constraints.maxWidth,
                   height: 200,
                   fit: BoxFit.cover,
-                )),
-            Visibility(
+                ),
+              ),
+              Visibility(
                 visible: widget.editing,
                 child: MouseRegion(
-                    onEnter: (event) {
-                      setState(() {
-                        mouseOverImage = true;
-                      });
+                  onEnter: (event) {
+                    setState(() {
+                      mouseOverImage = true;
+                    });
+                  },
+                  onExit: (event) {
+                    setState(() {
+                      mouseOverImage = false;
+                    });
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      widget.browserForImage();
                     },
-                    onExit: (event) {
-                      setState(() {
-                        mouseOverImage = false;
-                      });
-                    },
-                    child: GestureDetector(
-                        onTap: () {
-                          widget.browserForImage();
-                        },
-                        child: Container(
-                            height: 200,
-                            child: const Center(
-                                child: Text(
-                              "Select an image",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FontStyle.normal,
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                  decoration: TextDecoration.none),
-                            )),
-                            decoration: BoxDecoration(
-                                color: mouseOverImage
-                                    ? const Color.fromRGBO(120, 120, 120, 100)
-                                    : const Color.fromRGBO(100, 100, 100, 100),
-                                border: Border.all(
-                                  color: Colors.grey,
-                                  width: 1,
-                                ))))))
-          ]));
-    });
+                    child: Container(
+                      height: 200,
+                      child: const Center(
+                        child: Text(
+                          "Select an image",
+                          style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            fontStyle: FontStyle.normal,
+                            fontSize: 20,
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: mouseOverImage
+                            ? const Color.fromRGBO(120, 120, 120, 100)
+                            : const Color.fromRGBO(100, 100, 100, 100),
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -513,55 +557,64 @@ class _AudioPreviewState extends State<AudioPreview> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Padding(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Padding(
           padding: const EdgeInsets.all(10),
           child: Container(
-              width: min(200, constraints.maxWidth),
-              height: 40,
-              decoration: const BoxDecoration(
-                  color: Color.fromRGBO(50, 50, 50, 1.0),
-                  borderRadius: BorderRadius.all(Radius.circular(5))),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    /* Play Button */
-                    IconButton(
-                        icon: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 150),
-                            transitionBuilder: (child, anim) =>
-                                RotationTransition(
-                                  turns: child.key == const ValueKey('icon1')
-                                      ? Tween<double>(begin: 0.75, end: 1.0)
-                                          .animate(anim)
-                                      : Tween<double>(begin: 1.0, end: 0.75)
-                                          .animate(anim),
-                                  child: FadeTransition(
-                                      opacity: anim, child: child),
-                                ),
-                            child: _currIndex == 0
-                                ? const Icon(Icons.play_arrow,
-                                    key: ValueKey('icon1'))
-                                : const Icon(
-                                    Icons.stop,
-                                    key: ValueKey('icon2'),
-                                  )),
-                        onPressed: () {
-                          setState(() {
-                            _currIndex = _currIndex == 0 ? 1 : 0;
-                          });
-                        },
-                        iconSize: 28,
-                        color: Colors.white),
-                    Expanded(
-                        child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 7, 10, 5),
-                            child: CustomPaint(
-                                painter: WaveformPreview(),
-                                child: Container())))
-                  ])));
-    });
+            width: min(200, constraints.maxWidth),
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Color.fromRGBO(50, 50, 50, 1.0),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                /* Play Button */
+                IconButton(
+                  icon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    transitionBuilder: (child, anim) => RotationTransition(
+                      turns: child.key == const ValueKey('icon1')
+                          ? Tween<double>(begin: 0.75, end: 1.0).animate(anim)
+                          : Tween<double>(begin: 1.0, end: 0.75).animate(anim),
+                      child: FadeTransition(opacity: anim, child: child),
+                    ),
+                    child: _currIndex == 0
+                        ? const Icon(
+                            Icons.play_arrow,
+                            key: ValueKey('icon1'),
+                          )
+                        : const Icon(
+                            Icons.stop,
+                            key: ValueKey('icon2'),
+                          ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _currIndex = _currIndex == 0 ? 1 : 0;
+                    });
+                  },
+                  iconSize: 28,
+                  color: Colors.white,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 7, 10, 5),
+                    child: CustomPaint(
+                      painter: WaveformPreview(),
+                      child: Container(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -574,25 +627,32 @@ class _AuthorViewState extends State<AuthorView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
         padding: const EdgeInsets.all(10),
-        child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                color: Color.fromRGBO(50, 50, 50, 1.0)),
-            child: Column(children: [
-              Image.network(
-                "https://akns-images.eonline.com/eol_images/Entire_Site/2015717/rs_1024x759-150817131955-1024-kermit-lipton.jpg",
-                fit: BoxFit.cover,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+          color: Color.fromRGBO(50, 50, 50, 1.0),
+        ),
+        child: Column(
+          children: [
+            Image.network(
+              "https://akns-images.eonline.com/eol_images/Entire_Site/2015717/rs_1024x759-150817131955-1024-kermit-lipton.jpg",
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Kermit the Frog",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
               ),
-              const SizedBox(height: 10),
-              const Text("Kermit the Frog",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                  ))
-            ])));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -622,9 +682,14 @@ class WaveformPreview extends CustomPainter {
       double height = buffer[i] * size.height;
 
       canvas.drawRect(
-          Rect.fromLTWH(size.width / count * i, size.height - height,
-              size.width / count, height),
-          paint);
+        Rect.fromLTWH(
+          size.width / count * i,
+          size.height - height,
+          size.width / count,
+          height,
+        ),
+        paint,
+      );
     }
   }
 
@@ -643,24 +708,31 @@ class _TagViewState extends State<TagView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
         padding: const EdgeInsets.all(10),
-        child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-                color: Color.fromRGBO(50, 50, 50, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: Stack(children: [
-              Align(
-                  alignment: Alignment.topLeft,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Tag("Tag Example 1"),
-                        Tag("Tag 2"),
-                        Tag("Tag 3"),
-                        Tag("Tag 4"),
-                      ]))
-            ])));
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(50, 50, 50, 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Tag("Tag Example 1"),
+                  Tag("Tag 2"),
+                  Tag("Tag 3"),
+                  Tag("Tag 4"),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -672,13 +744,18 @@ class Tag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
-        child: Container(
-            padding: const EdgeInsets.all(5),
-            decoration: const BoxDecoration(
-                color: Color.fromRGBO(70, 70, 70, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5))),
-            child: Text(name,
-                style: const TextStyle(fontSize: 12, color: Colors.white))));
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(70, 70, 70, 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        ),
+        child: Text(
+          name,
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+        ),
+      ),
+    );
   }
 }

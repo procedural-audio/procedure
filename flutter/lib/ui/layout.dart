@@ -841,8 +841,13 @@ class GridUIWidget extends UIWidget {
 
   @override
   void setJson(Map<String, dynamic> json) {
-    padding = EdgeInsets.fromLTRB(json["padding_left"], json["padding_right"],
-        json["padding_top"], json["padding_bottom"]);
+    padding = EdgeInsets.fromLTRB(
+      json["padding_left"],
+      json["padding_right"],
+      json["padding_top"],
+      json["padding_bottom"],
+    );
+
     rows = json["rows"];
     columns = json["columns"];
     children = createChildren(json["children"]);
