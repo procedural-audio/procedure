@@ -1,15 +1,19 @@
-import 'dart:ui';
-
 import 'package:ffi/ffi.dart';
+import 'package:flutter/material.dart';
 
 import 'dart:ffi';
 import 'dart:io';
+import 'host.dart';
 import 'module.dart';
+
+// class Plugins {}
 
 class Core {
   Core(this.raw);
 
   final RawCore raw;
+  // final Plugins plugins;
+  // ValueNotifier<List<Plugin>> plugins;
 
   static Core create() {
     return Core(_ffiCreateHost());

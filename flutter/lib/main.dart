@@ -124,48 +124,47 @@ class _App extends State<App> {
             Container(
               color: const Color.fromRGBO(10, 10, 10, 1.0),
               child: ValueListenableBuilder<Project>(
-                valueListenable: widget.project,
-                builder: (context, project, child) {
-                  return Stack(
-                    children: [
-                      Visibility(
-                        visible: uiVisible,
-                        maintainState: true,
-                        child: ValueListenableBuilder<UserInterface?>(
-                          valueListenable: project.ui,
-                          builder: (context, ui, child) {
-                            if (ui != null) {
-                              return InstrumentView(widget);
-                            } else {
-                              return Container();
-                            }
-                          },
+                  valueListenable: widget.project,
+                  builder: (context, project, child) {
+                    return Stack(
+                      children: [
+                        Visibility(
+                          visible: uiVisible,
+                          maintainState: true,
+                          child: ValueListenableBuilder<UserInterface?>(
+                            valueListenable: project.ui,
+                            builder: (context, ui, child) {
+                              if (ui != null) {
+                                return InstrumentView(widget);
+                              } else {
+                                return Container();
+                              }
+                            },
+                          ),
                         ),
-                      ),
-                      Visibility(
-                        visible: !uiVisible,
-                        maintainState: true,
-                        child: ValueListenableBuilder<Patch>(
-                          valueListenable: project.patch,
-                          builder: (context, patch, child) {
-                            // return patch;
-                            return PatchingView(widget);
-                          },
+                        Visibility(
+                          visible: !uiVisible,
+                          maintainState: true,
+                          child: ValueListenableBuilder<Patch>(
+                            valueListenable: project.patch,
+                            builder: (context, patch, child) {
+                              // return patch;
+                              return PatchingView(widget);
+                            },
+                          ),
                         ),
-                      ),
-                      Bar(
-                        app: widget,
-                        instViewVisible: uiVisible,
-                        onViewSwitch: () {
-                          setState(() {
-                            uiVisible = !uiVisible;
-                          });
-                        },
-                      )
-                    ],
-                  );
-                }
-              ),
+                        Bar(
+                          app: widget,
+                          instViewVisible: uiVisible,
+                          onViewSwitch: () {
+                            setState(() {
+                              uiVisible = !uiVisible;
+                            });
+                          },
+                        )
+                      ],
+                    );
+                  }),
             ),
           ],
         ),
