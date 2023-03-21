@@ -5,8 +5,8 @@ import 'common.dart';
 import 'ui.dart';
 import '../main.dart';
 
-class RootWidget extends UIWidget {
-  RootWidget(App app, UITree tree) : super(app, tree);
+class UserInterface extends UIWidget {
+  UserInterface(App app, UITree tree) : super(app, tree);
 
   @override
   final String name = "Root";

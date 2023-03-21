@@ -46,6 +46,7 @@ class Project {
     required this.app,
     required this.info,
     required this.patch,
+    required this.ui,
   });
 
   static Project untitled(App app) {
@@ -57,16 +58,17 @@ class Project {
       patch: ValueNotifier(
         Patch(app),
       ),
+      ui: ValueNotifier(null),
     );
   }
 
+  final App app;
   final ProjectInfo info;
   final ValueNotifier<Patch> patch;
-  final App app;
+  // final ValueNotifier<UserInterface?> ui;
+  final ValueNotifier<UserInterface?> ui;
 
   bool rename(String name) {
-    print("Project rename not implemented");
-
     if (!app.assets.projects.contains(name)) {
       info.name.value = name;
       return true;
@@ -74,9 +76,6 @@ class Project {
       return false;
     }
   }
-
-  // ValueNotifier<PresetInfo> preset;
-  // ValueNotifier<Graph> graph;
 }
 
 class App extends StatefulWidget {
@@ -98,7 +97,7 @@ class App extends StatefulWidget {
 
   ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
 
-  RootWidget? rootWidget;
+  // UserInterface? rootWidget;
   bool patchingScaleEnabled = true;
 
   double zoom = 1.0;
@@ -112,7 +111,7 @@ class App extends StatefulWidget {
 }
 
 class _App extends State<App> {
-  bool instViewVisible = true;
+  bool uiVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -124,28 +123,48 @@ class _App extends State<App> {
           children: <Widget>[
             Container(
               color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: Stack(
-                children: [
-                  Visibility(
-                    child: InstrumentView(widget),
-                    visible: instViewVisible,
-                    maintainState: true,
-                  ),
-                  Visibility(
-                    child: PatchingView(widget),
-                    visible: !instViewVisible,
-                    maintainState: true,
-                  ),
-                  Bar(
-                    app: widget,
-                    instViewVisible: instViewVisible,
-                    onViewSwitch: () {
-                      setState(() {
-                        instViewVisible = !instViewVisible;
-                      });
-                    },
-                  )
-                ],
+              child: ValueListenableBuilder<Project>(
+                valueListenable: widget.project,
+                builder: (context, project, child) {
+                  return Stack(
+                    children: [
+                      Visibility(
+                        visible: uiVisible,
+                        maintainState: true,
+                        child: ValueListenableBuilder<UserInterface?>(
+                          valueListenable: project.ui,
+                          builder: (context, ui, child) {
+                            if (ui != null) {
+                              return InstrumentView(widget);
+                            } else {
+                              return Container();
+                            }
+                          },
+                        ),
+                      ),
+                      Visibility(
+                        visible: !uiVisible,
+                        maintainState: true,
+                        child: ValueListenableBuilder<Patch>(
+                          valueListenable: project.patch,
+                          builder: (context, patch, child) {
+                            // return patch;
+                            return PatchingView(widget);
+                          },
+                        ),
+                      ),
+                      Bar(
+                        app: widget,
+                        instViewVisible: uiVisible,
+                        onViewSwitch: () {
+                          setState(() {
+                            uiVisible = !uiVisible;
+                          });
+                        },
+                      )
+                    ],
+                  );
+                }
               ),
             ),
           ],
@@ -361,7 +380,6 @@ class _PatchingView extends State<PatchingView> {
                     ));
               },
             ),
-            // Positioned(top: 0, bottom: 0, right: 0, child: CodeEditor())
           ],
         ),
       ),

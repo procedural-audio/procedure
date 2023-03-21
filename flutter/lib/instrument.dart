@@ -33,7 +33,7 @@ class _InstrumentView extends State<InstrumentView> {
 
   @override
   Widget build(BuildContext context) {
-    var root = widget.app.rootWidget;
+    var root = widget.app.project.value.ui.value;
     Color backgroundColor = const Color.fromRGBO(20, 20, 20, 1.0);
     if (root != null) {
       backgroundColor = Color.fromRGBO(root.color.red - 20,
@@ -90,7 +90,7 @@ class _UIDisplay extends State<UIDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    widget.app.rootWidget ??= RootWidget(widget.app, widget.tree);
+    widget.app.project.value.ui.value ??= UserInterface(widget.app, widget.tree);
 
     return LayoutBuilder(builder: (context, constraints) {
       return Scrollbar(
@@ -111,7 +111,7 @@ class _UIDisplay extends State<UIDisplay> {
                         width: 1000,
                         height: 800,
                         alignment: Alignment.center,
-                        child: widget.app.rootWidget,
+                        child: widget.app.project.value.ui.value,
                       )))));
     });
   }
@@ -149,9 +149,9 @@ class _WidgetTreeMenu extends State<WidgetTreeMenu> {
                           Expanded(
                               child: SingleChildScrollView(
                                   controller: controller,
-                                  child: widget.app.rootWidget != null
+                                  child: widget.app.project.value.ui.value != null
                                       ? WidgetTreeElement(
-                                          widget: widget.app.rootWidget!,
+                                          widget: widget.app.project.value.ui.value !,
                                           tree: widget.tree)
                                       : Container()))
                         ])));

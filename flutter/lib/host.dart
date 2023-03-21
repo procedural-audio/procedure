@@ -42,7 +42,7 @@ class Globals {
 
   bool patchingScaleEnabled = true;
   Settings settings = Settings();
-  RootWidget? rootWidget;
+  UserInterface? rootWidget;
 }
 
 class AudioPluginsCategory {
@@ -185,13 +185,6 @@ class Images {
     print("Loading image asset");
     return null;
   }
-}
-
-class UserInterface {
-  UserInterface(this.path);
-
-  String path;
-  List<Preset> presets = [];
 }
 
 /* HOST */

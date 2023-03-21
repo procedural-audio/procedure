@@ -64,7 +64,7 @@ class UITree {
   }
 
   void deleteChild(UIWidget widget) {
-    var root = app.rootWidget;
+    var root = app.project.value.ui.value;
     if (root != null) {
       if (!root.deleteChildRecursive(widget)) {
         print("Failed to delete item");
