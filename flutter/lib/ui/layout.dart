@@ -5,8 +5,8 @@ import '../main.dart';
 import 'common.dart';
 import 'ui.dart';
 
-class UserInterface extends UIWidget {
-  UserInterface(App app, UITree tree) : super(app, tree);
+class RootWidget extends UIWidget {
+  RootWidget(UserInterface ui) : super(ui);
 
   @override
   final String name = "Root";
@@ -125,15 +125,13 @@ class UserInterface extends UIWidget {
                   toggleEditor();
                 },
                 child: ChildDragTarget(
-                  tree: tree,
-                  onAddChild: (child) {
-                    print("Adding child");
-                    children.add(child);
-                    setState(() {});
-                  },
-                  child: Stack(fit: StackFit.expand, children: children),
-                  app: app,
-                ),
+                    onAddChild: (child) {
+                      print("Adding child");
+                      children.add(child);
+                      setState(() {});
+                    },
+                    child: Stack(fit: StackFit.expand, children: children),
+                    ui: ui),
               ),
             ),
           ),
@@ -199,7 +197,7 @@ class UserInterface extends UIWidget {
 /* Stack Widget */
 
 class StackUIWidget extends UIWidget {
-  StackUIWidget(App app, UITree tree) : super(app, tree);
+  StackUIWidget(UserInterface ui) : super(ui);
 
   @override
   final String name = "Stack";
@@ -254,7 +252,7 @@ class StackUIWidget extends UIWidget {
         transform = t;
         setState(() {});
       },
-      tree: tree,
+      ui: ui,
       child: Stack(
         children: <Widget>[
               ChildDragTarget(
@@ -263,8 +261,7 @@ class StackUIWidget extends UIWidget {
                   setState(() {});
                 },
                 child: null,
-                tree: tree,
-                app: app,
+                ui: ui,
               )
             ] +
             children,
@@ -283,7 +280,7 @@ class StackUIWidget extends UIWidget {
             transform = transform;
             setState(() {});
           },
-          tree: tree,
+          ui: ui,
         ),
       ],
     );
@@ -293,7 +290,7 @@ class StackUIWidget extends UIWidget {
 /* Row Widget */
 
 class RowUIWidget extends UIWidget {
-  RowUIWidget(App app, UITree tree) : super(app, tree);
+  RowUIWidget(UserInterface ui) : super(ui);
 
   List<UIWidget> children = [];
 
@@ -346,7 +343,7 @@ class RowUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > columns) {
@@ -378,7 +375,7 @@ class RowUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > columns) {
@@ -394,7 +391,7 @@ class RowUIWidget extends UIWidget {
         transform = data;
         setState(() {});
       },
-      tree: tree,
+      ui: ui,
       child: Row(
         children: children.sublist(0, columns).asMap().entries.map(
           (entry) {
@@ -411,8 +408,7 @@ class RowUIWidget extends UIWidget {
                   padding: padding,
                   child: child,
                 ),
-                tree: tree,
-                app: app,
+                ui: ui,
               ),
             );
           },
@@ -432,7 +428,7 @@ class RowUIWidget extends UIWidget {
             transform = t;
             setState(() {});
           },
-          tree: tree,
+          ui: ui,
         ),
         Section(
           title: "Layout",
@@ -446,7 +442,7 @@ class RowUIWidget extends UIWidget {
                 columns = int.tryParse(s) ?? 2;
 
                 while (children.length < columns) {
-                  children.add(EmptyUIWidget(app, tree));
+                  children.add(EmptyUIWidget(ui));
                 }
 
                 while (children.length > columns) {
@@ -534,7 +530,7 @@ class RowUIWidget extends UIWidget {
 }
 
 class ColumnUIWidget extends UIWidget {
-  ColumnUIWidget(App app, UITree tree) : super(app, tree);
+  ColumnUIWidget(UserInterface ui) : super(ui);
 
   List<UIWidget> children = [];
 
@@ -587,7 +583,7 @@ class ColumnUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > columns) {
@@ -619,7 +615,7 @@ class ColumnUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > columns) {
@@ -635,7 +631,7 @@ class ColumnUIWidget extends UIWidget {
         transform = data;
         setState(() {});
       },
-      tree: tree,
+      ui: ui,
       child: Column(
         children: children.sublist(0, columns).asMap().entries.map(
           (entry) {
@@ -652,8 +648,7 @@ class ColumnUIWidget extends UIWidget {
                   padding: padding,
                   child: child,
                 ),
-                tree: tree,
-                app: app,
+                ui: ui,
               ),
             );
           },
@@ -673,7 +668,7 @@ class ColumnUIWidget extends UIWidget {
             transform = t;
             setState(() {});
           },
-          tree: tree,
+          ui: ui,
         ),
         Section(
           title: "Layout",
@@ -687,7 +682,7 @@ class ColumnUIWidget extends UIWidget {
                 columns = int.tryParse(s) ?? 2;
 
                 while (children.length < columns) {
-                  children.add(EmptyUIWidget(app, tree));
+                  children.add(EmptyUIWidget(ui));
                 }
 
                 while (children.length > columns) {
@@ -766,7 +761,7 @@ class ColumnUIWidget extends UIWidget {
 }
 
 class EmptyUIWidget extends UIWidget {
-  EmptyUIWidget(App app, UITree tree) : super(app, tree);
+  EmptyUIWidget(UserInterface ui) : super(ui);
 
   @override
   String name = "Empty";
@@ -803,7 +798,7 @@ class EmptyUIWidget extends UIWidget {
 /* Grid Widget */
 
 class GridUIWidget extends UIWidget {
-  GridUIWidget(App app, UITree tree) : super(app, tree);
+  GridUIWidget(UserInterface ui) : super(ui);
 
   TransformData transform = TransformData(
       width: null,
@@ -865,7 +860,7 @@ class GridUIWidget extends UIWidget {
     if (children.contains(item)) {
       for (int i = 0; i < children.length; i++) {
         if (children[i] == item) {
-          children[i] = EmptyUIWidget(app, tree);
+          children[i] = EmptyUIWidget(ui);
           return true;
         }
       }
@@ -883,7 +878,7 @@ class GridUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     while (children.length < rows * columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > rows * columns) {
@@ -915,7 +910,7 @@ class GridUIWidget extends UIWidget {
   @override
   Widget buildWidgetEditing(BuildContext context) {
     while (children.length < rows * columns) {
-      children.add(EmptyUIWidget(app, tree));
+      children.add(EmptyUIWidget(ui));
     }
 
     while (children.length > rows * columns) {
@@ -931,7 +926,7 @@ class GridUIWidget extends UIWidget {
         transform = t;
         setState(() {});
       },
-      tree: tree,
+      ui: ui,
       child: LayoutBuilder(
         builder: (context, constraints) {
           return GridView.count(
@@ -952,8 +947,7 @@ class GridUIWidget extends UIWidget {
                     padding: padding,
                     child: child,
                   ),
-                  tree: tree,
-                  app: app,
+                  ui: ui,
                 );
               },
             ).toList(),
@@ -974,7 +968,7 @@ class GridUIWidget extends UIWidget {
             transform = t;
             setState(() {});
           },
-          tree: tree,
+          ui: ui,
         ),
         Section(
           title: "Layout",

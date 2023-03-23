@@ -8,23 +8,118 @@ import 'package:flutter/material.dart';
 import '../host.dart';
 import '../main.dart';
 
+import '../ui/ui.dart';
 import 'settings.dart';
+
+class PatchInfo {
+  PatchInfo({
+    required this.path,
+    required this.name,
+    required this.description,
+  });
+
+  static PatchInfo blank() {
+    return PatchInfo(
+      path: "/some/path/here",
+      name: ValueNotifier("New Patch"),
+      description: ValueNotifier("Blank patch description"),
+    );
+  }
+
+  static Future<PatchInfo?> from(String path) async {
+    File file = File(path);
+    if (await file.exists()) {
+      var contents = await file.readAsString();
+      var json = jsonDecode(contents);
+
+      return PatchInfo(
+        path: path,
+        name: json["name"],
+        description: json["description"],
+      );
+    }
+
+    return null;
+  }
+
+  Future<Patch?> load() async {
+    print("Load not implemented for patch");
+    return null;
+  }
+
+  /*static PatchInfo blank() {
+
+  }*/
+
+  final String path;
+  final ValueNotifier<String> name;
+  final ValueNotifier<String> description;
+}
+
+class UserInterfaceInfo {
+  UserInterfaceInfo({
+    required this.path,
+    required this.name,
+    required this.description,
+    required this.patches,
+  });
+
+  /*static PatchInfo blank() {
+
+  }*/
+
+  static Future<UserInterfaceInfo?> from(Directory directory) async {
+    File file = File(directory.path + "/ui.json");
+    if (file.existsSync()) {
+      var contents = file.readAsStringSync();
+      var json = jsonDecode(contents);
+
+      return UserInterfaceInfo(
+          path: directory.path,
+          name: json["name"],
+          description: json["description"],
+          patches: ValueNotifier([]));
+    }
+
+    return null;
+  }
+
+  Future<UserInterface?> load() async {
+    print("Load not implemented for user interface");
+    return null;
+  }
+
+  final String path;
+  final ValueNotifier<String> name;
+  final ValueNotifier<String> description;
+  final ValueNotifier<List<PatchInfo>> patches;
+}
 
 class ProjectInfo {
   ProjectInfo({
-    required this.path,
+    required this.directory,
     required this.name,
     required this.description,
     required this.background,
   });
 
-  ValueNotifier<String> name;
-  String description;
-  String path;
-  String background;
-  List<String> tags = ["Tag 1", "Tag 2"];
+  final Directory directory;
+  final ValueNotifier<String> name;
+  final String description;
+  final String background;
+  final List<String> tags = ["Tag 1", "Tag 2"];
 
-  static Future<ProjectInfo?> load(String path) async {
+  static ProjectInfo blank() {
+    return ProjectInfo(
+      directory:
+          Directory("/Users/chasekanipe/Github/assets/projects/NewProject"),
+      name: ValueNotifier("New Project"),
+      description: "Description for a new project",
+      background: "",
+    );
+  }
+
+  static Future<ProjectInfo?> from(String path) async {
     File file = File(path + "/project.json");
 
     if (await file.exists()) {
@@ -36,29 +131,115 @@ class ProjectInfo {
     return null;
   }
 
-  static ProjectInfo loadSync(String path) {
-    ProjectInfo info = ProjectInfo(
-      path: path,
-      name: ValueNotifier("Untitled Instrument"),
-      description: "Some description here",
-      background: "",
-    );
+  Future<Project?> load(App app) async {
+    File projectFile = File(directory.path + "/project.json");
+    if (await projectFile.exists()) {
+      var projectContents = await projectFile.readAsString();
+      var projectJson = jsonDecode(projectContents);
 
-    load(path).then((i) {
-      if (i != null) {
-        info = i;
+      List<PatchInfo> patches = [];
+      List<UserInterfaceInfo> uis = [];
+      Directory presetsDirectory = Directory(projectFile.path + "/presets");
+
+      if (await presetsDirectory.exists()) {
+        var items = presetsDirectory.list();
+        await for (var item in items) {
+          if (item.name.contains(".json")) {
+            var patch = await PatchInfo.from(item.path);
+            if (patch != null) {
+              patches.add(patch);
+            } else {
+              print("Failed to load patch " + item.path);
+            }
+          } else {
+            var uiDirectory = Directory(item.path);
+            if (await uiDirectory.exists()) {
+              var ui = await UserInterfaceInfo.from(uiDirectory);
+              if (ui != null) {
+                var patchDirectory = Directory(uiDirectory.path + "/patches");
+                if (await patchDirectory.exists()) {
+                  var items = patchDirectory.list();
+                  await for (var item in items) {
+                    var patch = await PatchInfo.from(item.path);
+                    if (patch != null) {
+                      ui.patches.value.add(patch);
+                    } else {
+                      print("Failed to load patch " + item.path);
+                    }
+                  }
+                } else {
+                  print("User interface doesn't have patches directory");
+                }
+
+                uis.add(ui);
+              } else {
+                print("Failed to load user interface info");
+              }
+            } else {
+              print("User interface directory does not exist");
+            }
+          }
+        }
       } else {
-        print("Failed to load instrument");
+        print("Project doesn't have presets directory");
       }
-    });
 
-    return info;
+      if (uis.isNotEmpty) {
+        var uiInfo = uis.first;
+        var ui = await uiInfo.load();
+        if (ui != null) {
+          var patchInfos = uiInfo.patches.value;
+          if (patchInfos.isNotEmpty) {
+            var patchInfo = patchInfos.first;
+            var patch = await patchInfo.load();
+            if (patch != null) {
+              return Project(
+                app: app,
+                info: this,
+                patch: ValueNotifier(patch),
+                ui: ValueNotifier(ui),
+                patches: ValueNotifier(patches),
+                uis: ValueNotifier(uis),
+              );
+            } else {
+              print("Failed to load patch " + patchInfo.path);
+            }
+          } else {
+            print("User interface has no patches");
+          }
+        } else {
+          print("Failed to load user interface " + uiInfo.path);
+        }
+      } else {
+        if (patches.isNotEmpty) {
+          var patchInfo = patches.first;
+          var patch = await patchInfo.load();
+          if (patch != null) {
+            return Project(
+              app: app,
+              info: this,
+              patch: ValueNotifier(patch),
+              ui: ValueNotifier(null),
+              patches: ValueNotifier(patches),
+              uis: ValueNotifier(uis),
+            );
+          } else {
+            print("Failed to load patch " + patchInfo.path);
+          }
+        }
+      }
+
+      return null;
+    }
+
+    return null;
   }
 
   void save() async {
-    File file = File(path);
-    String contents = jsonEncode(toJson());
-    file.writeAsString(contents);
+    print("Save not implemented for ProjectInfo");
+    // File file = File(path);
+    // String contents = jsonEncode(toJson());
+    // file.writeAsString(contents);
   }
 
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
@@ -81,7 +262,7 @@ class ProjectInfo {
     }
 
     return ProjectInfo(
-      path: path,
+      directory: Directory(path),
       name: ValueNotifier(json['name']),
       description: json['description'],
       background: background,
@@ -251,7 +432,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                         children: [
                           InfoViewImage(
                             editing: editing,
-                            path: widget.project.path,
+                            path: widget.project.background,
                             onUpdate: () => setState(() {}),
                           ),
                           Padding(

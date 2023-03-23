@@ -1,23 +1,18 @@
-import 'dart:io';
 import 'dart:math';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:metasampler/host.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
+import 'dart:ui' as ui;
 
 import 'views/info.dart';
 import 'views/settings.dart';
-import 'views/presets.dart';
-import 'views/right_click.dart';
 import 'views/bar.dart';
 
-import 'instrument.dart';
 import 'module.dart';
 
 import 'widgets/widget.dart';
-import 'ui/layout.dart';
 import 'core.dart';
+import 'ui/ui.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,18 +42,18 @@ class Project {
     required this.info,
     required this.patch,
     required this.ui,
+    required this.patches,
+    required this.uis,
   });
 
-  static Project untitled(App app) {
+  static Project blank(App app) {
     return Project(
       app: app,
-      info: ProjectInfo.loadSync(
-        "/Users/chasekanipe/Github/assets/projects/UntitledInstrument",
-      ),
-      patch: ValueNotifier(
-        Patch(app),
-      ),
-      ui: ValueNotifier(null),
+      info: ProjectInfo.blank(),
+      patch: ValueNotifier(Patch(app, PatchInfo.blank())),
+      ui: ValueNotifier(UserInterface.platformDefault()),
+      patches: ValueNotifier([]),
+      uis: ValueNotifier([]),
     );
   }
 
@@ -66,6 +61,10 @@ class Project {
   final ProjectInfo info;
   final ValueNotifier<Patch> patch;
   final ValueNotifier<UserInterface?> ui;
+  final ValueNotifier<List<PatchInfo>> patches;
+  final ValueNotifier<List<UserInterfaceInfo>> uis;
+
+  void loadPatch(String name) {}
 
   bool rename(String name) {
     if (!app.assets.projects.contains(name)) {
@@ -79,7 +78,7 @@ class Project {
 
 class App extends StatefulWidget {
   App({required this.core, required this.assets}) {
-    project = ValueNotifier(Project.untitled(this));
+    project = ValueNotifier(Project.blank(this));
   }
 
   Core core;
@@ -92,11 +91,6 @@ class App extends StatefulWidget {
   ValueNotifier<int> selectedModule = ValueNotifier(-1);
   ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
 
-  var loadedPreset = ValueNotifier(PresetInfo("", File("")));
-
-  ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
-
-  // UserInterface? rootWidget;
   bool patchingScaleEnabled = true;
 
   double zoom = 1.0;
@@ -114,6 +108,10 @@ class _App extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    /*if (widget.project.value.ui.value == null) {
+      uiVisible = false;
+    }*/
+
     return MaterialApp(
       theme: ThemeData(splashColor: const Color.fromRGBO(20, 20, 20, 1.0)),
       home: Scaffold(
@@ -123,47 +121,50 @@ class _App extends State<App> {
             Container(
               color: const Color.fromRGBO(10, 10, 10, 1.0),
               child: ValueListenableBuilder<Project>(
-                  valueListenable: widget.project,
-                  builder: (context, project, child) {
-                    return Stack(
-                      children: [
-                        Visibility(
-                          visible: uiVisible,
-                          maintainState: true,
-                          child: ValueListenableBuilder<UserInterface?>(
-                            valueListenable: project.ui,
-                            builder: (context, ui, child) {
-                              if (ui != null) {
-                                return InstrumentView(widget);
-                              } else {
-                                return Container();
-                              }
-                            },
-                          ),
-                        ),
-                        Visibility(
-                          visible: !uiVisible,
-                          maintainState: true,
-                          child: ValueListenableBuilder<Patch>(
-                            valueListenable: project.patch,
-                            builder: (context, patch, child) {
-                              // return patch;
-                              return PatchingView(widget);
-                            },
-                          ),
-                        ),
-                        Bar(
-                          app: widget,
-                          instViewVisible: uiVisible,
-                          onViewSwitch: () {
-                            setState(() {
-                              uiVisible = !uiVisible;
-                            });
+                valueListenable: widget.project,
+                builder: (context, project, child) {
+                  return Stack(
+                    children: [
+                      Visibility(
+                        visible: uiVisible,
+                        maintainState: true,
+                        child: ValueListenableBuilder<UserInterface?>(
+                          valueListenable: project.ui,
+                          builder: (context, ui, child) {
+                            if (ui != null) {
+                              return ui;
+                            } else {
+                              return Container();
+                            }
                           },
-                        )
-                      ],
-                    );
-                  }),
+                        ),
+                      ),
+                      Visibility(
+                        visible: !uiVisible,
+                        maintainState: true,
+                        child: ValueListenableBuilder<Patch>(
+                          valueListenable: project.patch,
+                          builder: (context, patch, child) {
+                            return patch;
+                          },
+                        ),
+                      ),
+                      Bar(
+                        app: widget,
+                        instViewVisible: uiVisible,
+                        onViewSwitch: () {
+                          setState(() {
+                            uiVisible = !uiVisible;
+                          });
+                        },
+                        onUserInterfaceEdit: () {
+                          widget.project.value.ui.value?.toggleEditing();
+                        },
+                      )
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -180,230 +181,25 @@ void callTickRecursive(ModuleWidget widget) {
   }
 }
 
-class PatchingView extends StatefulWidget {
-  PatchingView(this.app);
-
-  App app;
-
-  @override
-  State<PatchingView> createState() => _PatchingView();
-}
-
-class _PatchingView extends State<PatchingView> {
-  late Grid grid;
-
-  var mouseOffset = const Offset(0, 0);
-  var righttClickOffset = const Offset(0, 0);
-  var rightClickVisible = false;
-  var moduleMenuVisible = false;
-
-  var wheelVisible = false;
-  List<String> wheelModules = [];
-
-  FocusNode focusNode = FocusNode();
-
-  TransformationController controller = TransformationController();
-
-  double zoom = 1.0;
-
-  @override
-  void initState() {
-    grid = Grid(widget.app);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    FocusScope.of(context).requestFocus(focusNode);
-
-    return RawKeyboardListener(
-      focusNode: focusNode,
-      /*onKey: (event) {
-          if (rightClickVisible) {
-            return;
-          }
-
-          if (event.data.physicalKey == PhysicalKeyboardKey.keyS) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = ["Sampler", "Simpler", "Granular", "Looper"];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyO) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = [
-                  "Digital",
-                  "Analog",
-                  "Noise",
-                  "Wavetable",
-                  "Additive",
-                  "Polygon"
-                ];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyF) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = ["Sampler", "Analog Osc"];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          }
-        },*/
-      child: ClipRect(
-        child: Stack(
-          fit: StackFit.loose,
-          children: [
-            InteractiveViewer(
-              transformationController: controller,
-              child: grid,
-              minScale: 0.1,
-              maxScale: 1.5,
-              panEnabled: true,
-              scaleEnabled: true, // widget.app.patchingScaleEnabled,
-              clipBehavior: Clip.none,
-              constrained: false,
-              onInteractionUpdate: (details) {
-                setState(() {
-                  zoom *= details.scale;
-                  if (zoom < 0.1) {
-                    zoom = 0.1;
-                  } else if (zoom > 1.5) {
-                    zoom = 1.5;
-                  }
-                });
-              },
-            ),
-            GestureDetector(
-              // Right click menu region
-              behavior: HitTestBehavior.translucent,
-              onSecondaryTap: () {
-                print("Secondary tap right-click menu");
-
-                if (widget.app.selectedModule.value == -1) {
-                  righttClickOffset = mouseOffset;
-                  setState(() {
-                    rightClickVisible = true;
-                  });
-                } else {
-                  righttClickOffset = mouseOffset;
-                  setState(() {
-                    moduleMenuVisible = true;
-                  });
-                }
-              },
-            ),
-            Visibility(
-              // Right click menu
-              visible: rightClickVisible,
-              child: Positioned(
-                left: righttClickOffset.dx,
-                top: righttClickOffset.dy,
-                child: RightClickView(
-                  widget.app,
-                  specs: widget.app.moduleSpecs,
-                  addPosition: Offset(
-                      righttClickOffset.dx -
-                          controller.value.getTranslation().x,
-                      righttClickOffset.dy -
-                          controller.value.getTranslation().y),
-                ),
-              ),
-            ),
-            Visibility(
-              // Right click menu
-              visible: moduleMenuVisible,
-              child: Positioned(
-                left: righttClickOffset.dx,
-                top: righttClickOffset.dy,
-                child: ModuleMenu(),
-              ),
-            ),
-            Listener(
-              // Hide right-click menu
-              behavior: HitTestBehavior.translucent,
-              onPointerDown: (event) {
-                if (rightClickVisible && widget.app.patchingScaleEnabled) {
-                  setState(() {
-                    rightClickVisible = false;
-                  });
-                } else if (moduleMenuVisible &&
-                    widget.app.patchingScaleEnabled) {
-                  setState(() {
-                    moduleMenuVisible = false;
-                  });
-                }
-              },
-            ),
-            Visibility(
-              // Module wheel
-              visible: wheelVisible,
-              child: Positioned(
-                left: mouseOffset.dx - 150,
-                top: mouseOffset.dy - 100,
-                child: ModuleWheel(wheelModules),
-              ),
-            ),
-            MouseRegion(
-              opaque: false,
-              onHover: (event) {
-                mouseOffset = event.localPosition;
-                // print(mouseOffset.toString());
-              },
-            ),
-            ValueListenableBuilder<String>(
-              valueListenable: widget.app.pinLabel,
-              builder: (context, value, w) {
-                return Visibility(
-                  visible: value != "",
-                  child: Positioned(
-                    left: widget.app.labelPosition.dx,
-                    top: widget.app.labelPosition.dy,
-                    child: PinLabel(value),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class CodeEditor extends StatefulWidget {
   @override
   _CodeEditor createState() => _CodeEditor();
 }
 
 class _CodeEditor extends State<CodeEditor> {
-  final codeController = CodeController(modifiers: [
-    const IndentModifier(handleBrackets: true)
-  ], stringMap: const {
-    'function': TextStyle(color: Color(0xfffb7b72)),
-    'if': TextStyle(color: Color(0xfffb7b72)),
-    'then': TextStyle(color: Color(0xfffb7b72)),
-    'else': TextStyle(color: Color(0xfffb7b72)),
-    'end': TextStyle(color: Color(0xfffb7b72)),
-    'return': TextStyle(color: Color(0xfffb7b72)),
-    'print': TextStyle(color: Color(0xff74b8f4)),
-    '"': TextStyle(color: Color(0xffa5d6ff)),
-  }, text: """function fact (n)
+  final codeController = CodeController(
+    modifiers: [const IndentModifier(handleBrackets: true)],
+    stringMap: const {
+      'function': TextStyle(color: Color(0xfffb7b72)),
+      'if': TextStyle(color: Color(0xfffb7b72)),
+      'then': TextStyle(color: Color(0xfffb7b72)),
+      'else': TextStyle(color: Color(0xfffb7b72)),
+      'end': TextStyle(color: Color(0xfffb7b72)),
+      'return': TextStyle(color: Color(0xfffb7b72)),
+      'print': TextStyle(color: Color(0xff74b8f4)),
+      '"': TextStyle(color: Color(0xffa5d6ff)),
+    },
+    text: """function fact (n)
       if n == 0 then
         return 1
       else
@@ -413,7 +209,8 @@ class _CodeEditor extends State<CodeEditor> {
     
     print("enter a number:")
     a = io.read("*number")        -- read a number
-    print(fact(a))""");
+    print(fact(a))""",
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -422,10 +219,11 @@ class _CodeEditor extends State<CodeEditor> {
         return Column(
           children: [
             Container(
-                width: 400,
-                height: 30,
-                decoration: const BoxDecoration(color: Colors.grey)),
-            Container(
+              width: 400,
+              height: 30,
+              decoration: const BoxDecoration(color: Colors.grey),
+            ),
+            SizedBox(
               width: 400,
               height: constraints.maxHeight - 30,
               child: CodeField(
@@ -460,7 +258,9 @@ class _ModuleMenu extends State<ModuleMenu> {
     return Container(
       width: 150,
       decoration: BoxDecoration(
-          color: MyTheme.grey20, border: Border.all(color: MyTheme.grey40)),
+        color: MyTheme.grey20,
+        border: Border.all(color: MyTheme.grey40),
+      ),
       child: Column(
         children: [
           ModuleMenuItem(
@@ -501,8 +301,11 @@ class _ModuleMenu extends State<ModuleMenu> {
 }
 
 class ModuleMenuItem extends StatefulWidget {
-  ModuleMenuItem(
-      {required this.text, required this.iconData, required this.onTap});
+  ModuleMenuItem({
+    required this.text,
+    required this.iconData,
+    required this.onTap,
+  });
 
   String text;
   IconData iconData;

@@ -7,7 +7,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
-import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import '../host.dart';
@@ -19,7 +18,7 @@ import '../main.dart';
 // import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewUIWidget extends UIWidget {
-  WebViewUIWidget(App app, UITree tree) : super(app, tree);
+  WebViewUIWidget(UserInterface ui) : super(ui);
 
   @override
   final String name = "Web View";
@@ -89,7 +88,7 @@ class WebViewUIWidget extends UIWidget {
           data = t;
         });
       },
-      tree: tree,
+      ui: ui,
       child: Container(color: Colors.red),
     );
   }
@@ -105,7 +104,7 @@ class WebViewUIWidget extends UIWidget {
               data = t;
             });
           },
-          tree: tree)
+          ui: ui)
     ]);
   }
 }
@@ -1331,7 +1330,7 @@ class TickPainter extends CustomPainter {
 /* Button Widget */
 
 class ButtonUIWidget extends UIWidget {
-  ButtonUIWidget(App app, UITree tree) : super(app, tree);
+  ButtonUIWidget(UserInterface ui) : super(ui);
 
   bool down = false;
   bool isToggle = false;
@@ -1404,7 +1403,7 @@ class ButtonUIWidget extends UIWidget {
           data = t;
           setState(() {});
         },
-        tree: tree,
+        ui: ui,
         child: Button(down: down, style: style, onUpdate: (v) {}));
   }
 
@@ -1418,7 +1417,7 @@ class ButtonUIWidget extends UIWidget {
             data = t;
             setState(() {});
           },
-          tree: tree),
+          ui: ui),
       Section(
           title: "Style",
           child: Column(children: [

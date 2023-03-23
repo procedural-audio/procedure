@@ -18,7 +18,9 @@ import 'package:flutter/services.dart';
 import 'ui/layout.dart';
 import 'views/settings.dart';
 import '../main.dart';
+import 'views/right_click.dart';
 
+/*
 class Globals {
   ValueNotifier<String> pinLabel = ValueNotifier("");
   Offset labelPosition = const Offset(0.0, 0.0);
@@ -42,8 +44,8 @@ class Globals {
 
   bool patchingScaleEnabled = true;
   Settings settings = Settings();
-  UserInterface? rootWidget;
-}
+  RootWidget? rootWidget;
+}*/
 
 class AudioPluginsCategory {
   AudioPluginsCategory(this.name, this.plugins);
@@ -157,7 +159,7 @@ class Projects {
     _projects.value = [];
 
     for (var item in list) {
-      var projectInfo = await ProjectInfo.load(item.path);
+      var projectInfo = await ProjectInfo.from(item.path);
       if (projectInfo != null) {
         _projects.value.add(projectInfo);
         _projects.notifyListeners();
@@ -436,19 +438,14 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
-class Instrument {
-  final preset = Preset();
-}
-
-class Preset {}
-
-class Patch {
+class Patch extends StatefulWidget {
   var modules = <Module>[];
   var connectors = <Connector>[];
 
+  PatchInfo info;
   App app;
 
-  Patch(this.app) {
+  Patch(this.app, this.info) {
     refresh();
   }
 
@@ -525,5 +522,205 @@ class Patch {
 
       connectors.add(Connector(startId, startIndex, endId, endIndex, type));
     }
+  }
+
+  @override
+  State<Patch> createState() => _Patch();
+}
+
+class _Patch extends State<Patch> {
+  late Grid grid;
+
+  var mouseOffset = const Offset(0, 0);
+  var righttClickOffset = const Offset(0, 0);
+  var rightClickVisible = false;
+  var moduleMenuVisible = false;
+
+  var wheelVisible = false;
+  List<String> wheelModules = [];
+
+  FocusNode focusNode = FocusNode();
+
+  TransformationController controller = TransformationController();
+
+  double zoom = 1.0;
+
+  @override
+  void initState() {
+    grid = Grid(widget.app);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    FocusScope.of(context).requestFocus(focusNode);
+
+    return RawKeyboardListener(
+      focusNode: focusNode,
+      /*onKey: (event) {
+          if (rightClickVisible) {
+            return;
+          }
+
+          if (event.data.physicalKey == PhysicalKeyboardKey.keyS) {
+            if (event.runtimeType == RawKeyDownEvent) {
+              setState(() {
+                wheelVisible = true;
+                wheelModules = ["Sampler", "Simpler", "Granular", "Looper"];
+              });
+            } else {
+              setState(() {
+                wheelVisible = false;
+              });
+            }
+          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyO) {
+            if (event.runtimeType == RawKeyDownEvent) {
+              setState(() {
+                wheelVisible = true;
+                wheelModules = [
+                  "Digital",
+                  "Analog",
+                  "Noise",
+                  "Wavetable",
+                  "Additive",
+                  "Polygon"
+                ];
+              });
+            } else {
+              setState(() {
+                wheelVisible = false;
+              });
+            }
+          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyF) {
+            if (event.runtimeType == RawKeyDownEvent) {
+              setState(() {
+                wheelVisible = true;
+                wheelModules = ["Sampler", "Analog Osc"];
+              });
+            } else {
+              setState(() {
+                wheelVisible = false;
+              });
+            }
+          }
+        },*/
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.loose,
+          children: [
+            InteractiveViewer(
+              transformationController: controller,
+              child: grid,
+              minScale: 0.1,
+              maxScale: 1.5,
+              panEnabled: true,
+              scaleEnabled: true, // widget.app.patchingScaleEnabled,
+              clipBehavior: Clip.none,
+              constrained: false,
+              onInteractionUpdate: (details) {
+                setState(() {
+                  zoom *= details.scale;
+                  if (zoom < 0.1) {
+                    zoom = 0.1;
+                  } else if (zoom > 1.5) {
+                    zoom = 1.5;
+                  }
+                });
+              },
+            ),
+            GestureDetector(
+              // Right click menu region
+              behavior: HitTestBehavior.translucent,
+              onSecondaryTap: () {
+                print("Secondary tap right-click menu");
+
+                if (widget.app.selectedModule.value == -1) {
+                  righttClickOffset = mouseOffset;
+                  setState(() {
+                    rightClickVisible = true;
+                  });
+                } else {
+                  righttClickOffset = mouseOffset;
+                  setState(() {
+                    moduleMenuVisible = true;
+                  });
+                }
+              },
+            ),
+            Visibility(
+              // Right click menu
+              visible: rightClickVisible,
+              child: Positioned(
+                left: righttClickOffset.dx,
+                top: righttClickOffset.dy,
+                child: RightClickView(
+                  widget.app,
+                  specs: widget.app.moduleSpecs,
+                  addPosition: Offset(
+                      righttClickOffset.dx -
+                          controller.value.getTranslation().x,
+                      righttClickOffset.dy -
+                          controller.value.getTranslation().y),
+                ),
+              ),
+            ),
+            Visibility(
+              // Right click menu
+              visible: moduleMenuVisible,
+              child: Positioned(
+                left: righttClickOffset.dx,
+                top: righttClickOffset.dy,
+                child: ModuleMenu(),
+              ),
+            ),
+            Listener(
+              // Hide right-click menu
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (event) {
+                if (rightClickVisible && widget.app.patchingScaleEnabled) {
+                  setState(() {
+                    rightClickVisible = false;
+                  });
+                } else if (moduleMenuVisible &&
+                    widget.app.patchingScaleEnabled) {
+                  setState(() {
+                    moduleMenuVisible = false;
+                  });
+                }
+              },
+            ),
+            Visibility(
+              // Module wheel
+              visible: wheelVisible,
+              child: Positioned(
+                left: mouseOffset.dx - 150,
+                top: mouseOffset.dy - 100,
+                child: ModuleWheel(wheelModules),
+              ),
+            ),
+            MouseRegion(
+              opaque: false,
+              onHover: (event) {
+                mouseOffset = event.localPosition;
+                // print(mouseOffset.toString());
+              },
+            ),
+            ValueListenableBuilder<String>(
+              valueListenable: widget.app.pinLabel,
+              builder: (context, value, w) {
+                return Visibility(
+                  visible: value != "",
+                  child: Positioned(
+                    left: widget.app.labelPosition.dx,
+                    top: widget.app.labelPosition.dy,
+                    child: PinLabel(value),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -184,13 +184,13 @@ class TransformWidgetEditing extends StatefulWidget {
       required this.child,
       required this.onUpdate,
       required this.onTap,
-      required this.tree});
+      required this.ui});
 
   Widget? child;
   TransformData data;
   Function(TransformData) onUpdate;
   Function() onTap;
-  UITree tree;
+  UserInterface ui;
 
   @override
   State<TransformWidgetEditing> createState() => _TransformWidgetEditing();
@@ -453,7 +453,7 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
                                         setState(() {
                                           dragging = false;
                                         });
-                                        widget.tree.selected.notifyListeners();
+                                        widget.ui.selected.notifyListeners();
                                       },
                                       child: widget.child,
                                     )),
@@ -864,11 +864,11 @@ class _Resizer extends State<Resizer> {
 
 class TransformWidgetEditor extends StatefulWidget {
   TransformWidgetEditor(
-      {required this.data, required this.onUpdate, required this.tree});
+      {required this.data, required this.onUpdate, required this.ui});
 
   TransformData data;
   Function(TransformData) onUpdate;
-  UITree tree;
+  UserInterface ui;
 
   @override
   State<TransformWidgetEditor> createState() => _TransformWidgetEditor();
@@ -950,7 +950,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
 
                     widget.data.alignment = a;
                     widget.onUpdate(widget.data);
-                    widget.tree.selected.notifyListeners();
+                    widget.ui.selected.notifyListeners();
                   },
                 ))),
         Section(
@@ -2232,8 +2232,7 @@ class ChildDragTarget extends StatefulWidget {
     this.height,
     this.child,
     required this.onAddChild,
-    required this.tree,
-    required this.app,
+    required this.ui,
   });
 
   void Function(UIWidget widget) onAddChild;
@@ -2241,8 +2240,7 @@ class ChildDragTarget extends StatefulWidget {
   double? height;
   Widget? child;
 
-  UITree tree;
-  App app;
+  UserInterface ui;
 
   @override
   State<ChildDragTarget> createState() => _ChildDragTarget();
@@ -2294,12 +2292,13 @@ class _ChildDragTarget extends State<ChildDragTarget> {
             return true;
           },
           onAccept: (name) {
-            UIWidget? child = createUIWidget(widget.app, name, widget.tree);
+            UIWidget? child = createUIWidget(name, widget.ui);
 
             if (child != null) {
               print("Creating child $name");
               widget.onAddChild(child);
-              widget.tree.refresh();
+              print("TODO: Refresh UI widget");
+              setState(() {});
             } else {
               print("Couldn't create child $name");
             }

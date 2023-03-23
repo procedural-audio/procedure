@@ -1,39 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:metasampler/ui/layout.dart';
 
 import '../main.dart';
 
 import 'decoration.dart';
 import 'interactive.dart';
+import '../instrument.dart';
 
-UIWidget? createUIWidget(App app, String name, UITree tree) {
+class UserInterface extends StatelessWidget {
+  UserInterface();
+
+  late final RootWidget root;
+  final ValueNotifier<UIWidget?> selected = ValueNotifier(null);
+  final ValueNotifier<bool> editing = ValueNotifier(false);
+
+  static UserInterface platformDefault() {
+    var ui = UserInterface();
+    ui.root = RootWidget(ui);
+    return ui;
+  }
+
+  void toggleEditing() {
+    editing.value = !editing.value;
+  }
+
+  bool deleteWidget(UIWidget widget) {
+    print("TODO: Delete widget");
+    return false;
+  }
+
+  // void deleteChild() {}
+
+  @override
+  Widget build(BuildContext context) {
+    return root;
+  }
+}
+
+UIWidget? createUIWidget(String name, UserInterface ui) {
   /* Layout Widgets */
 
   if (name == "Stack") {
-    return StackUIWidget(app, tree);
+    return StackUIWidget(ui);
   } else if (name == "Row") {
-    return RowUIWidget(app, tree);
+    return RowUIWidget(ui);
   } else if (name == "Column") {
-    return ColumnUIWidget(app, tree);
+    return ColumnUIWidget(ui);
   } else if (name == "Grid") {
-    return GridUIWidget(app, tree);
+    return GridUIWidget(ui);
 
     /* Decoration Widgets */
   } else if (name == "Text") {
-    return TextUIWidget(app, tree);
+    return TextUIWidget(ui);
   } else if (name == "Box") {
-    return BoxUIWidget(app, tree);
+    return BoxUIWidget(ui);
   } else if (name == "Image") {
-    return ImageUIWidget(app, tree);
+    return ImageUIWidget(ui);
   } else if (name == "Icon") {
-    return IconUIWidget(app, tree);
+    return IconUIWidget(ui);
   } else if (name == "Web View") {
-    return WebViewUIWidget(app, tree);
+    return WebViewUIWidget(ui);
 
     /* Interactive Widgets */
   } else if (name == "Button") {
-    return ButtonUIWidget(app, tree);
+    return ButtonUIWidget(ui);
     /*
   } else if (name == "Knob") {
     return KnobUIWidget(app, tree);
@@ -51,10 +81,10 @@ UIWidget? createUIWidget(App app, String name, UITree tree) {
   }
 }
 
-class UITree {
-  UITree(this.app);
+/*class UITree {
+  UITree();
 
-  App app;
+  // App app;
 
   ValueNotifier<bool> editing = ValueNotifier(false);
   ValueNotifier<UIWidget?> selected = ValueNotifier(null);
@@ -64,12 +94,13 @@ class UITree {
   }
 
   void deleteChild(UIWidget widget) {
-    var root = app.project.value.ui.value;
-    if (root != null) {
+    // var root = app.project.value.ui.value;
+    print("Todo: Delete child recursive");
+    /*if (root != null) {
       if (!root.deleteChildRecursive(widget)) {
         print("Failed to delete item");
       }
-    }
+    }*/
 
     if (selected.value == widget) {
       selected.value = null;
@@ -77,51 +108,30 @@ class UITree {
 
     editing.notifyListeners();
   }
-}
+}*/
 
 abstract class UIWidget extends StatelessWidget {
-  UIWidget(this.app, this.tree);
+  UIWidget(this.ui);
 
-  final App app;
-  final UITree tree;
+  final UserInterface ui;
 
   abstract final String name;
 
   final ValueNotifier<int> notifier = ValueNotifier(0);
 
-  void setState(VoidCallback f) {
-    f();
+  void setState(VoidCallback function) {
+    function();
     notifier.value = notifier.value + 1;
   }
 
   List<UIWidget> getChildren();
 
   void toggleEditor() {
-    if (tree.selected.value == this) {
-      tree.selected.value = null;
+    if (ui.selected.value == this) {
+      ui.selected.value = null;
     } else {
-      tree.selected.value = this;
+      ui.selected.value = this;
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: tree.editing,
-      builder: (context, editing, child) {
-        return ValueListenableBuilder(
-          valueListenable: notifier,
-          builder: (context, value, child) {
-            if (editing) {
-              return buildWidgetEditing(context);
-            } else {
-              tree.selected.value = null;
-              return buildWidget(context);
-            }
-          },
-        );
-      },
-    );
   }
 
   Map<String, dynamic> getJson();
@@ -131,6 +141,20 @@ abstract class UIWidget extends StatelessWidget {
   Widget buildWidgetEditing(BuildContext context);
   Widget buildWidgetEditor(BuildContext context);
 
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ui.editing,
+      builder: (context, editing, child) {
+        if (editing) {
+          return buildWidgetEditing(context);
+        } else {
+          return buildWidget(context);
+        }
+      },
+    );
+  }
+
   UIWidget? createChild(Map<String, dynamic>? json) {
     if (json == null) {
       return null;
@@ -139,7 +163,7 @@ abstract class UIWidget extends StatelessWidget {
     var name = json["name"];
     var state = json["state"];
 
-    var child = createUIWidget(app, name, tree);
+    var child = createUIWidget(name, ui);
 
     if (child != null) {
       if (state != null) {

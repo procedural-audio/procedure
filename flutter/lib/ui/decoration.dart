@@ -10,7 +10,7 @@ import '../main.dart';
 import 'dart:io';
 
 class TextUIWidget extends UIWidget {
-  TextUIWidget(App app, UITree tree) : super(app, tree);
+  TextUIWidget(UserInterface ui) : super(ui);
 
   @override
   final String name = "Text";
@@ -71,7 +71,7 @@ class TextUIWidget extends UIWidget {
             data = t;
           });
         },
-        tree: tree,
+        ui: ui,
         child: Text(text,
             textAlign: TextAlign.center,
             style: TextStyle(color: color, fontSize: size)));
@@ -88,7 +88,7 @@ class TextUIWidget extends UIWidget {
               data = t;
             });
           },
-          tree: tree),
+          ui: ui),
       Section(
           title: "Text",
           child: Row(children: [
@@ -140,7 +140,7 @@ class TextUIWidget extends UIWidget {
 /* Image Widget */
 
 class ImageUIWidget extends UIWidget {
-  ImageUIWidget(App app, UITree tree) : super(app, tree);
+  ImageUIWidget(UserInterface ui) : super(ui);
 
   // String? path = "/home/chase/github/metasampler/content/assets/backgrounds/background_02.png";
   String? path =
@@ -199,7 +199,7 @@ class ImageUIWidget extends UIWidget {
           data = v;
           setState(() {});
         },
-        tree: tree,
+        ui: ui,
         child: path != null
             ? Image.file(
                 File(path!),
@@ -214,13 +214,12 @@ class ImageUIWidget extends UIWidget {
     return Column(children: [
       EditorTitle("Image"),
       TransformWidgetEditor(
-        data: data,
-        onUpdate: (v) {
-          data = v;
-          setState(() {});
-        },
-        tree: tree,
-      ),
+          data: data,
+          onUpdate: (v) {
+            data = v;
+            setState(() {});
+          },
+          ui: ui),
       Section(
           title: "File",
           child: Row(children: [
@@ -249,7 +248,7 @@ class ImageUIWidget extends UIWidget {
 /* Icon Widget */
 
 class IconUIWidget extends UIWidget {
-  IconUIWidget(App app, UITree tree) : super(app, tree);
+  IconUIWidget(UserInterface ui) : super(ui);
 
   String? path =
       "/home/chase/github/metasampler/content/assets/icons/clock.svg";
@@ -305,7 +304,7 @@ class IconUIWidget extends UIWidget {
           data = t;
           setState(() {});
         },
-        tree: tree,
+        ui: ui,
         child: path != null
             ? SvgPicture.file(
                 File(path!),
@@ -319,13 +318,12 @@ class IconUIWidget extends UIWidget {
     return Column(children: [
       EditorTitle("Icon"),
       TransformWidgetEditor(
-        data: data,
-        onUpdate: (v) {
-          data = v;
-          setState(() {});
-        },
-        tree: tree,
-      ),
+          data: data,
+          onUpdate: (v) {
+            data = v;
+            setState(() {});
+          },
+          ui: ui),
       Section(
           title: "Path",
           child: Row(children: [
@@ -361,7 +359,7 @@ class IconUIWidget extends UIWidget {
 /* Box Widget */
 
 class BoxUIWidget extends UIWidget {
-  BoxUIWidget(App app, UITree tree) : super(app, tree);
+  BoxUIWidget(UserInterface ui) : super(ui);
 
   double borderRadius = 0.0;
   double borderThickness = 0.0;
@@ -428,7 +426,7 @@ class BoxUIWidget extends UIWidget {
           transform = transform;
           setState(() {});
         },
-        tree: tree,
+        ui: ui,
         child: Container(
             decoration: BoxDecoration(
                 color: color,
@@ -442,13 +440,12 @@ class BoxUIWidget extends UIWidget {
     return Column(children: [
       EditorTitle("Container"),
       TransformWidgetEditor(
-        data: transform,
-        onUpdate: (transform) {
-          transform = transform;
-          setState(() {});
-        },
-        tree: tree,
-      ),
+          data: transform,
+          onUpdate: (transform) {
+            transform = transform;
+            setState(() {});
+          },
+          ui: ui),
       Section(
           title: "Style",
           child: Column(children: [

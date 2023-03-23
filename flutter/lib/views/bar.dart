@@ -1,6 +1,7 @@
 import 'package:metasampler/views/presets.dart';
 import 'package:flutter/material.dart';
 
+import '../host.dart';
 import '../main.dart';
 
 import 'browser.dart';
@@ -10,11 +11,13 @@ class Bar extends StatefulWidget {
     required this.app,
     required this.instViewVisible,
     required this.onViewSwitch,
+    required this.onUserInterfaceEdit,
   });
 
   App app;
   bool instViewVisible;
   void Function() onViewSwitch;
+  void Function() onUserInterfaceEdit;
 
   @override
   _Bar createState() => _Bar();
@@ -68,16 +71,26 @@ class _Bar extends State<Bar> {
               ValueListenableBuilder<Project>(
                 // CHANGE TO LOADED PRESET
                 valueListenable: widget.app.project,
-                builder: (context, value, child) {
-                  return BarDropdown(
-                    width: 180,
-                    text: widget.app.loadedPreset.value.name,
-                    onTap: () {
-                      setState(() {
-                        showPresetView = !showPresetView;
-                        showInstrumentView = false;
-                        showOtherView = false;
-                      });
+                builder: (context, project, child) {
+                  return ValueListenableBuilder<Patch>(
+                    valueListenable: project.patch,
+                    builder: (context, patch, child) {
+                      return ValueListenableBuilder<String>(
+                        valueListenable: patch.info.name,
+                        builder: (context, name, child) {
+                          return BarDropdown(
+                            width: 180,
+                            text: name,
+                            onTap: () {
+                              setState(() {
+                                showPresetView = !showPresetView;
+                                showInstrumentView = false;
+                                showOtherView = false;
+                              });
+                            },
+                          );
+                        },
+                      );
                     },
                   );
                 },
@@ -85,11 +98,7 @@ class _Bar extends State<Bar> {
               BarButton(
                 iconData: Icons.edit,
                 onTap: () {
-                  setState(() {
-                    // var editing = widget.window.instrumentView.tree.editing;
-                    // editing.value = !editing.value;
-                    print("Edit not implemented");
-                  });
+                  widget.onUserInterfaceEdit();
                 },
               ),
               BarButton(

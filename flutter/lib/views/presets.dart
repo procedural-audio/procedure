@@ -102,7 +102,7 @@ class PresetsViewItemEditor extends StatelessWidget {
                 ),
               );
             } else if (item is UserInterfaceItem) {
-              return UserInterfaceItemEditor(app, item);
+              return RootWidgetItemEditor(app, item);
             } else if (item is GraphItem) {
               return GraphItemEditor(app, item);
             } else {
@@ -113,8 +113,8 @@ class PresetsViewItemEditor extends StatelessWidget {
   }
 }
 
-class UserInterfaceItemEditor extends StatelessWidget {
-  UserInterfaceItemEditor(this.app, this.item);
+class RootWidgetItemEditor extends StatelessWidget {
+  RootWidgetItemEditor(this.app, this.item);
 
   UserInterfaceItem item;
   App app;
