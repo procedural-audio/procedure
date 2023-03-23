@@ -657,10 +657,9 @@ class _Patch extends State<Patch> {
                   widget.app,
                   specs: widget.app.moduleSpecs,
                   addPosition: Offset(
-                      righttClickOffset.dx -
-                          controller.value.getTranslation().x,
-                      righttClickOffset.dy -
-                          controller.value.getTranslation().y),
+                    righttClickOffset.dx - controller.value.getTranslation().x,
+                    righttClickOffset.dy - controller.value.getTranslation().y,
+                  ),
                 ),
               ),
             ),
