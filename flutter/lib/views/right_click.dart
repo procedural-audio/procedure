@@ -9,7 +9,7 @@ class RightClickView extends StatefulWidget {
 
   Offset addPosition;
   App app;
-  ValueNotifier<List<ModuleSpec>> specs;
+  ValueNotifier<List<ModuleInfo>> specs;
 
   @override
   State<RightClickView> createState() => _RightClickView();
@@ -20,7 +20,7 @@ class _RightClickView extends State<RightClickView> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<ModuleSpec>>(
+    return ValueListenableBuilder<List<ModuleInfo>>(
         valueListenable: widget.specs,
         builder: (context, specs, child) {
           List<RightClickCategory> categories = [];
@@ -272,7 +272,7 @@ class _RightClickCategoryState extends State<RightClickCategory> {
 }
 
 class RightClickElement extends StatefulWidget {
-  final ModuleSpec spec;
+  final ModuleInfo spec;
   final double indent;
   final IconData icon;
   final Color color;

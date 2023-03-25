@@ -147,6 +147,7 @@ pub unsafe extern "C" fn api_host_process(
 }
 
 /* Host Graph */
+
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_refresh(host: &mut Host) {
     host.graph.refresh();
@@ -259,6 +260,65 @@ pub unsafe extern "C" fn ffi_host_get_connector_start_index(host: &mut Host, ind
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_connector_end_index(host: &mut Host, index: usize) -> i32 {
     host.graph.connectors[index].end.pin_index
+}
+
+/* Patch */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_create_patch() -> *mut Graph {
+    Box::into_raw(Box::new(Graph::new()))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_load(graph: &mut Graph, path: &i8) {
+    let path = str_from_char(path);
+    let data = std::fs::read_to_string(path).unwrap();
+
+    println!("Loading patch from {}", path);
+    println!("{}", data);
+
+    match serde_json::from_str(&data) {
+        Ok(new_graph) => {
+            let mut new_graph: Graph = new_graph;
+            new_graph.refresh();
+
+            new_graph.refresh();
+            *graph = new_graph;
+        }
+        Err(e) => {
+            graph.nodes.clear();
+            graph.nodes.clear();
+            graph.refresh();
+            println!("Failed to decode graph {}", e);
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_destroy(graph: *mut Graph) {
+    let _ = Box::from_raw(graph);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, buffer: &i8) -> bool {
+    graph.add_module(str_from_char(buffer))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_remove_node(patch: &mut Graph, id: i32) -> bool {
+    patch.remove_module(id);
+    println!("Skipped check if remove suceeded");
+    true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_node_count(patch: &mut Graph) -> usize {
+    patch.nodes.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_node(patch: &mut Graph, index: usize) -> &Node {
+    patch.nodes[index].as_ref()
 }
 
 /* Node */
@@ -509,4 +569,51 @@ pub unsafe extern "C" fn ffi_widget_get_child(
     index: usize,
 ) -> &dyn WidgetNew {
     widget.get_children().get(index).unwrap()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugin_get_name(plugin: &Plugin) -> *const i8 {
+    let name = plugin.name;
+    let s = CString::new(name).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugin_get_version(plugin: &Plugin) -> u64 {
+    plugin.version
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugin_get_module_info_count(plugin: &Plugin) -> usize {
+    plugin.modules.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugin_get_module_info(plugin: &Plugin, index: usize) -> *const ModuleSpec {
+    &plugin.modules[index]
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_get_id(info: &ModuleSpec) -> *const i8 {
+    let name = info.id;
+    let s = CString::new(name).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_get_path(info: &ModuleSpec) -> *const i8 {
+    let name = info.path;
+    let s = CString::new(name).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_get_color(info: &ModuleSpec) -> Color {
+    info.color
 }

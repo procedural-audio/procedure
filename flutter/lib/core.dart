@@ -11,6 +11,7 @@ import 'module.dart';
 class Core {
   Core(this.raw);
 
+  // Make sure this doesn't leak???
   final RawCore raw;
   // final Plugins plugins;
   // ValueNotifier<List<Plugin>> plugins;
@@ -308,3 +309,93 @@ class FFIWidgetTrait extends Struct {
   @Int64()
   external int metadata;
 }
+
+class RawPlugin extends Struct {
+  @Int64()
+  external int pointer;
+
+  static RawPlugin? from(DynamicLibrary library) {
+    if (library.providesSymbol("export_plugin")) {
+      RawPlugin Function() exportPlugin = library
+          .lookup<NativeFunction<RawPlugin Function()>>("export_plugin")
+          .asFunction();
+
+      return exportPlugin();
+    } else {
+      print("Couldn't find export in plugin");
+    }
+
+    return null;
+  }
+
+  String getName() {
+    var rawName = ffiPluginGetName(this);
+    var name = rawName.toDartString();
+    calloc.free(rawName);
+    return name;
+  }
+
+  int getVersion() {
+    return ffiPluginGetVersion(this);
+  }
+
+  int getModuleCount() {
+    return ffiPluginGetModuleCount(this);
+  }
+
+  RawModuleInfo getModuleInfo(int index) {
+    return ffiPluginGetModuleInfo(this, index);
+  }
+}
+
+Pointer<Utf8> Function(RawPlugin) ffiPluginGetName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawPlugin)>>(
+        "ffi_plugin_get_name")
+    .asFunction();
+int Function(RawPlugin) ffiPluginGetVersion = core
+    .lookup<NativeFunction<Int64 Function(RawPlugin)>>("ffi_plugin_get_version")
+    .asFunction();
+int Function(RawPlugin) ffiPluginGetModuleCount = core
+    .lookup<NativeFunction<Int64 Function(RawPlugin)>>(
+        "ffi_plugin_get_module_info_count")
+    .asFunction();
+RawModuleInfo Function(RawPlugin, int) ffiPluginGetModuleInfo = core
+    .lookup<NativeFunction<RawModuleInfo Function(RawPlugin, Int64)>>(
+        "ffi_plugin_get_module_info")
+    .asFunction();
+
+class RawModuleInfo extends Struct {
+  @Int64()
+  external int pointer;
+
+  String getModuleId() {
+    var rawId = ffiModuleInfoGetId(this);
+    var id = rawId.toDartString();
+    calloc.free(rawId);
+    return id;
+  }
+
+  String getModulePath() {
+    var rawPath = ffiModuleInfoGetPath(this);
+    var path = rawPath.toDartString();
+    calloc.free(rawPath);
+    return path;
+  }
+
+  Color getModuleColor() {
+    return Color(ffiModuleInfoGetColor(this));
+  }
+}
+
+Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetId = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
+        "ffi_module_info_get_id")
+    .asFunction();
+Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
+        "ffi_module_info_get_path")
+    .asFunction();
+int Function(RawModuleInfo) ffiModuleInfoGetColor = core
+    .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
+        "ffi_module_info_get_color")
+    .asFunction();

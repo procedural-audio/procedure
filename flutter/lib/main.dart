@@ -1,8 +1,15 @@
+import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:metasampler/host.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
+
 import 'dart:ui' as ui;
+import 'dart:math';
+
+import 'settings.dart';
 
 import 'views/info.dart';
 import 'views/settings.dart';
@@ -22,6 +29,7 @@ void main(List<String> args) {
       App(
         core: Core.create(),
         assets: Assets.platformDefault(),
+        plugins: Plugins.platformDefault(),
       ),
     );
   } else {
@@ -31,6 +39,7 @@ void main(List<String> args) {
       App(
         core: Core.from(addr),
         assets: Assets.platformDefault(),
+        plugins: Plugins.platformDefault(),
       ),
     );
   }
@@ -76,20 +85,155 @@ class Project {
   }
 }
 
+class ModuleInfo {
+  ModuleInfo(this.id, this.path, this.color);
+
+  static ModuleInfo from(RawModuleInfo rawInfo) {
+    print("Found module " + rawInfo.getModulePath());
+
+    return ModuleInfo(
+      rawInfo.getModuleId(),
+      rawInfo.getModulePath(),
+      rawInfo.getModuleColor(),
+    );
+  }
+
+  String id;
+  String path;
+  Color color;
+}
+
+class Plugin {
+  Plugin(this.path) {
+    scan();
+  }
+
+  final String path;
+  DynamicLibrary? library;
+
+  final ValueNotifier<String> name = ValueNotifier("");
+  final ValueNotifier<List<ModuleInfo>> _modules = ValueNotifier([]);
+
+  void scan() async {
+    // TODO: library?.close();
+
+    var rand = Random();
+    File file = File(path);
+    if (await file.exists()) {
+      var fileName = file.name;
+      var extension = "someextensionhere";
+
+      if (Platform.isMacOS) {
+        extension = ".dylib";
+      } else if (Platform.isLinux) {
+        extension = ".so";
+      } else if (Platform.isWindows) {
+        extension = ".dll";
+      } else {
+        print("Unknown dynamcic library extension for platform");
+      }
+
+      var randString = ((rand.nextDouble() + 1.0) * 900000).toInt().toString();
+      fileName = fileName.replaceAll(extension, randString + extension);
+      var newPath = Settings2.pluginLoadDirectory() + fileName;
+      var newFile = await file.copy(newPath);
+      var lib = DynamicLibrary.open(newFile.path);
+
+      print("Loaded plugin at " + newFile.path);
+
+      var plugin = RawPlugin.from(lib);
+      if (plugin != null) {
+        List<ModuleInfo> modules = [];
+
+        int count = plugin.getModuleCount();
+        for (int i = 0; i < count; i++) {
+          var rawModuleInfo = plugin.getModuleInfo(i);
+          modules.add(ModuleInfo.from(rawModuleInfo));
+        }
+
+        library = lib;
+        name.value = plugin.getName();
+        _modules.value = modules;
+      } else {
+        print("Failed to get raw plugin");
+      }
+    }
+  }
+
+  ValueNotifier<List<ModuleInfo>> list() {
+    return _modules;
+  }
+}
+
+class Plugins {
+  Plugins(this.directory) {
+    var pluginLoadDir = Directory(Settings2.pluginLoadDirectory());
+    pluginLoadDir.listSync().forEach((e) => e.delete());
+
+    scan();
+  }
+
+  final Directory directory;
+  final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
+
+  static Plugins platformDefault() {
+    var path = "/Users/chasekanipe/Github/nodus/build/out/core/release/";
+    var directory = Directory(path);
+    return Plugins(directory);
+  }
+
+  void scan() async {
+    List<Plugin> plugins = [];
+    if (await directory.exists()) {
+      var items = directory.list();
+      await for (var item in items) {
+        var extension = ".dynamiclibraryhere";
+
+        if (Platform.isMacOS) {
+          extension = ".dylib";
+        } else if (Platform.isLinux) {
+          extension = ".so";
+        } else if (Platform.isWindows) {
+          extension = ".dll";
+        } else {
+          print("Unknown dynamcic library extension for platform");
+        }
+
+        if (item.path.contains(extension)) {
+          var library = DynamicLibrary.open(item.path);
+          if (library.providesSymbol("export_plugin")) {
+            print("Found plugin at " + item.path);
+            plugins.add(Plugin(item.path));
+          }
+        }
+      }
+    } else {
+      print("Plugin directory doesn't exist");
+    }
+
+    _plugins.value = plugins;
+  }
+
+  ValueNotifier<List<Plugin>> list() {
+    return _plugins;
+  }
+}
+
 class App extends StatefulWidget {
-  App({required this.core, required this.assets}) {
+  App({required this.core, required this.assets, required this.plugins}) {
     project = ValueNotifier(Project.blank(this));
   }
 
   Core core;
   Assets assets;
+  Plugins plugins;
 
   late ValueNotifier<Project> project;
 
   // ======= Other stuff =======
 
   ValueNotifier<int> selectedModule = ValueNotifier(-1);
-  ValueNotifier<List<ModuleSpec>> moduleSpecs = ValueNotifier([]);
+  ValueNotifier<List<ModuleInfo>> moduleSpecs = ValueNotifier([]);
 
   bool patchingScaleEnabled = true;
 
@@ -462,7 +606,7 @@ class _GridState extends State<Grid> {
             TempConnectorWidget(widget.app),
             Connectors(widget.app),
             Stack(
-              children: widget.app.project.value.patch.value.modules,
+              children: widget.app.project.value.patch.value.modules.value,
             ),
             DragTarget(
               builder: (BuildContext context, List<dynamic> accepted,
@@ -568,7 +712,7 @@ class TempConnectorPainter extends CustomPainter {
       return;
     }
 
-    for (var module1 in app.project.value.patch.value.modules) {
+    for (var module1 in app.project.value.patch.value.modules.value) {
       if (connector.moduleId == module1.id) {
         var pin1 = module1.pins[connector.pinIndex];
 
@@ -671,9 +815,9 @@ class ConnectorsPainter extends CustomPainter {
       ..strokeWidth = 4;
 
     for (var connector in app.project.value.patch.value.connectors) {
-      for (var module1 in app.project.value.patch.value.modules) {
+      for (var module1 in app.project.value.patch.value.modules.value) {
         if (connector.start.moduleId == module1.id) {
-          for (var module2 in app.project.value.patch.value.modules) {
+          for (var module2 in app.project.value.patch.value.modules.value) {
             if (connector.end.moduleId == module2.id) {
               var pin1 = module1.pins[connector.start.index];
               var pin2 = module2.pins[connector.end.index];

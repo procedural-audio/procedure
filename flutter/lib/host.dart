@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:ffi/ffi.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'main.dart';
 import 'config.dart';
 import 'module.dart';
+import 'core.dart';
 
 import 'views/variables.dart';
 import 'views/presets.dart';
@@ -106,14 +109,6 @@ class AudioPlugins {
 
     return "Reply message";
   }
-}
-
-class ModuleSpec {
-  ModuleSpec(this.id, this.path, this.color);
-
-  String id;
-  String path;
-  Color color;
 }
 
 /* LIBRARY */
@@ -438,16 +433,94 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
+RawPatch Function() _ffiCreatePatch = core
+    .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
+    .asFunction();
+
+bool Function(RawPatch, Pointer<Utf8>) _ffiPatchLoad = core
+    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
+        "ffi_patch_load")
+    .asFunction();
+
+void Function(RawPatch) _ffiPatchDestroy = core
+    .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
+    .asFunction();
+
+bool Function(RawPatch, Pointer<Utf8>) _ffiPatchAddModule = core
+    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
+        "ffi_patch_add_module")
+    .asFunction();
+
+int Function(RawPatch) _ffiPatchGetNodeCount = core
+    .lookup<NativeFunction<Int64 Function(RawPatch)>>(
+        "ffi_patch_get_node_count")
+    .asFunction();
+
+RawNode Function(RawPatch, int) _ffiPatchGetNode = core
+    .lookup<NativeFunction<RawNode Function(RawPatch, Int64)>>(
+        "ffi_patch_get_node")
+    .asFunction();
+
+// TODO: Make sure this isn't leaked
+class RawPatch extends Struct {
+  @Int64()
+  external int pointer;
+
+  static RawPatch create() {
+    return _ffiCreatePatch();
+  }
+
+  static RawPatch from(String path) {
+    var patch = RawPatch.create();
+    patch.load(path);
+    return patch;
+  }
+
+  bool load(String path) {
+    var rawPath = path.toNativeUtf8();
+    var success = _ffiPatchLoad(this, rawPath);
+    calloc.free(rawPath);
+    return success;
+  }
+
+  bool addModule(String name) {
+    var rawName = name.toNativeUtf8();
+    bool success = _ffiPatchAddModule(this, rawName);
+    calloc.free(rawName);
+    return success;
+  }
+
+  int getNodeCount() {
+    return _ffiPatchGetNodeCount(this);
+  }
+
+  RawNode getNode(int id) {
+    return _ffiPatchGetNode(this, id);
+  }
+}
+
 class Patch extends StatefulWidget {
-  var modules = <Module>[];
-  var connectors = <Connector>[];
-
-  PatchInfo info;
-  App app;
-
   Patch(this.app, this.info) {
+    _patch.load(info.path);
     refresh();
   }
+
+  final App app;
+  final PatchInfo info;
+  final RawPatch _patch = RawPatch.create(); // TODO: Fix leak
+
+  var connectors = <Connector>[];
+  ValueNotifier<List<Module>> modules = ValueNotifier([]);
+
+  // Rename to node???
+  bool addModule2(String name) {
+    /*_patch.addModule(name);*/
+    /* plugins.createModule(name); */
+
+    return true;
+  }
+
+  /* Old Methods */
 
   bool addModule(String name, Offset addPosition) {
     var ret = app.core.addModule(name);
@@ -461,14 +534,14 @@ class Patch extends StatefulWidget {
       moduleRaw.setX(x);
       moduleRaw.setY(y);
 
-      modules.add(Module(app, moduleRaw));
+      modules.value.add(Module(app, moduleRaw));
     }
 
     return ret;
   }
 
   void removeModule(int id) {
-    modules.retainWhere((element) => element.id != id);
+    modules.value.retainWhere((element) => element.id != id);
     connectors.retainWhere((element) => element.start.moduleId != id);
     connectors.retainWhere((element) => element.end.moduleId != id);
     app.core.removeNode(id);
@@ -493,7 +566,7 @@ class Patch extends StatefulWidget {
   }
 
   void refresh() {
-    modules.clear();
+    modules.value.clear();
     connectors.clear();
 
     int moduleCount = app.core.getNodeCount();
@@ -501,7 +574,7 @@ class Patch extends StatefulWidget {
     for (int i = 0; i < moduleCount; i++) {
       var moduleRaw = app.core.getNode(i);
       var module = Module(app, moduleRaw);
-      modules.add(module);
+      modules.value.add(module);
     }
 
     int connectorCount = app.core.getConnectorCount();
@@ -514,7 +587,7 @@ class Patch extends StatefulWidget {
 
       var type = IO.audio;
 
-      for (var module in modules) {
+      for (var module in modules.value) {
         if (module.id == startId) {
           type = module.pins[startIndex].type;
         }

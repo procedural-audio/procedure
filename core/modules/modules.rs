@@ -17,11 +17,17 @@ pub use utilities::*;
 pub mod widget;
 pub use crate::widget::*;
 
+pub struct Plugin {
+    pub name: &'static str,
+    pub version: u64,
+    pub modules: &'static [ModuleSpec]
+}
+
 pub struct ModuleSpec {
     pub id: &'static str,
     pub path: &'static str,
     pub color: Color,
-    create: fn() -> Box<dyn PolyphonicModule>
+    pub create: fn() -> Box<dyn PolyphonicModule>
 }
 
 impl ModuleSpec {
@@ -34,9 +40,9 @@ pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
     Box::new(ModuleManager::<T>::new())
 }
 
-pub fn module<T: 'static + Module>() -> ModuleSpec {
+pub const fn module<T: 'static + Module>() -> ModuleSpec {
     ModuleSpec {
-        id: T::module_id(),
+        id: T::INFO.title,
         path: T::INFO.path,
         color: T::INFO.color,
         create: create_module::<T>
@@ -431,6 +437,15 @@ pub trait Module {
     type Voice;
 
     const INFO: Info;
+
+    fn spec() -> ModuleSpec where Self: Sized + 'static {
+        ModuleSpec {
+            id: Self::module_id(),
+            path: Self::INFO.path,
+            color: Self::INFO.color,
+            create: create_module::<Self>
+        }
+    }
 
     fn info(&self) -> Info {
         Self::INFO

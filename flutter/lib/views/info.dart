@@ -20,7 +20,8 @@ class PatchInfo {
 
   static PatchInfo blank() {
     return PatchInfo(
-      path: "/some/path/here",
+      path:
+          "/Users/chasekanipe/Github/assets/projects/NewProject/patches/Patch 1.json",
       name: ValueNotifier("New Patch"),
       description: ValueNotifier("Blank patch description"),
     );
