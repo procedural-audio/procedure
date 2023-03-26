@@ -1,9 +1,8 @@
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
+import 'package:ffi/ffi.dart';
 
 import 'dart:ffi';
 import 'dart:io';
-import 'patch.dart';
 import 'module.dart';
 
 class Core {
@@ -315,60 +314,6 @@ class RawModule extends Struct {
   @Int64()
   external int pointer2;
 }
-
-class RawPlugin extends Struct {
-  @Int64()
-  external int pointer;
-
-  static RawPlugin? from(DynamicLibrary library) {
-    if (library.providesSymbol("export_plugin")) {
-      RawPlugin Function() exportPlugin = library
-          .lookup<NativeFunction<RawPlugin Function()>>("export_plugin")
-          .asFunction();
-
-      return exportPlugin();
-    } else {
-      print("Couldn't find export in plugin");
-    }
-
-    return null;
-  }
-
-  String getName() {
-    var rawName = ffiPluginGetName(this);
-    var name = rawName.toDartString();
-    calloc.free(rawName);
-    return name;
-  }
-
-  int getVersion() {
-    return ffiPluginGetVersion(this);
-  }
-
-  int getModuleCount() {
-    return ffiPluginGetModuleCount(this);
-  }
-
-  RawModuleInfo getModuleInfo(int index) {
-    return ffiPluginGetModuleInfo(this, index);
-  }
-}
-
-Pointer<Utf8> Function(RawPlugin) ffiPluginGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(RawPlugin)>>(
-        "ffi_plugin_get_name")
-    .asFunction();
-int Function(RawPlugin) ffiPluginGetVersion = core
-    .lookup<NativeFunction<Int64 Function(RawPlugin)>>("ffi_plugin_get_version")
-    .asFunction();
-int Function(RawPlugin) ffiPluginGetModuleCount = core
-    .lookup<NativeFunction<Int64 Function(RawPlugin)>>(
-        "ffi_plugin_get_module_info_count")
-    .asFunction();
-RawModuleInfo Function(RawPlugin, int) ffiPluginGetModuleInfo = core
-    .lookup<NativeFunction<RawModuleInfo Function(RawPlugin, Int64)>>(
-        "ffi_plugin_get_module_info")
-    .asFunction();
 
 class RawModuleInfo extends Struct {
   @Int64()

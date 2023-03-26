@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:ui' as ui;
 
 import 'main.dart';
 import 'core.dart';
@@ -14,67 +15,6 @@ import 'module.dart';
 
 import 'views/info.dart';
 import 'views/right_click.dart';
-
-class AudioPluginsCategory {
-  AudioPluginsCategory(this.name, this.plugins);
-
-  String name;
-  List<String> plugins;
-}
-
-class AudioPlugins {
-  final _channel =
-      const BasicMessageChannel("AudioPlugins", JSONMessageCodec());
-
-  ValueNotifier<int?> processAddress = ValueNotifier(null);
-
-  ValueNotifier<List<AudioPluginsCategory>> plugins = ValueNotifier([
-    AudioPluginsCategory("Synths", ["Diva", "Omnisphere"]),
-    AudioPluginsCategory("Samplers", ["Kontakt", "Keyscape"]),
-    AudioPluginsCategory("Effects", ["ValhallaRoom", "ValhallaDelay"])
-  ]);
-
-  AudioPlugins() {
-    _channel.setMessageHandler(messageHandler);
-    _channel.send(jsonEncode({"message": "list plugins"}));
-    _channel.send(jsonEncode({"message": "get process"}));
-  }
-
-  void createPlugin(int id, String name) {
-    _channel
-        .send(jsonEncode({"message": "create", "name": name, "module_id": id}));
-  }
-
-  void showPlugin(int id) {
-    _channel.send(jsonEncode({"message": "show", "module_id": id}));
-  }
-
-  Future<String> messageHandler(dynamic message) async {
-    if (message != null) {
-      if (message is String) {
-        if (message.contains("process addr")) {
-          var num = message.split(" ").last;
-          var addr = int.tryParse(num);
-
-          if (addr != null) {
-            print("Setting plugin process addr " + addr.toString());
-            processAddress.value = addr;
-          } else {
-            print("Failed to parse plugin process addr");
-          }
-        } else {
-          print("Recieved string message: " + message);
-        }
-      } else {
-        print("Recieved other typed message: " + message.toString());
-      }
-    } else {
-      print("Recieved null message");
-    }
-
-    return "Reply message";
-  }
-}
 
 /* LIBRARY */
 
@@ -127,8 +67,8 @@ void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
     .asFunction();
 
-bool Function(RawPatch, Pointer<Utf8>) _ffiPatchAddModule = core
-    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
+RawNode Function(RawPatch, RawModule) _ffiPatchAddModule = core
+    .lookup<NativeFunction<RawNode Function(RawPatch, RawModule)>>(
         "ffi_patch_add_module")
     .asFunction();
 
@@ -164,11 +104,9 @@ class RawPatch extends Struct {
     return success;
   }
 
-  bool addModule(String name) {
-    var rawName = name.toNativeUtf8();
-    bool success = _ffiPatchAddModule(this, rawName);
-    calloc.free(rawName);
-    return success;
+  Node addModule(RawModule rawModule) {
+    RawNode rawNode = _ffiPatchAddModule(this, rawModule);
+    return Node(rawNode);
   }
 
   int getNodeCount() {
@@ -180,7 +118,197 @@ class RawPatch extends Struct {
   }
 }
 
+class PatchInfo {
+  PatchInfo({
+    required this.path,
+    required this.name,
+    required this.description,
+  });
+
+  /*static PatchInfo blank() {
+    return PatchInfo(
+      path:
+          "/Users/chasekanipe/Github/assets/projects/NewProject/patches/Patch 1.json",
+      name: ValueNotifier("New Patch"),
+      description: ValueNotifier("Blank patch description"),
+    );
+  }*/
+
+  static Future<PatchInfo?> from(String path) async {
+    File file = File(path);
+    if (await file.exists()) {
+      var contents = await file.readAsString();
+      var json = jsonDecode(contents);
+
+      return PatchInfo(
+        path: path,
+        name: json["name"],
+        description: json["description"],
+      );
+    }
+
+    return null;
+  }
+
+  Future<Patch?> load() async {
+    print("Load not implemented for patch");
+    return null;
+  }
+
+  final String path;
+  final ValueNotifier<String> name;
+  final ValueNotifier<String> description;
+}
+
 class Patch extends StatefulWidget {
+  Patch({
+    required this.rawPatch,
+    required this.path,
+    required this.name,
+    required this.description,
+  });
+
+  final RawPatch rawPatch;
+  final ValueNotifier<String> path;
+  final ValueNotifier<String> name;
+  final ValueNotifier<String> description;
+  final ValueNotifier<List<Node>> _nodes = ValueNotifier([]);
+  // ValueNotifier<List<Connector>> _connectors = ValueNotifier([]);
+
+  static Patch blank() {
+    return Patch.create(
+      "/Users/chasekanipe/Github/assets/projects/NewProject/patches/New Patch.json",
+      "New Patch",
+      "Blank patch description",
+    );
+  }
+
+  static Patch create(String path, String name, String description) {
+    return Patch(
+      rawPatch: RawPatch.create(),
+      path: ValueNotifier(path),
+      name: ValueNotifier(name),
+      description: ValueNotifier(description),
+    );
+  }
+
+  void addModule(RawModule module) {
+    var node = rawPatch.addModule(module);
+    _nodes.value.add(node);
+    _nodes.notifyListeners();
+  }
+
+  @override
+  _Patch createState() => _Patch();
+}
+
+class _Patch extends State<Patch> {
+  TransformationController controller = TransformationController();
+  Offset rightClickOffset = Offset.zero;
+  bool showRightClickMenu = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (details) {
+        setState(() {
+          showRightClickMenu = false;
+        });
+      },
+      onSecondaryTapDown: (details) {
+        setState(() {
+          rightClickOffset = details.localPosition;
+          showRightClickMenu = true;
+        });
+      },
+      child: Stack(
+        children: [
+          InteractiveViewer(
+            minScale: 0.2,
+            maxScale: 1.5,
+            panEnabled: true,
+            scaleEnabled: true,
+            clipBehavior: Clip.hardEdge,
+            constrained: false,
+            transformationController: controller,
+            onInteractionUpdate: (details) {
+              if (showRightClickMenu) {
+                setState(() {
+                  showRightClickMenu = false;
+                });
+              }
+            },
+            child: GestureDetector(
+              child: Container(
+                width: 10000,
+                height: 10000,
+                child: CustomPaint(
+                  painter: Grid(),
+                  child: ValueListenableBuilder<List<Node>>(
+                    valueListenable: widget._nodes,
+                    builder: (context, nodes, child) {
+                      return Stack(
+                        children: nodes,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: showRightClickMenu,
+            child: Positioned(
+              left: rightClickOffset.dx,
+              top: rightClickOffset.dy,
+              child: RightClickView(
+                addPosition: rightClickOffset,
+                onAddModule: (info) {
+                  var module = info.create();
+                  widget.addModule(module);
+                  setState(() {
+                    showRightClickMenu = false;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Grid extends CustomPainter {
+  @override
+  void paint(Canvas canvas, ui.Size size) {
+    const spacing = 25;
+    final paint = Paint()
+      ..color = const Color.fromRGBO(25, 25, 25, 1.0)
+      ..strokeWidth = 1;
+
+    for (double i = 0; i < size.width; i += spacing) {
+      final p1 = Offset(i, 0);
+      final p2 = Offset(i, size.height);
+
+      canvas.drawLine(p1, p2, paint);
+    }
+
+    for (double i = 0; i < size.height; i += spacing) {
+      final p1 = Offset(0, i);
+      final p2 = Offset(size.width, i);
+
+      canvas.drawLine(p1, p2, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+/*class Patch extends StatefulWidget {
   Patch(this.app, this.info) {
     _patch.load(info.path);
     refresh();
@@ -191,7 +319,7 @@ class Patch extends StatefulWidget {
   final RawPatch _patch = RawPatch.create(); // TODO: Fix leak
 
   var connectors = <Connector>[];
-  ValueNotifier<List<Module>> modules = ValueNotifier([]);
+  ValueNotifier<List<Node>> nodes = ValueNotifier([]);
 
   // Rename to node???
   bool addModule2(String name) {
@@ -476,4 +604,4 @@ class _Patch extends State<Patch> {
       ),
     );
   }
-}
+}*/

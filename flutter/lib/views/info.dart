@@ -12,52 +12,6 @@ import '../projects.dart';
 import '../ui/ui.dart';
 import 'settings.dart';
 
-class PatchInfo {
-  PatchInfo({
-    required this.path,
-    required this.name,
-    required this.description,
-  });
-
-  static PatchInfo blank() {
-    return PatchInfo(
-      path:
-          "/Users/chasekanipe/Github/assets/projects/NewProject/patches/Patch 1.json",
-      name: ValueNotifier("New Patch"),
-      description: ValueNotifier("Blank patch description"),
-    );
-  }
-
-  static Future<PatchInfo?> from(String path) async {
-    File file = File(path);
-    if (await file.exists()) {
-      var contents = await file.readAsString();
-      var json = jsonDecode(contents);
-
-      return PatchInfo(
-        path: path,
-        name: json["name"],
-        description: json["description"],
-      );
-    }
-
-    return null;
-  }
-
-  Future<Patch?> load() async {
-    print("Load not implemented for patch");
-    return null;
-  }
-
-  /*static PatchInfo blank() {
-
-  }*/
-
-  final String path;
-  final ValueNotifier<String> name;
-  final ValueNotifier<String> description;
-}
-
 class UserInterfaceInfo {
   UserInterfaceInfo({
     required this.path,

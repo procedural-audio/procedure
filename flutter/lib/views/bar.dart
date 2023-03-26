@@ -77,7 +77,7 @@ class _Bar extends State<Bar> {
                     valueListenable: project.patch,
                     builder: (context, patch, child) {
                       return ValueListenableBuilder<String>(
-                        valueListenable: patch.info.name,
+                        valueListenable: patch.name,
                         builder: (context, name, child) {
                           return BarDropdown(
                             width: 180,

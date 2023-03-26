@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
-import '../main.dart';
 import 'settings.dart';
-import '../projects.dart';
+
+import '../main.dart';
+import '../module.dart';
+import '../plugins.dart';
 
 class RightClickView extends StatefulWidget {
-  RightClickView(this.app, {required this.addPosition, required this.specs});
+  RightClickView({
+    required this.addPosition,
+    required this.onAddModule,
+  });
 
   Offset addPosition;
-  App app;
-  ValueNotifier<List<ModuleInfo>> specs;
+  void Function(ModuleInfo) onAddModule;
 
   @override
   State<RightClickView> createState() => _RightClickView();
@@ -21,7 +25,7 @@ class _RightClickView extends State<RightClickView> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Plugin>>(
-      valueListenable: widget.app.plugins.list(),
+      valueListenable: PLUGINS.list(),
       builder: (context, plugins, child) {
         List<ModuleInfo> specs = [];
 
@@ -41,12 +45,12 @@ class _RightClickView extends State<RightClickView> {
             var elementName = path[1];
 
             var element = RightClickElement(
-              widget.app,
               spec,
               Icons.piano,
               spec.color,
               20,
               widget.addPosition,
+              widget.onAddModule,
             );
 
             bool foundCategory = false;
@@ -67,12 +71,12 @@ class _RightClickView extends State<RightClickView> {
             var elementName = path[2];
 
             var element = RightClickElement(
-              widget.app,
               spec,
               Icons.piano,
               spec.color,
               30,
               widget.addPosition,
+              widget.onAddModule,
             );
 
             bool foundCategory = false;
@@ -133,10 +137,10 @@ class _RightClickView extends State<RightClickView> {
 
         return MouseRegion(
           onEnter: (event) {
-            widget.app.patchingScaleEnabled = false;
+            // widget.app.patchingScaleEnabled = false;
           },
           onExit: (event) {
-            widget.app.patchingScaleEnabled = true;
+            // widget.app.patchingScaleEnabled = true;
           },
           child: Container(
             width: 300,
@@ -151,9 +155,10 @@ class _RightClickView extends State<RightClickView> {
                     child: Text(
                       "Modules",
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal),
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
                 ),
@@ -288,17 +293,18 @@ class RightClickElement extends StatefulWidget {
   final IconData icon;
   final Color color;
   final Offset addPosition;
+  final void Function(ModuleInfo info) onAddModule;
 
-  App app;
+  // App app;
 
   RightClickElement(
-    this.app,
-    this.spec,
-    this.icon,
-    this.color,
-    this.indent,
-    this.addPosition,
-  );
+      // this.app,
+      this.spec,
+      this.icon,
+      this.color,
+      this.indent,
+      this.addPosition,
+      this.onAddModule);
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();
@@ -324,12 +330,14 @@ class _RightClickElementState extends State<RightClickElement> {
         },
         child: GestureDetector(
             onTap: () {
-              if (widget.app.project.value.patch.value
+              print("TODO: Implement add module");
+              widget.onAddModule(widget.spec);
+              /*if (widget.app.project.value.patch.value
                   .addModule(widget.spec.id, widget.addPosition)) {
                 gGridState?.refresh();
               } else {
                 print("Couldn't add module");
-              }
+              }*/
             },
             child: Container(
               padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),

@@ -285,6 +285,13 @@ impl Graph {
         };
     }
 
+    pub fn add_module2(&mut self, module: Box<dyn PolyphonicModule>) -> Rc<Node> {
+        let node = Rc::new(Node::new(module));
+        self.nodes.push(node.clone());
+        self.refresh();
+        return node;
+    }
+
     pub fn add_module(&mut self, id: &str) -> bool {
         println!("[Rust] Adding module {}", id);
 

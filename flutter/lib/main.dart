@@ -7,11 +7,7 @@ import 'package:metasampler/patch.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
 
 import 'dart:ui' as ui;
-import 'dart:math';
 
-import 'settings.dart';
-
-import 'views/info.dart';
 import 'views/settings.dart';
 import 'views/bar.dart';
 
@@ -20,6 +16,7 @@ import 'module.dart';
 import 'projects.dart';
 import 'widgets/widget.dart';
 import 'core.dart';
+import 'plugins.dart';
 import 'ui/ui.dart';
 
 void main(List<String> args) {
@@ -30,7 +27,6 @@ void main(List<String> args) {
       App(
         core: Core.create(),
         assets: Assets.platformDefault(),
-        plugins: Plugins.platformDefault(),
       ),
     );
   } else {
@@ -40,136 +36,18 @@ void main(List<String> args) {
       App(
         core: Core.from(addr),
         assets: Assets.platformDefault(),
-        plugins: Plugins.platformDefault(),
       ),
     );
   }
 }
 
-class Plugin {
-  Plugin(this.path) {
-    scan();
-  }
-
-  final String path;
-  DynamicLibrary? library;
-
-  final ValueNotifier<String> name = ValueNotifier("");
-  final ValueNotifier<List<ModuleInfo>> _modules = ValueNotifier([]);
-
-  void scan() async {
-    // TODO: library?.close();
-
-    var rand = Random();
-    File file = File(path);
-    if (await file.exists()) {
-      var fileName = file.name;
-      var extension = "someextensionhere";
-
-      if (Platform.isMacOS) {
-        extension = ".dylib";
-      } else if (Platform.isLinux) {
-        extension = ".so";
-      } else if (Platform.isWindows) {
-        extension = ".dll";
-      } else {
-        print("Unknown dynamcic library extension for platform");
-      }
-
-      var randString = ((rand.nextDouble() + 1.0) * 900000).toInt().toString();
-      fileName = fileName.replaceAll(extension, randString + extension);
-      var newPath = Settings2.pluginLoadDirectory() + fileName;
-      var newFile = await file.copy(newPath);
-      var lib = DynamicLibrary.open(newFile.path);
-
-      print("Loaded plugin at " + newFile.path);
-
-      var plugin = RawPlugin.from(lib);
-      if (plugin != null) {
-        List<ModuleInfo> modules = [];
-
-        int count = plugin.getModuleCount();
-        for (int i = 0; i < count; i++) {
-          var rawModuleInfo = plugin.getModuleInfo(i);
-          modules.add(ModuleInfo.from(rawModuleInfo));
-        }
-
-        library = lib;
-        name.value = plugin.getName();
-        _modules.value = modules;
-      } else {
-        print("Failed to get raw plugin");
-      }
-    }
-  }
-
-  ValueNotifier<List<ModuleInfo>> list() {
-    return _modules;
-  }
-}
-
-class Plugins {
-  Plugins(this.directory) {
-    var pluginLoadDir = Directory(Settings2.pluginLoadDirectory());
-    pluginLoadDir.listSync().forEach((e) => e.delete());
-
-    scan();
-  }
-
-  final Directory directory;
-  final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
-
-  static Plugins platformDefault() {
-    var path = "/Users/chasekanipe/Github/nodus/build/out/core/release/";
-    var directory = Directory(path);
-    return Plugins(directory);
-  }
-
-  void scan() async {
-    List<Plugin> plugins = [];
-    if (await directory.exists()) {
-      var items = directory.list();
-      await for (var item in items) {
-        var extension = ".dynamiclibraryhere";
-
-        if (Platform.isMacOS) {
-          extension = ".dylib";
-        } else if (Platform.isLinux) {
-          extension = ".so";
-        } else if (Platform.isWindows) {
-          extension = ".dll";
-        } else {
-          print("Unknown dynamcic library extension for platform");
-        }
-
-        if (item.path.contains(extension)) {
-          var library = DynamicLibrary.open(item.path);
-          if (library.providesSymbol("export_plugin")) {
-            print("Found plugin at " + item.path);
-            plugins.add(Plugin(item.path));
-          }
-        }
-      }
-    } else {
-      print("Plugin directory doesn't exist");
-    }
-
-    _plugins.value = plugins;
-  }
-
-  ValueNotifier<List<Plugin>> list() {
-    return _plugins;
-  }
-}
-
 class App extends StatefulWidget {
-  App({required this.core, required this.assets, required this.plugins}) {
+  App({required this.core, required this.assets}) {
     project = ValueNotifier(Project.blank(this));
   }
 
   Core core;
   Assets assets;
-  Plugins plugins;
 
   late ValueNotifier<Project> project;
 
@@ -181,7 +59,7 @@ class App extends StatefulWidget {
   bool patchingScaleEnabled = true;
 
   double zoom = 1.0;
-  TempConnector? tempConnector;
+  // TempConnector? tempConnector;
 
   ValueNotifier<String> pinLabel = ValueNotifier("");
   Offset labelPosition = const Offset(0.0, 0.0);
@@ -518,7 +396,7 @@ class _ModuleWheel extends State<ModuleWheel> {
   }
 }
 
-_GridState? gGridState;
+/*_GridState? gGridState;
 
 class Grid extends StatefulWidget {
   Grid(this.app);
@@ -585,9 +463,9 @@ class _GridState extends State<Grid> {
       ),
     );
   }
-}
+}*/
 
-class TempConnector {
+/*class TempConnector {
   int moduleId = 0;
   int pinIndex = 0;
   double endX = 0;
@@ -716,11 +594,11 @@ class TempConnectorPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
-}
+}*/
 
-_ConnectorsState? gConnectorsState;
+// _ConnectorsState? gConnectorsState;
 
-class Connectors extends StatefulWidget {
+/*class Connectors extends StatefulWidget {
   Connectors(this.app);
 
   App app;
@@ -743,9 +621,9 @@ class _ConnectorsState extends State<Connectors> {
       painter: ConnectorsPainter(widget.app),
     );
   }
-}
+}*/
 
-class ConnectorsPainter extends CustomPainter {
+/*class ConnectorsPainter extends CustomPainter {
   ConnectorsPainter(this.app);
 
   App app;
@@ -858,33 +736,4 @@ class ConnectorsPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
-}
-
-class GridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, ui.Size size) {
-    const spacing = 25;
-    final paint = Paint()
-      ..color = const Color.fromRGBO(25, 25, 25, 1.0)
-      ..strokeWidth = 1;
-
-    for (double i = 0; i < size.width; i += spacing) {
-      final p1 = Offset(i, 0);
-      final p2 = Offset(i, size.height);
-
-      canvas.drawLine(p1, p2, paint);
-    }
-
-    for (double i = 0; i < size.height; i += spacing) {
-      final p1 = Offset(0, i);
-      final p2 = Offset(size.width, i);
-
-      canvas.drawLine(p1, p2, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}
+}*/

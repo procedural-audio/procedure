@@ -63,13 +63,31 @@ class Project {
   });
 
   static Project blank(App app) {
+    return Project.create(
+      app,
+      ProjectInfo.blank(),
+      Patch.blank(),
+      null,
+      [],
+      [],
+    );
+  }
+
+  static Project create(
+    App app,
+    ProjectInfo info,
+    Patch patch,
+    UserInterface? ui,
+    List<PatchInfo> patches,
+    List<UserInterfaceInfo> uis,
+  ) {
     return Project(
       app: app,
-      info: ProjectInfo.blank(),
-      patch: ValueNotifier(Patch(app, PatchInfo.blank())),
-      ui: ValueNotifier(UserInterface.platformDefault()),
-      patches: ValueNotifier([]),
-      uis: ValueNotifier([]),
+      info: info,
+      patch: ValueNotifier(patch),
+      ui: ValueNotifier(ui),
+      patches: ValueNotifier(patches),
+      uis: ValueNotifier(uis),
     );
   }
 
@@ -90,22 +108,4 @@ class Project {
       return false;
     }
   }
-}
-
-class ModuleInfo {
-  ModuleInfo(this.id, this.path, this.color);
-
-  static ModuleInfo from(RawModuleInfo rawInfo) {
-    print("Found module " + rawInfo.getModulePath().join("/"));
-
-    return ModuleInfo(
-      rawInfo.getModuleId(),
-      rawInfo.getModulePath(),
-      rawInfo.getModuleColor(),
-    );
-  }
-
-  String id;
-  List<String> path;
-  Color color;
 }

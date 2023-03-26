@@ -29,32 +29,6 @@ pub extern "C" fn api_io_test() {}
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_create_host() -> *mut Host {
-    println!("Testing a thing");
-
-    /*let vec = vec![0.0, 0.1, 0.2, 0.3, 0.4, 0.3, 0.2, 0.1, 0.0, 0.5, 1.0, 0.5, 0.1];
-    let buffer = Buffer::from(vec);
-    for sample in &buffer {
-        println!("Buffer {}", *sample);
-    }
-
-    let sample = SampleFile::from(
-        std::sync::Arc::new(buffer), 
-        440.0,
-        44100,
-        String::from("temp"));
-
-    let mut player: Converter<SamplePlayer<f32>, Linear<f32>> = Converter::from(SamplePlayer::new());
-    player.play();
-    player.set_ratio(0.5);
-    player.set_sample(sample);
-
-    for _ in 0..64 {
-        println!("Sample {}", player.gen());
-    }*/
-
-    // let mut player = SamplePlayer::new();
-    // player.set_sample(sample);
-
     Box::into_raw(api_create_host())
 }
 
@@ -182,34 +156,6 @@ pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) ->
     }
 }
 
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_module_spec_count(host: &mut Host) -> usize {
-    host.graph.modules.modules.len()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_module_spec_id(host: &mut Host, index: usize) -> *const i8 {
-    let id = host.graph.modules.modules[index].id;
-    let s = CString::new(id).unwrap();
-    let p = s.as_ptr();
-    std::mem::forget(s);
-    p
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_module_spec_path(host: &mut Host, index: usize) -> *const i8 {
-    let id = host.graph.modules.modules[index].path;
-    let s = CString::new(id).unwrap();
-    let p = s.as_ptr();
-    std::mem::forget(s);
-    p
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_module_spec_color(host: &mut Host, index: usize) -> u32 {
-    host.graph.modules.modules[index].color.0
-}*/
-
 /* Some other stuff */
 
 #[no_mangle]
@@ -300,8 +246,9 @@ pub unsafe extern "C" fn ffi_patch_destroy(graph: *mut Graph) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, buffer: &i8) -> bool {
-    graph.add_module(str_from_char(buffer))
+pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, module: *mut dyn PolyphonicModule) -> *const Node {
+    let node = graph.add_module2(Box::from_raw(module));
+    return node.as_ref() as *const Node;
 }
 
 #[no_mangle]
@@ -319,6 +266,11 @@ pub unsafe extern "C" fn ffi_patch_get_node_count(patch: &mut Graph) -> usize {
 #[no_mangle]
 pub unsafe extern "C" fn ffi_patch_get_node(patch: &mut Graph, index: usize) -> &Node {
     patch.nodes[index].as_ref()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_add_node(patch: &mut Graph, module: *mut dyn PolyphonicModule) {
+    patch.add_module2(Box::from_raw(module));
 }
 
 /* Node */
