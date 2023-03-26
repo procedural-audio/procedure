@@ -5,8 +5,9 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../host.dart';
+import '../patch.dart';
 import '../main.dart';
+import '../projects.dart';
 
 import '../ui/ui.dart';
 import 'settings.dart';

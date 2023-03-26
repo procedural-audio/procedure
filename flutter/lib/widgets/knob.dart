@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import '../host.dart';
+import '../patch.dart';
 import '../views/variables.dart';
 import 'widget.dart';
 import 'dart:ui' as ui;

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:metasampler/instrument.dart';
+import 'package:metasampler/projects.dart';
 import 'package:metasampler/views/presets.dart';
 
-import '../host.dart';
+import '../patch.dart';
 import '../main.dart';
 import 'package:flutter/material.dart';
 

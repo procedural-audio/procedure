@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/ui/ui.dart';
 import 'package:file_picker/file_picker.dart';
 
-import '../host.dart';
+import '../patch.dart';
 import '../views/variables.dart';
 import '../main.dart';
 

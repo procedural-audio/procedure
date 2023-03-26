@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:metasampler/main.dart';
 
-import '../host.dart';
+import '../patch.dart';
 
 class MyTheme {
   static Color grey20 = const Color.fromRGBO(20, 20, 20, 1);

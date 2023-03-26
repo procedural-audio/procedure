@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:ffi';
 import 'dart:io';
-import 'host.dart';
+import 'patch.dart';
 import 'module.dart';
 
 class Core {

@@ -5,7 +5,7 @@ import 'package:ffi/ffi.dart';
 
 import 'dart:ffi';
 
-import '../host.dart';
+import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';

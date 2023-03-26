@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import 'settings.dart';
+import '../projects.dart';
 
 class RightClickView extends StatefulWidget {
   RightClickView(this.app, {required this.addPosition, required this.specs});

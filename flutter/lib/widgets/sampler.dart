@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../common.dart';
-import '../host.dart';
+import '../patch.dart';
 import 'widget.dart';
 import 'dart:ffi';
 import 'dart:ui' as ui;

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import '../host.dart';
+import '../patch.dart';
 import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;

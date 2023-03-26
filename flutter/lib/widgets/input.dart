@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ffi';
 
 import '../views/variables.dart';
-import '../host.dart';
+import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';

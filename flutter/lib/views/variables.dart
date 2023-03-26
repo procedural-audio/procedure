@@ -5,7 +5,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../host.dart';
+import '../patch.dart';
 import '../common.dart';
 
 import 'dart:ffi';

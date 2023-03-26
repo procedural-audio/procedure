@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import '../host.dart';
+import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';

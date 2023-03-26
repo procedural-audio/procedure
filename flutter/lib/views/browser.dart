@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:metasampler/views/info.dart';
 
-import '../host.dart';
+import '../patch.dart';
 import 'settings.dart';
 import '../main.dart';
 

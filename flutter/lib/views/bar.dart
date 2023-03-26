@@ -1,8 +1,9 @@
 import 'package:metasampler/views/presets.dart';
 import 'package:flutter/material.dart';
 
-import '../host.dart';
+import '../patch.dart';
 import '../main.dart';
+import '../projects.dart';
 
 import 'browser.dart';
 

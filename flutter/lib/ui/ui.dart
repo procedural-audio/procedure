@@ -5,7 +5,7 @@ import '../main.dart';
 
 import 'decoration.dart';
 import 'interactive.dart';
-import '../instrument.dart';
+import '../projects.dart';
 
 class UserInterface extends StatelessWidget {
   UserInterface();

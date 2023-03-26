@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
-import 'package:metasampler/host.dart';
+import 'package:metasampler/patch.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
 
 import 'dart:ui' as ui;
@@ -17,6 +17,7 @@ import 'views/bar.dart';
 
 import 'module.dart';
 
+import 'projects.dart';
 import 'widgets/widget.dart';
 import 'core.dart';
 import 'ui/ui.dart';
@@ -43,64 +44,6 @@ void main(List<String> args) {
       ),
     );
   }
-}
-
-class Project {
-  Project({
-    required this.app,
-    required this.info,
-    required this.patch,
-    required this.ui,
-    required this.patches,
-    required this.uis,
-  });
-
-  static Project blank(App app) {
-    return Project(
-      app: app,
-      info: ProjectInfo.blank(),
-      patch: ValueNotifier(Patch(app, PatchInfo.blank())),
-      ui: ValueNotifier(UserInterface.platformDefault()),
-      patches: ValueNotifier([]),
-      uis: ValueNotifier([]),
-    );
-  }
-
-  final App app;
-  final ProjectInfo info;
-  final ValueNotifier<Patch> patch;
-  final ValueNotifier<UserInterface?> ui;
-  final ValueNotifier<List<PatchInfo>> patches;
-  final ValueNotifier<List<UserInterfaceInfo>> uis;
-
-  void loadPatch(String name) {}
-
-  bool rename(String name) {
-    if (!app.assets.projects.contains(name)) {
-      info.name.value = name;
-      return true;
-    } else {
-      return false;
-    }
-  }
-}
-
-class ModuleInfo {
-  ModuleInfo(this.id, this.path, this.color);
-
-  static ModuleInfo from(RawModuleInfo rawInfo) {
-    print("Found module " + rawInfo.getModulePath().join("/"));
-
-    return ModuleInfo(
-      rawInfo.getModuleId(),
-      rawInfo.getModulePath(),
-      rawInfo.getModuleColor(),
-    );
-  }
-
-  String id;
-  List<String> path;
-  Color color;
 }
 
 class Plugin {

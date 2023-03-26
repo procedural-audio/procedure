@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'widget.dart';
 import 'dart:io';
 import 'dart:ffi';
-import '../host.dart';
+import '../patch.dart';
 
 import 'package:ffi/ffi.dart';
 

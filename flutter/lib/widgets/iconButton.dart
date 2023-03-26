@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'widget.dart';
 import 'dart:ffi';
-import '../host.dart';
+import '../patch.dart';
 import '../core.dart';
 import '../module.dart';
 import '../main.dart';
