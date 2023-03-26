@@ -25,7 +25,7 @@ impl Module for Phaser {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Audio Effects/Modulation/Phaser",
+        path: &["Audio Effects", "Modulation", "Phaser"],
         presets: Presets::NONE
     };
 

@@ -29,7 +29,7 @@ impl Module for LfoModule {
         outputs: &[
             Pin::Control("LFO Output", 15)
         ],
-        path: "Control/Sources/Lfo",
+        path: &["Control", "Sources", "Lfo"],
         presets: Presets::NONE
     };
     

@@ -18,7 +18,7 @@ impl Module for Greater {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Comparisons/Greater",
+        path: &["Control", "Comparisons", "Greater"],
         presets: Presets::NONE
     };
 

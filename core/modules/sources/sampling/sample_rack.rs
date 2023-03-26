@@ -29,7 +29,7 @@ impl Module for SampleRack {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: "Audio Sources/Sampling/Sample Rack",
+        path: &["Audio Sources", "Sampling", "Sample Rack"],
         presets: Presets::NONE
     };
 

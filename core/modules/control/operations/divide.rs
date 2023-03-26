@@ -18,7 +18,7 @@ impl Module for Divide {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Control/Operations/Divide",
+        path: &["Control", "Operations", "Divide"],
         presets: Presets::NONE
     };
 

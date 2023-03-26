@@ -25,7 +25,7 @@ pub struct Plugin {
 
 pub struct ModuleSpec {
     pub id: &'static str,
-    pub path: &'static str,
+    pub path: &'static [&'static str],
     pub color: Color,
     pub create: fn() -> Box<dyn PolyphonicModule>
 }
@@ -427,7 +427,7 @@ pub struct Info {
     pub voicing: Voicing,
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
-    pub path: &'static str,
+    pub path: &'static [&'static str],
     pub presets: Presets
 }
 

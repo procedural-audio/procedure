@@ -89,7 +89,7 @@ class ModuleInfo {
   ModuleInfo(this.id, this.path, this.color);
 
   static ModuleInfo from(RawModuleInfo rawInfo) {
-    print("Found module " + rawInfo.getModulePath());
+    print("Found module " + rawInfo.getModulePath().join("/"));
 
     return ModuleInfo(
       rawInfo.getModuleId(),
@@ -99,7 +99,7 @@ class ModuleInfo {
   }
 
   String id;
-  String path;
+  List<String> path;
   Color color;
 }
 

@@ -24,7 +24,7 @@ impl Module for Monophonic {
         outputs: &[
             Pin::Notes("Output", 30)
         ],
-        path: "Notes/Effects/Monophonic",
+        path: &["Notes", "Effects", "Monophonic"],
         presets: Presets::NONE
     };
 

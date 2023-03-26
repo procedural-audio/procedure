@@ -40,7 +40,7 @@ impl Module for Scale {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: "Notes/Effects/Scale",
+        path: &["Notes", "Effects", "Scale"],
         presets: Presets::NONE
     };
 

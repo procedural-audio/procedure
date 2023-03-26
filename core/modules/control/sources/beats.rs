@@ -21,7 +21,7 @@ impl Module for Beats {
         outputs: &[
             Pin::Control("Clock Pulses", 25)
         ],
-        path: "Control/Sources/Beats",
+        path: &["Control", "Sources", "Beats"],
         presets: Presets::NONE
     };
     

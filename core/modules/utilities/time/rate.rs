@@ -18,7 +18,7 @@ impl Module for Rate {
         outputs: &[
             Pin::Time("Time Output", 30)
         ],
-        path: "Time/Rate",
+        path: &["Time", "Rate"],
         presets: Presets::NONE
     };
 

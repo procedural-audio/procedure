@@ -21,7 +21,7 @@ impl Module for Slope {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Effects/Slope",
+        path: &["Control", "Effects", "Slope"],
         presets: Presets::NONE
     };
 

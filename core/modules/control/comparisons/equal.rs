@@ -18,7 +18,7 @@ impl Module for Equal {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Comparisons/Equal",
+        path: &["Control", "Comparisons", "Equal"],
         presets: Presets::NONE
     };
 

@@ -18,7 +18,7 @@ impl Module for SquareModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: "Audio Sources/Synthesis/Square",
+        path: &["Audio Sources", "Synthesis", "Square"],
         presets: Presets::NONE
     };
 

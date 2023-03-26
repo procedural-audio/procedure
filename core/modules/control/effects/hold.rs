@@ -23,7 +23,7 @@ impl Module for Hold {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Control/Effects/Hold",
+        path: &["Control", "Effects", "Hold"],
         presets: Presets::NONE
     };
 

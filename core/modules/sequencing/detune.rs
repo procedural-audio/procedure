@@ -23,7 +23,7 @@ impl Module for Detune {
         outputs: &[
             Pin::Notes("Notes Output", 25)
         ],
-        path: "Notes/Effects/Detune",
+        path: &["Notes", "Effects", "Detune"],
         presets: Presets::NONE
     };
     

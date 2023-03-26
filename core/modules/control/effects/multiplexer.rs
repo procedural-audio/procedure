@@ -25,7 +25,7 @@ impl Module for Multiplexer {
         outputs: &[
             Pin::Control("Output", 7+25*4),
         ],
-        path: "Control/Effects/Multiplexer",
+        path: &["Control", "Effects", "Multiplexer"],
         presets: Presets::NONE
     };
 

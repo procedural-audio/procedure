@@ -23,7 +23,7 @@ impl Module for Chorus {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Audio Effects/Modulation/Chorus",
+        path: &["Audio Effects", "Modulation", "Chorus"],
         presets: Presets::NONE
     };
 

@@ -26,7 +26,7 @@ impl Module for Portamento {
         outputs: &[
             Pin::Notes("Output", 25)
         ],
-        path: "Notes/Effects/Portamento",
+        path: &["Notes", "Effects", "Portamento"],
         presets: Presets::NONE
     };
 

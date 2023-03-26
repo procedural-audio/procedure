@@ -6,8 +6,6 @@ import 'dart:io';
 import 'host.dart';
 import 'module.dart';
 
-// class Plugins {}
-
 class Core {
   Core(this.raw);
 
@@ -89,7 +87,7 @@ class Core {
     return _ffiCoreGetNode(raw, a);
   }
 
-  int getModuleSpecCount() {
+  /*int getModuleSpecCount() {
     return _ffiCoreGetModuleSpecCount(raw);
   }
 
@@ -109,7 +107,7 @@ class Core {
 
   Color getModuleSpecColor(int a) {
     return Color(_ffiCoreGetModuleSpecColor(raw, a));
-  }
+  }*/
 }
 
 var core = loadCoreLibrary();
@@ -228,7 +226,7 @@ RawNode Function(RawCore, int) _ffiCoreGetNode = core
 
 /* Modules */
 
-int Function(RawCore) _ffiCoreGetModuleSpecCount = core
+/*int Function(RawCore) _ffiCoreGetModuleSpecCount = core
     .lookup<NativeFunction<Int64 Function(RawCore)>>(
         "ffi_host_get_module_spec_count")
     .asFunction();
@@ -244,7 +242,7 @@ Pointer<Utf8> Function(RawCore, int) _ffiCoreGetModuleSpecPath = core
 int Function(RawCore, int) _ffiCoreGetModuleSpecColor = core
     .lookup<NativeFunction<Int64 Function(RawCore, Int32)>>(
         "ffi_host_get_module_spec_color")
-    .asFunction();
+    .asFunction();*/
 
 /* Widget */
 
@@ -310,6 +308,14 @@ class FFIWidgetTrait extends Struct {
   external int metadata;
 }
 
+class RawModule extends Struct {
+  @Int64()
+  external int pointer1;
+
+  @Int64()
+  external int pointer2;
+}
+
 class RawPlugin extends Struct {
   @Int64()
   external int pointer;
@@ -368,6 +374,7 @@ class RawModuleInfo extends Struct {
   @Int64()
   external int pointer;
 
+  /// Returns the id of the module
   String getModuleId() {
     var rawId = ffiModuleInfoGetId(this);
     var id = rawId.toDartString();
@@ -375,15 +382,28 @@ class RawModuleInfo extends Struct {
     return id;
   }
 
-  String getModulePath() {
-    var rawPath = ffiModuleInfoGetPath(this);
-    var path = rawPath.toDartString();
-    calloc.free(rawPath);
+  /// Returns the path of the module
+  List<String> getModulePath() {
+    List<String> path = [];
+    int count = ffiModuleInfoGetPathElementsCount(this);
+    for (int i = 0; i < count; i++) {
+      var rawElement = ffiModuleInfoGetPathElement(this, i);
+      var element = rawElement.toDartString();
+      calloc.free(rawElement);
+      path.add(element);
+    }
+
     return path;
   }
 
+  /// Returns the color of the module
   Color getModuleColor() {
     return Color(ffiModuleInfoGetColor(this));
+  }
+
+  /// Creates a new module
+  RawModule create() {
+    return ffiModuleInfoCreate(this);
   }
 }
 
@@ -391,11 +411,19 @@ Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetId = core
     .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
         "ffi_module_info_get_id")
     .asFunction();
-Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetPath = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
-        "ffi_module_info_get_path")
+int Function(RawModuleInfo) ffiModuleInfoGetPathElementsCount = core
+    .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
+        "ffi_module_info_get_path_elements_count")
+    .asFunction();
+Pointer<Utf8> Function(RawModuleInfo, int) ffiModuleInfoGetPathElement = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo, Int64)>>(
+        "ffi_module_info_get_path_element")
     .asFunction();
 int Function(RawModuleInfo) ffiModuleInfoGetColor = core
     .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
         "ffi_module_info_get_color")
+    .asFunction();
+RawModule Function(RawModuleInfo) ffiModuleInfoCreate = core
+    .lookup<NativeFunction<RawModule Function(RawModuleInfo)>>(
+        "ffi_module_info_create")
     .asFunction();

@@ -25,7 +25,7 @@ impl Module for Gate {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: "Audio Effects/Dynamics/Gate",
+        path: &["Audio Effects", "Dynamics", "Gate"],
         presets: Presets::NONE
     };
 

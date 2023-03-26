@@ -19,7 +19,7 @@ impl Module for Mute {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: "Audio Effects/Dynamics/Mute",
+        path: &["Audio Effects", "Dynamics", "Mute"],
         presets: Presets::NONE
     };
 

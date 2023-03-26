@@ -182,7 +182,7 @@ pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) ->
     }
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_module_spec_count(host: &mut Host) -> usize {
     host.graph.modules.modules.len()
 }
@@ -208,7 +208,7 @@ pub unsafe extern "C" fn ffi_host_get_module_spec_path(host: &mut Host, index: u
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_module_spec_color(host: &mut Host, index: usize) -> u32 {
     host.graph.modules.modules[index].color.0
-}
+}*/
 
 /* Some other stuff */
 
@@ -605,8 +605,13 @@ pub unsafe extern "C" fn ffi_module_info_get_id(info: &ModuleSpec) -> *const i8 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_module_info_get_path(info: &ModuleSpec) -> *const i8 {
-    let name = info.path;
+pub unsafe extern "C" fn ffi_module_info_get_path_elements_count(info: &ModuleSpec) -> usize {
+    info.path.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_get_path_element(info: &ModuleSpec, index: usize) -> *const i8 {
+    let name = info.path[index];
     let s = CString::new(name).unwrap();
     let p = s.as_ptr();
     std::mem::forget(s);
@@ -616,4 +621,14 @@ pub unsafe extern "C" fn ffi_module_info_get_path(info: &ModuleSpec) -> *const i
 #[no_mangle]
 pub unsafe extern "C" fn ffi_module_info_get_color(info: &ModuleSpec) -> Color {
     info.color
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_create(info: &ModuleSpec) -> *const dyn PolyphonicModule {
+    Box::into_raw(info.create())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_destroy(info: &ModuleSpec) {
+    let _ = Box::from_raw(info as *const ModuleSpec as *mut ModuleSpec);
 }

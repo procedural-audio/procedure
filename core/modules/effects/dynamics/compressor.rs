@@ -30,7 +30,7 @@ impl Module for Compressor {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: "Audio Effects/Dynamics/Compressor",
+        path: &["Audio Effects", "Dynamics", "Compressor"],
         presets: Presets::NONE
     };
 

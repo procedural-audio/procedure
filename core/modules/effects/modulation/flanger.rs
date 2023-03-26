@@ -23,7 +23,7 @@ impl Module for Flanger {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: "Audio Effects/Modulation/Flanger",
+        path: &["Audio Effects", "Modulation", "Flanger"],
         presets: Presets::NONE
     };
 

@@ -18,7 +18,7 @@ impl Module for Add {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Control/Operations/Add",
+        path: &["Control", "Operations", "Add"],
         presets: Presets::NONE
     };
 

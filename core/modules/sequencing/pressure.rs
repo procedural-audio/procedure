@@ -18,7 +18,7 @@ impl Module for Pressure {
         outputs: &[
             Pin::Notes("Notes Output", 30)
         ],
-        path: "Notes/Effects/Pressure",
+        path: &["Notes", "Effects", "Pressure"],
         presets: Presets::NONE
     };
 

@@ -7,9 +7,9 @@ use serde::{ser::*, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 
 use crate::plugins::*;
-use modules::*;
-
 use crate::processor::*;
+
+use modules::*;
 
 static mut CURRENT_ID: i32 = 1;
 

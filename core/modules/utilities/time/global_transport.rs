@@ -20,7 +20,7 @@ impl Module for GlobalTransport {
         outputs: &[
             Pin::Time("Time Output", 15)
         ],
-        path: "Time/Global Transport",
+        path: &["Time", "Global Transport"],
         presets: Presets::NONE
     };
 

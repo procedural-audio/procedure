@@ -20,7 +20,7 @@ impl Module for ControlToNotes {
             Pin::Control("Note Pitch", 45),
         ],
         outputs: &[Pin::Notes("Notes", 30)],
-        path: "Utilities/Conversion/Control To Notes",
+        path: &["Utilities", "Conversion", "Control To Notes"],
         presets: Presets::NONE
     };
 

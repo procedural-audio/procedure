@@ -22,7 +22,7 @@ impl Module for Toggle {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Effects/Toggle",
+        path: &["Control", "Effects", "Toggle"],
         presets: Presets::NONE
     };
 

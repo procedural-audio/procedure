@@ -16,7 +16,7 @@ impl Module for Pitch {
             Pin::Control("Pitch (hz)", 45),
         ],
         outputs: &[Pin::Notes("Notes Output", 30)],
-        path: "Notes/Effects/Pitch",
+        path: &["Notes", "Effects", "Pitch"],
         presets: Presets::NONE
     };
 

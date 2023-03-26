@@ -87,7 +87,7 @@ impl Module for EnvelopeModule {
         outputs: &[
             Pin::Control("Output", 10)
         ],
-        path: "Control/Sources/Envelope",
+        path: &["Control", "Sources", "Envelope"],
         presets: Presets::NONE
     };
 

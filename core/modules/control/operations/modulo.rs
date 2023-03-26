@@ -18,7 +18,7 @@ impl Module for Modulo {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: "Control/Operations/Modulo",
+        path: &["Control", "Operations", "Modulo"],
         presets: Presets::NONE
     };
     

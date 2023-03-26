@@ -18,7 +18,7 @@ impl Module for NotesToControl {
             Pin::Control("Pressure", 75),
             Pin::Control("Timbre", 105)
         ],
-        path: "Utilities/Conversions/Notes To Control",
+        path: &["Utilities", "Conversion", "Notes To Control"],
         presets: Presets::NONE
     };
 

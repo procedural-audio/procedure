@@ -30,7 +30,7 @@ impl Module for NotesTrack {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: "Notes/Sources/Notes Track",
+        path: &["Notes", "Sources", "Notes Track"],
         presets: Presets::NONE
     };
 

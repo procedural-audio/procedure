@@ -18,7 +18,7 @@ impl Module for Xor {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Logic/Xor",
+        path: &["Control", "Logic", "Xor"],
         presets: Presets::NONE
     };
 

@@ -19,7 +19,7 @@ impl Module for XYPadModule {
             Pin::Control("X", 10),
             Pin::Control("Y", 35),
         ],
-        path: "Control/Widgets/XY Pad",
+        path: &["Control", "Widgets", "XY Pad"],
         presets: Presets::NONE
     };
     

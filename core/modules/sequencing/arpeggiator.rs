@@ -30,7 +30,7 @@ impl Module for Arpeggiator {
         outputs: &[
             Pin::Notes("Midi Output", 20)
         ],
-        path: "Notes/Sources/Arpeggiator",
+        path: &["Notes", "Sources", "Arpeggiator"],
         presets: Presets::NONE
     };
 

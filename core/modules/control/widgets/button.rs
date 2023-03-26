@@ -17,7 +17,7 @@ impl Module for ButtonModule {
         outputs: &[
             Pin::Control("Is Pressed", 25)
         ],
-        path: "Control/Widgets/Button",
+        path: &["Control", "Widgets", "Button"],
         presets: Presets::NONE
     };
     

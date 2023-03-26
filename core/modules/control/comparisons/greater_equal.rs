@@ -18,7 +18,7 @@ impl Module for GreaterEqual {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Comparisons/Greater Equal",
+        path: &["Control", "Comparisons", "Greater Equal"],
         presets: Presets::NONE
     };
 

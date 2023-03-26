@@ -18,7 +18,7 @@ impl Module for TriangleModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: "Audio Sources/Synthesis/Triangle",
+        path: &["Audio Sources", "Synthesis", "Triangle"],
         presets: Presets::NONE
     };
 

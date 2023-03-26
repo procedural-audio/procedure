@@ -24,7 +24,7 @@ impl Module for Counter {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: "Control/Effects/Counter",
+        path: &["Control", "Effects", "Counter"],
         presets: Presets::NONE
     };
 

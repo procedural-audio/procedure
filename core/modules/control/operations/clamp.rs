@@ -19,7 +19,7 @@ impl Module for Clamp {
         outputs: &[
             Pin::Control("Output", 45)
         ],
-        path: "Control/Operations/Clamp",
+        path: &["Control", "Operations", "Clamp"],
         presets: Presets::NONE
     };
 

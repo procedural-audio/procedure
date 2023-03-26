@@ -19,7 +19,7 @@ impl Module for SineModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: "Audio Sources/Synthesis/Sine",
+        path: &["Audio Sources", "Synthesis", "Sine"],
         presets: Presets::NONE
     };
 
