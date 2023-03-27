@@ -15,29 +15,29 @@ import '../main.dart';
 var knobValue = "value".toNativeUtf8();
 var colorValue = "color".toNativeUtf8();
 
-int Function(FFIWidgetPointer) RawNodeSequencerGetNodeCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) RawNodeSequencerGetNodeCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_node_sequencer_get_node_count")
     .asFunction();
-int Function(FFIWidgetPointer, int) RawNodeSequencerGetNodeX = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) RawNodeSequencerGetNodeX = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64)>>(
         "ffi_node_sequencer_get_node_x")
     .asFunction();
-int Function(FFIWidgetPointer, int) RawNodeSequencerGetNodeY = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) RawNodeSequencerGetNodeY = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64)>>(
         "ffi_node_sequencer_get_node_y")
     .asFunction();
-int Function(FFIWidgetPointer, int, int) RawNodeSequencerSetNodeX = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64, Int64)>>(
+int Function(RawWidgetPointer, int, int) RawNodeSequencerSetNodeX = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_set_node_x")
     .asFunction();
-int Function(FFIWidgetPointer, int, int) RawNodeSequencerSetNodeY = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64, Int64)>>(
+int Function(RawWidgetPointer, int, int) RawNodeSequencerSetNodeY = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_set_node_y")
     .asFunction();
 
-void Function(FFIWidgetPointer, int, int) RawNodeSequencerAddNode = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int64)>>(
+void Function(RawWidgetPointer, int, int) RawNodeSequencerAddNode = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Int64)>>(
         "ffi_node_sequencer_add_node")
     .asFunction();
 
@@ -51,7 +51,7 @@ void Function(FFIWidgetPointer, int, int) RawNodeSequencerAddNode = core
 const double spacing = 50.0;
 
 class NodeSequencerWidget extends ModuleWidget {
-  NodeSequencerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {}
+  NodeSequencerWidget(RawNode m, RawWidget w) : super(m, w) {}
 
   var controller = TransformationController();
 

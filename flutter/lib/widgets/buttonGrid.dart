@@ -11,33 +11,33 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetPointer) ffiButtonGridGetIndex = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiButtonGridGetIndex = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_button_grid_get_index")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiButtonGridSetIndex = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
+void Function(RawWidgetPointer, int) ffiButtonGridSetIndex = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64)>>(
         "ffi_button_grid_set_index")
     .asFunction();
-int Function(FFIWidgetPointer) ffiButtonGridGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiButtonGridGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_button_grid_get_color")
     .asFunction();
-int Function(FFIWidgetPointer) ffiButtonGridGetRowCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiButtonGridGetRowCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_button_grid_get_row_count")
     .asFunction();
-int Function(FFIWidgetPointer) ffiButtonGridGetIconCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiButtonGridGetIconCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_button_grid_get_icon_count")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer, int) ffiButtonGridIconGetPath = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer, Int64)>>(
+Pointer<Utf8> Function(RawWidgetPointer, int) ffiButtonGridIconGetPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer, Int64)>>(
         "ffi_button_grid_icon_get_path")
     .asFunction();
 
 class ButtonGridWidget extends ModuleWidget {
-  ButtonGridWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  ButtonGridWidget(RawNode m, RawWidget w) : super(m, w) {
     color = intToColor(ffiButtonGridGetColor(widgetRaw.pointer));
     rowCount = ffiButtonGridGetRowCount(widgetRaw.pointer);
 

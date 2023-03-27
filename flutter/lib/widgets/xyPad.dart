@@ -9,25 +9,25 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-double Function(FFIWidgetPointer) ffiXYPadGetX = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiXYPadGetX = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_xy_pad_get_x")
     .asFunction();
-double Function(FFIWidgetPointer) ffiXYPadGetY = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiXYPadGetY = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_xy_pad_get_y")
     .asFunction();
-double Function(FFIWidgetPointer, double) ffiXYPadSetX = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer, Float)>>(
+double Function(RawWidgetPointer, double) ffiXYPadSetX = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer, Float)>>(
         "ffi_xy_pad_set_x")
     .asFunction();
-double Function(FFIWidgetPointer, double) ffiXYPadSetY = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer, Float)>>(
+double Function(RawWidgetPointer, double) ffiXYPadSetY = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer, Float)>>(
         "ffi_xy_pad_set_y")
     .asFunction();
 
 class XYPadWidget extends ModuleWidget {
-  XYPadWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  XYPadWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

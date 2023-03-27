@@ -29,7 +29,7 @@ pub struct Connector {
 
 pub struct Node {
     pub id: i32,
-    pub position: (i32, i32),
+    pub position: (f64, f64),
     pub module: Box<dyn PolyphonicModule>,
 }
 
@@ -136,7 +136,7 @@ impl<'de> Deserialize<'de> for Node {
             {
                 let mut node_id: Option<i32> = None;
                 let mut module_id: Option<String> = None;
-                let mut position: Option<(i32, i32)> = None;
+                let mut position: Option<(f64, f64)> = None;
                 let mut version: Option<String> = None;
                 let mut state: Option<State> = None;
 
@@ -214,7 +214,7 @@ impl Node {
 
         return Node {
             id: unsafe { CURRENT_ID },
-            position: (100, 100),
+            position: (100.0, 100.0),
             module: module,
         };
     }

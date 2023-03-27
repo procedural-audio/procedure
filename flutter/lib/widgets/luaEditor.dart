@@ -12,25 +12,25 @@ import '../ui/code_editor/code_text_field.dart';
 import '../core.dart';
 import '../module.dart';
 
-/*double Function(FFIWidgetPointer) ffiSliderGetValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+/*double Function(RawWidgetPointer) ffiSliderGetValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_slider_get_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSliderGetDivisions = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSliderGetDivisions = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_slider_get_divisions")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiSliderSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiSliderSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_slider_set_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSliderGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSliderGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_slider_get_color")
     .asFunction();*/
 
 class LuaEditorWidget extends ModuleWidget {
-  LuaEditorWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  LuaEditorWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

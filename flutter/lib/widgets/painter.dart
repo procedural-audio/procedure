@@ -13,12 +13,12 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-bool Function(FFIWidgetTrait) ffiPainterShouldPaint = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(
+bool Function(RawWidgetTrait) ffiPainterShouldPaint = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
         "ffi_painter_should_paint")
     .asFunction();
-void Function(FFIWidgetTrait, Pointer<CanvasFFI>) ffiPainterPaint = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Pointer<CanvasFFI>)>>(
+void Function(RawWidgetTrait, Pointer<CanvasFFI>) ffiPainterPaint = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Pointer<CanvasFFI>)>>(
         "ffi_painter_paint")
     .asFunction();
 Pointer<CanvasFFI> Function() ffiNewCanvas = core
@@ -38,7 +38,7 @@ int Function(Pointer<CanvasFFI>) ffiCanvasGetActionsCount = core
     .asFunction();
 
 class PainterWidget extends ModuleWidget {
-  PainterWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  PainterWidget(RawNode m, RawWidget w) : super(m, w);
 
   late Pointer<CanvasFFI> canvasRaw;
 
@@ -137,7 +137,7 @@ class PaintAction extends Struct {
 class CanvasPainter extends CustomPainter {
   CanvasPainter(this.widgetRaw, this.canvasRaw);
 
-  FFIWidget widgetRaw;
+  RawWidget widgetRaw;
   Pointer<CanvasFFI> canvasRaw;
 
   @override

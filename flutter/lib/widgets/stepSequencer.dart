@@ -8,33 +8,33 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPadDown = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
+bool Function(RawWidgetTrait, int, int) ffiStepSequencerGetPadDown = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait, Int64, Int64)>>(
         "ffi_step_sequencer_get_pad_down")
     .asFunction();
-bool Function(FFIWidgetTrait, int, int) ffiStepSequencerGetPadOutlined = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64, Int64)>>(
+bool Function(RawWidgetTrait, int, int) ffiStepSequencerGetPadOutlined = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait, Int64, Int64)>>(
         "ffi_step_sequencer_get_pad_outlined")
     .asFunction();
-void Function(FFIWidgetTrait, int, int) ffiStepSequencerOnPadPress = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64)>>(
+void Function(RawWidgetTrait, int, int) ffiStepSequencerOnPadPress = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Int64, Int64)>>(
         "ffi_step_sequencer_on_pad_press")
     .asFunction();
-void Function(FFIWidgetTrait, int, int) ffiStepSequencerOnPadRelease = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64, Int64)>>(
+void Function(RawWidgetTrait, int, int) ffiStepSequencerOnPadRelease = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Int64, Int64)>>(
         "ffi_step_sequencer_on_pad_release")
     .asFunction();
-int Function(FFIWidgetTrait) ffiStepSequencerGetRows = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+int Function(RawWidgetTrait) ffiStepSequencerGetRows = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetTrait)>>(
         "ffi_step_sequencer_get_rows")
     .asFunction();
-int Function(FFIWidgetTrait) ffiStepSequencerGetCols = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+int Function(RawWidgetTrait) ffiStepSequencerGetCols = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetTrait)>>(
         "ffi_step_sequencer_get_cols")
     .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
-  StepSequencerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  StepSequencerWidget(RawNode m, RawWidget w) : super(m, w);
 
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController();

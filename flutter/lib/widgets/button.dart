@@ -7,17 +7,17 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetTrait) ffiButtonGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetTrait)>>(
+int Function(RawWidgetTrait) ffiButtonGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetTrait)>>(
         "ffi_button_get_color")
     .asFunction();
-void Function(FFIWidgetTrait, bool) ffiButtonOnPressed = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Bool)>>(
+void Function(RawWidgetTrait, bool) ffiButtonOnPressed = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Bool)>>(
         "ffi_button_on_pressed")
     .asFunction();
 
 class ButtonWidget extends ModuleWidget {
-  ButtonWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  ButtonWidget(RawNode m, RawWidget w) : super(m, w) {
     color = intToColor(ffiButtonGetColor(widgetRaw.getTrait()));
   }
 

@@ -12,92 +12,92 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleMapperLoad = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Pointer<Utf8>)>>(
+void Function(RawWidgetPointer, Pointer<Utf8>) ffiSampleMapperLoad = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Pointer<Utf8>)>>(
         "ffi_sample_mapper_load")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSampleMapperGetRegionCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSampleMapperGetRegionCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_sample_mapper_get_region_count")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiSampleMapperRemoveRegion = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int32)>>(
+void Function(RawWidgetPointer, int) ffiSampleMapperRemoveRegion = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int32)>>(
         "ffi_sample_mapper_remove_region")
     .asFunction();
-void Function(FFIWidgetPointer, int, int, double, double)
+void Function(RawWidgetPointer, int, int, double, double)
     ffiSampleMapperAddRegion = core
         .lookup<
             NativeFunction<
-                Void Function(FFIWidgetPointer, Int32, Int32, Float,
+                Void Function(RawWidgetPointer, Int32, Int32, Float,
                     Float)>>("ffi_sample_mapper_add_region")
         .asFunction();
-int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionLowNote = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiSampleMapperGetRegionLowNote = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_low_note")
     .asFunction();
-void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionLowNote = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+void Function(RawWidgetPointer, int, int) ffiSampleMapperSetRegionLowNote = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Int32)>>(
         "ffi_sample_mapper_set_region_low_note")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionHighNote = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiSampleMapperGetRegionHighNote = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_high_note")
     .asFunction();
-void Function(FFIWidgetPointer, int, int) ffiSampleMapperSetRegionHighNote =
+void Function(RawWidgetPointer, int, int) ffiSampleMapperSetRegionHighNote =
     core
-        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+        .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Int32)>>(
             "ffi_sample_mapper_set_region_high_note")
         .asFunction();
-double Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionLowVelocity =
+double Function(RawWidgetPointer, int) ffiSampleMapperGetRegionLowVelocity =
     core
-        .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
+        .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
             "ffi_sample_mapper_get_region_low_velocity")
         .asFunction();
-void Function(FFIWidgetPointer, int, double)
+void Function(RawWidgetPointer, int, double)
     ffiSampleMapperSetRegionLowVelocity = core
-        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Float)>>(
+        .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Float)>>(
             "ffi_sample_mapper_set_region_low_velocity")
         .asFunction();
-double Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionHighVelocity =
+double Function(RawWidgetPointer, int) ffiSampleMapperGetRegionHighVelocity =
     core
-        .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
+        .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
             "ffi_sample_mapper_get_region_high_velocity")
         .asFunction();
-void Function(FFIWidgetPointer, int, double)
+void Function(RawWidgetPointer, int, double)
     ffiSampleMapperSetRegionHighVelocity = core
-        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Float)>>(
+        .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Float)>>(
             "ffi_sample_mapper_set_region_high_velocity")
         .asFunction();
-int Function(FFIWidgetPointer, int) ffiSampleMapperGetRegionSampleCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiSampleMapperGetRegionSampleCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64)>>(
         "ffi_sample_mapper_get_region_sample_count")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer, int, int)
+Pointer<Utf8> Function(RawWidgetPointer, int, int)
     ffiSampleMapperGetRegionSamplePath = core
         .lookup<
             NativeFunction<
-                Pointer<Utf8> Function(FFIWidgetPointer, Int64,
+                Pointer<Utf8> Function(RawWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_path")
         .asFunction();
-FFIBuffer Function(FFIWidgetPointer, int, int)
+FFIBuffer Function(RawWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferLeft = core
         .lookup<
             NativeFunction<
-                FFIBuffer Function(FFIWidgetPointer, Int64,
+                FFIBuffer Function(RawWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_buffer_left")
         .asFunction();
-FFIBuffer Function(FFIWidgetPointer, int, int)
+FFIBuffer Function(RawWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferRight = core
         .lookup<
             NativeFunction<
-                FFIBuffer Function(FFIWidgetPointer, Int64,
+                FFIBuffer Function(RawWidgetPointer, Int64,
                     Int64)>>("ffi_sample_mapper_get_region_sample_buffer_right")
         .asFunction();
-double Function(FFIWidgetPointer, int, int)
+double Function(RawWidgetPointer, int, int)
     ffiSampleMapperGetRegionSampleBufferTimeMs = core
         .lookup<
                 NativeFunction<
-                    Double Function(FFIWidgetPointer, Int64, Int64)>>(
+                    Double Function(RawWidgetPointer, Int64, Int64)>>(
             "ffi_sample_mapper_get_region_sample_buffer_time_ms")
         .asFunction();
 
@@ -125,7 +125,7 @@ class _SampleAreaItem extends State<SampleAreaItem> {
 }
 
 class SampleEditorWidget extends ModuleWidget {
-  SampleEditorWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  SampleEditorWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +151,7 @@ class SampleEditorWidget extends ModuleWidget {
 }
 
 class SampleMapperWidget extends ModuleWidget {
-  SampleMapperWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  SampleMapperWidget(RawNode m, RawWidget w) : super(m, w) {
     refreshMap();
   }
 
@@ -433,7 +433,7 @@ class SampleRegion extends StatefulWidget {
   double lowVelocity;
   double highVelocity;
 
-  FFIWidgetPointer pointer;
+  RawWidgetPointer pointer;
 
   int index;
   ValueNotifier<int> selected;

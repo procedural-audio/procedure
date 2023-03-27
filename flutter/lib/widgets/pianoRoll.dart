@@ -13,72 +13,72 @@ import '../main.dart';
 
 import 'package:flutter/rendering.dart';
 
-int Function(FFIWidgetPointer) ffiNotesTrackGetEventCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiNotesTrackGetEventCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_notes_track_get_event_count")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNotesTrackIndexGetId = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiNotesTrackIndexGetId = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_index_get_id")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNotesTrackIndexGetType = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiNotesTrackIndexGetType = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_index_get_type")
     .asFunction();
 
-double Function(FFIWidgetPointer, int) ffiNotesTrackIdGetTime = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiNotesTrackIdGetTime = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_id_get_time")
     .asFunction();
-double Function(FFIWidgetPointer, int) ffiNotesTrackIdGetOnTime = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiNotesTrackIdGetOnTime = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_id_get_on_time")
     .asFunction();
-double Function(FFIWidgetPointer, int) ffiNotesTrackIdGetOffTime = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiNotesTrackIdGetOffTime = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_id_get_off_time")
     .asFunction();
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackIdSetTime = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+void Function(RawWidgetPointer, int, double) ffiNotesTrackIdSetTime = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Double)>>(
         "ffi_notes_track_id_set_time")
     .asFunction();
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackIdSetOnTime = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+void Function(RawWidgetPointer, int, double) ffiNotesTrackIdSetOnTime = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Double)>>(
         "ffi_notes_track_id_set_on_time")
     .asFunction();
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackIdSetOffTime = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+void Function(RawWidgetPointer, int, double) ffiNotesTrackIdSetOffTime = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Double)>>(
         "ffi_notes_track_id_set_off_time")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNotesTrackIdGetNoteOnNum = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiNotesTrackIdGetNoteOnNum = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_id_get_note_on_num")
     .asFunction();
-void Function(FFIWidgetPointer, int, int) ffiNotesTrackIdSetNoteOnNum = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+void Function(RawWidgetPointer, int, int) ffiNotesTrackIdSetNoteOnNum = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Int32)>>(
         "ffi_notes_track_id_set_note_on_num")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiNotesTrackIdRemoveNote = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
+void Function(RawWidgetPointer, int) ffiNotesTrackIdRemoveNote = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_id_remove_note")
     .asFunction();
 
-void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
+void Function(RawWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
     .lookup<
         NativeFunction<
-            Void Function(FFIWidgetPointer, Double, Double,
+            Void Function(RawWidgetPointer, Double, Double,
                 Int32)>>("ffi_notes_track_add_note")
     .asFunction();
-int Function(FFIWidgetPointer) ffiNotesTrackGetLength = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiNotesTrackGetLength = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_notes_track_get_length")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiNotesTrackSetLength = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
+void Function(RawWidgetPointer, int) ffiNotesTrackSetLength = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_set_length")
     .asFunction();
-double Function(FFIWidgetPointer) ffiNotesTrackGetBeat = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiNotesTrackGetBeat = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer)>>(
         "ffi_notes_track_get_beat")
     .asFunction();
 
@@ -118,7 +118,7 @@ class NoteEvent {
 }
 
 class PianoRollWidget extends ModuleWidget {
-  PianoRollWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  PianoRollWidget(RawNode m, RawWidget w) : super(m, w);
   ValueNotifier<Rectangle?> selectedRegion = ValueNotifier(null);
   Offset selectedStart = const Offset(0.0, 0.0);
 
@@ -571,7 +571,7 @@ class NoteWidget extends StatefulWidget {
 
   int id;
 
-  FFIWidget widgetRaw;
+  RawWidget widgetRaw;
 
   ValueNotifier<Rectangle?> selectedRegion;
   ValueNotifier<List<int>> selectedIds;
@@ -824,7 +824,7 @@ class PitchEventWidget extends StatefulWidget {
   double length;
   int num;
 
-  FFIWidget widgetRaw;
+  RawWidget widgetRaw;
 
   ValueNotifier<List<int>> selectedIds;
 

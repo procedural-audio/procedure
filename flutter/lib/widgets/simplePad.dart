@@ -13,18 +13,18 @@ import '../views/settings.dart';
 var knobValue = "value".toNativeUtf8();
 var colorValue = "color".toNativeUtf8();
 
-//int Function(FFIWidgetPointer) ffiKnobGetValue = core.lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>("ffi_knob_get_value").asFunction();
-void Function(FFIWidgetPointer, bool) ffiSimplePadSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Bool)>>(
+//int Function(RawWidgetPointer) ffiKnobGetValue = core.lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>("ffi_knob_get_value").asFunction();
+void Function(RawWidgetPointer, bool) ffiSimplePadSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Bool)>>(
         "ffi_simple_pad_set_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSimplePadGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSimplePadGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_simple_pad_get_color")
     .asFunction();
 
 class SimplePadWidget extends ModuleWidget {
-  SimplePadWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  SimplePadWidget(RawNode m, RawWidget w) : super(m, w);
 
   Color color = Colors.blue;
   bool value = false;

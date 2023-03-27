@@ -7,23 +7,22 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-FFIWidget Function(FFIWidgetTrait, int) ffiTabsGetTabChild = core
-    .lookup<NativeFunction<FFIWidget Function(FFIWidgetTrait, Int64)>>(
+RawWidget Function(RawWidgetTrait, int) ffiTabsGetTabChild = core
+    .lookup<NativeFunction<RawWidget Function(RawWidgetTrait, Int64)>>(
         "ffi_tabs_get_tab_child")
     .asFunction();
 
-int Function(FFIWidgetTrait) ffiTabsGetTabCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+int Function(RawWidgetTrait) ffiTabsGetTabCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetTrait)>>(
         "ffi_tabs_get_tab_count")
     .asFunction();
 
 class TabsWidget extends ModuleWidget {
-  TabsWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  TabsWidget(RawNode m, RawWidget w) : super(m, w) {
     int count = ffiTabsGetTabCount(w.getTrait());
 
     for (int i = 0; i < count; i++) {
       ModuleWidget? widget = createWidget(
-        app,
         m,
         ffiTabsGetTabChild(w.getTrait(), i),
       );

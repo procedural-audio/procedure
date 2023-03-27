@@ -8,7 +8,7 @@ import '../module.dart';
 import '../main.dart';
 
 class StackWidget extends ModuleWidget {
-  StackWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  StackWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class StackWidget extends ModuleWidget {
 }
 
 class RowWidget extends ModuleWidget {
-  RowWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  RowWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class RowWidget extends ModuleWidget {
 }
 
 class ColumnWidget extends ModuleWidget {
-  ColumnWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  ColumnWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +41,15 @@ class ColumnWidget extends ModuleWidget {
   }
 }
 
-int Function(FFIWidget) ffiPositionedGetX = core
-    .lookup<NativeFunction<Int32 Function(FFIWidget)>>("ffi_positioned_get_x")
+int Function(RawWidget) ffiPositionedGetX = core
+    .lookup<NativeFunction<Int32 Function(RawWidget)>>("ffi_positioned_get_x")
     .asFunction();
-int Function(FFIWidget) ffiPositionedGetY = core
-    .lookup<NativeFunction<Int32 Function(FFIWidget)>>("ffi_positioned_get_y")
+int Function(RawWidget) ffiPositionedGetY = core
+    .lookup<NativeFunction<Int32 Function(RawWidget)>>("ffi_positioned_get_y")
     .asFunction();
 
 class PositionedWidget extends ModuleWidget {
-  PositionedWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  PositionedWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -61,17 +61,17 @@ class PositionedWidget extends ModuleWidget {
   }
 }
 
-int Function(FFIWidget) ffiSizedBoxGetWidth = core
-    .lookup<NativeFunction<Int32 Function(FFIWidget)>>(
+int Function(RawWidget) ffiSizedBoxGetWidth = core
+    .lookup<NativeFunction<Int32 Function(RawWidget)>>(
         "ffi_sized_box_get_width")
     .asFunction();
-int Function(FFIWidget) ffiSizedBoxGetHeight = core
-    .lookup<NativeFunction<Int32 Function(FFIWidget)>>(
+int Function(RawWidget) ffiSizedBoxGetHeight = core
+    .lookup<NativeFunction<Int32 Function(RawWidget)>>(
         "ffi_sized_box_get_height")
     .asFunction();
 
 class SizedBoxWidget extends ModuleWidget {
-  SizedBoxWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  SizedBoxWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -83,25 +83,25 @@ class SizedBoxWidget extends ModuleWidget {
   }
 }
 
-int Function(FFIWidgetPointer) ffiTransformGetX = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTransformGetX = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_transform_get_x")
     .asFunction();
-int Function(FFIWidgetPointer) ffiTransformGetY = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTransformGetY = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_transform_get_y")
     .asFunction();
-int Function(FFIWidgetPointer) ffiTransformGetWidth = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTransformGetWidth = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_transform_get_width")
     .asFunction();
-int Function(FFIWidgetPointer) ffiTransformGetHeight = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTransformGetHeight = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_transform_get_height")
     .asFunction();
 
 class TransformWidget extends ModuleWidget {
-  TransformWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  TransformWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -116,25 +116,25 @@ class TransformWidget extends ModuleWidget {
   }
 }
 
-int Function(FFIWidgetPointer) ffiPaddingGetLeft = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiPaddingGetLeft = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_padding_get_left")
     .asFunction();
-int Function(FFIWidgetPointer) ffiPaddingGetTop = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiPaddingGetTop = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_padding_get_top")
     .asFunction();
-int Function(FFIWidgetPointer) ffiPaddingGetRight = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiPaddingGetRight = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_padding_get_right")
     .asFunction();
-int Function(FFIWidgetPointer) ffiPaddingGetBottom = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiPaddingGetBottom = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_padding_get_bottom")
     .asFunction();
 
 class PaddingWidget extends ModuleWidget {
-  PaddingWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  PaddingWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

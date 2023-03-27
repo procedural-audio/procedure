@@ -7,21 +7,21 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnDown = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+void Function(RawWidgetTrait, double, double) ffiMouseListenerOnDown = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Float, Float)>>(
         "ffi_mouse_listener_on_down")
     .asFunction();
-void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnUp = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+void Function(RawWidgetTrait, double, double) ffiMouseListenerOnUp = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Float, Float)>>(
         "ffi_mouse_listener_on_up")
     .asFunction();
-void Function(FFIWidgetTrait, double, double) ffiMouseListenerOnDrag = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Float, Float)>>(
+void Function(RawWidgetTrait, double, double) ffiMouseListenerOnDrag = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Float, Float)>>(
         "ffi_mouse_listener_on_drag")
     .asFunction();
 
 class MouseListenerWidget extends ModuleWidget {
-  MouseListenerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  MouseListenerWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

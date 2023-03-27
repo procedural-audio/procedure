@@ -38,34 +38,124 @@ class ModuleInfo {
 }
 
 class Node extends StatelessWidget {
-  final RawNode rawNode;
+  Node(this.rawNode) {
+    print("Creating module now");
 
-  Node(this.rawNode);
+    id = rawNode.getId();
+    position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
+    size = Offset(rawNode.getWidth() + 0.0, rawNode.getHeight() + 0.0);
+    name = rawNode.getName();
+    color = rawNode.getColor();
+
+    int inputsCount = rawNode.getInputPinsCount();
+    int outputsCount = rawNode.getOutputPinsCount();
+
+    /*for (int i = 0; i < inputsCount; i++) {
+      var pin = Pin();
+
+      pin.moduleId = id;
+      pin.index = i;
+      pin.name = raw.getInputPinName(i);
+      var kind = raw.getInputPinType(i);
+
+      if (kind == 1) {
+        pin.type = IO.audio;
+      } else if (kind == 2) {
+        pin.type = IO.midi;
+      } else if (kind == 3) {
+        pin.type = IO.control;
+      } else if (kind == 4) {
+        pin.type = IO.time;
+      } else if (kind == 5) {
+        pin.type = IO.external;
+      }
+
+      if (pin.type != IO.external) {
+        pin.offset = Offset(10, 0.0 + raw.getInputPinY(i));
+      }
+
+      pin.isInput = true;
+      pins.add(pin);
+    }
+
+    for (int i = 0; i < outputsCount; i++) {
+      var pin = Pin();
+
+      pin.moduleId = id;
+      pin.index = i + inputsCount;
+
+      var name = raw.getOutputPinName(i);
+      var kind = raw.getOutputPinType(i);
+
+      if (kind == 1) {
+        pin.type = IO.audio;
+      } else if (kind == 2) {
+        pin.type = IO.midi;
+      } else if (kind == 3) {
+        pin.type = IO.control;
+      } else if (kind == 4) {
+        pin.type = IO.time;
+      } else {
+        pin.type = IO.external;
+      }
+
+      if (pin.type != IO.external) {
+        pin.offset = Offset(size.dx - 25, 0.0 + raw.getOutputPinY(i));
+      }
+
+      pin.isInput = false;
+      pins.add(pin);
+    }*/
+
+    var widgetRaw = rawNode.getWidgetRoot();
+    var widget = createWidget(rawNode, widgetRaw);
+    if (widget != null) {
+      widgets.add(widget);
+    }
+  }
+
+  final RawNode rawNode;
+  int id = 1;
+  String name = "Name";
+  Color color = Colors.grey;
+  Offset size = const Offset(250, 250);
+  ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
+  // List<Pin> pins = <Pin>[];
+  List<ModuleWidget> widgets = <ModuleWidget>[];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 200,
-      color: Colors.red,
+    return ValueListenableBuilder<Offset>(
+      valueListenable: position,
+      builder: (context, p, child) {
+        return Positioned(
+          left: p.dx,
+          top: p.dy,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              var x = rawNode.getX() + details.delta.dx;
+              var y = rawNode.getY() + details.delta.dy;
+              rawNode.setX(x);
+              rawNode.setY(y);
+              position.value = Offset(x, y);
+            },
+            child: Container(
+              width: size.dx,
+              height: size.dy,
+              decoration: const BoxDecoration(
+                color: Color.fromRGBO(40, 40, 40, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Stack(
+                children: widgets,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
-
-/*class Module extends StatelessWidget {
-  final RawModule rawModule;
-
-  Module(this.rawModule);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 200,
-      color: Colors.blue,
-    );
-  }
-}*/
 
 /*class Module extends StatefulWidget {
   var id = 1;
@@ -612,19 +702,19 @@ class RawNode extends Struct {
     return Color(_ffiNodeGetColor(this));
   }
 
-  int getX() {
+  double getX() {
     return _ffiNodeGetX(this);
   }
 
-  int getY() {
+  double getY() {
     return _ffiNodeGetY(this);
   }
 
-  void setX(int i) {
+  void setX(double i) {
     _ffiNodeSetX(this, i);
   }
 
-  void setY(int i) {
+  void setY(double i) {
     _ffiNodeSetY(this, i);
   }
 
@@ -694,7 +784,7 @@ class RawNode extends Struct {
     return name;
   }
 
-  FFIWidget getWidgetRoot() {
+  RawWidget getWidgetRoot() {
     return _ffiNodeGetWidgetRoot(this);
   }
 
@@ -722,17 +812,17 @@ int Function(RawNode) _ffiNodeGetColor = core
     .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_color")
     .asFunction();
 
-int Function(RawNode) _ffiNodeGetX = core
-    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_x")
+double Function(RawNode) _ffiNodeGetX = core
+    .lookup<NativeFunction<Double Function(RawNode)>>("ffi_node_get_x")
     .asFunction();
-int Function(RawNode) _ffiNodeGetY = core
-    .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_y")
+double Function(RawNode) _ffiNodeGetY = core
+    .lookup<NativeFunction<Double Function(RawNode)>>("ffi_node_get_y")
     .asFunction();
-void Function(RawNode, int) _ffiNodeSetX = core
-    .lookup<NativeFunction<Void Function(RawNode, Int32)>>("ffi_node_set_x")
+void Function(RawNode, double) _ffiNodeSetX = core
+    .lookup<NativeFunction<Void Function(RawNode, Double)>>("ffi_node_set_x")
     .asFunction();
-void Function(RawNode, int) _ffiNodeSetY = core
-    .lookup<NativeFunction<Void Function(RawNode, Int32)>>("ffi_node_set_y")
+void Function(RawNode, double) _ffiNodeSetY = core
+    .lookup<NativeFunction<Void Function(RawNode, Double)>>("ffi_node_set_y")
     .asFunction();
 
 double Function(RawNode) _ffiNodeGetWidth = core
@@ -791,8 +881,8 @@ int Function(RawNode, int) _ffiNodeGetOutputPinY = core
         "ffi_node_get_output_pin_y")
     .asFunction();
 
-FFIWidget Function(RawNode) _ffiNodeGetWidgetRoot = core
-    .lookup<NativeFunction<FFIWidget Function(RawNode)>>(
+RawWidget Function(RawNode) _ffiNodeGetWidgetRoot = core
+    .lookup<NativeFunction<RawWidget Function(RawNode)>>(
         "ffi_node_get_widget_root")
     .asFunction();
 bool Function(RawNode) _ffiNodeShouldRebuild = core

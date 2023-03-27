@@ -45,7 +45,7 @@ import 'painter.dart';
 import 'mouseListener.dart';
 import 'xyPad.dart';
 
-ModuleWidget? createWidget(App app, RawNode moduleRaw, FFIWidget widgetRaw) {
+ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
   var nameRaw = ffiWidgetGetName(widgetRaw);
   var name = nameRaw.toDartString();
   calloc.free(nameRaw);
@@ -53,99 +53,99 @@ ModuleWidget? createWidget(App app, RawNode moduleRaw, FFIWidget widgetRaw) {
   print("Creating " + name);
 
   if (name == "Knob") {
-    return KnobWidget(app, moduleRaw, widgetRaw);
+    return KnobWidget(moduleRaw, widgetRaw);
   } else if (name == "Stack") {
-    return StackWidget(app, moduleRaw, widgetRaw);
+    return StackWidget(moduleRaw, widgetRaw);
   } else if (name == "Row") {
-    return RowWidget(app, moduleRaw, widgetRaw);
+    return RowWidget(moduleRaw, widgetRaw);
   } else if (name == "Column") {
-    return ColumnWidget(app, moduleRaw, widgetRaw);
+    return ColumnWidget(moduleRaw, widgetRaw);
   } else if (name == "Transform") {
-    return TransformWidget(app, moduleRaw, widgetRaw);
+    return TransformWidget(moduleRaw, widgetRaw);
   } else if (name == "Positioned") {
-    return PositionedWidget(app, moduleRaw, widgetRaw);
+    return PositionedWidget(moduleRaw, widgetRaw);
   } else if (name == "Padding") {
-    return PaddingWidget(app, moduleRaw, widgetRaw);
+    return PaddingWidget(moduleRaw, widgetRaw);
   } else if (name == "SizedBox") {
-    return SizedBoxWidget(app, moduleRaw, widgetRaw);
+    return SizedBoxWidget(moduleRaw, widgetRaw);
   } else if (name == "IconButton") {
-    return IconButtonWidget(app, moduleRaw, widgetRaw);
+    return IconButtonWidget(moduleRaw, widgetRaw);
   } else if (name == "SvgButton") {
-    return ButtonSVG(app, moduleRaw, widgetRaw);
+    return ButtonSVG(moduleRaw, widgetRaw);
   } else if (name == "Svg") {
-    return SvgWidget(app, moduleRaw, widgetRaw);
+    return SvgWidget(moduleRaw, widgetRaw);
   } else if (name == "ButtonGrid") {
-    return ButtonGridWidget(app, moduleRaw, widgetRaw);
+    return ButtonGridWidget(moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
-    return DropdownWidget(app, moduleRaw, widgetRaw);
+    return DropdownWidget(moduleRaw, widgetRaw);
   } else if (name == "Slider") {
-    return SliderWidget(app, moduleRaw, widgetRaw);
+    return SliderWidget(moduleRaw, widgetRaw);
   } else if (name == "RangeSlider") {
-    return RangeSliderWidget(app, moduleRaw, widgetRaw);
+    return RangeSliderWidget(moduleRaw, widgetRaw);
   } else if (name == "SimpleButton") {
-    return SimpleButtonWidget(app, moduleRaw, widgetRaw);
+    return SimpleButtonWidget(moduleRaw, widgetRaw);
   } else if (name == "SimpleSwitch") {
-    return SimpleSwitchWidget(app, moduleRaw, widgetRaw);
+    return SimpleSwitchWidget(moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
-    return SimplePadWidget(app, moduleRaw, widgetRaw);
+    return SimplePadWidget(moduleRaw, widgetRaw);
   } else if (name == "XYPad") {
-    return XYPadWidget(app, moduleRaw, widgetRaw);
+    return XYPadWidget(moduleRaw, widgetRaw);
   } else if (name == "Text") {
-    return TextWidget(app, moduleRaw, widgetRaw);
+    return TextWidget(moduleRaw, widgetRaw);
   } else if (name == "NotesTrack") {
-    return PianoRollWidget(app, moduleRaw, widgetRaw);
+    return PianoRollWidget(moduleRaw, widgetRaw);
   } else if (name == "StepSequencer") {
-    return StepSequencerWidget(app, moduleRaw, widgetRaw);
+    return StepSequencerWidget(moduleRaw, widgetRaw);
   } else if (name == "Envelope") {
-    return EnvelopeWidget(app, moduleRaw, widgetRaw);
+    return EnvelopeWidget(moduleRaw, widgetRaw);
   } else if (name == "LevelMeter") {
-    return LevelMeterWidget(app, moduleRaw, widgetRaw);
+    return LevelMeterWidget(moduleRaw, widgetRaw);
   } else if (name == "MouseListener") {
-    return MouseListenerWidget(app, moduleRaw, widgetRaw);
+    return MouseListenerWidget(moduleRaw, widgetRaw);
   } else if (name == "DynamicLine") {
-    return DynamicLineWidget(app, moduleRaw, widgetRaw);
+    return DynamicLineWidget(moduleRaw, widgetRaw);
   } else if (name == "Keyboard") {
-    return KeyboardWidget(app, moduleRaw, widgetRaw);
+    return KeyboardWidget(moduleRaw, widgetRaw);
   } else if (name == "SampleMapper") {
-    return SampleMapperWidget(app, moduleRaw, widgetRaw);
+    return SampleMapperWidget(moduleRaw, widgetRaw);
   } else if (name == "SampleEditor") {
-    return SampleEditorWidget(app, moduleRaw, widgetRaw);
+    return SampleEditorWidget(moduleRaw, widgetRaw);
   } else if (name == "LuaEditor") {
-    return LuaEditorWidget(app, moduleRaw, widgetRaw);
+    return LuaEditorWidget(moduleRaw, widgetRaw);
   } else if (name == "Tabs") {
-    return TabsWidget(app, moduleRaw, widgetRaw);
+    return TabsWidget(moduleRaw, widgetRaw);
   } else if (name == "NodeSequencer") {
-    return NodeSequencerWidget(app, moduleRaw, widgetRaw);
+    return NodeSequencerWidget(moduleRaw, widgetRaw);
   } else if (name == "SamplePicker") {
-    return SamplePickerWidget(app, moduleRaw, widgetRaw);
+    return SamplePickerWidget(moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
-    return RefreshWidget(app, moduleRaw, widgetRaw);
+    return RefreshWidget(moduleRaw, widgetRaw);
   } else if (name == "Rebuild") {
-    return RebuildWidget(app, moduleRaw, widgetRaw);
+    return RebuildWidget(moduleRaw, widgetRaw);
   } else if (name == "Button") {
-    return ButtonWidget(app, moduleRaw, widgetRaw);
+    return ButtonWidget(moduleRaw, widgetRaw);
   } else if (name == "GridBuilder") {
-    return GridBuilderWidget(app, moduleRaw, widgetRaw);
+    return GridBuilderWidget(moduleRaw, widgetRaw);
   } else if (name == "Grid") {
-    return GridWidget(app, moduleRaw, widgetRaw);
+    return GridWidget(moduleRaw, widgetRaw);
   } else if (name == "Fader") {
-    return FaderWidget(app, moduleRaw, widgetRaw);
+    return FaderWidget(moduleRaw, widgetRaw);
   } else if (name == "Input") {
-    return InputWidget(app, moduleRaw, widgetRaw);
+    return InputWidget(moduleRaw, widgetRaw);
   } else if (name == "Indicator") {
-    return IndicatorWidget(app, moduleRaw, widgetRaw);
+    return IndicatorWidget(moduleRaw, widgetRaw);
   } else if (name == "WavetablePicker") {
-    return WavetableWidget(app, moduleRaw, widgetRaw);
+    return WavetableWidget(moduleRaw, widgetRaw);
   } else if (name == "Display") {
-    return DisplayWidget(app, moduleRaw, widgetRaw);
+    return DisplayWidget(moduleRaw, widgetRaw);
   } else if (name == "SearchableDropdown") {
-    return SearchableDropdownWidget(app, moduleRaw, widgetRaw);
+    return SearchableDropdownWidget(moduleRaw, widgetRaw);
   } else if (name == "Browser") {
-    return BrowserWidget(app, moduleRaw, widgetRaw);
+    return BrowserWidget(moduleRaw, widgetRaw);
   } else if (name == "Painter") {
-    return PainterWidget(app, moduleRaw, widgetRaw);
+    return PainterWidget(moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
-    return EmptyWidget(app, moduleRaw, widgetRaw);
+    return EmptyWidget(moduleRaw, widgetRaw);
   } else {
     print("Unknown widget " + name);
     return null;
@@ -153,7 +153,7 @@ ModuleWidget? createWidget(App app, RawNode moduleRaw, FFIWidget widgetRaw) {
 }
 
 class EmptyWidget extends ModuleWidget {
-  EmptyWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  EmptyWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -163,18 +163,17 @@ class EmptyWidget extends ModuleWidget {
 
 abstract class ModuleWidget extends StatefulWidget {
   final RawNode moduleRaw;
-  final FFIWidget widgetRaw;
-  final App app;
+  final RawWidget widgetRaw;
 
   late List<ModuleWidget> children = [];
   _ModuleWidgetState state = _ModuleWidgetState();
 
-  ModuleWidget(this.app, this.moduleRaw, this.widgetRaw) {
+  ModuleWidget(this.moduleRaw, this.widgetRaw) {
     int childCount = ffiWidgetGetChildCount(widgetRaw);
 
     for (int i = 0; i < childCount; i++) {
       var childRaw = ffiWidgetGetChild(widgetRaw, i);
-      ModuleWidget? widget = createWidget(app, moduleRaw, childRaw);
+      ModuleWidget? widget = createWidget(moduleRaw, childRaw);
 
       if (widget != null) {
         children.add(widget);
@@ -294,89 +293,106 @@ class _ModuleWidgetState extends State<ModuleWidget> {
     var widgetTree = widget.build(context);
 
     if (widget.assignedVar.value != null) {
-      widgetTree = Stack(children: [
-        widgetTree,
-        Align(
+      widgetTree = Stack(
+        children: [
+          widgetTree,
+          Align(
             alignment: Alignment.topLeft,
             child: MouseRegion(
-                onEnter: (e) {
-                  setState(() {
-                    labelHovering = true;
-                  });
-                },
-                onExit: (e) {
-                  setState(() {
-                    labelHovering = false;
-                  });
-                },
-                child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: labelHovering ? 100 : 8,
-                    height: labelHovering ? 14 : 8,
-                    padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
-                    decoration: const BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.all(Radius.circular(5))),
-                    child: Visibility(
-                        visible: labelHovering,
-                        child: ValueListenableBuilder<String>(
-                            valueListenable: widget.assignedVar.value!.name,
-                            builder: (context, name, child) {
-                              return Text(name,
-                                  softWrap: false,
-                                  style: const TextStyle(
-                                      color: Color.fromRGBO(255, 255, 255, 0.8),
-                                      fontSize: 10));
-                            })))))
-      ]);
+              onEnter: (e) {
+                setState(() {
+                  labelHovering = true;
+                });
+              },
+              onExit: (e) {
+                setState(() {
+                  labelHovering = false;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: labelHovering ? 100 : 8,
+                height: labelHovering ? 14 : 8,
+                padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
+                decoration: const BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(5),
+                  ),
+                ),
+                child: Visibility(
+                  visible: labelHovering,
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: widget.assignedVar.value!.name,
+                    builder: (context, name, child) {
+                      return Text(
+                        name,
+                        softWrap: false,
+                        style: const TextStyle(
+                          color: Color.fromRGBO(255, 255, 255, 0.8),
+                          fontSize: 10,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
     }
 
     if (widget.canAcceptVars()) {
-      return DragTarget(onWillAccept: (data) {
-        setState(() {
-          varDragging = true;
-        });
-        if (data != null) {
-          if (data is Var) {
-            return widget.willAcceptVar(data);
+      return DragTarget(
+        onWillAccept: (data) {
+          setState(() {
+            varDragging = true;
+          });
+          if (data != null) {
+            if (data is Var) {
+              return widget.willAcceptVar(data);
+            } else {
+              return false;
+            }
           } else {
             return false;
           }
-        } else {
-          return false;
-        }
-      }, onAccept: (v) {
-        setState(() {
-          varDragging = false;
-        });
-
-        if (widget.assignedVar.value != null) {
-          widget.assignedVar.value!.notifier.removeListener(onVarUpdate);
-          widget.assignedVar.value = v as Var;
-          widget.assignedVar.value!.notifier.addListener(onVarUpdate);
-          onVarUpdate();
-        } else {
-          widget.assignedVar.value = v as Var;
-          widget.assignedVar.value!.notifier.addListener(onVarUpdate);
-          onVarUpdate();
-        }
-      }, onLeave: (data) {
-        if (varDragging) {
+        },
+        onAccept: (v) {
           setState(() {
             varDragging = false;
           });
-        }
-      }, builder: (context, candidateData, rejectedData) {
-        if (varDragging) {
-          bool shouldAccept = false;
 
-          if (candidateData.isNotEmpty) {
-            shouldAccept = widget.willAcceptVar(candidateData[0] as Var);
+          if (widget.assignedVar.value != null) {
+            widget.assignedVar.value!.notifier.removeListener(onVarUpdate);
+            widget.assignedVar.value = v as Var;
+            widget.assignedVar.value!.notifier.addListener(onVarUpdate);
+            onVarUpdate();
+          } else {
+            widget.assignedVar.value = v as Var;
+            widget.assignedVar.value!.notifier.addListener(onVarUpdate);
+            onVarUpdate();
           }
+        },
+        onLeave: (data) {
+          if (varDragging) {
+            setState(() {
+              varDragging = false;
+            });
+          }
+        },
+        builder: (context, candidateData, rejectedData) {
+          if (varDragging) {
+            bool shouldAccept = false;
 
-          return Stack(
-            children: [
-              Positioned(
+            if (candidateData.isNotEmpty) {
+              shouldAccept = widget.willAcceptVar(candidateData[0] as Var);
+            }
+
+            return Stack(
+              children: [
+                Positioned(
                   left: 0,
                   top: 0,
                   right: 0,
@@ -390,13 +406,15 @@ class _ModuleWidgetState extends State<ModuleWidget> {
                       shouldAccept ? Icons.add : Icons.error,
                       color: shouldAccept ? Colors.green : Colors.red,
                     ),
-                  ))
-            ],
-          );
-        } else {
-          return widgetTree;
-        }
-      });
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return widgetTree;
+          }
+        },
+      );
     } else {
       return widgetTree;
     }

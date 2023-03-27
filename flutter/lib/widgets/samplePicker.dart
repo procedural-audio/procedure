@@ -11,26 +11,26 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetPointer) ffiSampleFilePickerGetBufferLength = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSampleFilePickerGetBufferLength = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_sample_file_picker_get_buffer_length")
     .asFunction();
-double Function(FFIWidgetPointer, int) ffiSampleFilePickerGetSampleLeft = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiSampleFilePickerGetSampleLeft = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
         "ffi_sample_file_picker_get_sample_left")
     .asFunction();
-double Function(FFIWidgetPointer, int) ffiSampleFilePickerGetSampleRight = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiSampleFilePickerGetSampleRight = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
         "ffi_sample_file_picker_get_sample_right")
     .asFunction();
-void Function(FFIWidgetPointer, Pointer<Utf8>) ffiSampleFilePickerSetSample =
+void Function(RawWidgetPointer, Pointer<Utf8>) ffiSampleFilePickerSetSample =
     core
-        .lookup<NativeFunction<Void Function(FFIWidgetPointer, Pointer<Utf8>)>>(
+        .lookup<NativeFunction<Void Function(RawWidgetPointer, Pointer<Utf8>)>>(
             "ffi_sample_file_picker_set_sample")
         .asFunction();
 
 class SamplePickerWidget extends ModuleWidget {
-  SamplePickerWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  SamplePickerWidget(RawNode m, RawWidget w) : super(m, w) {
     refreshBuffer();
   }
 

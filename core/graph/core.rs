@@ -281,22 +281,22 @@ pub unsafe extern "C" fn ffi_node_get_id(node: &mut Node) -> i32 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_get_x(node: &mut Node) -> i32 {
+pub unsafe extern "C" fn ffi_node_get_x(node: &mut Node) -> f64 {
     node.position.0
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_get_y(node: &mut Node) -> i32 {
+pub unsafe extern "C" fn ffi_node_get_y(node: &mut Node) -> f64 {
     node.position.1
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_set_x(node: &mut Node, x: i32) {
+pub unsafe extern "C" fn ffi_node_set_x(node: &mut Node, x: f64) {
     node.position.0 = x;
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_set_y(node: &mut Node, y: i32) {
+pub unsafe extern "C" fn ffi_node_set_y(node: &mut Node, y: f64) {
     node.position.1 = y;
 }
 

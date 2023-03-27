@@ -13,25 +13,25 @@ import '../views/settings.dart';
 var knobValue = "value".toNativeUtf8();
 var colorValue = "color".toNativeUtf8();
 
-void Function(FFIWidgetPointer, bool) ffiSimpleButtonSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Bool)>>(
+void Function(RawWidgetPointer, bool) ffiSimpleButtonSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Bool)>>(
         "ffi_simple_button_set_value")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer) ffiSimpleButtonGetLabel = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(RawWidgetPointer) ffiSimpleButtonGetLabel = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_simple_button_get_label")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSimpleButtonGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSimpleButtonGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_simple_button_get_color")
     .asFunction();
-bool Function(FFIWidgetPointer) ffiSimpleButtonGetToggle = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetPointer)>>(
+bool Function(RawWidgetPointer) ffiSimpleButtonGetToggle = core
+    .lookup<NativeFunction<Bool Function(RawWidgetPointer)>>(
         "ffi_simple_button_get_toggle")
     .asFunction();
 
 class SimpleButtonWidget extends ModuleWidget {
-  SimpleButtonWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  SimpleButtonWidget(RawNode m, RawWidget w) : super(m, w);
 
   Color color = Colors.blue;
   bool value = false;

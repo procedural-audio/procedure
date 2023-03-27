@@ -7,18 +7,18 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-bool Function(FFIWidgetTrait) ffiRefreshGetShouldRefresh = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(
+bool Function(RawWidgetTrait) ffiRefreshGetShouldRefresh = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
         "ffi_refresh_get_should_refresh")
     .asFunction();
 
-void Function(FFIWidgetTrait, bool) ffiRefreshSetShouldRefresh = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Bool)>>(
+void Function(RawWidgetTrait, bool) ffiRefreshSetShouldRefresh = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Bool)>>(
         "ffi_refresh_set_should_refresh")
     .asFunction();
 
 class RefreshWidget extends ModuleWidget {
-  RefreshWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  RefreshWidget(RawNode m, RawWidget w) : super(m, w);
 
   void refreshCallback() {
     children[0].refreshRecursive();
@@ -38,21 +38,21 @@ class RefreshWidget extends ModuleWidget {
   }
 }
 
-bool Function(FFIWidgetTrait) ffiRebuildGetShouldRefresh = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait)>>(
+bool Function(RawWidgetTrait) ffiRebuildGetShouldRefresh = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
         "ffi_rebuild_get_should_refresh")
     .asFunction();
 
-void Function(FFIWidgetTrait, bool) ffiRebuildSetShouldRefresh = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Bool)>>(
+void Function(RawWidgetTrait, bool) ffiRebuildSetShouldRefresh = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Bool)>>(
         "ffi_rebuild_set_should_refresh")
     .asFunction();
 
 class RebuildWidget extends ModuleWidget {
-  RebuildWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  RebuildWidget(RawNode m, RawWidget w) : super(m, w);
 
   void rebuildCallback() {
-    var newChild = RebuildWidget(app, moduleRaw, widgetRaw);
+    var newChild = RebuildWidget(moduleRaw, widgetRaw);
     children[0] = newChild.children[0];
     refresh();
   }
@@ -71,13 +71,13 @@ class RebuildWidget extends ModuleWidget {
   }
 }
 
-int Function(FFIWidgetPointer) ffiIndicatorGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiIndicatorGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_indicator_get_color")
     .asFunction();
 
 class IndicatorWidget extends ModuleWidget {
-  IndicatorWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  IndicatorWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

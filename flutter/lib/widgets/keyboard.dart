@@ -6,25 +6,25 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetTrait) ffiKeyboardGetKeyCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetTrait)>>(
+int Function(RawWidgetTrait) ffiKeyboardGetKeyCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetTrait)>>(
         "ffi_keyboard_get_key_count")
     .asFunction();
-bool Function(FFIWidgetTrait, int) ffiKeyboardKeyGetDown = core
-    .lookup<NativeFunction<Bool Function(FFIWidgetTrait, Int64)>>(
+bool Function(RawWidgetTrait, int) ffiKeyboardKeyGetDown = core
+    .lookup<NativeFunction<Bool Function(RawWidgetTrait, Int64)>>(
         "ffi_keyboard_key_get_down")
     .asFunction();
-void Function(FFIWidgetTrait, int) ffiKeyboardKeyPress = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64)>>(
+void Function(RawWidgetTrait, int) ffiKeyboardKeyPress = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Int64)>>(
         "ffi_keyboard_key_press")
     .asFunction();
-void Function(FFIWidgetTrait, int) ffiKeyboardKeyRelease = core
-    .lookup<NativeFunction<Void Function(FFIWidgetTrait, Int64)>>(
+void Function(RawWidgetTrait, int) ffiKeyboardKeyRelease = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Int64)>>(
         "ffi_keyboard_key_release")
     .asFunction();
 
 class KeyboardWidget extends ModuleWidget {
-  KeyboardWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  KeyboardWidget(RawNode m, RawWidget w) : super(m, w);
 
   ScrollController controller = ScrollController();
 

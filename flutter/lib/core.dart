@@ -245,25 +245,24 @@ int Function(RawCore, int) _ffiCoreGetModuleSpecColor = core
 
 /* Widget */
 
-FFIWidgetTrait Function(FFIWidget) _ffiWidgetGetTrait = core
-    .lookup<NativeFunction<FFIWidgetTrait Function(FFIWidget)>>(
+RawWidgetTrait Function(RawWidget) _ffiWidgetGetTrait = core
+    .lookup<NativeFunction<RawWidgetTrait Function(RawWidget)>>(
         "ffi_widget_get_trait")
     .asFunction();
-Pointer<Utf8> Function(FFIWidget) ffiWidgetGetName = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidget)>>(
+Pointer<Utf8> Function(RawWidget) ffiWidgetGetName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidget)>>(
         "ffi_widget_get_name")
     .asFunction();
-int Function(FFIWidget) ffiWidgetGetChildCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidget)>>(
+int Function(RawWidget) ffiWidgetGetChildCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidget)>>(
         "ffi_widget_get_child_count")
     .asFunction();
-FFIWidget Function(FFIWidget, int) ffiWidgetGetChild = core
-    .lookup<NativeFunction<FFIWidget Function(FFIWidget, Int64)>>(
+RawWidget Function(RawWidget, int) ffiWidgetGetChild = core
+    .lookup<NativeFunction<RawWidget Function(RawWidget, Int64)>>(
         "ffi_widget_get_child")
     .asFunction();
-
-void Function(FFIWidget, int) _ffiKnobSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidget, Int32)>>(
+void Function(RawWidget, int) _ffiKnobSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidget, Int32)>>(
         "ffi_knob_set_value")
     .asFunction();
 
@@ -284,24 +283,24 @@ class FFIAudioPlugin extends Struct {
   external int pointer;
 }
 
-class FFIWidgetPointer extends Struct {
+class RawWidgetPointer extends Struct {
   @Int64()
   external int pointer;
 }
 
-class FFIWidget extends Struct {
-  external FFIWidgetPointer pointer;
+class RawWidget extends Struct {
+  external RawWidgetPointer pointer;
 
   @Int64()
   external int metadata;
 
-  FFIWidgetTrait getTrait() {
+  RawWidgetTrait getTrait() {
     return _ffiWidgetGetTrait(this);
   }
 }
 
-class FFIWidgetTrait extends Struct {
-  external FFIWidgetPointer pointer;
+class RawWidgetTrait extends Struct {
+  external RawWidgetPointer pointer;
 
   @Int64()
   external int metadata;

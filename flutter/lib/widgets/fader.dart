@@ -8,25 +8,25 @@ import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
 
-double Function(FFIWidgetPointer) ffiFaderGetValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiFaderGetValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_fader_get_value")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiFaderSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiFaderSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_fader_set_value")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer) ffiFaderGetLabel = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(RawWidgetPointer) ffiFaderGetLabel = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_fader_get_label")
     .asFunction();
-int Function(FFIWidgetPointer) ffiFaderGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiFaderGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_fader_get_color")
     .asFunction();
 
 class FaderWidget extends ModuleWidget {
-  FaderWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  FaderWidget(RawNode m, RawWidget w) : super(m, w);
 
   double value = 0.5;
   String? labelText;

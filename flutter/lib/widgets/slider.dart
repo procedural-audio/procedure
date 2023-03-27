@@ -8,29 +8,29 @@ import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
 
-double Function(FFIWidgetPointer) ffiSliderGetValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiSliderGetValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_slider_get_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSliderGetDivisions = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSliderGetDivisions = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_slider_get_divisions")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiSliderSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiSliderSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_slider_set_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiSliderGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiSliderGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_slider_get_color")
     .asFunction();
-/*Pointer<Utf8> Function(FFIWidgetPointer) ffiSimpleFaderGetLabel = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+/*Pointer<Utf8> Function(RawWidgetPointer) ffiSimpleFaderGetLabel = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_simple_fader_get_label")
     .asFunction();*/
 
 class SliderWidget extends ModuleWidget {
-  SliderWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  SliderWidget(RawNode m, RawWidget w) : super(m, w);
 
   Color color = Colors.blue;
   double value = 0.5;
@@ -70,33 +70,33 @@ class SliderWidget extends ModuleWidget {
   }
 }
 
-double Function(FFIWidgetPointer) ffiRangeSliderGetMinValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiRangeSliderGetMinValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_range_slider_get_min_value")
     .asFunction();
-double Function(FFIWidgetPointer) ffiRangeSliderGetMaxValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiRangeSliderGetMaxValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_range_slider_get_max_value")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiRangeSliderSetMinValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiRangeSliderSetMinValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_range_slider_set_min_value")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiRangeSliderSetMaxValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiRangeSliderSetMaxValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_range_slider_set_max_value")
     .asFunction();
-int Function(FFIWidgetPointer) ffiRangeSliderGetDivisions = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiRangeSliderGetDivisions = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_range_slider_get_divisions")
     .asFunction();
-int Function(FFIWidgetPointer) ffiRangeSliderGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiRangeSliderGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_range_slider_get_color")
     .asFunction();
 
 class RangeSliderWidget extends ModuleWidget {
-  RangeSliderWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  RangeSliderWidget(RawNode m, RawWidget w) : super(m, w);
 
   Color color = Colors.blue;
   double value = 0.5;

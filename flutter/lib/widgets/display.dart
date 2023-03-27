@@ -12,13 +12,13 @@ import '../main.dart';
 import '../core.dart';
 import '../module.dart';
 
-Pointer<Utf8> Function(FFIWidgetTrait) ffiDisplayGetText = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetTrait)>>(
+Pointer<Utf8> Function(RawWidgetTrait) ffiDisplayGetText = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
         "ffi_display_get_text")
     .asFunction();
 
 class DisplayWidget extends ModuleWidget {
-  DisplayWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  DisplayWidget(RawNode m, RawWidget w) : super(m, w);
 
   ValueNotifier<String> text = ValueNotifier("");
 

@@ -7,49 +7,49 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-double Function(FFIWidgetPointer) ffiEnvelopeGetAttack = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiEnvelopeGetAttack = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_envelope_get_attack")
     .asFunction();
-double Function(FFIWidgetPointer) ffiEnvelopeGetDecay = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiEnvelopeGetDecay = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_envelope_get_decay")
     .asFunction();
-double Function(FFIWidgetPointer) ffiEnvelopeGetSustain = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiEnvelopeGetSustain = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_envelope_get_sustain")
     .asFunction();
-double Function(FFIWidgetPointer) ffiEnvelopeGetRelease = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiEnvelopeGetRelease = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_envelope_get_release")
     .asFunction();
-double Function(FFIWidgetPointer) ffiEnvelopeGetMult = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiEnvelopeGetMult = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_envelope_get_mult")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiEnvelopeSetAttack = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiEnvelopeSetAttack = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_envelope_set_attack")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiEnvelopeSetDecay = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiEnvelopeSetDecay = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_envelope_set_decay")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiEnvelopeSetSustain = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiEnvelopeSetSustain = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_envelope_set_sustain")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiEnvelopeSetRelease = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiEnvelopeSetRelease = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_envelope_set_release")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiEnvelopeSetMult = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiEnvelopeSetMult = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_envelope_set_mult")
     .asFunction();
 
 class EnvelopeWidget extends ModuleWidget {
-  EnvelopeWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {}
+  EnvelopeWidget(RawNode m, RawWidget w) : super(m, w) {}
 
   double attack = 0.0;
   double mult = 1.0;

@@ -11,29 +11,29 @@ import '../main.dart';
 
 import '../views/settings.dart';
 
-double Function(FFIWidgetPointer) ffiKnobGetValue = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiKnobGetValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_knob_get_value")
     .asFunction();
-void Function(FFIWidgetPointer, double) ffiKnobSetValue = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Float)>>(
+void Function(RawWidgetPointer, double) ffiKnobSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
         "ffi_knob_set_value")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer) ffiKnobGetLabel = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(RawWidgetPointer) ffiKnobGetLabel = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_knob_get_label")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer) ffiKnobGetFeedback = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(RawWidgetPointer) ffiKnobGetFeedback = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_knob_get_feedback")
     .asFunction();
-int Function(FFIWidgetPointer) ffiKnobGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiKnobGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_knob_get_color")
     .asFunction();
 
 class KnobWidget extends ModuleWidget {
-  KnobWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  KnobWidget(RawNode m, RawWidget w) : super(m, w);
 
   Color color = Colors.blue;
   String labelText = "";

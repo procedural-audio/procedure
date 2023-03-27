@@ -11,26 +11,26 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-double Function(FFIWidgetPointer) ffiLevelMeterGetLeft = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiLevelMeterGetLeft = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_level_meter_get_left")
     .asFunction();
-double Function(FFIWidgetPointer) ffiLevelMeterGetRight = core
-    .lookup<NativeFunction<Float Function(FFIWidgetPointer)>>(
+double Function(RawWidgetPointer) ffiLevelMeterGetRight = core
+    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
         "ffi_level_meter_get_right")
     .asFunction();
 
-int Function(FFIWidgetPointer) ffiLevelMeterGetColor1 = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiLevelMeterGetColor1 = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_level_meter_get_color_1")
     .asFunction();
-int Function(FFIWidgetPointer) ffiLevelMeterGetColor2 = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiLevelMeterGetColor2 = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_level_meter_get_color_2")
     .asFunction();
 
 class LevelMeterWidget extends ModuleWidget {
-  LevelMeterWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  LevelMeterWidget(RawNode m, RawWidget w) : super(m, w) {
     color1 = Color(ffiLevelMeterGetColor1(widgetRaw.pointer));
     color2 = Color(ffiLevelMeterGetColor2(widgetRaw.pointer));
   }

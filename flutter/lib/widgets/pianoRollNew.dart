@@ -9,41 +9,41 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetPointer) ffiNotesTrackGetNoteCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiNotesTrackGetNoteCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_notes_track_get_note_count")
     .asFunction();
 
-double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteStart = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiNotesTrackGetNoteStart = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_get_note_start")
     .asFunction();
-double Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteLength = core
-    .lookup<NativeFunction<Double Function(FFIWidgetPointer, Int64)>>(
+double Function(RawWidgetPointer, int) ffiNotesTrackGetNoteLength = core
+    .lookup<NativeFunction<Double Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_get_note_length")
     .asFunction();
-int Function(FFIWidgetPointer, int) ffiNotesTrackGetNoteNum = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer, Int64)>>(
+int Function(RawWidgetPointer, int) ffiNotesTrackGetNoteNum = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer, Int64)>>(
         "ffi_notes_track_get_note_num")
     .asFunction();
 
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteStart = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+void Function(RawWidgetPointer, int, double) ffiNotesTrackSetNoteStart = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Double)>>(
         "ffi_notes_track_set_note_start")
     .asFunction();
-void Function(FFIWidgetPointer, int, double) ffiNotesTrackSetNoteLength = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Double)>>(
+void Function(RawWidgetPointer, int, double) ffiNotesTrackSetNoteLength = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Double)>>(
         "ffi_notes_track_set_note_length")
     .asFunction();
-void Function(FFIWidgetPointer, int, int) ffiNotesTrackSetNoteNum = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64, Int32)>>(
+void Function(RawWidgetPointer, int, int) ffiNotesTrackSetNoteNum = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64, Int32)>>(
         "ffi_notes_track_set_note_num")
     .asFunction();
 
-void Function(FFIWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
+void Function(RawWidgetPointer, double, double, int) ffiNotesTrackAddNote = core
     .lookup<
         NativeFunction<
-            Void Function(FFIWidgetPointer, Double, Double,
+            Void Function(RawWidgetPointer, Double, Double,
                 Int32)>>("ffi_notes_track_add_note")
     .asFunction();
 
@@ -78,7 +78,7 @@ class DragInfo {
 }
 
 class PianoRollWidget extends ModuleWidget {
-  PianoRollWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  PianoRollWidget(RawNode m, RawWidget w) : super(m, w);
 
   final ScrollController controller = ScrollController();
   ValueNotifier<DragInfo> info = ValueNotifier(DragInfo());

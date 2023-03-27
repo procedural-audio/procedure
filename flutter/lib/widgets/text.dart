@@ -10,23 +10,23 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-Pointer<Utf8> Function(FFIWidgetPointer) ffiTextGetText = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer)>>(
+Pointer<Utf8> Function(RawWidgetPointer) ffiTextGetText = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
         "ffi_text_get_text")
     .asFunction();
 
-int Function(FFIWidgetPointer) ffiTextGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTextGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_text_get_color")
     .asFunction();
 
-int Function(FFIWidgetPointer) ffiTextGetSize = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiTextGetSize = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_text_get_size")
     .asFunction();
 
 class TextWidget extends ModuleWidget {
-  TextWidget(App a, RawNode m, FFIWidget w) : super(a, m, w);
+  TextWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
   Widget build(BuildContext context) {

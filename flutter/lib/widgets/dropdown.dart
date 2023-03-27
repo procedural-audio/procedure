@@ -7,29 +7,29 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-int Function(FFIWidgetPointer) ffiDropdownGetColor = core
-    .lookup<NativeFunction<Int32 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiDropdownGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
         "ffi_dropdown_get_color")
     .asFunction();
-int Function(FFIWidgetPointer) ffiDropdownGetElementCount = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiDropdownGetElementCount = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_dropdown_get_element_count")
     .asFunction();
-Pointer<Utf8> Function(FFIWidgetPointer, int) ffiDropdownGetElement = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(FFIWidgetPointer, Int64)>>(
+Pointer<Utf8> Function(RawWidgetPointer, int) ffiDropdownGetElement = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer, Int64)>>(
         "ffi_dropdown_get_element")
     .asFunction();
-int Function(FFIWidgetPointer) ffiDropdownGetIndex = core
-    .lookup<NativeFunction<Int64 Function(FFIWidgetPointer)>>(
+int Function(RawWidgetPointer) ffiDropdownGetIndex = core
+    .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
         "ffi_dropdown_get_index")
     .asFunction();
-void Function(FFIWidgetPointer, int) ffiDropdownSetIndex = core
-    .lookup<NativeFunction<Void Function(FFIWidgetPointer, Int64)>>(
+void Function(RawWidgetPointer, int) ffiDropdownSetIndex = core
+    .lookup<NativeFunction<Void Function(RawWidgetPointer, Int64)>>(
         "ffi_dropdown_set_index")
     .asFunction();
 
 class DropdownWidget extends ModuleWidget {
-  DropdownWidget(App a, RawNode m, FFIWidget w) : super(a, m, w) {
+  DropdownWidget(RawNode m, RawWidget w) : super(m, w) {
     int widgetCount = ffiDropdownGetElementCount(widgetRaw.pointer);
     for (int i = 0; i < widgetCount; i++) {
       Pointer<Utf8> nameRaw = ffiDropdownGetElement(widgetRaw.pointer, i);
