@@ -143,92 +143,39 @@ class Plugin extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: _modules,
       builder: (context, List<ModuleInfo> modules, child) {
-        return ExpansionTile(
-          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          title: Text(
-            rawPlugin.getName(),
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
+        return Padding(
+          padding: const EdgeInsets.all(10),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color.fromRGBO(50, 50, 50, 1.0),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            child: ExpansionTile(
+              childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+              title: Text(
+                rawPlugin.getName(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  itemCount: modules.length,
+                  itemBuilder: (context, index) {
+                    return modules[index];
+                  },
+                )
+              ],
             ),
           ),
-          children: [
-            ListView.builder(
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              itemCount: modules.length,
-              itemBuilder: (context, index) {
-                return modules[index];
-              },
-            )
-          ],
         );
       },
     );
   }
 }
-
-/*class Plugin {
-  Plugin(this.path) {
-    scan();
-  }
-
-  final String path;
-  DynamicLibrary? library;
-
-  final ValueNotifier<String> name = ValueNotifier("");
-  final ValueNotifier<List<ModuleInfo>> _modules = ValueNotifier([]);
-
-  void scan() async {
-    // TODO: library?.close();
-
-    var rand = Random();
-    File file = File(path);
-    if (await file.exists()) {
-      var fileName = file.name;
-      var extension = "someextensionhere";
-
-      if (Platform.isMacOS) {
-        extension = ".dylib";
-      } else if (Platform.isLinux) {
-        extension = ".so";
-      } else if (Platform.isWindows) {
-        extension = ".dll";
-      } else {
-        print("Unknown dynamcic library extension for platform");
-      }
-
-      var randString = ((rand.nextDouble() + 1.0) * 900000).toInt().toString();
-      fileName = fileName.replaceAll(extension, randString + extension);
-      var newPath = Settings2.pluginLoadDirectory() + fileName;
-      var newFile = await file.copy(newPath);
-      var lib = DynamicLibrary.open(newFile.path);
-
-      print("Loaded plugin at " + newFile.path);
-
-      var plugin = RawPlugin.from(lib);
-      if (plugin != null) {
-        List<ModuleInfo> modules = [];
-
-        int count = plugin.getModuleCount();
-        for (int i = 0; i < count; i++) {
-          var rawModuleInfo = plugin.getModuleInfo(i);
-          modules.add(ModuleInfo.from(rawModuleInfo));
-        }
-
-        library = lib;
-        name.value = plugin.getName();
-        _modules.value = modules;
-      } else {
-        print("Failed to get raw plugin");
-      }
-    }
-  }
-
-  ValueNotifier<List<ModuleInfo>> list() {
-    return _modules;
-  }
-}*/
 
 class RawPlugin extends Struct {
   @Int64()

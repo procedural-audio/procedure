@@ -56,7 +56,7 @@ class ModuleInfo extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              color: Colors.grey,
+              color: Color.fromRGBO(200, 200, 200, 1.0),
               fontSize: 14,
             ),
           ),

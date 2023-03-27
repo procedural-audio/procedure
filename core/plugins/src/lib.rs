@@ -1,7 +1,7 @@
 use modules::*;
 
 static PLUGIN: Plugin = Plugin {
-    name: "Default Modules Plugin",
+    name: "Built-in Modules",
     version: 1,
     modules: &[
         module::<AudioTrack>(),
