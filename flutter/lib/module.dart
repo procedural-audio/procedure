@@ -147,7 +147,22 @@ class Node extends StatelessWidget {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
               ),
               child: Stack(
-                children: widgets,
+                children: <Widget>[
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      )
+                    ] +
+                    widgets,
               ),
             ),
           ),
