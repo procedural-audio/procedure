@@ -7,6 +7,7 @@ impl Module for LocalTime {
 
     const INFO: Info = Info {
         title: "Time",
+        id: "default.time.local_time",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(100, 75),

@@ -7,6 +7,7 @@ impl Module for Negative {
 
     const INFO: Info = Info {
         title: "Neg",
+        id: "default.control.operations.negative",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

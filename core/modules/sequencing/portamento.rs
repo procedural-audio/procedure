@@ -15,6 +15,7 @@ impl Module for Portamento {
 
     const INFO: Info = Info {
         title: "Port",
+        id: "default.sequencing.portamento",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(120, 110),

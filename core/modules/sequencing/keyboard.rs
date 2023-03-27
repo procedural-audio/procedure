@@ -10,6 +10,7 @@ impl Module for Keyboard {
 
     const INFO: Info = Info {
         title: "Keyboard",
+        id: "default.sequencing.keyboard",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Reisizable {

@@ -12,6 +12,7 @@ impl Module for Toggle {
 
     const INFO: Info = Info {
         title: "Toggle",
+        id: "default.control.effects.toggle",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

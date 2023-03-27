@@ -9,6 +9,7 @@ impl Module for KnobModule {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.widgets.knob",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

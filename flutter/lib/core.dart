@@ -39,7 +39,7 @@ class Core {
     _ffiCoreRefresh(raw);
   }
 
-  bool addModule(String name) {
+  /*bool addModule(String name) {
     var rawPath = name.toNativeUtf8();
     var status = _ffiCoreAddModule(raw, rawPath);
     calloc.free(rawPath);
@@ -52,7 +52,7 @@ class Core {
 
   int getNodeCount() {
     return _ffiCoreGetNodeCount(raw);
-  }
+  }*/
 
   bool addConnector(int a, int b, int c, int d) {
     return _ffiCoreAddConnector(raw, a, b, c, d);
@@ -171,7 +171,7 @@ bool Function(RawCore, Pointer<Utf8>) _ffiCoreSave = core
 void Function(RawCore) _ffiCoreRefresh = core
     .lookup<NativeFunction<Void Function(RawCore)>>("ffi_host_refresh")
     .asFunction();
-bool Function(RawCore, Pointer<Utf8>) _ffiCoreAddModule = core
+/*bool Function(RawCore, Pointer<Utf8>) _ffiCoreAddModule = core
     .lookup<NativeFunction<Bool Function(RawCore, Pointer<Utf8>)>>(
         "ffi_host_add_module")
     .asFunction();
@@ -181,7 +181,7 @@ bool Function(RawCore, int) _ffiCoreRemoveNode = core
     .asFunction();
 int Function(RawCore) _ffiCoreGetNodeCount = core
     .lookup<NativeFunction<Int64 Function(RawCore)>>("ffi_host_get_node_count")
-    .asFunction();
+    .asFunction();*/
 
 /*FFIAudioPlugin Function(RawCore, Pointer<Utf8>) _ffiCoreCreatePlugin = core
     .lookup<NativeFunction<FFIAudioPlugin Function(RawCore, Pointer<Utf8>)>>(
@@ -326,6 +326,11 @@ class RawModuleInfo extends Struct {
     return id;
   }
 
+  /// Returns the title of the module
+  String getModuleName() {
+    return getModulePath().last;
+  }
+
   /// Returns the path of the module
   List<String> getModulePath() {
     List<String> path = [];
@@ -346,14 +351,18 @@ class RawModuleInfo extends Struct {
   }
 
   /// Creates a new module
-  RawModule create() {
+  /*RawModule create() {
     return ffiModuleInfoCreate(this);
-  }
+  }*/
 }
 
 Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetId = core
     .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
         "ffi_module_info_get_id")
+    .asFunction();
+Pointer<Utf8> Function(RawModuleInfo) ffiModuleInfoGetName = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawModuleInfo)>>(
+        "ffi_module_info_get_name")
     .asFunction();
 int Function(RawModuleInfo) ffiModuleInfoGetPathElementsCount = core
     .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
@@ -367,7 +376,7 @@ int Function(RawModuleInfo) ffiModuleInfoGetColor = core
     .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
         "ffi_module_info_get_color")
     .asFunction();
-RawModule Function(RawModuleInfo) ffiModuleInfoCreate = core
+/*RawModule Function(RawModuleInfo) ffiModuleInfoCreate = core
     .lookup<NativeFunction<RawModule Function(RawModuleInfo)>>(
         "ffi_module_info_create")
-    .asFunction();
+    .asFunction();*/

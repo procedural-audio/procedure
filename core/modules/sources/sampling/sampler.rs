@@ -17,6 +17,7 @@ impl Module for Sampler {
 
     const INFO: Info = Info {
         title: "Sampler",
+        id: "default.sampling.sampler",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(300, 150),

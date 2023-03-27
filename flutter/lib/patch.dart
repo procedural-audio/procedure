@@ -12,6 +12,7 @@ import 'main.dart';
 import 'core.dart';
 import 'projects.dart';
 import 'module.dart';
+import 'plugins.dart';
 
 import 'views/info.dart';
 import 'views/right_click.dart';
@@ -67,9 +68,11 @@ void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
     .asFunction();
 
-RawNode Function(RawPatch, RawModule) _ffiPatchAddModule = core
-    .lookup<NativeFunction<RawNode Function(RawPatch, RawModule)>>(
-        "ffi_patch_add_module")
+RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
+    .lookup<
+        NativeFunction<
+            RawNode Function(
+                RawPatch, RawPlugins, Pointer<Utf8>)>>("ffi_patch_add_module")
     .asFunction();
 
 int Function(RawPatch) _ffiPatchGetNodeCount = core
@@ -104,8 +107,10 @@ class RawPatch extends Struct {
     return success;
   }
 
-  Node addModule(RawModule rawModule) {
-    RawNode rawNode = _ffiPatchAddModule(this, rawModule);
+  Node addModule(String id) {
+    var rawId = id.toNativeUtf8();
+    RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugin, rawId);
+    calloc.free(rawId);
     return Node(rawNode);
   }
 
@@ -192,8 +197,8 @@ class Patch extends StatefulWidget {
     );
   }
 
-  void addModule(RawModule module) {
-    var node = rawPatch.addModule(module);
+  void addModule(String id) {
+    var node = rawPatch.addModule(id);
     _nodes.value.add(node);
     _nodes.notifyListeners();
   }
@@ -264,8 +269,7 @@ class _Patch extends State<Patch> {
               child: RightClickView(
                 addPosition: rightClickOffset,
                 onAddModule: (info) {
-                  var module = info.create();
-                  widget.addModule(module);
+                  widget.addModule(info.id);
                   setState(() {
                     showRightClickMenu = false;
                   });

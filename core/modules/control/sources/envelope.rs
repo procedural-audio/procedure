@@ -72,6 +72,7 @@ impl Module for EnvelopeModule {
 
     const INFO: Info = Info {
         title: "ADSR",
+        id: "default.control.operations.adsr",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(300, 160),

@@ -18,6 +18,7 @@ impl Module for Waveshaper {
 
     const INFO: Info = Info {
         title: "Waveshaper",
+        id: "default.effects.distortion.waveshaper",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(240, 160),

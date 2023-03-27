@@ -40,7 +40,7 @@ impl Serialize for Node {
     {
         let mut state = serializer.serialize_struct("Node", 3)?;
         state.serialize_field("node_id", &self.id)?;
-        state.serialize_field("module_id", &self.module.module_id())?;
+        state.serialize_field("module_id", &self.module.info().id)?;
         state.serialize_field("position", &self.position)?;
         state.serialize_field("version", &self.info().version)?;
 
@@ -248,10 +248,6 @@ pub struct Graph {
     pub block_size: usize,
     #[serde(skip_serializing, skip_deserializing)]
     pub sample_rate: u32,
-    #[serde(skip_serializing, skip_deserializing)]
-    pub modules: ModuleList,
-    #[serde(skip_serializing, skip_deserializing)]
-    pub plugins: Plugins,
 }
 
 pub struct ModuleList {
@@ -280,19 +276,25 @@ impl Graph {
             updated: Mutex::new(None),
             block_size: 256,
             sample_rate: 44100,
-            modules: ModuleList::default(),
-            plugins: Plugins::new(),
         };
     }
 
-    pub fn add_module2(&mut self, module: Box<dyn PolyphonicModule>) -> Rc<Node> {
-        let node = Rc::new(Node::new(module));
-        self.nodes.push(node.clone());
-        self.refresh();
-        return node;
+    pub fn add_module(&mut self, plugins: &Plugins, id: &str) -> Option<Rc<Node>> {
+        match plugins.create_module(id) {
+            Some(module) => {
+                let node = Rc::new(Node::new(module));
+                self.nodes.push(node.clone());
+                self.refresh();
+                return Some(node);
+            },
+            None => {
+                println!("Couldn't find module for id");
+                return None;
+            }
+        }
     }
 
-    pub fn add_module(&mut self, id: &str) -> bool {
+    /*pub fn add_module(&mut self, id: &str) -> bool {
         println!("[Rust] Adding module {}", id);
 
         for module in &self.modules.modules {
@@ -305,17 +307,17 @@ impl Graph {
             }
         }
 
-        if let Some(mut module) = self.plugins.create_module(id) {
+        /*if let Some(mut module) = self.plugins.create_module(id) {
             module.prepare(self.sample_rate, self.block_size);
             self.nodes.push(Rc::new(Node::new(module)));
             self.refresh();
             return true;
-        }
+        }*/
 
         println!("Couldn't add module {}", id);
 
         return false;
-    }
+    }*/
 
     pub fn remove_module(&mut self, id: i32) {
         self.nodes.retain(|node| node.id != id);
@@ -418,7 +420,7 @@ impl Graph {
         self.sample_rate = sample_rate;
         self.block_size = block_size;
 
-        self.plugins.prepare(sample_rate, block_size);
+        // self.plugins.prepare(sample_rate, block_size);
 
         self.refresh();
     }

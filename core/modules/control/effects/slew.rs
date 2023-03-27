@@ -9,6 +9,7 @@ impl Module for Slew {
 
     const INFO: Info = Info {
         title: "Slew",
+        id: "default.control.effects.slew",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(120, 110),

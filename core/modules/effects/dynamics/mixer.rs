@@ -20,6 +20,7 @@ impl Module for Mixer {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.effects.dynamics.mixer",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 505),

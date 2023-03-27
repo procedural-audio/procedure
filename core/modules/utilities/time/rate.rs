@@ -7,6 +7,7 @@ impl Module for Rate {
 
     const INFO: Info = Info {
         title: "Rate",
+        id: "default.time.rate",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(100, 75),

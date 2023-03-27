@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 
 import 'dart:math';
@@ -11,9 +10,40 @@ import 'module.dart';
 import 'patch.dart';
 import 'core.dart';
 
+RawPlugins Function() _ffiCreatePlugins = core
+    .lookup<NativeFunction<RawPlugins Function()>>("ffi_create_plugins")
+    .asFunction();
+RawPlugin Function(RawPlugins, Pointer<Utf8>) _ffiPluginsLoad = core
+    .lookup<NativeFunction<RawPlugin Function(RawPlugins, Pointer<Utf8>)>>(
+        "ffi_plugins_load")
+    .asFunction();
+
 Plugins PLUGINS = Plugins.platformDefault();
 
-class Plugins {
+class RawPlugins extends Struct {
+  @Int64()
+  external int pointer;
+
+  static RawPlugins create() {
+    return _ffiCreatePlugins();
+  }
+
+  Plugin? load(String path) {
+    var cPath = path.toNativeUtf8();
+    var plugin = _ffiPluginsLoad(this, cPath);
+    calloc.free(cPath);
+
+    if (plugin.pointer != 0) {
+      return Plugin(plugin);
+    } else {
+      return null;
+    }
+  }
+
+  void remove(String path) {}
+}
+
+class Plugins extends StatelessWidget {
   Plugins(this.directory) {
     var pluginLoadDir = Directory(Settings2.pluginLoadDirectory());
     pluginLoadDir.listSync().forEach((e) => e.delete());
@@ -23,6 +53,7 @@ class Plugins {
 
   final Directory directory;
   final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
+  RawPlugins rawPlugin = RawPlugins.create();
 
   static Plugins platformDefault() {
     var path = "/Users/chasekanipe/Github/nodus/build/out/core/release/";
@@ -30,19 +61,9 @@ class Plugins {
     return Plugins(directory);
   }
 
-  RawModule? createModule(List<String> path) {
-    for (var plugin in _plugins.value) {
-      for (var moduleInfo in plugin.list().value) {
-        if (moduleInfo.path == path) {
-          return moduleInfo.create();
-        }
-      }
-    }
-
-    return null;
-  }
-
   void scan() async {
+    print("Scanning plugins");
+
     List<Plugin> plugins = [];
     if (await directory.exists()) {
       var items = directory.list();
@@ -60,10 +81,10 @@ class Plugins {
         }
 
         if (item.path.contains(extension)) {
-          var library = DynamicLibrary.open(item.path);
-          if (library.providesSymbol("export_plugin")) {
-            print("Found plugin at " + item.path);
-            plugins.add(Plugin(item.path));
+          var plugin = rawPlugin.load(item.path);
+
+          if (plugin != null) {
+            plugins.add(plugin);
           }
         }
       }
@@ -72,14 +93,82 @@ class Plugins {
     }
 
     _plugins.value = plugins;
+    print("Done scanning plugins");
   }
 
   ValueNotifier<List<Plugin>> list() {
     return _plugins;
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: _plugins,
+      builder: (context, List<Plugin> plugins, child) {
+        return ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          itemCount: plugins.length,
+          itemBuilder: (context, index) {
+            return plugins[index];
+          },
+        );
+      },
+    );
+  }
 }
 
-class Plugin {
+class Plugin extends StatelessWidget {
+  Plugin(this.rawPlugin) {
+    List<ModuleInfo> modules = [];
+
+    int count = rawPlugin.getModuleCount();
+    for (int i = 0; i < count; i++) {
+      var rawModuleInfo = rawPlugin.getModuleInfo(i);
+      modules.add(ModuleInfo.from(rawModuleInfo));
+    }
+
+    _modules.value = modules;
+  }
+
+  final RawPlugin rawPlugin;
+  final ValueNotifier<List<ModuleInfo>> _modules = ValueNotifier([]);
+
+  ValueNotifier<List<ModuleInfo>> list() {
+    return _modules;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: _modules,
+      builder: (context, List<ModuleInfo> modules, child) {
+        return ExpansionTile(
+          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          title: Text(
+            rawPlugin.getName(),
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              itemCount: modules.length,
+              itemBuilder: (context, index) {
+                return modules[index];
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+}
+
+/*class Plugin {
   Plugin(this.path) {
     scan();
   }
@@ -139,7 +228,7 @@ class Plugin {
   ValueNotifier<List<ModuleInfo>> list() {
     return _modules;
   }
-}
+}*/
 
 class RawPlugin extends Struct {
   @Int64()

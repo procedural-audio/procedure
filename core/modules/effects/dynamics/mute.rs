@@ -9,6 +9,7 @@ impl Module for Mute {
 
     const INFO: Info = Info {
         title: "Mute",
+        id: "default.effects.dynamics.mute",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 80),

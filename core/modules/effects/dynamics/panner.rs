@@ -9,6 +9,7 @@ impl Module for Panner {
 
     const INFO: Info = Info {
         title: "Panner",
+        id: "default.effects.dynamics.panner",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),

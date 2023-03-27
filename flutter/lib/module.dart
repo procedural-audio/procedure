@@ -13,8 +13,8 @@ import 'views/settings.dart';
 
 import 'core.dart';
 
-class ModuleInfo {
-  ModuleInfo(this.rawInfo, this.id, this.path, this.color);
+class ModuleInfo extends StatelessWidget {
+  ModuleInfo(this.rawInfo, this.id, this.name, this.path, this.color);
 
   static ModuleInfo from(RawModuleInfo rawInfo) {
     print("Found module " + rawInfo.getModulePath().join("/"));
@@ -22,18 +22,47 @@ class ModuleInfo {
     return ModuleInfo(
       rawInfo,
       rawInfo.getModuleId(),
+      rawInfo.getModuleName(),
       rawInfo.getModulePath(),
       rawInfo.getModuleColor(),
     );
   }
 
   RawModuleInfo rawInfo;
-  String id;
+  final String id;
+  final String name;
   List<String> path;
   Color color;
 
-  RawModule create() {
+  /*RawModule create() {
     return ffiModuleInfoCreate(rawInfo);
+  }*/
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      child: Row(
+        children: [
+          Container(
+            width: 20,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            name,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

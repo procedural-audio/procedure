@@ -9,6 +9,7 @@ impl Module for Transpose {
 
     const INFO: Info = Info {
         title: "Transpose",
+        id: "default.sequencing.transpose",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(120, 110),

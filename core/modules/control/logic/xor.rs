@@ -7,6 +7,7 @@ impl Module for Xor {
 
     const INFO: Info = Info {
         title: "Xor",
+        id: "default.control.effects.xor",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

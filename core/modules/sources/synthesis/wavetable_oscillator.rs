@@ -25,6 +25,7 @@ impl Module for WavetableOscillator {
 
     const INFO: Info = Info {
         title: "Wavetable Oscillator",
+        id: "default.synthesis.wavetable",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(400, 300),

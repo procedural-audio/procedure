@@ -7,6 +7,7 @@ impl Module for LessEqual {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.comparisons.less_equal",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

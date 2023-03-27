@@ -25,6 +25,7 @@ pub struct Plugin {
 
 pub struct ModuleSpec {
     pub id: &'static str,
+    pub name: &'static str,
     pub path: &'static [&'static str],
     pub color: Color,
     pub create: fn() -> Box<dyn PolyphonicModule>
@@ -42,7 +43,8 @@ pub fn create_module<T: 'static + Module>() -> Box<dyn PolyphonicModule> {
 
 pub const fn module<T: 'static + Module>() -> ModuleSpec {
     ModuleSpec {
-        id: T::INFO.title,
+        id: T::INFO.id,
+        name: T::INFO.title,
         path: T::INFO.path,
         color: T::INFO.color,
         create: create_module::<T>
@@ -421,6 +423,7 @@ impl Presets {
 
 pub struct Info {
     pub title: &'static str,
+    pub id: &'static str,
     pub version: &'static str,
     pub color: Color,
     pub size: Size,
@@ -440,7 +443,8 @@ pub trait Module {
 
     fn spec() -> ModuleSpec where Self: Sized + 'static {
         ModuleSpec {
-            id: Self::module_id(),
+            id: Self::INFO.id,
+            name: Self::INFO.path[Self::INFO.path.len() - 1],
             path: Self::INFO.path,
             color: Self::INFO.color,
             create: create_module::<Self>
@@ -449,10 +453,6 @@ pub trait Module {
 
     fn info(&self) -> Info {
         Self::INFO
-    }
-
-    fn module_id() -> &'static str {
-        std::any::type_name::<Self>()
     }
 
     fn new() -> Self;
@@ -498,8 +498,6 @@ pub trait PolyphonicModule {
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn process_voice(&mut self, voice_index: usize, inputs: &IO, outputs: &mut IO);
     fn voicing(&self) -> Voicing;
-
-    fn module_id(&self) -> &'static str;
 
     fn get_module_root(&self) -> &dyn WidgetNew;
     fn get_module_size(&self) -> (f32, f32);
@@ -570,10 +568,6 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
                 module_size
             }
         }
-    }
-
-    fn module_id(&self) -> &'static str {
-        T::module_id()
     }
 
     fn get_connected(&mut self) -> &mut Vec<bool> {

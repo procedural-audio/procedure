@@ -7,6 +7,7 @@ impl Module for NotesToControl {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.conversions.notes_to_control",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(120, 135),

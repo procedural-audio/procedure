@@ -10,6 +10,7 @@ impl Module for Crossover {
 
     const INFO: Info = Info {
         title: "Crossover",
+        id: "default.effects.spectral.crossover",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(120, 110),

@@ -12,6 +12,7 @@ impl Module for Hold {
 
     const INFO: Info = Info {
         title: "Hold",
+        id: "default.control.effects.hold",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

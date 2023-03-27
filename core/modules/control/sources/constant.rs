@@ -9,6 +9,7 @@ impl Module for Constant {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.operations.constant",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(115, 50),

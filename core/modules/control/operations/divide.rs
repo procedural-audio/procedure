@@ -7,6 +7,7 @@ impl Module for Divide {
 
     const INFO: Info = Info {
         title: "Div",
+        id: "default.control.operations.divide",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

@@ -1,4 +1,91 @@
-use dynamic_reload::{DynamicReload, Lib, PlatformName, Search, Symbol, UpdateState};
+use std::rc::Rc;
+use modules::*;
+
+pub struct Plugins {
+    plugins: Vec<LoadedPlugin>,
+}
+
+impl Plugins {
+    pub fn new() -> Self {
+        Self {
+            plugins: Vec::new(),
+        }
+    }
+
+    pub fn create_module(&self, id: &str) -> Option<Box<dyn PolyphonicModule>> {
+        for loaded in &self.plugins {
+            for module_info in loaded.plugin.modules {
+                if module_info.id == id {
+                    return Some(module_info.create());
+                }
+            }
+        }
+
+        None
+    }
+
+    pub fn load(&mut self, path: &str) -> Option<&'static Plugin> {
+        unsafe {
+            let library = libloading::Library::new(path).unwrap();
+            let symbol = library.get(b"export_plugin");
+            match symbol {
+                Ok(function) => {
+                    let export_plugin: libloading::Symbol<unsafe extern fn() -> &'static Plugin> = function;
+                    let plugin = export_plugin();
+                    self.plugins.push(
+                        LoadedPlugin {
+                            library: Rc::new(library),
+                            path: path.to_string(),
+                            plugin
+                        }
+                    );
+
+                    return Some(plugin);
+                },
+                Err(_) => ()
+            }
+
+        }
+
+        None
+    }
+
+    pub fn unload(&mut self, path: &str) {
+        let mut index = None;
+        for (i, loaded) in self.plugins.iter().enumerate() {
+            if loaded.path == path {
+                index = Some(i);
+                break;
+            }
+        }
+
+        if let Some(index) = index {
+            self.plugins.remove(index);
+        }
+    }
+
+    pub fn get(&self, index: usize) -> &Plugin {
+        &self.plugins[index].plugin
+    }
+
+    pub fn num_plugins(&self) -> usize {
+        self.plugins.len()
+    }
+}
+
+pub struct LoadedPlugin {
+    library: Rc<libloading::Library>,
+    path: String,
+    plugin: &'static Plugin
+}
+
+impl Drop for LoadedPlugin {
+    fn drop(&mut self) {
+        println!("Dropping plugin: {}", self.plugin.name);
+    }
+}
+
+/*use dynamic_reload::{DynamicReload, Lib, PlatformName, Search, Symbol, UpdateState};
 use std::{sync::Arc, sync::Mutex, sync::RwLock, thread, time::Duration};
 
 use std::mem;
@@ -667,3 +754,4 @@ impl PolyphonicModule for ModuleDynamic {
         self.info().voicing
     }
 }
+*/

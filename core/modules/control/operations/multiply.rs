@@ -7,6 +7,7 @@ impl Module for Multiply {
 
     const INFO: Info = Info {
         title: "Mul",
+        id: "default.control.operations.multiply",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

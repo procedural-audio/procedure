@@ -10,6 +10,7 @@ impl Module for Beats {
 
     const INFO: Info = Info {
         title: "Beats",
+        id: "default.control.operations.beats",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(120, 110),

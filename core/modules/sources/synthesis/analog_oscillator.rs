@@ -28,6 +28,7 @@ impl Module for AnalogOscillator {
 
     const INFO: Info = Info {
         title: "Analog Oscillator",
+        id: "default.synthesis.analog_oscillator",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(310, 200),

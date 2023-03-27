@@ -11,6 +11,7 @@ impl Module for ControlToNotes {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.conversions.control_to_notes",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),

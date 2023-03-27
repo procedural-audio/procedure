@@ -10,6 +10,7 @@ impl Module for Drift {
 
     const INFO: Info = Info {
         title: "Drift",
+        id: "default.sequencing.drift",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(120, 110),

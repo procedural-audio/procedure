@@ -12,6 +12,7 @@ impl Module for Chorus {
 
     const INFO: Info = Info {
         title: "Chorus",
+        id: "default.effects.modulation.chorus",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(310 - 40 - 70, 200),

@@ -13,6 +13,7 @@ impl Module for SineModule {
 
     const INFO: Info = Info {
         title: "Sin",
+        id: "default.synthesis.sine",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 75),

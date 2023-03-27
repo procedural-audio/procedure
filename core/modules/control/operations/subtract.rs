@@ -7,6 +7,7 @@ impl Module for Subtract {
 
     const INFO: Info = Info {
         title: "Sub",
+        id: "default.control.operations.subtract",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

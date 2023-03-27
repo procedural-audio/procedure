@@ -23,6 +23,7 @@ impl Module for AnalogFilter {
 
     const INFO: Info = Info {
         title: "Analog Filter",
+        id: "default.effects.filters.analog_filter",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(200, 170),

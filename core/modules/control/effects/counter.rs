@@ -13,6 +13,7 @@ impl Module for Counter {
 
     const INFO: Info = Info {
         title: "Count",
+        id: "default.control.effects.count",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

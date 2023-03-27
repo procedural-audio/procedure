@@ -7,6 +7,7 @@ impl Module for Reverse {
 
     const INFO: Info = Info {
         title: "Rev",
+        id: "default.time.reverse",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(100, 75),

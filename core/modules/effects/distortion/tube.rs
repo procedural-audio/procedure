@@ -27,6 +27,7 @@ impl Module for Tube {
 
     const INFO: Info = Info {
         title: "Tube",
+        id: "default.effects.distortion.tube",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(200, 170),

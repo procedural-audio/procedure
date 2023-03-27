@@ -7,6 +7,7 @@ impl Module for Pitch {
 
     const INFO: Info = Info {
         title: "Pitch",
+        id: "default.sequencing.pitch",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),

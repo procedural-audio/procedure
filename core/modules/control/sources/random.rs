@@ -11,6 +11,7 @@ impl Module for Random {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.operations.random",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(85, 60),

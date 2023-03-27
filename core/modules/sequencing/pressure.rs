@@ -7,6 +7,7 @@ impl Module for Pressure {
 
     const INFO: Info = Info {
         title: "Pressure",
+        id: "default.sequencing.pressure",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),

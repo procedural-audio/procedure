@@ -11,6 +11,7 @@ impl Module for Slope {
 
     const INFO: Info = Info {
         title: "Slope",
+        id: "default.control.effects.slope",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

@@ -21,6 +21,7 @@ impl Module for StepSequencer {
 
     const INFO: Info = Info {
         title: "Step Sequencer",
+        id: "default.sequencing.step_sequencer",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(42 * 16 + 2, 42 * 8 + 11),

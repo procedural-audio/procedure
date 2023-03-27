@@ -7,6 +7,7 @@ impl Module for Less {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.comparisons.less",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

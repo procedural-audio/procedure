@@ -16,6 +16,7 @@ use modules::*;
 
 use std::ffi::CStr;
 use std::ffi::CString;
+use std::rc::Rc;
 
 /* Begin main */
 
@@ -127,7 +128,7 @@ pub unsafe extern "C" fn ffi_host_refresh(host: &mut Host) {
     host.graph.refresh();
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_add_module(host: &mut Host, buffer: &i8) -> bool {
     host.graph.add_module(str_from_char(buffer))
 }
@@ -141,7 +142,7 @@ pub unsafe extern "C" fn ffi_host_remove_node(host: &mut Host, id: i32) -> bool 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_node_count(host: &mut Host) -> usize {
     host.graph.nodes.len()
-}
+}*/
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &Node {
@@ -246,9 +247,12 @@ pub unsafe extern "C" fn ffi_patch_destroy(graph: *mut Graph) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, module: *mut dyn PolyphonicModule) -> *const Node {
-    let node = graph.add_module2(Box::from_raw(module));
-    return node.as_ref() as *const Node;
+pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, plugins: &Plugins, id: &i8) -> *const Node {
+    let id = str_from_char(id);
+    match graph.add_module(plugins, id) {
+        Some(node) => Rc::into_raw(node),
+        None => std::ptr::null()
+    }
 }
 
 #[no_mangle]
@@ -266,11 +270,6 @@ pub unsafe extern "C" fn ffi_patch_get_node_count(patch: &mut Graph) -> usize {
 #[no_mangle]
 pub unsafe extern "C" fn ffi_patch_get_node(patch: &mut Graph, index: usize) -> &Node {
     patch.nodes[index].as_ref()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_patch_get_add_node(patch: &mut Graph, module: *mut dyn PolyphonicModule) {
-    patch.add_module2(Box::from_raw(module));
 }
 
 /* Node */
@@ -557,6 +556,15 @@ pub unsafe extern "C" fn ffi_module_info_get_id(info: &ModuleSpec) -> *const i8 
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn ffi_module_info_get_name(info: &ModuleSpec) -> *const i8 {
+    let name = info.name;
+    let s = CString::new(name).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn ffi_module_info_get_path_elements_count(info: &ModuleSpec) -> usize {
     info.path.len()
 }
@@ -575,12 +583,28 @@ pub unsafe extern "C" fn ffi_module_info_get_color(info: &ModuleSpec) -> Color {
     info.color
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_module_info_create(info: &ModuleSpec) -> *const dyn PolyphonicModule {
     Box::into_raw(info.create())
-}
+}*/
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_module_info_destroy(info: &ModuleSpec) {
     let _ = Box::from_raw(info as *const ModuleSpec as *mut ModuleSpec);
+}
+
+/* Plugins */
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_create_plugins() -> *mut Plugins {
+    Box::into_raw(Box::new(Plugins::new()))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugins_load(plugins: &mut Plugins, path: &i8) -> *const Plugin {
+    let path = str_from_char(path);
+    match plugins.load(path) {
+        Some(plugin) => plugin as *const Plugin,
+        None => std::ptr::null_mut()
+    }
 }

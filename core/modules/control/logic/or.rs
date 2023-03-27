@@ -7,6 +7,7 @@ impl Module for Or {
 
     const INFO: Info = Info {
         title: "Or",
+        id: "default.control.effects.or",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

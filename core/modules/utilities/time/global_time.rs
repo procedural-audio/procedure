@@ -7,6 +7,7 @@ impl Module for GlobalTime {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.time.global_time",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(85, 60),

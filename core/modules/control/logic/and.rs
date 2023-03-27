@@ -7,6 +7,7 @@ impl Module for And {
 
     const INFO: Info = Info {
         title: "And",
+        id: "default.control.effects.and",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

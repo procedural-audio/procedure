@@ -12,6 +12,7 @@ impl Module for Detune {
 
     const INFO: Info = Info {
         title: "Detune",
+        id: "default.sequencing.detune",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(120, 110),

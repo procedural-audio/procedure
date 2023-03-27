@@ -30,6 +30,7 @@ impl Module for Scale {
 
     const INFO: Info = Info {
         title: "Scale",
+        id: "default.sequencing.scale",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(185, 120),

@@ -12,6 +12,7 @@ impl Module for Bend {
 
     const INFO: Info = Info {
         title: "Bend",
+        id: "default.control.effects.bend",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(240, 160),

@@ -7,6 +7,7 @@ impl Module for AudioOutput {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.io.audio_output",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(85, 60),

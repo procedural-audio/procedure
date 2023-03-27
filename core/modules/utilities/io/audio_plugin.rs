@@ -21,6 +21,7 @@ impl Module for AudioPluginModule {
 
     const INFO: Info = Info {
         title: "Audio Plugin",
+        id: "default.io.audio_plugin",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(260, 80),

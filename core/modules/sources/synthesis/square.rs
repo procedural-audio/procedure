@@ -12,6 +12,7 @@ impl Module for SquareModule {
 
     const INFO: Info = Info {
         title: "Squ",
+        id: "default.synthesis.square",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 75),

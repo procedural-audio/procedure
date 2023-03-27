@@ -18,6 +18,7 @@ impl Module for LfoModule {
 
     const INFO: Info = Info {
         title: "LFO",
+        id: "default.control.operations.lfo",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(250, 140),

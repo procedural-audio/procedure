@@ -10,6 +10,7 @@ impl Module for Accumulator {
 
     const INFO: Info = Info {
         title: "Acc",
+        id: "default.time.accumulator",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(100, 75),

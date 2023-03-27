@@ -12,6 +12,7 @@ impl Module for Flanger {
 
     const INFO: Info = Info {
         title: "Flanger",
+        id: "default.effects.modulation.flanger",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(310 - 40 - 70, 200),

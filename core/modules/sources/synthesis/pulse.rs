@@ -23,6 +23,7 @@ impl Module for PulseModule {
 
     const INFO: Info = Info {
         title: "Pulse",
+        id: "default.synthesis.pulse",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),

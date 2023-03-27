@@ -10,6 +10,7 @@ impl Module for XYPadModule {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.widgets.xy_pad",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(250 + 35, 250),

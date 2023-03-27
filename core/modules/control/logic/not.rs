@@ -7,6 +7,7 @@ impl Module for Not {
 
     const INFO: Info = Info {
         title: "Not",
+        id: "default.control.effects.not",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 75),

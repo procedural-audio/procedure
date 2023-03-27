@@ -7,6 +7,7 @@ impl Module for Clamp {
 
     const INFO: Info = Info {
         title: "Clamp",
+        id: "default.control.operations.clamp",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(110, 105),

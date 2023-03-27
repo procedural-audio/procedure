@@ -7,6 +7,7 @@ impl Module for MidiOutput {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.io.midi_output",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 100),

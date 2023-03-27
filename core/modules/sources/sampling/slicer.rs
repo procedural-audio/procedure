@@ -51,6 +51,7 @@ impl Module for Slicer {
 
     const INFO: Info = Info {
         title: "Slicer",
+        id: "default.sampling.slicer",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(305, 195),

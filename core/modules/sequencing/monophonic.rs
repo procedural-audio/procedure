@@ -14,6 +14,7 @@ impl Module for Monophonic {
 
     const INFO: Info = Info {
         title: "Mono",
+        id: "default.sequencing.monophonic",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(100, 75),

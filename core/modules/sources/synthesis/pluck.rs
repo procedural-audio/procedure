@@ -18,6 +18,7 @@ impl Module for Pluck {
 
     const INFO: Info = Info {
         title: "Pluck",
+        id: "default.synthesis.pluck",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(310, 200),

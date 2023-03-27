@@ -16,6 +16,7 @@ impl Module for Compressor {
 
     const INFO: Info = Info {
         title: "Compressor",
+        id: "default.effects.dynamics.compressor",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(410, 220),

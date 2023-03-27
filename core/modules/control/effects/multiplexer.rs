@@ -7,6 +7,7 @@ impl Module for Multiplexer {
 
     const INFO: Info = Info {
         title: "Mult",
+        id: "default.control.effects.multiplexer",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 45+25*8),

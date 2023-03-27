@@ -15,6 +15,7 @@ impl Module for NotesTrack {
 
     const INFO: Info = Info {
         title: "Notes Track",
+        id: "default.sequencing.notes_track",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Reisizable {

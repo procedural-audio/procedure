@@ -145,6 +145,7 @@ impl Module for MidiInput {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.io.midi_input",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(85, 60),

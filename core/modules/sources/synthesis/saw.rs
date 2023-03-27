@@ -12,6 +12,7 @@ impl Module for SawModule {
 
     const INFO: Info = Info {
         title: "Saw",
+        id: "default.synthesis.saw",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 75),

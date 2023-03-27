@@ -7,6 +7,7 @@ impl Module for AudioInput {
 
     const INFO: Info = Info {
         title: "Audio Input",
+        id: "default.io.audio_input",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 100),

@@ -9,6 +9,7 @@ impl Module for Gain {
 
     const INFO: Info = Info {
         title: "Gain",
+        id: "default.effects.dynamics.gain",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),

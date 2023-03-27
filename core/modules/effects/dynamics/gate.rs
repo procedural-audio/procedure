@@ -13,6 +13,7 @@ impl Module for Gate {
 
     const INFO: Info = Info {
         title: "Gate",
+        id: "default.effects.dynamics.gate",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(350, 220),

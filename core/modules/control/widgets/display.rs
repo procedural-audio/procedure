@@ -10,6 +10,7 @@ impl Module for Display {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.widgets.display",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(115, 50),

@@ -7,6 +7,7 @@ impl Module for GlobalTransport {
 
     const INFO: Info = Info {
         title: "Global Transport",
+        id: "default.time.global_transport",
         version: "0.0.0",
         color: Color::PURPLE,
         size: Size::Static(300, 150),

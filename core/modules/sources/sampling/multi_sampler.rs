@@ -11,6 +11,7 @@ impl Module for MultiSampler {
 
     const INFO: Info = Info {
         title: "Multi-Sampler",
+        id: "default.sampling.multisampler",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(600, 400),

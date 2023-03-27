@@ -14,6 +14,7 @@ impl Module for Phaser {
 
     const INFO: Info = Info {
         title: "Phaser",
+        id: "default.effects.modulation.phaser",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(310 - 40, 200),

@@ -12,6 +12,7 @@ impl Module for TriangleModule {
 
     const INFO: Info = Info {
         title: "Tri",
+        id: "default.synthesis.triangle",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 75),

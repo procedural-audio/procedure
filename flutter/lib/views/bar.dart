@@ -1,3 +1,4 @@
+import 'package:metasampler/plugins.dart';
 import 'package:metasampler/views/presets.dart';
 import 'package:flutter/material.dart';
 
@@ -305,18 +306,16 @@ class OtherView extends StatelessWidget {
             ),
             body: Container(
               color: const Color.fromRGBO(40, 40, 40, 1.0),
-              child: const TabBarView(
+              child: TabBarView(
                 children: <Widget>[
-                  Center(
+                  const Center(
                     child: Text("It's cloudy here"),
                   ),
-                  Center(
+                  const Center(
                     child: Text("It's rainy here"),
                   ),
-                  Center(
-                    child: Text("It's sunny here"),
-                  ),
-                  Center(
+                  PLUGINS,
+                  const Center(
                     child: Text("It's other here"),
                   ),
                 ],

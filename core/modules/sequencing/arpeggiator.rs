@@ -19,6 +19,7 @@ impl Module for Arpeggiator {
 
     const INFO: Info = Info {
         title: "Arpeggiator",
+        id: "default.sequencing.arpeggiator",
         version: "0.0.0",
         color: Color::GREEN,
         size: Size::Static(200, 100),

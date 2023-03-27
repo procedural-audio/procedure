@@ -9,6 +9,7 @@ impl Module for Noise {
 
     const INFO: Info = Info {
         title: "Noise",
+        id: "default.synthesis.noise",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),

@@ -19,6 +19,7 @@ impl Module for AudioTrack {
 
     const INFO: Info = Info {
         title: "Audio Track",
+        id: "default.sampling.audio_track",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(600, 150),

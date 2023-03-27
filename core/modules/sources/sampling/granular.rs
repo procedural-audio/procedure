@@ -25,6 +25,7 @@ impl Module for Granular {
 
     const INFO: Info = Info {
         title: "Granular",
+        id: "default.sampling.granular",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(300, 240),

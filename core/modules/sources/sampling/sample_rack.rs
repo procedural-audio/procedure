@@ -19,6 +19,7 @@ impl Module for SampleRack {
 
     const INFO: Info = Info {
         title: "Sample Rack",
+        id: "default.sampling.sample_rack",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(10+80*4, 40+60*3),

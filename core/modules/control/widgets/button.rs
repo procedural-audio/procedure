@@ -9,6 +9,7 @@ impl Module for ButtonModule {
 
     const INFO: Info = Info {
         title: "",
+        id: "default.control.widgets.button",
         version: "0.0.0",
         color: Color::RED,
         size: Size::Static(100, 65),
