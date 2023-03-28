@@ -51,7 +51,7 @@ impl Module for AnalogOscillator {
     fn new() -> Self {
         Self {
             wave_index: 0,
-            unison: 2.0,
+            unison: 0.0,
             detune: 0.0,
             spread: 0.0,
             glide: 0.0,

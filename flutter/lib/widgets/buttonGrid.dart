@@ -105,7 +105,7 @@ class ButtonGridWidget extends ModuleWidget {
               child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: SvgPicture.file(
-                      File(contentPath + "/assets/icons/" + paths[i]),
+                      File(contentPath + "images/icons/" + paths[i]),
                       color: i == index
                           ? color
                           : (hoverIndex == i

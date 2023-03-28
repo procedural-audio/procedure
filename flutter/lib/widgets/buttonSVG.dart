@@ -38,7 +38,7 @@ void Function(RawWidgetPointer, bool) ffiSvgButtonOnChanged = core
 class ButtonSVG extends ModuleWidget {
   ButtonSVG(RawNode m, RawWidget w) : super(m, w) {
     var pathRaw = ffiSvgButtonGetPath(widgetRaw.pointer);
-    path = contentPath + "/assets/icons/" + pathRaw.toDartString();
+    path = contentPath + "images/icons/" + pathRaw.toDartString();
     calloc.free(pathRaw);
   }
 
@@ -89,7 +89,7 @@ Pointer<Utf8> Function(RawWidgetTrait) ffiSvgGetPath = core
 class SvgWidget extends ModuleWidget {
   SvgWidget(RawNode m, RawWidget w) : super(m, w) {
     var pathRaw = ffiSvgGetPath(widgetRaw.getTrait());
-    path = contentPath + "/assets/icons/" + pathRaw.toDartString();
+    path = contentPath + "images/icons/" + pathRaw.toDartString();
     calloc.free(pathRaw);
   }
 

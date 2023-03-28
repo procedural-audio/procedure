@@ -13,13 +13,15 @@ use modules::*;
 
 static mut CURRENT_ID: i32 = 1;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[repr(C)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Connection {
     pub module_id: i32,
     pub pin_index: i32,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[repr(C)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Connector {
     pub start: Connection,
     pub end: Connection,

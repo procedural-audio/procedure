@@ -272,6 +272,16 @@ pub unsafe extern "C" fn ffi_patch_get_node(patch: &mut Graph, index: usize) -> 
     patch.nodes[index].as_ref()
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_connector_count(patch: &mut Graph) -> usize {
+    patch.connectors.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_connector(patch: &mut Graph, index: usize) -> Connector {
+    patch.connectors[index]
+}
+
 /* Node */
 
 #[no_mangle]

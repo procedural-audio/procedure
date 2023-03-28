@@ -13,6 +13,65 @@ import 'views/settings.dart';
 
 import 'core.dart';
 
+class Pin extends StatefulWidget {
+  Pin({required this.offset, required this.type, required this.isInput});
+
+  Offset offset;
+  IO type;
+  bool isInput;
+
+  @override
+  _PinState createState() => _PinState();
+}
+
+class _PinState extends State<Pin> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    var color = Colors.white;
+
+    if (widget.type == IO.audio) {
+      color = Colors.blue;
+    } else if (widget.type == IO.midi) {
+      color = Colors.green;
+    } else if (widget.type == IO.control) {
+      color = Colors.red;
+    } else if (widget.type == IO.time) {
+      color = Colors.deepPurple;
+    }
+
+    return Positioned(
+      left: widget.offset.dx,
+      top: widget.offset.dy,
+      child: MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
+        },
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: Container(
+          width: 15,
+          height: 15,
+          decoration: BoxDecoration(
+            color: hovering ? color : Colors.transparent,
+            border: Border.all(
+              color: color,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ModuleInfo extends StatelessWidget {
   ModuleInfo(this.rawInfo, this.id, this.name, this.path, this.color);
 
@@ -68,8 +127,6 @@ class ModuleInfo extends StatelessWidget {
 
 class Node extends StatelessWidget {
   Node(this.rawNode) {
-    print("Creating module now");
-
     id = rawNode.getId();
     position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
     size = Offset(rawNode.getWidth() + 0.0, rawNode.getHeight() + 0.0);
@@ -77,69 +134,43 @@ class Node extends StatelessWidget {
     color = rawNode.getColor();
 
     int inputsCount = rawNode.getInputPinsCount();
-    int outputsCount = rawNode.getOutputPinsCount();
-
-    /*for (int i = 0; i < inputsCount; i++) {
-      var pin = Pin();
-
-      pin.moduleId = id;
-      pin.index = i;
-      pin.name = raw.getInputPinName(i);
-      var kind = raw.getInputPinType(i);
-
-      if (kind == 1) {
-        pin.type = IO.audio;
-      } else if (kind == 2) {
-        pin.type = IO.midi;
-      } else if (kind == 3) {
-        pin.type = IO.control;
-      } else if (kind == 4) {
-        pin.type = IO.time;
-      } else if (kind == 5) {
-        pin.type = IO.external;
+    for (int i = 0; i < inputsCount; i++) {
+      var type = rawNode.getInputPinType(i);
+      if (type != IO.external) {
+        var offset = Offset(10, 0.0 + rawNode.getInputPinY(i));
+        pins.add(
+          Pin(
+            offset: offset,
+            type: type,
+            isInput: true,
+          ),
+        );
       }
-
-      if (pin.type != IO.external) {
-        pin.offset = Offset(10, 0.0 + raw.getInputPinY(i));
-      }
-
-      pin.isInput = true;
-      pins.add(pin);
     }
 
+    int outputsCount = rawNode.getOutputPinsCount();
     for (int i = 0; i < outputsCount; i++) {
-      var pin = Pin();
+      var type = rawNode.getOutputPinType(i);
 
-      pin.moduleId = id;
-      pin.index = i + inputsCount;
-
-      var name = raw.getOutputPinName(i);
-      var kind = raw.getOutputPinType(i);
-
-      if (kind == 1) {
-        pin.type = IO.audio;
-      } else if (kind == 2) {
-        pin.type = IO.midi;
-      } else if (kind == 3) {
-        pin.type = IO.control;
-      } else if (kind == 4) {
-        pin.type = IO.time;
-      } else {
-        pin.type = IO.external;
+      if (type != IO.external) {
+        var x = rawNode.getWidth() - 25;
+        var offset = Offset(x, 0.0 + rawNode.getOutputPinY(i));
+        pins.add(
+          Pin(
+            offset: offset,
+            type: type,
+            isInput: false,
+          ),
+        );
       }
-
-      if (pin.type != IO.external) {
-        pin.offset = Offset(size.dx - 25, 0.0 + raw.getOutputPinY(i));
-      }
-
-      pin.isInput = false;
-      pins.add(pin);
-    }*/
+    }
 
     var widgetRaw = rawNode.getWidgetRoot();
     var widget = createWidget(rawNode, widgetRaw);
     if (widget != null) {
       widgets.add(widget);
+    } else {
+      print("Failed to create root widget");
     }
   }
 
@@ -149,7 +180,7 @@ class Node extends StatelessWidget {
   Color color = Colors.grey;
   Offset size = const Offset(250, 250);
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
-  // List<Pin> pins = <Pin>[];
+  List<Pin> pins = [];
   List<ModuleWidget> widgets = <ModuleWidget>[];
 
   @override
@@ -191,7 +222,7 @@ class Node extends StatelessWidget {
                     ),
                   ),
                   Stack(
-                    children: widgets,
+                    children: <Widget>[] + widgets + pins,
                   )
                 ],
               ),
@@ -519,20 +550,6 @@ class _Module extends State<Module> {
   }
 }*/
 
-/*class Connector {
-  var start = Pin();
-  var end = Pin();
-  var type = IO.audio;
-
-  Connector(int startId, int startIndex, int endId, int endIndex, IO t) {
-    start.moduleId = startId;
-    start.index = startIndex;
-    end.moduleId = endId;
-    end.index = endIndex;
-    type = t;
-  }
-}*/
-
 enum IO { audio, midi, control, time, external }
 
 /*class Pin {
@@ -796,8 +813,19 @@ class RawNode extends Struct {
     return _ffiNodeGetInputPinsCount(this);
   }
 
-  int getInputPinType(int i) {
-    return _ffiNodeGetInputPinType(this, i);
+  IO getInputPinType(int i) {
+    var kind = _ffiNodeGetInputPinType(this, i);
+    if (kind == 1) {
+      return IO.audio;
+    } else if (kind == 2) {
+      return IO.midi;
+    } else if (kind == 3) {
+      return IO.control;
+    } else if (kind == 4) {
+      return IO.time;
+    } else {
+      return IO.external;
+    }
   }
 
   int getInputPinY(int i) {
@@ -815,8 +843,19 @@ class RawNode extends Struct {
     return _ffiNodeGetOutputPinsCount(this);
   }
 
-  int getOutputPinType(int i) {
-    return _ffiNodeGetOutputPinType(this, i);
+  IO getOutputPinType(int i) {
+    var kind = _ffiNodeGetOutputPinType(this, i);
+    if (kind == 1) {
+      return IO.audio;
+    } else if (kind == 2) {
+      return IO.midi;
+    } else if (kind == 3) {
+      return IO.control;
+    } else if (kind == 4) {
+      return IO.time;
+    } else {
+      return IO.external;
+    }
   }
 
   int getOutputPinY(int i) {

@@ -4,7 +4,7 @@ import 'views/presets.dart';
 String contentPath = Platform.isLinux
     ? "/home/chase/github/assets/"
     : Platform.isMacOS
-        ? "/Users/chasekanipe/Github/content/"
+        ? "/Users/chasekanipe/Github/assets/"
         : "";
 
 List<PresetDirectory> presetDirs = [];

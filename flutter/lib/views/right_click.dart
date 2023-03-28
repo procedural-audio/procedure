@@ -244,50 +244,55 @@ class _RightClickCategoryState extends State<RightClickCategory> {
     return Column(
       children: <Widget>[
             MouseRegion(
-                onEnter: (event) {
+              onEnter: (event) {
+                setState(() {
+                  hovering = true;
+                });
+              },
+              onExit: (event) {
+                setState(() {
+                  hovering = false;
+                });
+              },
+              child: GestureDetector(
+                onTap: () {
                   setState(() {
-                    hovering = true;
+                    expanded = !expanded;
                   });
                 },
-                onExit: (event) {
-                  setState(() {
-                    hovering = false;
-                  });
-                },
-                child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        expanded = !expanded;
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
-                      height: 24,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Row(children: [
-                          Icon(
-                            expanded
-                                ? Icons.arrow_drop_up
-                                : Icons.arrow_drop_down,
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
+                  height: 24,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        Icon(
+                          expanded
+                              ? Icons.arrow_drop_up
+                              : Icons.arrow_drop_down,
+                          //color: Colors.white,
+                          color: MyTheme.textColorLight,
+                          size: 20,
+                        ),
+                        Text(
+                          widget.name,
+                          style: const TextStyle(
                             //color: Colors.white,
                             color: MyTheme.textColorLight,
-                            size: 20,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w300,
                           ),
-                          Text(
-                            widget.name,
-                            style: const TextStyle(
-                                //color: Colors.white,
-                                color: MyTheme.textColorLight,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300),
-                          )
-                        ]),
-                      ),
-                      decoration: BoxDecoration(
-                        color: hovering ? MyTheme.grey40 : MyTheme.grey20,
-                      ),
-                    )))
+                        ),
+                      ],
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: hovering ? MyTheme.grey40 : MyTheme.grey20,
+                  ),
+                ),
+              ),
+            ),
           ] +
           (expanded ? widget.elements : []),
     );
@@ -325,59 +330,60 @@ class _RightClickElementState extends State<RightClickElement> {
     String name = widget.spec.path.last;
 
     return MouseRegion(
-        onEnter: (event) {
-          setState(() {
-            hovering = true;
-          });
+      onEnter: (event) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (event) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          widget.onAddModule(widget.spec);
         },
-        onExit: (event) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: () {
-              print("TODO: Implement add module");
-              widget.onAddModule(widget.spec);
-              /*if (widget.app.project.value.patch.value
-                  .addModule(widget.spec.id, widget.addPosition)) {
-                gGridState?.refresh();
-              } else {
-                print("Couldn't add module");
-              }*/
-            },
-            child: Container(
-              padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
-              height: 22,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Row(children: [
-                    Icon(
-                      widget.icon,
-                      color: widget.color,
-                      size: 16,
-                    ),
-                    /*SvgPicture.file(
-                  File(iconPath),
-                  height: 16,
-                  width: 16,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
+          height: 22,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: [
+                /*Icon(
+                  widget.icon,
                   color: widget.color,
-                  fit: BoxFit.fill,
+                  size: 16,
                 ),*/
-                    Container(
-                      width: 5,
+                Container(
+                  width: 15,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: widget.color,
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(5.0),
                     ),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300),
-                    ),
-                  ])),
-              decoration: BoxDecoration(
-                color: hovering ? MyTheme.grey40 : MyTheme.grey20,
-              ),
-            )));
+                  ),
+                ),
+                Container(
+                  width: 6,
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+          ),
+          decoration: BoxDecoration(
+            color: hovering ? MyTheme.grey40 : MyTheme.grey20,
+          ),
+        ),
+      ),
+    );
   }
 }

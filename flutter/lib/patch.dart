@@ -58,31 +58,34 @@ extension FileExtention on FileSystemEntity {
 RawPatch Function() _ffiCreatePatch = core
     .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
     .asFunction();
-
 bool Function(RawPatch, Pointer<Utf8>) _ffiPatchLoad = core
     .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
         "ffi_patch_load")
     .asFunction();
-
 void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
     .asFunction();
-
 RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
     .lookup<
         NativeFunction<
             RawNode Function(
                 RawPatch, RawPlugins, Pointer<Utf8>)>>("ffi_patch_add_module")
     .asFunction();
-
 int Function(RawPatch) _ffiPatchGetNodeCount = core
     .lookup<NativeFunction<Int64 Function(RawPatch)>>(
         "ffi_patch_get_node_count")
     .asFunction();
-
 RawNode Function(RawPatch, int) _ffiPatchGetNode = core
     .lookup<NativeFunction<RawNode Function(RawPatch, Int64)>>(
         "ffi_patch_get_node")
+    .asFunction();
+int Function(RawPatch) _ffiPatchGetConnectorCount = core
+    .lookup<NativeFunction<Int64 Function(RawPatch)>>(
+        "ffi_patch_get_connector_count")
+    .asFunction();
+RawConnector Function(RawPatch, int) _ffiPatchGetConnector = core
+    .lookup<NativeFunction<RawConnector Function(RawPatch, Int64)>>(
+        "ffi_patch_get_connector")
     .asFunction();
 
 // TODO: Make sure this isn't leaked
@@ -121,6 +124,27 @@ class RawPatch extends Struct {
   RawNode getNode(int id) {
     return _ffiPatchGetNode(this, id);
   }
+
+  int getConnectorCount() {
+    return _ffiPatchGetConnectorCount(this);
+  }
+
+  Connector getConnector(int index) {
+    return Connector.fromRaw(
+      _ffiPatchGetConnector(this, index),
+    );
+  }
+}
+
+class RawConnector extends Struct {
+  @Int32()
+  external int startId;
+  @Int32()
+  external int startIndex;
+  @Int32()
+  external int endId;
+  @Int32()
+  external int endIndex;
 }
 
 class PatchInfo {
@@ -171,14 +195,22 @@ class Patch extends StatefulWidget {
     required this.path,
     required this.name,
     required this.description,
-  });
+  }) {
+    var count = rawPatch.getNodeCount();
+    for (var i = 0; i < count; i++) {
+      var rawNode = rawPatch.getNode(i);
+      _nodes.value.add(Node(rawNode));
+    }
+
+    count = rawPatch.getConnectorCount();
+  }
 
   final RawPatch rawPatch;
   final ValueNotifier<String> path;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
   final ValueNotifier<List<Node>> _nodes = ValueNotifier([]);
-  // ValueNotifier<List<Connector>> _connectors = ValueNotifier([]);
+  final ValueNotifier<List<Connector>> _connectors = ValueNotifier([]);
 
   static Patch blank() {
     return Patch.create(
@@ -309,6 +341,32 @@ class Grid extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
+  }
+}
+
+class Connector {
+  Connector({
+    required this.startId,
+    required this.startIndex,
+    required this.endId,
+    required this.endIndex,
+    required this.type,
+  });
+
+  int startId;
+  int startIndex;
+  int endId;
+  int endIndex;
+  IO type;
+
+  static Connector fromRaw(RawConnector c) {
+    return Connector(
+      startId: c.startId,
+      startIndex: c.startIndex,
+      endId: c.endId,
+      endIndex: c.endIndex,
+      type: IO.audio,
+    );
   }
 }
 
