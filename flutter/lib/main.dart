@@ -21,6 +21,7 @@ import 'ui/ui.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
+  PLUGINS.list();
 
   if (args.isEmpty) {
     runApp(

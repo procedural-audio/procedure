@@ -181,7 +181,8 @@ impl<'de> Deserialize<'de> for Node {
                 let version = version.ok_or_else(|| de::Error::missing_field("version"))?;
                 let state = state.ok_or_else(|| de::Error::missing_field("state"))?;
 
-                let module_specs = get_modules();
+                panic!("Need to get module list here");
+                let module_specs: Vec<ModuleSpec> = Vec::new();
                 for module in &module_specs {
                     if module.id == module_id {
                         let mut module = module.create();
@@ -239,8 +240,6 @@ pub struct Graph {
     pub nodes: Vec<Rc<Node>>,
     pub connectors: Vec<Connector>,
     #[serde(skip_serializing, skip_deserializing)]
-    pub nodes_updated: Option<Vec<Rc<Node>>>,
-    #[serde(skip_serializing, skip_deserializing)]
     pub processor: GraphProcessor,
     #[serde(skip_serializing, skip_deserializing)]
     pub updated: Mutex<Option<GraphProcessor>>,
@@ -248,18 +247,6 @@ pub struct Graph {
     pub block_size: usize,
     #[serde(skip_serializing, skip_deserializing)]
     pub sample_rate: u32,
-}
-
-pub struct ModuleList {
-    pub modules: Vec<ModuleSpec>,
-}
-
-impl Default for ModuleList {
-    fn default() -> Self {
-        Self {
-            modules: get_modules()
-        }
-    }
 }
 
 impl Graph {
@@ -270,7 +257,6 @@ impl Graph {
 
         return Graph {
             nodes,
-            nodes_updated: None,
             connectors,
             processor,
             updated: Mutex::new(None),

@@ -51,7 +51,7 @@ pub const fn module<T: 'static + Module>() -> ModuleSpec {
     }
 }
 
-pub fn get_modules() -> Vec<ModuleSpec> {
+/*pub fn get_modules() -> Vec<ModuleSpec> {
     let mut modules = Vec::new();
 
     /* ========== Sources ========== */
@@ -237,7 +237,7 @@ pub fn get_modules() -> Vec<ModuleSpec> {
     println!("Loaded {} static modules", modules.len());
 
     return modules;
-}
+}*/
 
 #[repr(C)]
 #[derive(Copy, Clone)]
