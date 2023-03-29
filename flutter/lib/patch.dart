@@ -87,6 +87,10 @@ RawConnector Function(RawPatch, int) _ffiPatchGetConnector = core
     .lookup<NativeFunction<RawConnector Function(RawPatch, Int64)>>(
         "ffi_patch_get_connector")
     .asFunction();
+void Function(RawPatch, int, int) _ffiPatchRemoveConnector = core
+    .lookup<NativeFunction<Void Function(RawPatch, Int32, Int32)>>(
+        "ffi_patch_remove_connector")
+    .asFunction();
 
 // TODO: Make sure this isn't leaked
 class RawPatch extends Struct {
@@ -110,11 +114,11 @@ class RawPatch extends Struct {
     return success;
   }
 
-  Node addModule(String id) {
+  RawNode addModule(String id) {
     var rawId = id.toNativeUtf8();
     RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugin, rawId);
     calloc.free(rawId);
-    return Node(rawNode);
+    return rawNode;
   }
 
   int getNodeCount() {
@@ -129,10 +133,12 @@ class RawPatch extends Struct {
     return _ffiPatchGetConnectorCount(this);
   }
 
-  Connector getConnector(int index) {
-    return Connector.fromRaw(
-      _ffiPatchGetConnector(this, index),
-    );
+  RawConnector getConnector(int index) {
+    return _ffiPatchGetConnector(this, index);
+  }
+
+  void removeConnector(int nodeId, int pinIndex) {
+    _ffiPatchRemoveConnector(this, nodeId, pinIndex);
   }
 }
 
@@ -195,22 +201,15 @@ class Patch extends StatefulWidget {
     required this.path,
     required this.name,
     required this.description,
-  }) {
-    var count = rawPatch.getNodeCount();
-    for (var i = 0; i < count; i++) {
-      var rawNode = rawPatch.getNode(i);
-      _nodes.value.add(Node(rawNode));
-    }
-
-    count = rawPatch.getConnectorCount();
-  }
+  });
 
   final RawPatch rawPatch;
   final ValueNotifier<String> path;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
-  final ValueNotifier<List<Node>> _nodes = ValueNotifier([]);
-  final ValueNotifier<List<Connector>> _connectors = ValueNotifier([]);
+  // final ValueNotifier<List<Node>> _nodes = ValueNotifier([]);
+  // final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
+  final NewConnector newConnector = NewConnector();
 
   static Patch blank() {
     return Patch.create(
@@ -229,23 +228,123 @@ class Patch extends StatefulWidget {
     );
   }
 
-  void addModule(String id) {
-    var node = rawPatch.addModule(id);
-    _nodes.value.add(node);
-    _nodes.notifyListeners();
-  }
-
   @override
   _Patch createState() => _Patch();
 }
 
 class _Patch extends State<Patch> {
+  List<Node> nodes = [];
+  List<Connector> connectors = [];
+
   TransformationController controller = TransformationController();
   Offset rightClickOffset = Offset.zero;
   bool showRightClickMenu = false;
 
   @override
+  void initState() {
+    super.initState();
+    var count = widget.rawPatch.getNodeCount();
+    for (var i = 0; i < count; i++) {
+      var rawNode = widget.rawPatch.getNode(i);
+      nodes.add(
+        Node(
+          rawNode: rawNode,
+          patch: widget,
+          onAddConnector: (start, end) {
+            addConnector(start, end);
+            setState(() {});
+          },
+          onRemoveConnector: (nodeId, pinIndex) {
+            widget.rawPatch.removeConnector(nodeId, pinIndex);
+            setState(() {});
+          },
+          onDrag: (offset) {
+            setState(() {});
+          },
+        ),
+      );
+    }
+
+    count = widget.rawPatch.getConnectorCount();
+    for (var i = 0; i < count; i++) {
+      var rawConnector = widget.rawPatch.getConnector(i);
+      for (var startNode in nodes) {
+        if (startNode.id == rawConnector.startId) {
+          var startPin = startNode.pins[rawConnector.startIndex];
+          for (var endNode in nodes) {
+            if (endNode.id == rawConnector.endId) {
+              var endPin = endNode.pins[rawConnector.endIndex];
+              connectors.add(Connector(
+                start: startPin,
+                end: endPin,
+                type: startPin.type,
+              ));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    nodes.clear();
+    connectors.clear();
+  }
+
+  void addModule(String id) {
+    var rawNode = widget.rawPatch.addModule(id);
+    // var node = Node(rawNode, widget);
+    // nodes.add(node);
+  }
+
+  void addConnector(Pin start, Pin end) {
+    print("Adding connector");
+    var connector = Connector(
+      start: start,
+      end: end,
+      type: start.type,
+    );
+
+    // widget.rawPatch.addConnector();
+    connectors.add(connector);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("Building with ${connectors.length} connectors");
+
+    var nodeCount = widget.rawPatch.getNodeCount();
+    for (int i = 0; i < nodeCount; i++) {
+      if (i >= nodes.length) {
+        var rawNode = widget.rawPatch.getNode(i);
+        var node = Node(
+          rawNode: rawNode,
+          patch: widget,
+          onAddConnector: (start, end) {
+            addConnector(start, end);
+            setState(() {});
+          },
+          onRemoveConnector: (nodeId, pinIndex) {
+            widget.rawPatch.removeConnector(nodeId, pinIndex);
+            connectors.removeWhere(
+              (element) =>
+                  (element.start.nodeId == nodeId &&
+                      element.start.pinIndex == pinIndex) ||
+                  (element.end.nodeId == nodeId &&
+                      element.end.pinIndex == pinIndex),
+            );
+            setState(() {});
+          },
+          onDrag: (offset) {
+            setState(() {});
+          },
+        );
+        nodes.add(node);
+      }
+    }
+
     return GestureDetector(
       onTapDown: (details) {
         setState(() {
@@ -276,18 +375,14 @@ class _Patch extends State<Patch> {
               }
             },
             child: GestureDetector(
-              child: Container(
+              child: SizedBox(
                 width: 10000,
                 height: 10000,
                 child: CustomPaint(
                   painter: Grid(),
-                  child: ValueListenableBuilder<List<Node>>(
-                    valueListenable: widget._nodes,
-                    builder: (context, nodes, child) {
-                      return Stack(
-                        children: nodes,
-                      );
-                    },
+                  child: Stack(
+                    children:
+                        <Widget>[widget.newConnector] + nodes + connectors,
                   ),
                 ),
               ),
@@ -301,7 +396,7 @@ class _Patch extends State<Patch> {
               child: RightClickView(
                 addPosition: rightClickOffset,
                 onAddModule: (info) {
-                  widget.addModule(info.id);
+                  addModule(info.id);
                   setState(() {
                     showRightClickMenu = false;
                   });
@@ -311,6 +406,114 @@ class _Patch extends State<Patch> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ConnectorPainter extends CustomPainter {
+  ConnectorPainter(this.start, this.end, this.type);
+
+  Offset start;
+  Offset end;
+  IO type;
+
+  @override
+  void paint(Canvas canvas, ui.Size size) {
+    final paint = Paint()
+      ..color = const Color.fromRGBO(255, 255, 255, 1.0)
+      ..strokeWidth = 3;
+
+    if (type == IO.audio) {
+      paint.color = Colors.blue;
+    } else if (type == IO.midi) {
+      paint.color = Colors.green;
+    } else if (type == IO.control) {
+      paint.color = Colors.red;
+    } else if (type == IO.time) {
+      paint.color = Colors.deepPurpleAccent;
+    }
+
+    canvas.drawLine(start, end, paint);
+  }
+
+  @override
+  bool shouldRepaint(ConnectorPainter oldDelegate) {
+    return oldDelegate.start.dx != start.dx ||
+        oldDelegate.start.dy != start.dy ||
+        oldDelegate.end.dx != end.dy ||
+        oldDelegate.end.dy != end.dy ||
+        oldDelegate.type != type;
+  }
+}
+
+class Connector extends StatelessWidget {
+  Connector({
+    required this.start,
+    required this.end,
+    required this.type,
+  });
+
+  final Pin start;
+  final Pin end;
+  final IO type;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Offset>(
+      valueListenable: start.node.position,
+      builder: (context, startModuleOffset, child) {
+        return ValueListenableBuilder<Offset>(
+          valueListenable: end.node.position,
+          builder: (context, endModuleOffset, child) {
+            return CustomPaint(
+              painter: ConnectorPainter(
+                Offset(
+                  start.offset.dx + startModuleOffset.dx + 15 / 2,
+                  start.offset.dy + startModuleOffset.dy + 15 / 2,
+                ),
+                Offset(
+                  end.offset.dx + endModuleOffset.dx + 15 / 2,
+                  end.offset.dy + endModuleOffset.dy + 15 / 2,
+                ),
+                type,
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class NewConnector extends StatelessWidget {
+  Pin? start;
+  final ValueNotifier<Offset?> offset = ValueNotifier(null);
+  Pin? end;
+  IO type = IO.audio;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Offset?>(
+      valueListenable: offset,
+      builder: (context, offset, child) {
+        if (start != null && offset != null) {
+          var startOffset = Offset(
+            start!.offset.dx + start!.node.position.value.dx + 15 / 2,
+            start!.offset.dy + start!.node.position.value.dy + 15 / 2,
+          );
+
+          var endOffset = Offset(
+            startOffset.dx + offset.dx - 15 / 2,
+            startOffset.dy + offset.dy - 15 / 2,
+          );
+
+          return CustomPaint(
+            painter: ConnectorPainter(startOffset, endOffset, type),
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 }
@@ -341,32 +544,6 @@ class Grid extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
-  }
-}
-
-class Connector {
-  Connector({
-    required this.startId,
-    required this.startIndex,
-    required this.endId,
-    required this.endIndex,
-    required this.type,
-  });
-
-  int startId;
-  int startIndex;
-  int endId;
-  int endIndex;
-  IO type;
-
-  static Connector fromRaw(RawConnector c) {
-    return Connector(
-      startId: c.startId,
-      startIndex: c.startIndex,
-      endId: c.endId,
-      endIndex: c.endIndex,
-      type: IO.audio,
-    );
   }
 }
 

@@ -59,9 +59,6 @@ class App extends StatefulWidget {
 
   bool patchingScaleEnabled = true;
 
-  double zoom = 1.0;
-  // TempConnector? tempConnector;
-
   ValueNotifier<String> pinLabel = ValueNotifier("");
   Offset labelPosition = const Offset(0.0, 0.0);
 
@@ -198,7 +195,9 @@ class _CodeEditor extends State<CodeEditor> {
                 lineNumberStyle: const LineNumberStyle(
                   width: 30,
                   textStyle: TextStyle(
-                      color: Color.fromRGBO(100, 100, 100, 1.0), fontSize: 10),
+                    color: Color.fromRGBO(100, 100, 100, 1.0),
+                    fontSize: 10,
+                  ),
                 ),
                 textStyle: const TextStyle(
                   fontSize: 14,
@@ -355,11 +354,18 @@ class _ModuleWheel extends State<ModuleWheel> {
             width: elementWidth,
             height: elementHeight,
             alignment: Alignment.center,
-            child: Text(module,
-                style: const TextStyle(color: Colors.white, fontSize: 14)),
+            child: Text(
+              module,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
             decoration: const BoxDecoration(
               color: Color.fromRGBO(60, 60, 60, 0.5),
-              borderRadius: BorderRadius.all(Radius.circular(5)),
+              borderRadius: BorderRadius.all(
+                Radius.circular(5),
+              ),
             ),
           ),
         ),
@@ -383,7 +389,9 @@ class _ModuleWheel extends State<ModuleWheel> {
                   height: 16,
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(100, 100, 100, 0.5),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(10),
+                    ),
                     border: Border.all(
                       color: const Color.fromRGBO(200, 200, 200, 0.5),
                       width: 2.0,

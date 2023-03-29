@@ -282,6 +282,16 @@ pub unsafe extern "C" fn ffi_patch_get_connector(patch: &mut Graph, index: usize
     patch.connectors[index]
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_remove_connector(patch: &mut Graph, module_id: i32, pin_index: i32) {
+    patch.connectors.retain(
+        | connector | {
+            connector.start.module_id != module_id &&
+            connector.start.pin_index != pin_index
+        }
+    );
+}
+
 /* Node */
 
 #[no_mangle]

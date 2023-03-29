@@ -14,11 +14,25 @@ import 'views/settings.dart';
 import 'core.dart';
 
 class Pin extends StatefulWidget {
-  Pin({required this.offset, required this.type, required this.isInput});
+  Pin({
+    required this.node,
+    required this.nodeId,
+    required this.pinIndex,
+    required this.offset,
+    required this.type,
+    required this.isInput,
+    required this.onAddConnector,
+    required this.onRemoveConnector,
+  });
 
-  Offset offset;
-  IO type;
-  bool isInput;
+  final Node node;
+  final int nodeId;
+  final int pinIndex;
+  final Offset offset;
+  final IO type;
+  final bool isInput;
+  final void Function(Pin, Pin) onAddConnector;
+  final void Function() onRemoveConnector;
 
   @override
   _PinState createState() => _PinState();
@@ -26,6 +40,7 @@ class Pin extends StatefulWidget {
 
 class _PinState extends State<Pin> {
   bool hovering = false;
+  bool dragging = false;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +53,7 @@ class _PinState extends State<Pin> {
     } else if (widget.type == IO.control) {
       color = Colors.red;
     } else if (widget.type == IO.time) {
-      color = Colors.deepPurple;
+      color = Colors.deepPurpleAccent;
     }
 
     return Positioned(
@@ -46,25 +61,78 @@ class _PinState extends State<Pin> {
       top: widget.offset.dy,
       child: MouseRegion(
         onEnter: (e) {
+          widget.node.patch.newConnector.end = widget;
+
           setState(() {
             hovering = true;
           });
         },
         onExit: (e) {
+          widget.node.patch.newConnector.end = null;
+
           setState(() {
             hovering = false;
           });
         },
-        child: Container(
-          width: 15,
-          height: 15,
-          decoration: BoxDecoration(
-            color: hovering ? color : Colors.transparent,
-            border: Border.all(
-              color: color,
-              width: 2,
+        child: GestureDetector(
+          onPanStart: (details) {
+            dragging = true;
+            if (!widget.isInput) {
+              widget.node.patch.newConnector.offset.value = Offset.zero;
+            } else {
+              print("Started drag on output node");
+            }
+          },
+          onPanUpdate: (details) {
+            if (!widget.isInput) {
+              widget.node.patch.newConnector.start = widget;
+              widget.node.patch.newConnector.offset.value =
+                  details.localPosition;
+              widget.node.patch.newConnector.type = widget.type;
+            } else {
+              // print("Updated drag on output node");
+            }
+          },
+          onPanEnd: (details) {
+            if (widget.node.patch.newConnector.start != null &&
+                widget.node.patch.newConnector.end != null) {
+              widget.onAddConnector(
+                widget.node.patch.newConnector.start!,
+                widget.node.patch.newConnector.end!,
+              );
+            } else {
+              print("Connector has no end");
+            }
+
+            widget.node.patch.newConnector.start = null;
+            widget.node.patch.newConnector.end = null;
+            widget.node.patch.newConnector.offset.value = null;
+            setState(() {
+              dragging = false;
+            });
+          },
+          onPanCancel: () {
+            widget.node.patch.newConnector.start = null;
+            widget.node.patch.newConnector.end = null;
+            widget.node.patch.newConnector.offset.value = null;
+            setState(() {
+              dragging = false;
+            });
+          },
+          onDoubleTap: () {
+            widget.onRemoveConnector();
+          },
+          child: Container(
+            width: 15,
+            height: 15,
+            decoration: BoxDecoration(
+              color: hovering || dragging ? color : Colors.transparent,
+              border: Border.all(
+                color: color,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(10),
             ),
-            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
@@ -126,7 +194,13 @@ class ModuleInfo extends StatelessWidget {
 }
 
 class Node extends StatelessWidget {
-  Node(this.rawNode) {
+  Node({
+    required this.rawNode,
+    required this.patch,
+    required this.onAddConnector,
+    required this.onRemoveConnector,
+    required this.onDrag,
+  }) {
     id = rawNode.getId();
     position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
     size = Offset(rawNode.getWidth() + 0.0, rawNode.getHeight() + 0.0);
@@ -141,8 +215,15 @@ class Node extends StatelessWidget {
         pins.add(
           Pin(
             offset: offset,
+            nodeId: id,
+            pinIndex: i,
             type: type,
             isInput: true,
+            node: this,
+            onAddConnector: onAddConnector,
+            onRemoveConnector: () {
+              onRemoveConnector(id, i);
+            },
           ),
         );
       }
@@ -158,8 +239,15 @@ class Node extends StatelessWidget {
         pins.add(
           Pin(
             offset: offset,
+            nodeId: id,
+            pinIndex: i,
             type: type,
             isInput: false,
+            node: this,
+            onAddConnector: onAddConnector,
+            onRemoveConnector: () {
+              onRemoveConnector(id, i);
+            },
           ),
         );
       }
@@ -174,7 +262,12 @@ class Node extends StatelessWidget {
     }
   }
 
+  final Patch patch;
   final RawNode rawNode;
+  final void Function(Pin, Pin) onAddConnector;
+  final void Function(int, int) onRemoveConnector;
+  final void Function(Offset) onDrag;
+
   int id = 1;
   String name = "Name";
   Color color = Colors.grey;
@@ -198,6 +291,7 @@ class Node extends StatelessWidget {
               rawNode.setX(x);
               rawNode.setY(y);
               position.value = Offset(x, y);
+              onDrag(details.localPosition);
             },
             child: Container(
               width: size.dx,
