@@ -87,6 +87,12 @@ RawConnector Function(RawPatch, int) _ffiPatchGetConnector = core
     .lookup<NativeFunction<RawConnector Function(RawPatch, Int64)>>(
         "ffi_patch_get_connector")
     .asFunction();
+bool Function(RawPatch, int, int, int, int) _ffiPatchAddConnector = core
+    .lookup<
+        NativeFunction<
+            Bool Function(RawPatch, Int32, Int32, Int32,
+                Int32)>>("ffi_patch_add_connector")
+    .asFunction();
 void Function(RawPatch, int, int) _ffiPatchRemoveConnector = core
     .lookup<NativeFunction<Void Function(RawPatch, Int32, Int32)>>(
         "ffi_patch_remove_connector")
@@ -135,6 +141,10 @@ class RawPatch extends Struct {
 
   RawConnector getConnector(int index) {
     return _ffiPatchGetConnector(this, index);
+  }
+
+  bool addConnector(int startId, int startIndex, int endId, int endIndex) {
+    return _ffiPatchAddConnector(this, startId, startIndex, endId, endIndex);
   }
 
   void removeConnector(int nodeId, int pinIndex) {
@@ -207,8 +217,6 @@ class Patch extends StatefulWidget {
   final ValueNotifier<String> path;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
-  // final ValueNotifier<List<Node>> _nodes = ValueNotifier([]);
-  // final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
   final NewConnector newConnector = NewConnector();
 
   static Patch blank() {
@@ -300,21 +308,24 @@ class _Patch extends State<Patch> {
   }
 
   void addConnector(Pin start, Pin end) {
-    print("Adding connector");
     var connector = Connector(
       start: start,
       end: end,
       type: start.type,
     );
 
-    // widget.rawPatch.addConnector();
-    connectors.add(connector);
+    if (widget.rawPatch.addConnector(
+      start.nodeId,
+      start.pinIndex,
+      end.nodeId,
+      end.pinIndex,
+    )) {
+      connectors.add(connector);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Building with ${connectors.length} connectors");
-
     var nodeCount = widget.rawPatch.getNodeCount();
     for (int i = 0; i < nodeCount; i++) {
       if (i >= nodes.length) {
