@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
 
 import 'dart:async';
@@ -8,13 +7,11 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
-import 'main.dart';
 import 'core.dart';
 import 'projects.dart';
 import 'module.dart';
 import 'plugins.dart';
 
-import 'views/info.dart';
 import 'views/right_click.dart';
 
 /* LIBRARY */
