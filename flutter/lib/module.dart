@@ -32,7 +32,7 @@ class Pin extends StatefulWidget {
   final IO type;
   final bool isInput;
   final void Function(Pin, Pin) onAddConnector;
-  final void Function() onRemoveConnector;
+  final void Function(int, int) onRemoveConnector;
 
   @override
   _PinState createState() => _PinState();
@@ -120,7 +120,7 @@ class _PinState extends State<Pin> {
             });
           },
           onDoubleTap: () {
-            widget.onRemoveConnector();
+            widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
           },
           child: Container(
             width: 15,
@@ -221,8 +221,8 @@ class Node extends StatelessWidget {
             isInput: true,
             node: this,
             onAddConnector: onAddConnector,
-            onRemoveConnector: () {
-              onRemoveConnector(id, i);
+            onRemoveConnector: (nodeId, pinIndex) {
+              onRemoveConnector(nodeId, pinIndex);
             },
           ),
         );
@@ -245,8 +245,8 @@ class Node extends StatelessWidget {
             isInput: false,
             node: this,
             onAddConnector: onAddConnector,
-            onRemoveConnector: () {
-              onRemoveConnector(id, i);
+            onRemoveConnector: (nodeId, pinIndex) {
+              onRemoveConnector(nodeId, pinIndex);
             },
           ),
         );

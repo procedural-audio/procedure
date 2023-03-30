@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'dart:ffi';
 import 'dart:io';
 import 'module.dart';
+import 'patch.dart';
 
 class Core {
   Core(this.raw);
@@ -86,6 +87,10 @@ class Core {
     return _ffiCoreGetNode(raw, a);
   }
 
+  void setPatch(RawPatch rawPatch) {
+    _ffiCoreSetPatch(raw, rawPatch);
+  }
+
   /*int getModuleSpecCount() {
     return _ffiCoreGetModuleSpecCount(raw);
   }
@@ -153,7 +158,6 @@ DynamicLibrary loadCoreLibrary() {
 RawCore Function(int) _ffiHackConvert = core
     .lookup<NativeFunction<RawCore Function(Int64)>>("ffi_hack_convert")
     .asFunction();
-
 RawCore Function() _ffiCreateHost = core
     .lookup<NativeFunction<RawCore Function()>>("ffi_create_host")
     .asFunction();
@@ -167,6 +171,10 @@ bool Function(RawCore, Pointer<Utf8>) _ffiCoreLoad = core
 bool Function(RawCore, Pointer<Utf8>) _ffiCoreSave = core
     .lookup<NativeFunction<Bool Function(RawCore, Pointer<Utf8>)>>(
         "ffi_host_save")
+    .asFunction();
+void Function(RawCore, RawPatch) _ffiCoreSetPatch = core
+    .lookup<NativeFunction<Void Function(RawCore, RawPatch)>>(
+        "ffi_core_set_patch")
     .asFunction();
 void Function(RawCore) _ffiCoreRefresh = core
     .lookup<NativeFunction<Void Function(RawCore)>>("ffi_host_refresh")

@@ -45,22 +45,13 @@ void main(List<String> args) {
 class App extends StatefulWidget {
   App({required this.core, required this.assets}) {
     project = ValueNotifier(Project.blank(this));
+    core.setPatch(project.value.patch.value.rawPatch);
   }
 
   Core core;
   Assets assets;
 
   late ValueNotifier<Project> project;
-
-  // ======= Other stuff =======
-
-  ValueNotifier<int> selectedModule = ValueNotifier(-1);
-  ValueNotifier<List<ModuleInfo>> moduleSpecs = ValueNotifier([]);
-
-  bool patchingScaleEnabled = true;
-
-  ValueNotifier<String> pinLabel = ValueNotifier("");
-  Offset labelPosition = const Offset(0.0, 0.0);
 
   @override
   State<App> createState() => _App();
@@ -405,97 +396,7 @@ class _ModuleWheel extends State<ModuleWheel> {
   }
 }
 
-/*_GridState? gGridState;
-
-class Grid extends StatefulWidget {
-  Grid(this.app);
-
-  App app;
-
-  @override
-  _GridState createState() => _GridState();
-}
-
-class _GridState extends State<Grid> {
-  void refresh() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    gGridState = this; // SHOUD MOVE THIS TO CONSTRUCTOR ???
-
-    return Container(
-      width: 40000,
-      height: 20000,
-      child: CustomPaint(
-        size: const ui.Size(40000, 20000),
-        painter: GridPainter(),
-        child: Stack(
-          children: [
-            TempConnectorWidget(widget.app),
-            Connectors(widget.app),
-            Stack(
-              children: widget.app.project.value.patch.value.modules.value,
-            ),
-            DragTarget(
-              builder: (BuildContext context, List<dynamic> accepted,
-                  List<dynamic> rejected) {
-                return Container(
-                  width: 40000,
-                  height: 20000,
-                  child: GestureDetector(
-                    // THIS DOESN'T WORK
-                    behavior: HitTestBehavior.deferToChild,
-                    onTap: () {
-                      print("TODO: Fixup tap");
-                      /*var oldWidget = widget.app.selectedModule;
-                      widget.app.selectedModule = -1;
-                      for (var widget in widget.host.graph.moduleWidgets) {
-                        if (widget.module.id == oldWidget) {
-                          widget.refresh();
-                        }
-                      }
-                      */
-                    },
-                  ),
-                );
-              },
-              onAccept: (int data) {},
-              onWillAccept: (int? data) {
-                return true;
-              },
-            ),
-            // globals.pinLabel,
-          ],
-        ),
-      ),
-    );
-  }
-}*/
-
-/*class TempConnector {
-  int moduleId = 0;
-  int pinIndex = 0;
-  double endX = 0;
-  double endY = 0;
-  IO type = IO.audio;
-
-  int hoveringId = -1;
-  int hoveringIndex = -1;
-}
-
-_TempConnectorState? gTempConnectorState;
-
-class TempConnectorWidget extends StatefulWidget {
-  TempConnectorWidget(this.app);
-
-  App app;
-
-  @override
-  _TempConnectorState createState() => _TempConnectorState();
-}
-
+/*
 class _TempConnectorState extends State<TempConnectorWidget> {
   void refresh() {
     setState(() {});

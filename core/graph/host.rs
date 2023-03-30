@@ -6,7 +6,7 @@ use crate::graph::*;
 use std::sync::Arc;
 
 pub struct Host {
-    pub graph: Graph,
+    pub graph: Box<Graph>,
     pub sample_rate: u32,
     pub block_size: usize,
     pub time: TimeMessage,
@@ -18,7 +18,7 @@ pub struct Host {
 impl Host {
     pub fn new() -> Self {
         Host {
-            graph: Graph::new(),
+            graph: Box::new(Graph::new()),
             block_size: 128,
             sample_rate: 44100,
             time: TimeMessage::from(0.0, 0.0),
@@ -39,7 +39,7 @@ impl Host {
                 let mut graph: Graph = graph;
 
                 graph.refresh();
-                self.graph = graph;
+                self.graph = Box::new(graph);
             }
             Err(e) => {
                 self.graph.nodes.clear();

@@ -148,7 +148,7 @@ class RawPatch extends Struct {
   }
 
   void removeConnector(int nodeId, int pinIndex) {
-    _ffiPatchRemoveConnector(this, nodeId, pinIndex);
+    return _ffiPatchRemoveConnector(this, nodeId, pinIndex);
   }
 }
 
@@ -263,7 +263,7 @@ class _Patch extends State<Patch> {
             setState(() {});
           },
           onRemoveConnector: (nodeId, pinIndex) {
-            widget.rawPatch.removeConnector(nodeId, pinIndex);
+            removeConnector(nodeId, pinIndex);
             setState(() {});
           },
           onDrag: (offset) {
@@ -324,6 +324,15 @@ class _Patch extends State<Patch> {
     }
   }
 
+  void removeConnector(int nodeId, int pinIndex) {
+    widget.rawPatch.removeConnector(nodeId, pinIndex);
+    connectors.removeWhere(
+      (e) =>
+          (e.start.nodeId == nodeId && e.start.pinIndex == pinIndex) ||
+          (e.end.nodeId == nodeId && e.end.pinIndex == pinIndex),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var nodeCount = widget.rawPatch.getNodeCount();
@@ -338,14 +347,7 @@ class _Patch extends State<Patch> {
             setState(() {});
           },
           onRemoveConnector: (nodeId, pinIndex) {
-            widget.rawPatch.removeConnector(nodeId, pinIndex);
-            connectors.removeWhere(
-              (element) =>
-                  (element.start.nodeId == nodeId &&
-                      element.start.pinIndex == pinIndex) ||
-                  (element.end.nodeId == nodeId &&
-                      element.end.pinIndex == pinIndex),
-            );
+            removeConnector(nodeId, pinIndex);
             setState(() {});
           },
           onDrag: (offset) {
@@ -557,301 +559,3 @@ class Grid extends CustomPainter {
     return false;
   }
 }
-
-/*class Patch extends StatefulWidget {
-  Patch(this.app, this.info) {
-    _patch.load(info.path);
-    refresh();
-  }
-
-  final App app;
-  final PatchInfo info;
-  final RawPatch _patch = RawPatch.create(); // TODO: Fix leak
-
-  var connectors = <Connector>[];
-  ValueNotifier<List<Node>> nodes = ValueNotifier([]);
-
-  // Rename to node???
-  bool addModule2(String name) {
-    /*_patch.addModule(name);*/
-    /* plugins.createModule(name); */
-
-    return true;
-  }
-
-  /* Old Methods */
-
-  bool addModule(String name, Offset addPosition) {
-    var ret = app.core.addModule(name);
-
-    if (ret) {
-      var moduleRaw = app.core.getNode(app.core.getNodeCount() - 1);
-
-      var x = addPosition.dx.toInt() - moduleRaw.getWidth() ~/ 2;
-      var y = addPosition.dy.toInt() - moduleRaw.getHeight() ~/ 2;
-
-      moduleRaw.setX(x);
-      moduleRaw.setY(y);
-
-      modules.value.add(Module(app, moduleRaw));
-    }
-
-    return ret;
-  }
-
-  void removeModule(int id) {
-    modules.value.retainWhere((element) => element.id != id);
-    connectors.retainWhere((element) => element.start.moduleId != id);
-    connectors.retainWhere((element) => element.end.moduleId != id);
-    app.core.removeNode(id);
-  }
-
-  bool addConnection(Connector c) {
-    if (app.core.addConnector(
-        c.start.moduleId, c.start.index, c.end.moduleId, c.end.index)) {
-      connectors.add(c);
-      return true;
-    }
-
-    return false;
-  }
-
-  void removeConnection(int moduleId, int pinIndex) {
-    connectors.retainWhere((element) => !(element.start.moduleId == moduleId &&
-        element.start.index == pinIndex));
-    connectors.retainWhere((element) =>
-        !(element.end.moduleId == moduleId && element.end.index == pinIndex));
-    app.core.removeConnector(moduleId, pinIndex);
-  }
-
-  void refresh() {
-    modules.value.clear();
-    connectors.clear();
-
-    int moduleCount = app.core.getNodeCount();
-
-    for (int i = 0; i < moduleCount; i++) {
-      var moduleRaw = app.core.getNode(i);
-      var module = Module(app, moduleRaw);
-      modules.value.add(module);
-    }
-
-    int connectorCount = app.core.getConnectorCount();
-
-    for (int i = 0; i < connectorCount; i++) {
-      var startId = app.core.getConnectorStartId(i);
-      var endId = app.core.getConnectorEndId(i);
-      var startIndex = app.core.getConnectorStartIndex(i);
-      var endIndex = app.core.getConnectorEndIndex(i);
-
-      var type = IO.audio;
-
-      for (var module in modules.value) {
-        if (module.id == startId) {
-          type = module.pins[startIndex].type;
-        }
-      }
-
-      connectors.add(Connector(startId, startIndex, endId, endIndex, type));
-    }
-  }
-
-  @override
-  State<Patch> createState() => _Patch();
-}
-
-class _Patch extends State<Patch> {
-  late Grid grid;
-
-  var mouseOffset = const Offset(0, 0);
-  var righttClickOffset = const Offset(0, 0);
-  var rightClickVisible = false;
-  var moduleMenuVisible = false;
-
-  var wheelVisible = false;
-  List<String> wheelModules = [];
-
-  FocusNode focusNode = FocusNode();
-
-  TransformationController controller = TransformationController();
-
-  double zoom = 1.0;
-
-  @override
-  void initState() {
-    grid = Grid(widget.app);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    FocusScope.of(context).requestFocus(focusNode);
-
-    return RawKeyboardListener(
-      focusNode: focusNode,
-      /*onKey: (event) {
-          if (rightClickVisible) {
-            return;
-          }
-
-          if (event.data.physicalKey == PhysicalKeyboardKey.keyS) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = ["Sampler", "Simpler", "Granular", "Looper"];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyO) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = [
-                  "Digital",
-                  "Analog",
-                  "Noise",
-                  "Wavetable",
-                  "Additive",
-                  "Polygon"
-                ];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          } else if (event.data.physicalKey == PhysicalKeyboardKey.keyF) {
-            if (event.runtimeType == RawKeyDownEvent) {
-              setState(() {
-                wheelVisible = true;
-                wheelModules = ["Sampler", "Analog Osc"];
-              });
-            } else {
-              setState(() {
-                wheelVisible = false;
-              });
-            }
-          }
-        },*/
-      child: ClipRect(
-        child: Stack(
-          fit: StackFit.loose,
-          children: [
-            InteractiveViewer(
-              transformationController: controller,
-              child: grid,
-              minScale: 0.1,
-              maxScale: 1.5,
-              panEnabled: true,
-              scaleEnabled: true, // widget.app.patchingScaleEnabled,
-              clipBehavior: Clip.none,
-              constrained: false,
-              onInteractionUpdate: (details) {
-                setState(() {
-                  zoom *= details.scale;
-                  if (zoom < 0.1) {
-                    zoom = 0.1;
-                  } else if (zoom > 1.5) {
-                    zoom = 1.5;
-                  }
-                });
-              },
-            ),
-            GestureDetector(
-              // Right click menu region
-              behavior: HitTestBehavior.translucent,
-              onSecondaryTap: () {
-                print("Secondary tap right-click menu");
-
-                if (widget.app.selectedModule.value == -1) {
-                  righttClickOffset = mouseOffset;
-                  setState(() {
-                    rightClickVisible = true;
-                  });
-                } else {
-                  righttClickOffset = mouseOffset;
-                  setState(() {
-                    moduleMenuVisible = true;
-                  });
-                }
-              },
-            ),
-            Visibility(
-              // Right click menu
-              visible: rightClickVisible,
-              child: Positioned(
-                left: righttClickOffset.dx,
-                top: righttClickOffset.dy,
-                child: RightClickView(
-                  widget.app,
-                  specs: widget.app.moduleSpecs,
-                  addPosition: Offset(
-                    righttClickOffset.dx - controller.value.getTranslation().x,
-                    righttClickOffset.dy - controller.value.getTranslation().y,
-                  ),
-                ),
-              ),
-            ),
-            Visibility(
-              // Right click menu
-              visible: moduleMenuVisible,
-              child: Positioned(
-                left: righttClickOffset.dx,
-                top: righttClickOffset.dy,
-                child: ModuleMenu(),
-              ),
-            ),
-            Listener(
-              // Hide right-click menu
-              behavior: HitTestBehavior.translucent,
-              onPointerDown: (event) {
-                if (rightClickVisible && widget.app.patchingScaleEnabled) {
-                  setState(() {
-                    rightClickVisible = false;
-                  });
-                } else if (moduleMenuVisible &&
-                    widget.app.patchingScaleEnabled) {
-                  setState(() {
-                    moduleMenuVisible = false;
-                  });
-                }
-              },
-            ),
-            Visibility(
-              // Module wheel
-              visible: wheelVisible,
-              child: Positioned(
-                left: mouseOffset.dx - 150,
-                top: mouseOffset.dy - 100,
-                child: ModuleWheel(wheelModules),
-              ),
-            ),
-            MouseRegion(
-              opaque: false,
-              onHover: (event) {
-                mouseOffset = event.localPosition;
-                // print(mouseOffset.toString());
-              },
-            ),
-            ValueListenableBuilder<String>(
-              valueListenable: widget.app.pinLabel,
-              builder: (context, value, w) {
-                return Visibility(
-                  visible: value != "",
-                  child: Positioned(
-                    left: widget.app.labelPosition.dx,
-                    top: widget.app.labelPosition.dy,
-                    child: PinLabel(value),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
