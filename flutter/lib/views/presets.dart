@@ -5,83 +5,102 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../main.dart';
 import '../config.dart';
+import '../patch.dart';
+import '../projects.dart';
 import '../ui/common.dart';
+import '../views/info.dart';
 
-class PresetsView extends StatelessWidget {
-  PresetsView(this.app);
+class Presets extends StatelessWidget {
+  Presets(this.directory) {
+    scanPatches();
+    scanInterfaces();
+  }
 
-  App app;
+  Directory directory;
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
+
+  final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
+  final ValueNotifier<List<InterfaceInfo>> interfaces = ValueNotifier([]);
+
+  void scanPatches() async {
+    List<PatchInfo> infos = [];
+    var patchesDirectory = Directory(directory.path + "/patches").list();
+    await for (var patch in patchesDirectory) {
+      var patchDirectory = Directory(patch.path);
+      var info = await PatchInfo.load(patchDirectory);
+      if (info != null) {
+        infos.add(info);
+        patches.value = infos;
+      }
+    }
+  }
+
+  void scanInterfaces() async {
+    List<InterfaceInfo> infos = [];
+    var interfacesDirectory = Directory(directory.path + "/interfaces").list();
+
+    await for (var interfaceItem in interfacesDirectory) {
+      var interfaceDirectory = Directory(interfaceItem.path);
+      var info = await InterfaceInfo.load(interfaceDirectory);
+      if (info != null) {
+        infos.add(info);
+        interfaces.value = infos;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Column(
-                  children: [
-                    UserInterfaceItem(
-                      app,
-                      text: "Interface 1",
+    return ValueListenableBuilder<List<PatchInfo>>(
+      valueListenable: patches,
+      builder: (context, patches, child) {
+        List<Widget> items = <Widget>[] +
+            interfaces.value
+                .map((e) => UserInterfaceItem(
+                      text: e.name.value,
                       selectedItem: selectedItem,
-                      children: [
-                        GraphItem(app, "Graph 1", selectedItem),
-                        GraphItem(app, "Graph 2", selectedItem),
-                        GraphItem(app, "Graph 3", selectedItem),
-                        GraphItem(app, "Graph 4", selectedItem),
-                      ],
-                    ),
-                    UserInterfaceItem(
-                      app,
-                      text: "Interface 2",
-                      selectedItem: selectedItem,
-                      children: [
-                        GraphItem(app, "Graph 5", selectedItem),
-                        GraphItem(app, "Graph 6", selectedItem),
-                      ],
-                    ),
-                    GraphItem(app, "Graph 1", selectedItem),
-                    GraphItem(app, "Graph 2", selectedItem),
+                      children: e.patches.value,
+                    ))
+                .toList() +
+            patches
+                .map((e) => GraphItem(
+                      e.name.value,
+                      selectedItem,
+                    ))
+                .toList();
 
-                    /*CategoryItem("Category 1"),
-                    CategoryItem("Category 2"),*/
-
-                    /*PresetItem("Preset 1"),
-                    PresetItem("Preset 2"),
-                    PresetItem("Preset 3"),
-                    PresetItem("Preset 4"),*/
-                  ],
+        return Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      children: items,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: PresetsViewItemEditor(
-              app: app,
-              selectedItem: selectedItem,
-            ),
-          ),
-        ),
-      ],
+            Expanded(
+              child: PresetsViewItemEditor(
+                selectedItem: selectedItem,
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 }
 
 class PresetsViewItemEditor extends StatelessWidget {
   PresetsViewItemEditor({
-    required this.app,
     required this.selectedItem,
   });
 
-  App app;
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
 
   @override
@@ -102,9 +121,9 @@ class PresetsViewItemEditor extends StatelessWidget {
                 ),
               );
             } else if (item is UserInterfaceItem) {
-              return RootWidgetItemEditor(app, item);
+              return RootWidgetItemEditor(item);
             } else if (item is GraphItem) {
-              return GraphItemEditor(app, item);
+              return GraphItemEditor(item);
             } else {
               return Container();
             }
@@ -114,10 +133,9 @@ class PresetsViewItemEditor extends StatelessWidget {
 }
 
 class RootWidgetItemEditor extends StatelessWidget {
-  RootWidgetItemEditor(this.app, this.item);
+  RootWidgetItemEditor(this.item);
 
   UserInterfaceItem item;
-  App app;
   String text1 = "Text 1";
 
   @override
@@ -165,10 +183,9 @@ class RootWidgetItemEditor extends StatelessWidget {
 }
 
 class GraphItemEditor extends StatelessWidget {
-  GraphItemEditor(this.app, this.item);
+  GraphItemEditor(this.item);
 
   GraphItem item;
-  App app;
   String text1 = "Some Stuff";
   EdgeInsets padding = EdgeInsets.zero;
 
@@ -223,8 +240,12 @@ class GraphItemEditor extends StatelessWidget {
                       width: null,
                       initialValue: padding.left.toString(),
                       onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(double.tryParse(s) ?? 0.0,
-                            padding.top, padding.right, padding.bottom);
+                        padding = EdgeInsets.fromLTRB(
+                          double.tryParse(s) ?? 0.0,
+                          padding.top,
+                          padding.right,
+                          padding.bottom,
+                        );
 
                         // setState(() {});
                       },
@@ -236,8 +257,12 @@ class GraphItemEditor extends StatelessWidget {
                       width: null,
                       initialValue: padding.right.toString(),
                       onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(padding.left, padding.top,
-                            double.tryParse(s) ?? 0.0, padding.bottom);
+                        padding = EdgeInsets.fromLTRB(
+                          padding.left,
+                          padding.top,
+                          double.tryParse(s) ?? 0.0,
+                          padding.bottom,
+                        );
                       },
                     ),
                   ),
@@ -289,16 +314,14 @@ class GraphItemEditor extends StatelessWidget {
 }
 
 class UserInterfaceItem extends StatelessWidget {
-  UserInterfaceItem(
-    this.app, {
+  UserInterfaceItem({
     required this.text,
     required this.selectedItem,
     required this.children,
   });
 
   final String text;
-  final App app;
-  final List<GraphItem> children;
+  final List<PatchInfo> children;
   final ValueNotifier<Widget?> selectedItem;
 
   @override
@@ -321,7 +344,7 @@ class UserInterfaceItem extends StatelessWidget {
         children: // <Widget>[] +
             children
                 .map(
-                  (e) => GraphItem(app, e.text, selectedItem, isDense: true),
+                  (e) => GraphItem(e.name.value, selectedItem, isDense: true),
                 )
                 .toList() /*+
           <Widget>[
@@ -359,9 +382,8 @@ class UserInterfaceItem extends StatelessWidget {
 }*/
 
 class GraphItem extends StatelessWidget {
-  GraphItem(this.app, this.text, this.selectedItem, {this.isDense = false});
+  GraphItem(this.text, this.selectedItem, {this.isDense = false});
 
-  final App app;
   final String text;
   final bool isDense;
   final ValueNotifier<Widget?> selectedItem;

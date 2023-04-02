@@ -8,6 +8,7 @@ import 'package:metasampler/ui/code_editor/code_text_field.dart';
 
 import 'dart:ui' as ui;
 
+import 'views/info.dart';
 import 'views/settings.dart';
 import 'views/bar.dart';
 
@@ -44,14 +45,22 @@ void main(List<String> args) {
 
 class App extends StatefulWidget {
   App({required this.core, required this.assets}) {
-    project = ValueNotifier(Project.blank(this));
-    core.setPatch(project.value.patch.value.rawPatch);
+    // core.setPatch(project.value.patch.value.rawPatch);
   }
 
   Core core;
   Assets assets;
 
-  late ValueNotifier<Project> project;
+  final ValueNotifier<Project> project = ValueNotifier(Project.blank());
+
+  void loadProject(ProjectInfo info) async {
+    var project = await Project.load(info);
+    if (project != null) {
+      print("TODO: Load patch in core");
+      // core.setPatch(project.patch.value.rawPatch);
+      this.project.value = project;
+    }
+  }
 
   @override
   State<App> createState() => _App();
@@ -96,10 +105,14 @@ class _App extends State<App> {
                       Visibility(
                         visible: !uiVisible,
                         maintainState: true,
-                        child: ValueListenableBuilder<Patch>(
+                        child: ValueListenableBuilder<Patch?>(
                           valueListenable: project.patch,
                           builder: (context, patch, child) {
-                            return patch;
+                            if (patch != null) {
+                              return patch;
+                            } else {
+                              return Container();
+                            }
                           },
                         ),
                       ),

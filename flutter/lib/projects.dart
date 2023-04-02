@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
 
-import 'patch.dart';
 import 'main.dart';
+import 'patch.dart';
 
 import 'views/info.dart';
-import 'widgets/widget.dart';
-import 'core.dart';
+import 'views/presets.dart';
+
 import 'ui/ui.dart';
+
+/* Projects */
 
 class Projects {
   Projects(this.directory) {
@@ -29,83 +31,68 @@ class Projects {
   }
 
   void scan() async {
+    List<ProjectInfo> projects = [];
+
     var list = await directory.list().toList();
-    _projects.value = [];
-
     for (var item in list) {
-      var projectInfo = await ProjectInfo.from(item.path);
+      var projectInfo = await ProjectInfo.load(item.path);
       if (projectInfo != null) {
-        _projects.value.add(projectInfo);
-        _projects.notifyListeners();
+        projects.add(projectInfo);
+        _projects.value = projects;
       }
     }
-  }
-
-  bool contains(String name) {
-    for (var project in _projects.value) {
-      if (project.name == name) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }
 
+/* Project */
+
 class Project {
   Project({
-    required this.app,
     required this.info,
     required this.patch,
     required this.ui,
-    required this.patches,
-    required this.uis,
+    required this.presets,
   });
 
-  static Project blank(App app) {
-    return Project.create(
-      app,
-      ProjectInfo.blank(),
-      Patch.blank(),
-      null,
-      [],
-      [],
+  static Project blank() {
+    var directory =
+        Directory("/Users/chasekanipe/Github/assets/projects/FirstProject");
+    var info = ProjectInfo.blank();
+    return Project(
+      info: info,
+      presets: Presets(info.directory),
+      patch: ValueNotifier(Patch.blank(directory)),
+      ui: ValueNotifier(null),
     );
   }
 
-  static Project create(
-    App app,
+  /*static Project create(
     ProjectInfo info,
     Patch patch,
     UserInterface? ui,
-    List<PatchInfo> patches,
-    List<UserInterfaceInfo> uis,
   ) {
     return Project(
-      app: app,
       info: info,
+      presets: Presets(info.directory),
       patch: ValueNotifier(patch),
       ui: ValueNotifier(ui),
-      patches: ValueNotifier(patches),
-      uis: ValueNotifier(uis),
+    );
+  }*/
+
+  static Future<Project?> load(ProjectInfo info) async {
+    var directory = Directory(info.directory.path + "/patches");
+    var presets = Presets(info.directory);
+
+    return Project(
+      info: info,
+      presets: presets,
+      patch: ValueNotifier(Patch.blank(directory)),
+      ui: ValueNotifier(null),
     );
   }
 
-  final App app;
   final ProjectInfo info;
+  final Presets presets;
   final ValueNotifier<Patch> patch;
   final ValueNotifier<UserInterface?> ui;
-  final ValueNotifier<List<PatchInfo>> patches;
-  final ValueNotifier<List<UserInterfaceInfo>> uis;
-
-  void loadPatch(String name) {}
-
-  bool rename(String name) {
-    if (!app.assets.projects.contains(name)) {
-      info.name.value = name;
-      return true;
-    } else {
-      return false;
-    }
-  }
 }

@@ -34,25 +34,27 @@ class _Bar extends State<Bar> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Align(
-          alignment: Alignment.topCenter,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BarButton(
-                borderRadius:
-                    const BorderRadius.only(bottomLeft: Radius.circular(10.0)),
-                iconData: widget.instViewVisible ? Icons.cable : Icons.piano,
-                onTap: () {
-                  widget.onViewSwitch();
-                },
-              ),
-              ValueListenableBuilder<Project>(
-                valueListenable: widget.app.project,
-                builder: (context, project, child) {
-                  return ValueListenableBuilder<String>(
+    return ValueListenableBuilder<Project>(
+      valueListenable: widget.app.project,
+      builder: (context, project, child) {
+        return Stack(
+          children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  BarButton(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(10.0),
+                    ),
+                    iconData:
+                        widget.instViewVisible ? Icons.cable : Icons.piano,
+                    onTap: () {
+                      widget.onViewSwitch();
+                    },
+                  ),
+                  ValueListenableBuilder<String>(
                     valueListenable: project.info.name,
                     builder: (context, name, child) {
                       return BarDropdown(
@@ -67,14 +69,8 @@ class _Bar extends State<Bar> {
                         },
                       );
                     },
-                  );
-                },
-              ),
-              ValueListenableBuilder<Project>(
-                // CHANGE TO LOADED PRESET
-                valueListenable: widget.app.project,
-                builder: (context, project, child) {
-                  return ValueListenableBuilder<Patch>(
+                  ),
+                  ValueListenableBuilder<Patch>(
                     valueListenable: project.patch,
                     builder: (context, patch, child) {
                       return ValueListenableBuilder<String>(
@@ -94,37 +90,36 @@ class _Bar extends State<Bar> {
                         },
                       );
                     },
-                  );
-                },
+                  ),
+                  BarButton(
+                    iconData: Icons.edit,
+                    onTap: () {
+                      widget.onUserInterfaceEdit();
+                    },
+                  ),
+                  BarButton(
+                    iconData: showOtherView
+                        ? Icons.arrow_drop_down
+                        : Icons.arrow_drop_up,
+                    onTap: () {
+                      setState(() {
+                        showOtherView = !showOtherView;
+                        showInstrumentView = false;
+                        showPresetView = false;
+                      });
+                    },
+                    borderRadius: const BorderRadius.only(
+                      bottomRight: Radius.circular(10.0),
+                    ),
+                  ),
+                ],
               ),
-              BarButton(
-                iconData: Icons.edit,
-                onTap: () {
-                  widget.onUserInterfaceEdit();
-                },
-              ),
-              BarButton(
-                iconData:
-                    showOtherView ? Icons.arrow_drop_down : Icons.arrow_drop_up,
-                onTap: () {
-                  setState(() {
-                    showOtherView = !showOtherView;
-                    showInstrumentView = false;
-                    showPresetView = false;
-                  });
-                },
-                borderRadius:
-                    const BorderRadius.only(bottomRight: Radius.circular(10.0)),
-              ),
-            ],
-          ),
-        ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (showInstrumentView || showPresetView || showOtherView) {
-                return Padding(
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Visibility(
+                visible: showInstrumentView || showPresetView || showOtherView,
+                child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 40, 0, 0),
                   child: Container(
                     width: barExpanded ? 710 : 525,
@@ -140,25 +135,26 @@ class _Bar extends State<Bar> {
                     child: Stack(
                       children: [
                         Visibility(
-                            visible: showInstrumentView,
-                            child: BrowserView(widget.app)),
+                          visible: showInstrumentView,
+                          child: BrowserView(widget.app),
+                        ),
                         Visibility(
-                            visible: showPresetView,
-                            child: PresetsView(widget.app)),
+                          visible: showPresetView,
+                          child: project.presets,
+                        ),
                         Visibility(
-                            visible: showOtherView,
-                            child: OtherView(widget.app)),
+                          visible: showOtherView,
+                          child: OtherView(widget.app),
+                        ),
                       ],
                     ),
                   ),
-                );
-              } else {
-                return const SizedBox(width: 0, height: 0);
-              }
-            },
-          ),
-        ),
-      ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -199,10 +195,11 @@ class _BarButton extends State<BarButton> {
           width: 45,
           height: 35,
           decoration: BoxDecoration(
-              color: hovering
-                  ? const Color.fromRGBO(60, 60, 60, 1.0)
-                  : const Color.fromRGBO(50, 50, 50, 1.0),
-              borderRadius: widget.borderRadius),
+            color: hovering
+                ? const Color.fromRGBO(60, 60, 60, 1.0)
+                : const Color.fromRGBO(50, 50, 50, 1.0),
+            borderRadius: widget.borderRadius,
+          ),
           child: Icon(
             widget.iconData,
             color: hovering ? Colors.white : Colors.grey,
@@ -250,7 +247,10 @@ class _BarDropdown extends State<BarDropdown> {
           child: Text(
             widget.text,
             style: const TextStyle(
-                color: Colors.white, fontSize: 15, fontWeight: FontWeight.w300),
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w300,
+            ),
           ),
         ),
       ),

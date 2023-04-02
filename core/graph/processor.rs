@@ -126,11 +126,11 @@ impl GraphProcessor {
     ) -> Self {
         let voice_count = 8;
 
-        println!("Creating graph processor {} {}", sample_rate, block_size);
+        // println!("Creating graph processor {} {}", sample_rate, block_size);
 
         let nodes = GraphProcessor::sorted_nodes(nodes, connectors);
 
-        println!("\nProcess order is:");
+        /*println!("\nProcess order is:");
         for node in nodes.iter() {
             println!(" > Node {}", node.id);
         }
@@ -141,7 +141,7 @@ impl GraphProcessor {
                 " > {} {} -> {} {}",
                 c.start.module_id, c.start.pin_index, c.end.module_id, c.end.pin_index
             );
-        }
+        }*/
 
         let mut audio_channels_buffers: Vec<Box<Bus<StereoBuffer>>> = Vec::new();
         let mut events_channels_buffers: Vec<Box<Bus<NoteBuffer>>> = Vec::new();

@@ -12,9 +12,9 @@ import '../projects.dart';
 import '../ui/ui.dart';
 import 'settings.dart';
 
-class UserInterfaceInfo {
-  UserInterfaceInfo({
-    required this.path,
+class InterfaceInfo {
+  InterfaceInfo({
+    required this.directory,
     required this.name,
     required this.description,
     required this.patches,
@@ -24,28 +24,34 @@ class UserInterfaceInfo {
 
   }*/
 
-  static Future<UserInterfaceInfo?> from(Directory directory) async {
-    File file = File(directory.path + "/ui.json");
+  static Future<InterfaceInfo?> load(Directory directory) async {
+    File file = File(directory.path + "/info.json");
     if (file.existsSync()) {
       var contents = file.readAsStringSync();
       var json = jsonDecode(contents);
+      List<PatchInfo> patches = [];
 
-      return UserInterfaceInfo(
-          path: directory.path,
-          name: json["name"],
-          description: json["description"],
-          patches: ValueNotifier([]));
+      Directory patchesDirectory = Directory(directory.path + "/patches");
+      await for (var item in patchesDirectory.list()) {
+        var patchDirectory = Directory(item.path);
+        var patchInfo = await PatchInfo.load(patchDirectory);
+        if (patchInfo != null) {
+          patches.add(patchInfo);
+        }
+      }
+
+      return InterfaceInfo(
+        directory: directory,
+        name: ValueNotifier(json["name"]),
+        description: ValueNotifier(json["description"]),
+        patches: ValueNotifier(patches),
+      );
     }
 
     return null;
   }
 
-  Future<UserInterface?> load() async {
-    print("Load not implemented for user interface");
-    return null;
-  }
-
-  final String path;
+  final Directory directory;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
   final ValueNotifier<List<PatchInfo>> patches;
@@ -75,7 +81,7 @@ class ProjectInfo {
     );
   }
 
-  static Future<ProjectInfo?> from(String path) async {
+  static Future<ProjectInfo?> load(String path) async {
     File file = File(path + "/project.json");
 
     if (await file.exists()) {
@@ -87,7 +93,7 @@ class ProjectInfo {
     return null;
   }
 
-  Future<Project?> load(App app) async {
+  /*Future<Project?> load(App app) async {
     File projectFile = File(directory.path + "/project.json");
     if (await projectFile.exists()) {
       var projectContents = await projectFile.readAsString();
@@ -154,8 +160,8 @@ class ProjectInfo {
                 info: this,
                 patch: ValueNotifier(patch),
                 ui: ValueNotifier(ui),
-                patches: ValueNotifier(patches),
-                uis: ValueNotifier(uis),
+                // patches: ValueNotifier(patches),
+                // uis: ValueNotifier(uis),
               );
             } else {
               print("Failed to load patch " + patchInfo.path);
@@ -176,8 +182,8 @@ class ProjectInfo {
               info: this,
               patch: ValueNotifier(patch),
               ui: ValueNotifier(null),
-              patches: ValueNotifier(patches),
-              uis: ValueNotifier(uis),
+              // patches: ValueNotifier(patches),
+              // uis: ValueNotifier(uis),
             );
           } else {
             print("Failed to load patch " + patchInfo.path);
@@ -189,7 +195,7 @@ class ProjectInfo {
     }
 
     return null;
-  }
+  }*/
 
   void save() async {
     print("Save not implemented for ProjectInfo");
@@ -406,16 +412,17 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                       Row(
                         children: [
                           TextButton(
-                              onPressed: () {
-                                print("TODO: IMPLEMENT LOAD INSTRUMENT");
-                                // widget.app.loadInstrument(widget.instrument.path);
-                              },
-                              child: const Text("Load")),
+                            onPressed: () {
+                              widget.app.loadProject(widget.project);
+                            },
+                            child: const Text("Load"),
+                          ),
                           TextButton(
-                              onPressed: () {
-                                print("Delete instrument");
-                              },
-                              child: const Text("Delete")),
+                            onPressed: () {
+                              print("Delete instrument");
+                            },
+                            child: const Text("Delete"),
+                          ),
                         ],
                       )
                       /*Container(

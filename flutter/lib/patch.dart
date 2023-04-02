@@ -12,6 +12,7 @@ import 'projects.dart';
 import 'module.dart';
 import 'plugins.dart';
 
+import 'views/info.dart';
 import 'views/right_click.dart';
 
 /* LIBRARY */
@@ -162,7 +163,7 @@ class RawConnector extends Struct {
 
 class PatchInfo {
   PatchInfo({
-    required this.path,
+    required this.directory,
     required this.name,
     required this.description,
   });
@@ -176,28 +177,25 @@ class PatchInfo {
     );
   }*/
 
-  static Future<PatchInfo?> from(String path) async {
-    File file = File(path);
-    if (await file.exists()) {
-      var contents = await file.readAsString();
-      var json = jsonDecode(contents);
+  static Future<PatchInfo?> load(Directory directory) async {
+    if (await directory.exists()) {
+      File file = File(directory.path + "/info.json");
+      if (await file.exists()) {
+        var contents = await file.readAsString();
+        var json = jsonDecode(contents);
 
-      return PatchInfo(
-        path: path,
-        name: json["name"],
-        description: json["description"],
-      );
+        return PatchInfo(
+          directory: directory,
+          name: ValueNotifier(json["name"] ?? "Some Name"),
+          description: ValueNotifier(json["description"] ?? "Some Description"),
+        );
+      }
     }
 
     return null;
   }
 
-  Future<Patch?> load() async {
-    print("Load not implemented for patch");
-    return null;
-  }
-
-  final String path;
+  final Directory directory;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
 }
@@ -205,29 +203,32 @@ class PatchInfo {
 class Patch extends StatefulWidget {
   Patch({
     required this.rawPatch,
-    required this.path,
+    required this.directory,
     required this.name,
     required this.description,
   });
 
   final RawPatch rawPatch;
-  final ValueNotifier<String> path;
+  final Directory directory;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
   final NewConnector newConnector = NewConnector();
 
-  static Patch blank() {
+  // final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
+  // final ValueNotifier<List<UserInterfaceInfo>> uis = ValueNotifier([]);
+
+  static Patch blank(Directory directory) {
     return Patch.create(
-      "/Users/chasekanipe/Github/assets/projects/NewProject/patches/New Patch.json",
+      directory,
       "New Patch",
       "Blank patch description",
     );
   }
 
-  static Patch create(String path, String name, String description) {
+  static Patch create(Directory directory, String name, String description) {
     return Patch(
       rawPatch: RawPatch.create(),
-      path: ValueNotifier(path),
+      directory: directory,
       name: ValueNotifier(name),
       description: ValueNotifier(description),
     );
