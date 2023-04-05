@@ -37,12 +37,10 @@ impl Host {
         match serde_json::from_str(&data) {
             Ok(graph) => {
                 let mut graph: Graph = graph;
-
                 graph.refresh();
                 self.graph = Box::new(graph);
             }
             Err(e) => {
-                self.graph.nodes.clear();
                 self.graph.nodes.clear();
                 self.graph.refresh();
                 println!("Failed to decode graph {}", e);

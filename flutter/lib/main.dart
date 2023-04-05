@@ -25,39 +25,42 @@ void main(List<String> args) {
   PLUGINS.list();
 
   if (args.isEmpty) {
+    var core = Core.create();
     runApp(
       App(
-        core: Core.create(),
+        core: core,
         assets: Assets.platformDefault(),
+        project: ValueNotifier(Project.blank(core)),
       ),
     );
   } else {
     var addr = int.parse(args[0].split(": ").last);
+    var core = Core.from(addr);
 
     runApp(
       App(
-        core: Core.from(addr),
+        core: core,
         assets: Assets.platformDefault(),
+        project: ValueNotifier(Project.blank(core)),
       ),
     );
   }
 }
 
 class App extends StatefulWidget {
-  App({required this.core, required this.assets}) {
-    // core.setPatch(project.value.patch.value.rawPatch);
+  App({required this.core, required this.assets, required this.project}) {
+    core.setPatch(project.value.patch.value);
   }
 
-  Core core;
-  Assets assets;
+  final Core core;
+  final Assets assets;
 
-  final ValueNotifier<Project> project = ValueNotifier(Project.blank());
+  final ValueNotifier<Project> project;
 
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info);
+    var project = await Project.load(info, core);
     if (project != null) {
-      print("TODO: Load patch in core");
-      // core.setPatch(project.patch.value.rawPatch);
+      core.setPatch(project.patch.value);
       this.project.value = project;
     }
   }
@@ -105,14 +108,10 @@ class _App extends State<App> {
                       Visibility(
                         visible: !uiVisible,
                         maintainState: true,
-                        child: ValueListenableBuilder<Patch?>(
+                        child: ValueListenableBuilder<Patch>(
                           valueListenable: project.patch,
                           builder: (context, patch, child) {
-                            if (patch != null) {
-                              return patch;
-                            } else {
-                              return Container();
-                            }
+                            return patch;
                           },
                         ),
                       ),

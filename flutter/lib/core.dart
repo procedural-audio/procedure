@@ -87,8 +87,8 @@ class Core {
     return _ffiCoreGetNode(raw, a);
   }
 
-  void setPatch(RawPatch rawPatch) {
-    _ffiCoreSetPatch(raw, rawPatch);
+  void setPatch(Patch patch) {
+    _ffiCoreSetPatch(raw, patch.rawPatch);
   }
 
   /*int getModuleSpecCount() {

@@ -53,7 +53,7 @@ class Plugins extends StatelessWidget {
 
   final Directory directory;
   final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
-  RawPlugins rawPlugin = RawPlugins.create();
+  RawPlugins rawPlugins = RawPlugins.create();
 
   static Plugins platformDefault() {
     var path = "/Users/chasekanipe/Github/nodus/build/out/core/release/";
@@ -81,7 +81,7 @@ class Plugins extends StatelessWidget {
         }
 
         if (item.path.contains(extension)) {
-          var plugin = rawPlugin.load(item.path);
+          var plugin = rawPlugins.load(item.path);
 
           if (plugin != null) {
             plugins.add(plugin);

@@ -2,7 +2,7 @@ use std::mem::swap;
 use std::rc::Rc;
 use std::sync::Mutex;
 
-use serde::de::{self, MapAccess, SeqAccess, Visitor};
+use serde::de::{self, MapAccess, SeqAccess, Visitor, DeserializeSeed};
 use serde::{ser::*, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 
@@ -12,6 +12,7 @@ use crate::processor::*;
 use modules::*;
 
 static mut CURRENT_ID: i32 = 1;
+pub static mut PLUGINS: Option<&'static Plugins> = None;
 
 #[repr(C)]
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -183,20 +184,16 @@ impl<'de> Deserialize<'de> for Node {
                 let version = version.ok_or_else(|| de::Error::missing_field("version"))?;
                 let state = state.ok_or_else(|| de::Error::missing_field("state"))?;
 
-                panic!("Need to get module list here");
-                let module_specs: Vec<ModuleSpec> = Vec::new();
-                for module in &module_specs {
-                    if module.id == module_id {
-                        let mut module = module.create();
+                unsafe {
+                    if let Some(mut module) = PLUGINS.unwrap().create_module(&module_id) {
                         module.load(&version, &state);
-
-                        let node = Node {
-                            id: node_id,
-                            position,
-                            module
-                        };
-
-                        return Ok(node);
+                        return Ok(
+                            Node {
+                                id: node_id,
+                                position,
+                                module
+                            }
+                        );
                     }
                 }
 
@@ -205,7 +202,7 @@ impl<'de> Deserialize<'de> for Node {
         }
 
         const FIELDS: &'static [&'static str] = &["node_id", "module_id", "position", "name", "state"];
-        deserializer.deserialize_struct("Node", FIELDS, NodeVisitor)
+        deserializer.deserialize_struct("Node", FIELDS, NodeVisitor )
     }
 }
 

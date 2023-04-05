@@ -222,28 +222,40 @@ pub unsafe extern "C" fn ffi_create_patch() -> *mut Graph {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_patch_load(graph: &mut Graph, path: &i8) {
+pub unsafe extern "C" fn ffi_patch_load(graph: &mut Graph, plugins: &'static Plugins, path: &i8) -> bool {
     let path = str_from_char(path);
     let data = std::fs::read_to_string(path).unwrap();
 
     println!("Loading patch from {}", path);
     println!("{}", data);
 
+    PLUGINS = Some(plugins);
+
     match serde_json::from_str(&data) {
         Ok(new_graph) => {
             let mut new_graph: Graph = new_graph;
             new_graph.refresh();
-
-            new_graph.refresh();
             *graph = new_graph;
-        }
+            return true;
+        },
         Err(e) => {
-            graph.nodes.clear();
             graph.nodes.clear();
             graph.refresh();
             println!("Failed to decode graph {}", e);
+            return false;
         }
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_save(graph: &Graph, path: &i8) -> bool {
+    let path = str_from_char(path);
+    let path = path.to_string();
+    let json = serde_json::to_string(&graph).unwrap();
+    println!("Saving graph to {}", path);
+    std::fs::write(path.clone(), &json).unwrap();
+    println!("{}", json);
+    return true;
 }
 
 #[no_mangle]

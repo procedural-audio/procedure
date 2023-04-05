@@ -226,6 +226,21 @@ class Node extends StatelessWidget {
             },
           ),
         );
+      } else {
+        pins.add(
+          Pin(
+            offset: const Offset(-20, -20),
+            nodeId: id,
+            pinIndex: i,
+            type: type,
+            isInput: true,
+            node: this,
+            onAddConnector: onAddConnector,
+            onRemoveConnector: (nodeId, pinIndex) {
+              onRemoveConnector(nodeId, pinIndex);
+            },
+          ),
+        );
       }
     }
 
@@ -240,7 +255,22 @@ class Node extends StatelessWidget {
           Pin(
             offset: offset,
             nodeId: id,
-            pinIndex: i,
+            pinIndex: i + inputsCount,
+            type: type,
+            isInput: false,
+            node: this,
+            onAddConnector: onAddConnector,
+            onRemoveConnector: (nodeId, pinIndex) {
+              onRemoveConnector(nodeId, pinIndex);
+            },
+          ),
+        );
+      } else {
+        pins.add(
+          Pin(
+            offset: const Offset(-20, -20),
+            nodeId: id,
+            pinIndex: i + inputsCount,
             type: type,
             isInput: false,
             node: this,

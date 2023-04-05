@@ -93,6 +93,14 @@ class ProjectInfo {
     return null;
   }
 
+  void save() async {
+    File file = File(directory.path + "/info.json");
+    await file.writeAsString(jsonEncode({
+      "name": name.value,
+      "description": description,
+    }));
+  }
+
   /*Future<Project?> load(App app) async {
     File projectFile = File(directory.path + "/project.json");
     if (await projectFile.exists()) {
@@ -196,13 +204,6 @@ class ProjectInfo {
 
     return null;
   }*/
-
-  void save() async {
-    print("Save not implemented for ProjectInfo");
-    // File file = File(path);
-    // String contents = jsonEncode(toJson());
-    // file.writeAsString(contents);
-  }
 
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
     String background =

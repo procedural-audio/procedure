@@ -10,44 +10,18 @@ import '../projects.dart';
 import '../ui/common.dart';
 import '../views/info.dart';
 
-class Presets extends StatelessWidget {
-  Presets(this.directory) {
-    scanPatches();
-    scanInterfaces();
-  }
+class PresetsView extends StatelessWidget {
+  PresetsView({
+    required this.patches,
+    required this.interfaces,
+    required this.onLoadPatch,
+  });
 
-  Directory directory;
+  ValueNotifier<List<PatchInfo>> patches;
+  ValueNotifier<List<InterfaceInfo>> interfaces;
+
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
-
-  final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
-  final ValueNotifier<List<InterfaceInfo>> interfaces = ValueNotifier([]);
-
-  void scanPatches() async {
-    List<PatchInfo> infos = [];
-    var patchesDirectory = Directory(directory.path + "/patches").list();
-    await for (var patch in patchesDirectory) {
-      var patchDirectory = Directory(patch.path);
-      var info = await PatchInfo.load(patchDirectory);
-      if (info != null) {
-        infos.add(info);
-        patches.value = infos;
-      }
-    }
-  }
-
-  void scanInterfaces() async {
-    List<InterfaceInfo> infos = [];
-    var interfacesDirectory = Directory(directory.path + "/interfaces").list();
-
-    await for (var interfaceItem in interfacesDirectory) {
-      var interfaceDirectory = Directory(interfaceItem.path);
-      var info = await InterfaceInfo.load(interfaceDirectory);
-      if (info != null) {
-        infos.add(info);
-        interfaces.value = infos;
-      }
-    }
-  }
+  void Function(PatchInfo) onLoadPatch;
 
   @override
   Widget build(BuildContext context) {
@@ -56,15 +30,15 @@ class Presets extends StatelessWidget {
       builder: (context, patches, child) {
         List<Widget> items = <Widget>[] +
             interfaces.value
-                .map((e) => UserInterfaceItem(
+                .map((e) => InterfaceItem(
                       text: e.name.value,
                       selectedItem: selectedItem,
                       children: e.patches.value,
                     ))
                 .toList() +
             patches
-                .map((e) => GraphItem(
-                      e.name.value,
+                .map((info) => GraphItem(
+                      info,
                       selectedItem,
                     ))
                 .toList();
@@ -87,6 +61,7 @@ class Presets extends StatelessWidget {
             Expanded(
               child: PresetsViewItemEditor(
                 selectedItem: selectedItem,
+                onLoadPatch: onLoadPatch,
               ),
             )
           ],
@@ -99,43 +74,49 @@ class Presets extends StatelessWidget {
 class PresetsViewItemEditor extends StatelessWidget {
   PresetsViewItemEditor({
     required this.selectedItem,
+    required this.onLoadPatch,
   });
 
   ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
+  void Function(PatchInfo) onLoadPatch;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(50, 50, 50, 1.0),
-          borderRadius: BorderRadius.all(Radius.circular(5)),
-        ),
-        child: ValueListenableBuilder<Widget?>(
-          valueListenable: selectedItem,
-          builder: (context, item, child) {
-            if (item == null) {
-              return const Center(
-                child: Text(
-                  "Select an item",
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              );
-            } else if (item is UserInterfaceItem) {
-              return RootWidgetItemEditor(item);
-            } else if (item is GraphItem) {
-              return GraphItemEditor(item);
-            } else {
-              return Container();
-            }
-          },
-        ));
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(50, 50, 50, 1.0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      child: ValueListenableBuilder<Widget?>(
+        valueListenable: selectedItem,
+        builder: (context, item, child) {
+          if (item == null) {
+            return const Center(
+              child: Text(
+                "Select an item",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            );
+          } else if (item is InterfaceItem) {
+            return InterfaceItemEditor(item);
+          } else if (item is GraphItem) {
+            return GraphItemEditor(
+              item: item,
+              onLoadPatch: onLoadPatch,
+            );
+          } else {
+            return Container();
+          }
+        },
+      ),
+    );
   }
 }
 
-class RootWidgetItemEditor extends StatelessWidget {
-  RootWidgetItemEditor(this.item);
+class InterfaceItemEditor extends StatelessWidget {
+  InterfaceItemEditor(this.item);
 
-  UserInterfaceItem item;
+  InterfaceItem item;
   String text1 = "Text 1";
 
   @override
@@ -183,9 +164,10 @@ class RootWidgetItemEditor extends StatelessWidget {
 }
 
 class GraphItemEditor extends StatelessWidget {
-  GraphItemEditor(this.item);
+  GraphItemEditor({required this.item, required this.onLoadPatch});
 
   GraphItem item;
+  void Function(PatchInfo) onLoadPatch;
   String text1 = "Some Stuff";
   EdgeInsets padding = EdgeInsets.zero;
 
@@ -229,82 +211,21 @@ class GraphItemEditor extends StatelessWidget {
           ),
         ),
         Section(
-          title: "Padding",
-          child: Column(
+          title: "Patch",
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Field(
-                      label: "LEFT",
-                      width: null,
-                      initialValue: padding.left.toString(),
-                      onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(
-                          double.tryParse(s) ?? 0.0,
-                          padding.top,
-                          padding.right,
-                          padding.bottom,
-                        );
-
-                        // setState(() {});
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: Field(
-                      label: "RIGHT",
-                      width: null,
-                      initialValue: padding.right.toString(),
-                      onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(
-                          padding.left,
-                          padding.top,
-                          double.tryParse(s) ?? 0.0,
-                          padding.bottom,
-                        );
-                      },
-                    ),
-                  ),
-                ],
+              TextButton(
+                onPressed: () {
+                  onLoadPatch(item.info);
+                },
+                child: const Text("Load"),
               ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Field(
-                      label: "TOP",
-                      width: null,
-                      initialValue: padding.top.toString(),
-                      onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(
-                            padding.left,
-                            double.tryParse(s) ?? 0.0,
-                            padding.right,
-                            padding.bottom);
-
-                        // setState(() {});
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: Field(
-                      label: "BOTTOM",
-                      width: null,
-                      initialValue: padding.bottom.toString(),
-                      onChanged: (s) {
-                        padding = EdgeInsets.fromLTRB(
-                          padding.left,
-                          padding.top,
-                          padding.right,
-                          double.tryParse(s) ?? 0.0,
-                        );
-
-                        // setState(() {});
-                      },
-                    ),
-                  ),
-                ],
-              )
+              TextButton(
+                onPressed: () {
+                  print("TODO: Delete patch");
+                },
+                child: const Text("Delete"),
+              ),
             ],
           ),
         ),
@@ -313,8 +234,8 @@ class GraphItemEditor extends StatelessWidget {
   }
 }
 
-class UserInterfaceItem extends StatelessWidget {
-  UserInterfaceItem({
+class InterfaceItem extends StatelessWidget {
+  InterfaceItem({
     required this.text,
     required this.selectedItem,
     required this.children,
@@ -327,37 +248,30 @@ class UserInterfaceItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PresetsViewItem(
-        text: text,
-        expandable: true,
-        icon: const Icon(
-          Icons.display_settings,
-          size: 18,
-          color: Colors.green,
-        ),
-        onTap: () {
-          if (selectedItem.value == this) {
-            selectedItem.value = null;
-          } else {
-            selectedItem.value = this;
-          }
-        },
-        children: // <Widget>[] +
-            children
-                .map(
-                  (e) => GraphItem(e.name.value, selectedItem, isDense: true),
-                )
-                .toList() /*+
-          <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ItemAdd(),
-                ItemAdd(),
-                ItemAdd(),
-              ],
+      text: text,
+      expandable: true,
+      icon: const Icon(
+        Icons.display_settings,
+        size: 18,
+        color: Colors.green,
+      ),
+      onTap: () {
+        if (selectedItem.value == this) {
+          selectedItem.value = null;
+        } else {
+          selectedItem.value = this;
+        }
+      },
+      children: children
+          .map(
+            (info) => GraphItem(
+              info,
+              selectedItem,
+              isDense: true,
             ),
-          ],*/
-        );
+          )
+          .toList(),
+    );
   }
 }
 
@@ -382,29 +296,34 @@ class UserInterfaceItem extends StatelessWidget {
 }*/
 
 class GraphItem extends StatelessWidget {
-  GraphItem(this.text, this.selectedItem, {this.isDense = false});
+  GraphItem(this.info, this.selectedItem, {this.isDense = false});
 
-  final String text;
+  final PatchInfo info;
   final bool isDense;
   final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
-    return PresetsViewItem(
-      text: text,
-      height: isDense ? 30 : 35,
-      expandable: false,
-      padding:
-          isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
-      icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
-      onTap: () {
-        if (selectedItem.value == this) {
-          selectedItem.value = null;
-        } else {
-          selectedItem.value = this;
-        }
+    return ValueListenableBuilder<String>(
+      valueListenable: info.name,
+      builder: (context, name, child) {
+        return PresetsViewItem(
+          text: name,
+          height: isDense ? 30 : 35,
+          expandable: false,
+          padding:
+              isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
+          icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
+          onTap: () {
+            if (selectedItem.value == this) {
+              selectedItem.value = null;
+            } else {
+              selectedItem.value = this;
+            }
+          },
+          children: const [],
+        );
       },
-      children: const [],
     );
   }
 }

@@ -919,14 +919,19 @@ impl GraphProcessor {
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
-                Pin::ExternalAudio(_) => return audio_channel,
-                Pin::ExternalNotes(_) => return events_channel,
+                Pin::ExternalAudio(_) => audio_channel += 2,
+                Pin::ExternalNotes(_) => events_channel += 1,
             }
 
             curr_index += 1;
         }
 
-        panic!("Failed to get channel from pin");
+        panic!("Failed to get channel from pin index {}. node {} inputs {} outputs {}",
+            pin_index,
+            node.info().title,
+            node.info().inputs.len(),
+            node.info().outputs.len()
+        );
     }
 
     pub fn sorted_nodes(nodes: &Vec<Rc<Node>>, connectors: &Vec<Connector>) -> Vec<Rc<Node>> {

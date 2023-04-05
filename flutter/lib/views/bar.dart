@@ -7,6 +7,7 @@ import '../main.dart';
 import '../projects.dart';
 
 import 'browser.dart';
+import 'presets.dart';
 
 class Bar extends StatefulWidget {
   Bar({
@@ -74,7 +75,7 @@ class _Bar extends State<Bar> {
                     valueListenable: project.patch,
                     builder: (context, patch, child) {
                       return ValueListenableBuilder<String>(
-                        valueListenable: patch.name,
+                        valueListenable: patch.info.name,
                         builder: (context, name, child) {
                           return BarDropdown(
                             width: 180,
@@ -95,6 +96,12 @@ class _Bar extends State<Bar> {
                     iconData: Icons.edit,
                     onTap: () {
                       widget.onUserInterfaceEdit();
+                    },
+                  ),
+                  BarButton(
+                    iconData: Icons.save,
+                    onTap: () {
+                      project.save();
                     },
                   ),
                   BarButton(
@@ -140,7 +147,13 @@ class _Bar extends State<Bar> {
                         ),
                         Visibility(
                           visible: showPresetView,
-                          child: project.presets,
+                          child: PresetsView(
+                            patches: project.patches,
+                            interfaces: project.interfaces,
+                            onLoadPatch: (info) {
+                              project.loadPatch(info);
+                            },
+                          ),
                         ),
                         Visibility(
                           visible: showOtherView,

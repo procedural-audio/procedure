@@ -12,7 +12,6 @@ import 'projects.dart';
 import 'module.dart';
 import 'plugins.dart';
 
-import 'views/info.dart';
 import 'views/right_click.dart';
 
 /* LIBRARY */
@@ -56,9 +55,13 @@ extension FileExtention on FileSystemEntity {
 RawPatch Function() _ffiCreatePatch = core
     .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
     .asFunction();
-bool Function(RawPatch, Pointer<Utf8>) _ffiPatchLoad = core
-    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
+bool Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchLoad = core
+    .lookup<NativeFunction<Bool Function(RawPatch, RawPlugins, Pointer<Utf8>)>>(
         "ffi_patch_load")
+    .asFunction();
+bool Function(RawPatch, Pointer<Utf8>) _ffiPatchSave = core
+    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
+        "ffi_patch_save")
     .asFunction();
 void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
@@ -105,22 +108,33 @@ class RawPatch extends Struct {
     return _ffiCreatePatch();
   }
 
-  static RawPatch from(String path) {
+  /*static RawPatch? from(File file) {
     var patch = RawPatch.create();
-    patch.load(path);
-    return patch;
+
+    if (patch.load(file.path)) {
+      return patch;
+    }
+
+    return null;
+  }*/
+
+  bool load(File file, Plugins plugins) {
+    var rawPath = file.path.toNativeUtf8();
+    var success = _ffiPatchLoad(this, plugins.rawPlugins, rawPath);
+    calloc.free(rawPath);
+    return success;
   }
 
-  bool load(String path) {
-    var rawPath = path.toNativeUtf8();
-    var success = _ffiPatchLoad(this, rawPath);
+  bool save(File file) {
+    var rawPath = file.path.toNativeUtf8();
+    var success = _ffiPatchSave(this, rawPath);
     calloc.free(rawPath);
     return success;
   }
 
   RawNode addModule(String id) {
     var rawId = id.toNativeUtf8();
-    RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugin, rawId);
+    RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugins, rawId);
     calloc.free(rawId);
     return rawNode;
   }
@@ -168,14 +182,13 @@ class PatchInfo {
     required this.description,
   });
 
-  /*static PatchInfo blank() {
+  static PatchInfo blank(Directory directory) {
     return PatchInfo(
-      path:
-          "/Users/chasekanipe/Github/assets/projects/NewProject/patches/Patch 1.json",
+      directory: Directory(directory.path + "New Patch.json"),
       name: ValueNotifier("New Patch"),
       description: ValueNotifier("Blank patch description"),
     );
-  }*/
+  }
 
   static Future<PatchInfo?> load(Directory directory) async {
     if (await directory.exists()) {
@@ -195,6 +208,14 @@ class PatchInfo {
     return null;
   }
 
+  void save() async {
+    File file = File(directory.path + "/info.json");
+    await file.writeAsString(jsonEncode({
+      "name": name.value,
+      "description": description.value,
+    }));
+  }
+
   final Directory directory;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
@@ -203,35 +224,38 @@ class PatchInfo {
 class Patch extends StatefulWidget {
   Patch({
     required this.rawPatch,
-    required this.directory,
-    required this.name,
-    required this.description,
-  });
+    required this.info,
+  }) : super(key: UniqueKey());
 
   final RawPatch rawPatch;
-  final Directory directory;
-  final ValueNotifier<String> name;
-  final ValueNotifier<String> description;
+  final PatchInfo info;
   final NewConnector newConnector = NewConnector();
 
-  // final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
-  // final ValueNotifier<List<UserInterfaceInfo>> uis = ValueNotifier([]);
-
   static Patch blank(Directory directory) {
-    return Patch.create(
-      directory,
-      "New Patch",
-      "Blank patch description",
+    return Patch(
+      info: PatchInfo.blank(directory),
+      rawPatch: RawPatch.create(),
     );
   }
 
-  static Patch create(Directory directory, String name, String description) {
-    return Patch(
-      rawPatch: RawPatch.create(),
-      directory: directory,
-      name: ValueNotifier(name),
-      description: ValueNotifier(description),
-    );
+  static Patch? load(PatchInfo info, Plugins plugins) {
+    var rawPatch = RawPatch.create();
+    var file = File(info.directory.path + "/patch.json");
+
+    if (rawPatch.load(file, plugins)) {
+      return Patch(
+        rawPatch: rawPatch,
+        info: info,
+      );
+    }
+
+    return null;
+  }
+
+  void save() async {
+    var file = File(info.directory.path + "/patch.json");
+    rawPatch.save(file);
+    info.save();
   }
 
   @override
@@ -306,11 +330,11 @@ class _Patch extends State<Patch> {
   }
 
   void addConnector(Pin start, Pin end) {
-    var connector = Connector(
+    /*var connector = Connector(
       start: start,
       end: end,
       type: start.type,
-    );
+    );*/
 
     if (widget.rawPatch.addConnector(
       start.nodeId,
@@ -318,7 +342,7 @@ class _Patch extends State<Patch> {
       end.nodeId,
       end.pinIndex,
     )) {
-      connectors.add(connector);
+      //connectors.add(connector);
     }
   }
 
@@ -353,6 +377,32 @@ class _Patch extends State<Patch> {
           },
         );
         nodes.add(node);
+      }
+    }
+
+    var connectorCount = widget.rawPatch.getConnectorCount();
+    for (int i = 0; i < connectorCount; i++) {
+      if (i >= connectors.length) {
+        var rawConnector = widget.rawPatch.getConnector(i);
+
+        for (var startNode in nodes) {
+          if (startNode.id == rawConnector.startId) {
+            for (var endNode in nodes) {
+              if (endNode.id == rawConnector.endId) {
+                var startPin = startNode.pins[rawConnector.startIndex];
+                var endPin = endNode.pins[rawConnector.endIndex];
+
+                var connector = Connector(
+                  start: startPin,
+                  end: endPin,
+                  type: startPin.type,
+                );
+
+                connectors.add(connector);
+              }
+            }
+          }
+        }
       }
     }
 
