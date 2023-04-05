@@ -501,8 +501,8 @@ pub unsafe extern "C" fn ffi_node_get_input_pin_y(node: &mut Node, pin_index: us
         Pin::Notes(_x, y) => y,
         Pin::Control(_x, y) => y,
         Pin::Time(_x, y) => y,
-        Pin::ExternalAudio(_) => panic!("Getting y for IO node"),
-        Pin::ExternalNotes(_) => panic!("Getting y for IO node"),
+        Pin::ExternalAudio(_) => 0,
+        Pin::ExternalNotes(_) => 0,
     }
 }
 
@@ -513,8 +513,8 @@ pub unsafe extern "C" fn ffi_node_get_output_pin_y(node: &mut Node, pin_index: u
         Pin::Notes(_x, y) => y,
         Pin::Control(_x, y) => y,
         Pin::Time(_x, y) => y,
-        Pin::ExternalAudio(_) => panic!("Getting y for IO node"),
-        Pin::ExternalNotes(_) => panic!("Getting y for IO node"),
+        Pin::ExternalAudio(_) => 0,
+        Pin::ExternalNotes(_) => 0,
     }
 }
 

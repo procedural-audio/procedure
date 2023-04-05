@@ -336,6 +336,10 @@ class _Patch extends State<Patch> {
       type: start.type,
     );*/
 
+    print(
+        "Adding connector from ${start.nodeId}:${start.pinIndex} to ${end.nodeId}:${end.pinIndex}");
+    print("start: " + start.node.name + " end: " + end.node.name);
+
     if (widget.rawPatch.addConnector(
       start.nodeId,
       start.pinIndex,
@@ -512,7 +516,7 @@ class Connector extends StatelessWidget {
     required this.start,
     required this.end,
     required this.type,
-  });
+  }) : super(key: UniqueKey());
 
   final Pin start;
   final Pin end;

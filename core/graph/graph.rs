@@ -186,7 +186,10 @@ impl<'de> Deserialize<'de> for Node {
 
                 unsafe {
                     if let Some(mut module) = PLUGINS.unwrap().create_module(&module_id) {
+                        CURRENT_ID = std::cmp::max(CURRENT_ID, node_id);
+
                         module.load(&version, &state);
+
                         return Ok(
                             Node {
                                 id: node_id,
@@ -312,6 +315,7 @@ impl Graph {
     }
 
     pub fn add_connector(&mut self, connector: Connector) -> bool {
+        println!("Adding connector from {}:{} to {}:{}", connector.start.module_id, connector.start.pin_index, connector.end.module_id, connector.end.pin_index);
         self.connectors.push(connector);
         self.refresh();
         return true;

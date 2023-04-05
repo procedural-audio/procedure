@@ -23,7 +23,7 @@ class Pin extends StatefulWidget {
     required this.isInput,
     required this.onAddConnector,
     required this.onRemoveConnector,
-  });
+  }) : super(key: UniqueKey());
 
   final Node node;
   final int nodeId;
@@ -44,6 +44,10 @@ class _PinState extends State<Pin> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.type == IO.external) {
+      return Container();
+    }
+
     var color = Colors.white;
 
     if (widget.type == IO.audio) {
@@ -200,7 +204,7 @@ class Node extends StatelessWidget {
     required this.onAddConnector,
     required this.onRemoveConnector,
     required this.onDrag,
-  }) {
+  }) : super(key: UniqueKey()) {
     id = rawNode.getId();
     position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
     size = Offset(rawNode.getWidth() + 0.0, rawNode.getHeight() + 0.0);
@@ -210,77 +214,42 @@ class Node extends StatelessWidget {
     int inputsCount = rawNode.getInputPinsCount();
     for (int i = 0; i < inputsCount; i++) {
       var type = rawNode.getInputPinType(i);
-      if (type != IO.external) {
-        var offset = Offset(10, 0.0 + rawNode.getInputPinY(i));
-        pins.add(
-          Pin(
-            offset: offset,
-            nodeId: id,
-            pinIndex: i,
-            type: type,
-            isInput: true,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnector: (nodeId, pinIndex) {
-              onRemoveConnector(nodeId, pinIndex);
-            },
-          ),
-        );
-      } else {
-        pins.add(
-          Pin(
-            offset: const Offset(-20, -20),
-            nodeId: id,
-            pinIndex: i,
-            type: type,
-            isInput: true,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnector: (nodeId, pinIndex) {
-              onRemoveConnector(nodeId, pinIndex);
-            },
-          ),
-        );
-      }
+      var offset = Offset(10, 0.0 + rawNode.getInputPinY(i));
+      pins.add(
+        Pin(
+          offset: offset,
+          nodeId: id,
+          pinIndex: i,
+          type: type,
+          isInput: true,
+          node: this,
+          onAddConnector: onAddConnector,
+          onRemoveConnector: (nodeId, pinIndex) {
+            onRemoveConnector(nodeId, pinIndex);
+          },
+        ),
+      );
     }
 
     int outputsCount = rawNode.getOutputPinsCount();
     for (int i = 0; i < outputsCount; i++) {
       var type = rawNode.getOutputPinType(i);
-
-      if (type != IO.external) {
-        var x = rawNode.getWidth() - 25;
-        var offset = Offset(x, 0.0 + rawNode.getOutputPinY(i));
-        pins.add(
-          Pin(
-            offset: offset,
-            nodeId: id,
-            pinIndex: i + inputsCount,
-            type: type,
-            isInput: false,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnector: (nodeId, pinIndex) {
-              onRemoveConnector(nodeId, pinIndex);
-            },
-          ),
-        );
-      } else {
-        pins.add(
-          Pin(
-            offset: const Offset(-20, -20),
-            nodeId: id,
-            pinIndex: i + inputsCount,
-            type: type,
-            isInput: false,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnector: (nodeId, pinIndex) {
-              onRemoveConnector(nodeId, pinIndex);
-            },
-          ),
-        );
-      }
+      var x = rawNode.getWidth() - 25;
+      var offset = Offset(x, 0.0 + rawNode.getOutputPinY(i));
+      pins.add(
+        Pin(
+          offset: offset,
+          nodeId: id,
+          pinIndex: i + inputsCount,
+          type: type,
+          isInput: false,
+          node: this,
+          onAddConnector: onAddConnector,
+          onRemoveConnector: (nodeId, pinIndex) {
+            onRemoveConnector(nodeId, pinIndex);
+          },
+        ),
+      );
     }
 
     var widgetRaw = rawNode.getWidgetRoot();
