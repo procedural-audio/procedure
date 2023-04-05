@@ -151,7 +151,7 @@ class _Bar extends State<Bar> {
                             patches: project.patches,
                             interfaces: project.interfaces,
                             onLoadPatch: (info) {
-                              project.loadPatch(info);
+                              project.loadPatch(info, widget.app.core);
                             },
                           ),
                         ),

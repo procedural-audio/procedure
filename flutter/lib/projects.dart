@@ -58,27 +58,28 @@ class Project {
     scanInterfaces();
   }
 
-  static Project blank(Core core) {
+  static Project blank() {
     var projectDirectory =
         Directory("/Users/chasekanipe/Github/assets/projects/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
+    var patch = Patch.blank(patchDirectory);
     return Project(
       info: info,
-      patch: ValueNotifier(Patch.blank(patchDirectory)),
+      patch: ValueNotifier(patch),
       ui: ValueNotifier(null),
     );
   }
 
-  void loadPatch(PatchInfo patchInfo) async {
+  void loadPatch(PatchInfo patchInfo, Core core) async {
     var newPatch = Patch.load(patchInfo, PLUGINS);
     if (newPatch != null) {
+      core.setPatch(newPatch);
       patch.value = newPatch;
     } else {
-      patch.value = Patch(
-        rawPatch: patch.value.rawPatch,
-        info: patchInfo,
-      );
+      var newPatch = Patch(rawPatch: patch.value.rawPatch, info: patchInfo);
+      core.setPatch(newPatch);
+      patch.value = newPatch;
     }
   }
 

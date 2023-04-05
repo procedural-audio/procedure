@@ -315,7 +315,6 @@ impl Graph {
     }
 
     pub fn add_connector(&mut self, connector: Connector) -> bool {
-        println!("Adding connector from {}:{} to {}:{}", connector.start.module_id, connector.start.pin_index, connector.end.module_id, connector.end.pin_index);
         self.connectors.push(connector);
         self.refresh();
         return true;

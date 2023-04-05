@@ -325,21 +325,9 @@ class _Patch extends State<Patch> {
 
   void addModule(String id) {
     var rawNode = widget.rawPatch.addModule(id);
-    // var node = Node(rawNode, widget);
-    // nodes.add(node);
   }
 
   void addConnector(Pin start, Pin end) {
-    /*var connector = Connector(
-      start: start,
-      end: end,
-      type: start.type,
-    );*/
-
-    print(
-        "Adding connector from ${start.nodeId}:${start.pinIndex} to ${end.nodeId}:${end.pinIndex}");
-    print("start: " + start.node.name + " end: " + end.node.name);
-
     if (widget.rawPatch.addConnector(
       start.nodeId,
       start.pinIndex,

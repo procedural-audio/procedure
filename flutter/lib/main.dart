@@ -25,23 +25,20 @@ void main(List<String> args) {
   PLUGINS.list();
 
   if (args.isEmpty) {
-    var core = Core.create();
     runApp(
       App(
-        core: core,
+        core: Core.create(),
         assets: Assets.platformDefault(),
-        project: ValueNotifier(Project.blank(core)),
+        project: ValueNotifier(Project.blank()),
       ),
     );
   } else {
     var addr = int.parse(args[0].split(": ").last);
-    var core = Core.from(addr);
-
     runApp(
       App(
-        core: core,
+        core: Core.from(addr),
         assets: Assets.platformDefault(),
-        project: ValueNotifier(Project.blank(core)),
+        project: ValueNotifier(Project.blank()),
       ),
     );
   }
