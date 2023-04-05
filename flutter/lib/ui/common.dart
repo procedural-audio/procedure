@@ -1901,19 +1901,21 @@ class _SubSection extends State<SubSection> {
 }
 
 class Field extends StatefulWidget {
-  Field(
-      {required this.label,
-      required this.initialValue,
-      required this.onChanged,
-      this.width,
-      this.height})
-      : super(key: UniqueKey());
+  Field({
+    required this.label,
+    required this.initialValue,
+    required this.onChanged,
+    this.width,
+    this.height,
+    this.multiLine = false,
+  }) : super(key: UniqueKey());
 
   String label;
   String initialValue;
-  void Function(String) onChanged;
   double? width;
   double? height;
+  void Function(String) onChanged;
+  bool multiLine;
 
   @override
   State<Field> createState() => _Field();
@@ -1957,14 +1959,20 @@ class _Field extends State<Field> {
               color:
                   editing ? Colors.blue : const Color.fromRGBO(50, 50, 50, 1.0),
               width: 2.0),
-          borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(5.0),
+          ),
         ),
         child: Row(
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                padding:
+                    EdgeInsets.fromLTRB(10, widget.multiLine ? 3.0 : 0.0, 0, 0),
                 child: TextField(
+                  expands: widget.multiLine,
+                  textAlignVertical: TextAlignVertical.top,
+                  maxLines: widget.multiLine ? null : 1,
                   onSubmitted: widget.onChanged,
                   focusNode: focusNode,
                   controller: controller,

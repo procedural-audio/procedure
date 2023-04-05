@@ -3,10 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../main.dart';
 import '../config.dart';
 import '../patch.dart';
-import '../projects.dart';
 import '../ui/common.dart';
 import '../views/info.dart';
 
@@ -31,9 +29,8 @@ class PresetsView extends StatelessWidget {
         List<Widget> items = <Widget>[] +
             interfaces.value
                 .map((e) => InterfaceItem(
-                      text: e.name.value,
+                      info: e,
                       selectedItem: selectedItem,
-                      children: e.patches.value,
                     ))
                 .toList() +
             patches
@@ -117,48 +114,59 @@ class InterfaceItemEditor extends StatelessWidget {
   InterfaceItemEditor(this.item);
 
   InterfaceItem item;
-  String text1 = "Text 1";
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("User Interface"),
-        Section(
-          title: "Name",
-          child: Row(
-            children: [
-              Expanded(
-                child: Field(
-                  width: null,
-                  label: "",
-                  initialValue: text1,
-                  onChanged: (s) {
-                    text1 = s;
-                  },
+    return ValueListenableBuilder<String>(
+      valueListenable: item.info.name,
+      builder: (context, name, child) {
+        return ValueListenableBuilder<String>(
+          valueListenable: item.info.description,
+          builder: (context, description, child) {
+            return Column(
+              children: [
+                EditorTitle("User Interface"),
+                Section(
+                  title: "Name",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Field(
+                          width: null,
+                          label: "",
+                          initialValue: name,
+                          onChanged: (newName) {
+                            item.info.name.value = newName;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Section(
-          title: "Description",
-          child: Row(
-            children: [
-              Expanded(
-                child: Field(
-                  width: null,
-                  label: "",
-                  initialValue: text1,
-                  onChanged: (s) {
-                    text1 = s;
-                  },
+                Section(
+                  title: "Description",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Field(
+                          width: null,
+                          height: 150,
+                          multiLine: true,
+                          label: "",
+                          initialValue: description,
+                          onChanged: (newDescription) {
+                            item.info.description.value = newDescription;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ],
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -173,104 +181,119 @@ class GraphItemEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        EditorTitle("Graph"),
-        Section(
-          title: "Name",
-          child: Row(
-            children: [
-              Expanded(
-                child: Field(
-                  width: null,
-                  label: "",
-                  initialValue: text1,
-                  onChanged: (s) {
-                    text1 = s;
-                  },
+    return ValueListenableBuilder<String>(
+      valueListenable: item.info.name,
+      builder: (context, name, child) {
+        return ValueListenableBuilder<String>(
+          valueListenable: item.info.description,
+          builder: (context, description, child) {
+            return Column(
+              children: [
+                EditorTitle("Graph"),
+                Section(
+                  title: "Name",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Field(
+                          width: null,
+                          label: "",
+                          initialValue: name,
+                          onChanged: (newName) {
+                            item.info.name.value = newName;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Section(
-          title: "Description",
-          child: Row(
-            children: [
-              Expanded(
-                child: Field(
-                  width: null,
-                  label: "",
-                  initialValue: text1,
-                  onChanged: (s) {
-                    text1 = s;
-                  },
+                Section(
+                  title: "Description",
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Field(
+                          label: "",
+                          width: null,
+                          multiLine: true,
+                          height: 150,
+                          initialValue: description,
+                          onChanged: (newDescription) {
+                            item.info.description.value = newDescription;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Section(
-          title: "Patch",
-          child: Row(
-            children: [
-              TextButton(
-                onPressed: () {
-                  onLoadPatch(item.info);
-                },
-                child: const Text("Load"),
-              ),
-              TextButton(
-                onPressed: () {
-                  print("TODO: Delete patch");
-                },
-                child: const Text("Delete"),
-              ),
-            ],
-          ),
-        ),
-      ],
+                Section(
+                  title: "Patch",
+                  child: Row(
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          onLoadPatch(item.info);
+                        },
+                        child: const Text("Load"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          print("TODO: Delete patch");
+                        },
+                        child: const Text("Delete"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
 
 class InterfaceItem extends StatelessWidget {
   InterfaceItem({
-    required this.text,
+    required this.info,
     required this.selectedItem,
-    required this.children,
   });
 
-  final String text;
-  final List<PatchInfo> children;
+  final InterfaceInfo info;
   final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
-    return PresetsViewItem(
-      text: text,
-      expandable: true,
-      icon: const Icon(
-        Icons.display_settings,
-        size: 18,
-        color: Colors.green,
-      ),
-      onTap: () {
-        if (selectedItem.value == this) {
-          selectedItem.value = null;
-        } else {
-          selectedItem.value = this;
-        }
+    return ValueListenableBuilder<List<PatchInfo>>(
+      valueListenable: info.patches,
+      builder: (context, patches, child) {
+        return PresetsViewItem(
+          name: info.name,
+          expandable: true,
+          icon: const Icon(
+            Icons.display_settings,
+            size: 18,
+            color: Colors.green,
+          ),
+          onTap: () {
+            if (selectedItem.value == this) {
+              selectedItem.value = null;
+            } else {
+              selectedItem.value = this;
+            }
+          },
+          children: patches
+              .map(
+                (info) => GraphItem(
+                  info,
+                  selectedItem,
+                  isDense: true,
+                ),
+              )
+              .toList(),
+        );
       },
-      children: children
-          .map(
-            (info) => GraphItem(
-              info,
-              selectedItem,
-              isDense: true,
-            ),
-          )
-          .toList(),
     );
   }
 }
@@ -304,31 +327,26 @@ class GraphItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: info.name,
-      builder: (context, name, child) {
-        return PresetsViewItem(
-          text: name,
-          height: isDense ? 30 : 35,
-          expandable: false,
-          padding:
-              isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
-          icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
-          onTap: () {
-            if (selectedItem.value == this) {
-              selectedItem.value = null;
-            } else {
-              selectedItem.value = this;
-            }
-          },
-          children: const [],
-        );
+    return PresetsViewItem(
+      name: info.name,
+      height: isDense ? 30 : 35,
+      expandable: false,
+      padding:
+          isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
+      icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
+      onTap: () {
+        if (selectedItem.value == this) {
+          selectedItem.value = null;
+        } else {
+          selectedItem.value = this;
+        }
       },
+      children: const [],
     );
   }
 }
 
-class CategoryItem extends StatelessWidget {
+/*class CategoryItem extends StatelessWidget {
   CategoryItem(this.text, {required this.selectedItem});
 
   final String text;
@@ -354,9 +372,9 @@ class CategoryItem extends StatelessWidget {
       children: const [],
     );
   }
-}
+}*/
 
-class PresetItem extends StatelessWidget {
+/*class PresetItem extends StatelessWidget {
   PresetItem(this.text, {required this.selectedItem});
 
   final String text;
@@ -382,11 +400,11 @@ class PresetItem extends StatelessWidget {
       children: const [],
     );
   }
-}
+}*/
 
 class PresetsViewItem extends StatefulWidget {
   PresetsViewItem(
-      {required this.text,
+      {required this.name,
       this.height = 35,
       required this.icon,
       required this.expandable,
@@ -394,7 +412,7 @@ class PresetsViewItem extends StatefulWidget {
       required this.onTap,
       required this.children});
 
-  final String text;
+  final ValueNotifier<String> name;
   final Icon icon;
   final double height;
   final bool expandable;
@@ -447,15 +465,20 @@ class _PresetsViewItem extends State<PresetsViewItem> {
                           widget.icon,
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              widget.text,
-                              style: TextStyle(
-                                color: hovering
-                                    ? Colors.white
-                                    : const Color.fromRGBO(200, 200, 200, 1.0),
-                              ),
-                            ),
-                          ),
+                              child: ValueListenableBuilder<String>(
+                            valueListenable: widget.name,
+                            builder: (context, name, child) {
+                              return Text(
+                                name,
+                                style: TextStyle(
+                                  color: hovering
+                                      ? Colors.white
+                                      : const Color.fromRGBO(
+                                          200, 200, 200, 1.0),
+                                ),
+                              );
+                            },
+                          )),
                           Visibility(
                             visible: widget.expandable,
                             child: GestureDetector(
