@@ -14,7 +14,7 @@ impl Module for Chorus {
         title: "Chorus",
         id: "default.effects.modulation.chorus",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(310 - 40 - 70, 200),
         voicing: Voicing::Monophonic,
         inputs: &[

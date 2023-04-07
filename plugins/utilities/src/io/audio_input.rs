@@ -1,28 +1,28 @@
 use crate::*;
 
-pub struct And;
+pub struct AudioInput;
 
-impl Module for And {
+impl Module for AudioInput {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "And",
-        id: "default.control.effects.and",
+        title: "Audio Input",
+        id: "default.io.audio_input",
         version: "0.0.0",
-        color: Color::RED,
-        size: Size::Static(100, 75),
-        voicing: Voicing::Polyphonic,
+        color: Color::BLUE,
+        size: Size::Static(100, 100),
+        voicing: Voicing::Monophonic,
         inputs: &[
-            Pin::Control("Input 1", 15),
-            Pin::Control("Input 2", 45),
+            Pin::ExternalAudio(0)
         ],
         outputs: &[
-            Pin::Control("Output", 30)
+            Pin::Audio("External Audio 1", 20)
         ],
-        path: &["Control", "Logic", "And"],
+        path: &["Utilities", "IO", "Audio Input"],
         presets: Presets::NONE
     };
 
+    
     fn new() -> Self {
         Self
     }
@@ -31,13 +31,16 @@ impl Module for And {
         ()
     }
 
+    fn load(&mut self, _version: &str, _state: &State) {}
+    fn save(&self, _state: &mut State) {}
+
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 25),
+            position: (30, 20),
             size: (40, 40),
             child: Icon {
-                path: "logic/and.svg",
-                color: Color::RED,
+                path: "logos/audio.svg",
+                color: Color::GREEN,
             },
         })
     }
@@ -45,10 +48,7 @@ impl Module for And {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0] == 0.0 || inputs.control[1] == 0.0 {
-            outputs.control[0] = 0.0;
-        } else {
-            outputs.control[0] = 1.0;
-        }
+        outputs.audio[0].copy_from(&inputs.audio[0]);
+
     }
 }

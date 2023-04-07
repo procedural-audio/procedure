@@ -8,6 +8,9 @@ version = "0.1.0"
 dependencies = [
  "modules",
  "pa-dsp",
+ "rand",
+ "rlua",
+ "xml-rs",
 ]
 
 [[package]]

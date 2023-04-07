@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 pa-dsp = { path = "../../core/dsp" }
 modules = { path = "../../core/modules" }
+xml-rs = "0.8"
+rand = "0.8"
+rlua = "*"
 
 [lib]
 crate-type = ["cdylib"]

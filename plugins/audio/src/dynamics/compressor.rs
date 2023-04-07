@@ -18,7 +18,7 @@ impl Module for Compressor {
         title: "Compressor",
         id: "default.effects.dynamics.compressor",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(410, 220),
         voicing: Voicing::Monophonic,
         inputs: &[

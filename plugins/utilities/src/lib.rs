@@ -1,14 +1,49 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+use modules::*;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod conversions;
+mod io;
+mod time;
+//mod math;
+//mod scripting;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub use conversions::*;
+pub use io::*;
+pub use time::*;
+//pub use math::*;
+//pub use scripting::*;
+
+static PLUGIN: Plugin = Plugin {
+    name: "Built-in Utility Modules",
+    version: 1,
+    modules: &[
+        // Conversions
+        module::<ControlToNotes>(),
+        module::<NotesToControl>(),
+
+        // IO
+        module::<AudioInput>(),
+        module::<AudioOutput>(),
+        module::<MidiInput>(),
+        module::<MidiOutput>(),
+        // module::<AudioPluginModule>(),
+
+        // Scripting
+        // module::<LuaScripter>(),
+        // module::<FaustScripter>(),
+        // module::<DSPDesigner>(),
+
+        // Time
+        module::<GlobalTime>(),
+        module::<GlobalTransport>(),
+        module::<Rate>(),
+        module::<Reverse>(),
+        module::<Accumulator>(),
+        // module::<Loop>(),
+        // module::<Shift>(),
+    ]
+};
+
+#[no_mangle]
+pub extern fn export_plugin() -> *const Plugin {
+    &PLUGIN
 }

@@ -15,7 +15,7 @@ impl Module for Gate {
         title: "Gate",
         id: "default.effects.dynamics.gate",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(350, 220),
         voicing: Voicing::Monophonic,
         inputs: &[

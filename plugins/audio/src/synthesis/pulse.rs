@@ -25,7 +25,7 @@ impl Module for PulseModule {
         title: "Pulse",
         id: "default.synthesis.pulse",
         version: "0.0.0",
-        color: Color::GREEN,
+        color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
