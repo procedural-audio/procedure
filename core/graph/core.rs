@@ -663,3 +663,9 @@ pub unsafe extern "C" fn ffi_plugins_load(plugins: &mut Plugins, path: &i8) -> *
         None => std::ptr::null_mut()
     }
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plugins_unload(plugins: &mut Plugins, path: &i8) {
+    let path = str_from_char(path);
+    plugins.unload(path);
+}

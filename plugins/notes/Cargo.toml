@@ -1,0 +1,13 @@
+[package]
+name = "notes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pa-dsp = { path = "../../core/dsp" }
+modules = { path = "../../core/modules" }
+rand = "0.8"
+rlua = "*"
+
+[lib]
+crate-type = ["cdylib"]

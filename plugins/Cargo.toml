@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+	"audio",
+	"notes",
+	"control",
+	#"audio_plugin",
+	"utilities"
+]

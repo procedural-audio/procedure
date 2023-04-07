@@ -2,15 +2,15 @@ pub use pa_dsp::*;
 
 use serde::{Deserialize, Serialize};
 
-pub mod control;
+// pub mod control;
 pub mod effects;
-pub mod sequencing;
+// pub mod sequencing;
 pub mod sources;
 pub mod utilities;
 
-pub use control::*;
+// pub use control::*;
 pub use effects::*;
-pub use sequencing::*;
+// pub use sequencing::*;
 pub use sources::*;
 pub use utilities::*;
 
@@ -295,24 +295,24 @@ impl UI {
 }
 
 #[derive(Serialize, Deserialize, PartialEq)]
-pub enum Key {
+pub enum StateKey {
     Str(String),
     Int(usize)
 }
 
 pub trait ToKey {
-    fn to_key(self) -> Key;
+    fn to_key(self) -> StateKey;
 }
 
 impl ToKey for &'static str {
-    fn to_key(self) -> Key {
-        Key::Str(self.to_string())
+    fn to_key(self) -> StateKey {
+        StateKey::Str(self.to_string())
     }
 }
 
 impl ToKey for usize {
-    fn to_key(self) -> Key {
-        Key::Int(self)
+    fn to_key(self) -> StateKey {
+        StateKey::Int(self)
     }
 }
 
@@ -383,7 +383,7 @@ impl FromValue for bool {
 
 #[derive(Serialize, Deserialize)]
 pub struct State {
-    state: Vec<(Key, Value)>,
+    state: Vec<(StateKey, Value)>,
 }
 
 impl State {

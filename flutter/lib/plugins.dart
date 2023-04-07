@@ -17,6 +17,10 @@ RawPlugin Function(RawPlugins, Pointer<Utf8>) _ffiPluginsLoad = core
     .lookup<NativeFunction<RawPlugin Function(RawPlugins, Pointer<Utf8>)>>(
         "ffi_plugins_load")
     .asFunction();
+void Function(RawPlugins, Pointer<Utf8>) _ffiPluginsUnload = core
+    .lookup<NativeFunction<Void Function(RawPlugins, Pointer<Utf8>)>>(
+        "ffi_plugins_unload")
+    .asFunction();
 
 Plugins PLUGINS = Plugins.platformDefault();
 
@@ -34,10 +38,16 @@ class RawPlugins extends Struct {
     calloc.free(cPath);
 
     if (plugin.pointer != 0) {
-      return Plugin(plugin);
+      return Plugin(plugin, File(path));
     } else {
       return null;
     }
+  }
+
+  void unload(Plugin plugin) {
+    var rawPath = plugin.file.path.toNativeUtf8();
+    _ffiPluginsUnload(this, rawPath);
+    calloc.free(rawPath);
   }
 
   void remove(String path) {}
@@ -49,20 +59,31 @@ class Plugins extends StatelessWidget {
     pluginLoadDir.listSync().forEach((e) => e.delete());
 
     scan();
+
+    directory.watch().listen((event) {
+      reload();
+    });
   }
 
   final Directory directory;
   final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
   RawPlugins rawPlugins = RawPlugins.create();
+  bool scanning = false;
 
   static Plugins platformDefault() {
-    var path = "/Users/chasekanipe/Github/nodus/build/out/core/release/";
+    var path = Settings2.pluginBuildDirectory();
     var directory = Directory(path);
     return Plugins(directory);
   }
 
   void scan() async {
     print("Scanning plugins");
+
+    if (scanning) {
+      return;
+    }
+
+    scanning = true;
 
     List<Plugin> plugins = [];
     if (await directory.exists()) {
@@ -81,10 +102,16 @@ class Plugins extends StatelessWidget {
         }
 
         if (item.path.contains(extension)) {
-          var plugin = rawPlugins.load(item.path);
-
-          if (plugin != null) {
-            plugins.add(plugin);
+          File file = File(item.path);
+          var rand = (Random().nextInt(999999 - 100000) + 100000).toString();
+          var name = item.name.replaceAll(extension, "") + rand + extension;
+          var path = Settings2.pluginLoadDirectory() + "/" + name;
+          var newFile = await file.copy(path);
+          if (await newFile.exists()) {
+            var plugin = rawPlugins.load(newFile.path);
+            if (plugin != null) {
+              plugins.add(plugin);
+            }
           }
         }
       }
@@ -94,10 +121,20 @@ class Plugins extends StatelessWidget {
 
     _plugins.value = plugins;
     print("Done scanning plugins");
+    scanning = false;
   }
 
   ValueNotifier<List<Plugin>> list() {
     return _plugins;
+  }
+
+  void reload() async {
+    print("Reloading plugins");
+    for (var plugin in _plugins.value) {
+      rawPlugins.unload(plugin);
+    }
+
+    scan();
   }
 
   @override
@@ -119,7 +156,7 @@ class Plugins extends StatelessWidget {
 }
 
 class Plugin extends StatelessWidget {
-  Plugin(this.rawPlugin) {
+  Plugin(this.rawPlugin, this.file) {
     List<ModuleInfo> modules = [];
 
     int count = rawPlugin.getModuleCount();
@@ -132,6 +169,7 @@ class Plugin extends StatelessWidget {
   }
 
   final RawPlugin rawPlugin;
+  final File file;
   final ValueNotifier<List<ModuleInfo>> _modules = ValueNotifier([]);
 
   ValueNotifier<List<ModuleInfo>> list() {
@@ -144,7 +182,7 @@ class Plugin extends StatelessWidget {
       valueListenable: _modules,
       builder: (context, List<ModuleInfo> modules, child) {
         return Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
           child: Container(
             decoration: const BoxDecoration(
               color: Color.fromRGBO(50, 50, 50, 1.0),
@@ -152,12 +190,34 @@ class Plugin extends StatelessWidget {
             ),
             child: ExpansionTile(
               childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-              title: Text(
-                rawPlugin.getName(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
+              title: Row(
+                children: [
+                  const Icon(
+                    Icons.plumbing,
+                    color: Colors.grey,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      rawPlugin.getName(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      PLUGINS.reload();
+                    },
+                    icon: const Icon(
+                      Icons.refresh,
+                      color: Colors.grey,
+                      size: 16,
+                    ),
+                  ),
+                ],
               ),
               children: [
                 ListView.builder(
