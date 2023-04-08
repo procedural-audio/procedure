@@ -30,7 +30,7 @@ impl Module for AudioTrack {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio Sources", "Sampling", "Audio Track New"],
+        path: &["Audio Sources", "Sampling", "Audio Track"],
         presets: Presets::NONE
     };
 
