@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import 'package:metasampler/settings.dart';
 
 import 'dart:ffi';
 import 'dart:io';
@@ -114,44 +115,7 @@ class Core {
   }*/
 }
 
-var core = loadCoreLibrary();
-
-DynamicLibrary loadCoreLibrary() {
-  var executable = DynamicLibrary.executable();
-
-  if (executable.providesSymbol("ffi_create_host")) {
-    return executable;
-  } else {
-    DynamicLibrary library;
-
-    if (Platform.isLinux) {
-      library = DynamicLibrary.open(
-          "/home/chase/github/nodus/build/out/core/release/libtonevision_core.so");
-
-      if (library.providesSymbol("ffi_create_host")) {
-        print("Loaded core dynamically");
-        return library;
-      } else {
-        print("Failed to initialise core");
-        exit(1);
-      }
-    } else if (Platform.isMacOS) {
-      print("Using dylib from incorrect folder");
-      library = DynamicLibrary.open(
-          "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib");
-
-      if (library.providesSymbol("ffi_create_host")) {
-        print("Loaded core dynamically");
-        return library;
-      } else {
-        print("Failed to initialise core");
-        exit(1);
-      }
-    } else {
-      exit(1);
-    }
-  }
-}
+var core = DynamicLibrary.open(Settings2.coreLibraryDirectory());
 
 /* Global */
 
