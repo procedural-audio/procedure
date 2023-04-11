@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
@@ -58,7 +60,6 @@ class App extends StatefulWidget {
 
   final Core core;
   final Assets assets;
-
   final ValueNotifier<Project> project;
 
   void loadProject(ProjectInfo info) async {
@@ -140,14 +141,6 @@ class _App extends State<App> {
         ),
       ),
     );
-  }
-}
-
-void callTickRecursive(ModuleWidget widget) {
-  widget.tick();
-
-  for (var child in widget.children) {
-    callTickRecursive(child);
   }
 }
 

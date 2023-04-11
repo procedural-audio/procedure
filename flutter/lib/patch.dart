@@ -285,10 +285,25 @@ class _Patch extends State<Patch> {
   TransformationController controller = TransformationController();
   Offset rightClickOffset = Offset.zero;
   bool showRightClickMenu = false;
+  late Timer timer;
+
+  void tick(Timer t) {
+    for (var node in nodes) {
+      for (var widget in node.widgets) {
+        callTickRecursive(widget);
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+
+    timer = Timer.periodic(
+      const Duration(milliseconds: 100),
+      tick,
+    );
+
     var count = widget.rawPatch.getNodeCount();
     for (var i = 0; i < count; i++) {
       var rawNode = widget.rawPatch.getNode(i);
@@ -337,6 +352,7 @@ class _Patch extends State<Patch> {
     super.dispose();
     nodes.clear();
     connectors.clear();
+    timer.cancel();
   }
 
   void addModule(String id) {
