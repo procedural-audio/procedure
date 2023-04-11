@@ -300,7 +300,7 @@ class _Patch extends State<Patch> {
     super.initState();
 
     timer = Timer.periodic(
-      const Duration(milliseconds: 100),
+      const Duration(milliseconds: 20),
       tick,
     );
 
