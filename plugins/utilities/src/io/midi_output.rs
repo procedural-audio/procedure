@@ -10,10 +10,10 @@ impl Module for MidiOutput {
         id: "default.io.midi_output",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(100, 100),
+        size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[
-            Pin::Notes("Midi Output", 30)
+            Pin::Notes("Midi Output", 22)
         ],
         outputs: &[],
         path: &["Utilities", "IO", "Midi Output"],
@@ -32,8 +32,8 @@ impl Module for MidiOutput {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 20),
-            size: (40, 40),
+            position: (40, 15),
+            size: (30, 30),
             child: Icon {
                 path: "logos/midi2.svg",
                 color: Color::GREEN,

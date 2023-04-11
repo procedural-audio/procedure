@@ -6,17 +6,17 @@ impl Module for AudioInput {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "Audio Input",
+        title: "",
         id: "default.io.audio_input",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(100, 100),
+        size: Size::Static(85, 60),
         voicing: Voicing::Monophonic,
         inputs: &[
             Pin::ExternalAudio(0)
         ],
         outputs: &[
-            Pin::Audio("External Audio 1", 20)
+            Pin::Audio("External Audio 1", 22)
         ],
         path: &["Utilities", "IO", "Audio Input"],
         presets: Presets::NONE
@@ -36,11 +36,11 @@ impl Module for AudioInput {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 20),
-            size: (40, 40),
+            position: (15, 15),
+            size: (30, 30),
             child: Icon {
                 path: "logos/audio.svg",
-                color: Color::GREEN,
+                color: Color::BLUE,
             },
         })
     }
