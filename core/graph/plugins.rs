@@ -44,7 +44,6 @@ impl Plugins {
                 },
                 Err(_) => ()
             }
-
         }
 
         None

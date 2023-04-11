@@ -73,8 +73,23 @@ impl Module for AnalogOscillator {
         }
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        self.wave_index = state.load("wave_index");
+        self.unison = state.load("unison");
+        self.detune = state.load("detune");
+        self.spread = state.load("spread");
+        self.glide = state.load("glide");
+        self.dropdown = state.load("dropdown");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("wave_index", self.wave_index);
+        state.save("unison", self.unison);
+        state.save("detune", self.detune);
+        state.save("spread", self.spread);
+        state.save("glide", self.glide);
+        state.save("dropdown", self.dropdown);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         let size = 50;

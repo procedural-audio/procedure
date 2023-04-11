@@ -53,7 +53,7 @@ class RawPlugins extends Struct {
   void remove(String path) {}
 }
 
-class Plugins extends StatelessWidget {
+class Plugins extends StatelessWidget with ChangeNotifier {
   Plugins(this.directory) {
     var pluginLoadDir = Directory(Settings2.pluginLoadDirectory());
     pluginLoadDir.listSync().forEach((e) => e.delete());
@@ -122,6 +122,8 @@ class Plugins extends StatelessWidget {
     _plugins.value = plugins;
     print("Done scanning plugins");
     scanning = false;
+
+    notifyListeners();
   }
 
   ValueNotifier<List<Plugin>> list() {

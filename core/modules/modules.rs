@@ -102,6 +102,7 @@ impl ToKey for usize {
 pub enum Value {
     Float(f32),
     Int(u32),
+    Size(usize),
     Bool(bool),
     Color(Color),
     None,
@@ -111,7 +112,7 @@ pub trait ToValue {
     fn to_value(self) -> Value;
 }
 
-pub trait FromValue {
+pub trait FromValue: Default {
     fn from_value(value: Value) -> Self where Self: Sized;
 }
 
@@ -163,6 +164,22 @@ impl FromValue for bool {
     }
 }
 
+impl ToValue for usize {
+    fn to_value(self) -> Value {
+        Value::Size(self)
+    }
+}
+
+impl FromValue for usize {
+    fn from_value(value: Value) -> Self {
+        if let Value::Size(v) = value {
+            v
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct State {
     state: Vec<(StateKey, Value)>,
@@ -187,7 +204,13 @@ impl State {
             }
         }
 
-        panic!("Couldn't find element");
+        let s = match key {
+            StateKey::Str(s) => s,
+            StateKey::Int(i) => i.to_string()
+        };
+
+        println!("Couldn't find value for key {}", s);
+        return V::default();
     }
 }
 
@@ -379,8 +402,8 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         false
     }
 
-    fn save(&self, _state: &mut State) {
-        println!("SAVE NOT IMPLEMENTED IN POLYPHONIC MODULE");
+    fn save(&self, state: &mut State) {
+        self.module.save(state);
     }
 
     fn load(&mut self, version: &str, json: &State) {

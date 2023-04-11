@@ -187,6 +187,7 @@ impl<'de> Deserialize<'de> for Node {
                 unsafe {
                     if let Some(mut module) = PLUGINS.unwrap().create_module(&module_id) {
                         CURRENT_ID = std::cmp::max(CURRENT_ID, node_id);
+                        println!("Created module {}", module_id);
 
                         module.load(&version, &state);
 
@@ -198,9 +199,9 @@ impl<'de> Deserialize<'de> for Node {
                             }
                         );
                     }
-                }
 
-                panic!("Couldn't find module");
+                    panic!("Couldn't find module {} in {} plugins", module_id, PLUGINS.unwrap().num_plugins());
+                }
             }
         }
 

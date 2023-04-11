@@ -259,6 +259,34 @@ pub unsafe extern "C" fn ffi_patch_save(graph: &Graph, path: &i8) -> bool {
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn ffi_patch_get_state(graph: &Graph) -> *mut String {
+    return Box::into_raw(Box::new(serde_json::to_string(&graph).unwrap()))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_patch_set_state(graph: &mut Graph, plugins: &'static Plugins, state: *mut String) {
+    let state = Box::from_raw(state);
+
+    println!("Setting state");
+    println!("{}", &*state);
+
+    PLUGINS = Some(plugins);
+
+    match serde_json::from_str(&*state) {
+        Ok(new_graph) => {
+            let mut new_graph: Graph = new_graph;
+            new_graph.refresh();
+            *graph = new_graph;
+        },
+        Err(e) => {
+            graph.nodes.clear();
+            graph.refresh();
+            println!("Failed to decode graph {}", e);
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn ffi_patch_destroy(graph: *mut Graph) {
     let _ = Box::from_raw(graph);
 }

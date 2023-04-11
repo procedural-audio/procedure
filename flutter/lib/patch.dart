@@ -63,6 +63,14 @@ bool Function(RawPatch, Pointer<Utf8>) _ffiPatchSave = core
     .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
         "ffi_patch_save")
     .asFunction();
+Pointer<Void> Function(RawPatch) _ffiPatchGetState = core
+    .lookup<NativeFunction<Pointer<Void> Function(RawPatch)>>(
+        "ffi_patch_get_state")
+    .asFunction();
+void Function(RawPatch, RawPlugins, Pointer<Void>) _ffiPatchSetState = core
+    .lookup<NativeFunction<Void Function(RawPatch, RawPlugins, Pointer<Void>)>>(
+        "ffi_patch_set_state")
+    .asFunction();
 void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
     .asFunction();
@@ -162,6 +170,14 @@ class RawPatch extends Struct {
   void removeConnector(int nodeId, int pinIndex) {
     return _ffiPatchRemoveConnector(this, nodeId, pinIndex);
   }
+
+  Pointer<Void> getState() {
+    return _ffiPatchGetState(this);
+  }
+
+  void setState(Pointer<Void> state) {
+    _ffiPatchSetState(this, PLUGINS.rawPlugins, state);
+  }
 }
 
 class RawConnector extends Struct {
@@ -231,9 +247,9 @@ class Patch extends StatefulWidget {
   final PatchInfo info;
   final NewConnector newConnector = NewConnector();
 
-  static Patch blank(Directory directory) {
+  static Patch from(PatchInfo info) {
     return Patch(
-      info: PatchInfo.blank(directory),
+      info: info,
       rawPatch: RawPatch.create(),
     );
   }

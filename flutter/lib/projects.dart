@@ -63,7 +63,7 @@ class Project {
         Directory("/Users/chasekanipe/Github/assets/projects/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
-    var patch = Patch.blank(patchDirectory);
+    var patch = Patch.from(PatchInfo.blank(patchDirectory));
     return Project(
       info: info,
       patch: ValueNotifier(patch),
@@ -105,7 +105,7 @@ class Project {
     print("Loaded blank patch");
     return Project(
       info: info,
-      patch: ValueNotifier(Patch.blank(directory)),
+      patch: ValueNotifier(Patch.from(PatchInfo.blank(directory))),
       ui: ValueNotifier(null),
     );
   }

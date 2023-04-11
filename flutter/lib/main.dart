@@ -41,6 +41,19 @@ void main(List<String> args) {
 class App extends StatefulWidget {
   App({required this.core, required this.assets, required this.project}) {
     core.setPatch(project.value.patch.value);
+    PLUGINS.addListener(
+      () {
+        print("Regenerating patch");
+        var oldPatch = project.value.patch.value;
+        var newPatch = Patch.from(oldPatch.info);
+
+        var state = oldPatch.rawPatch.getState();
+        newPatch.rawPatch.setState(state);
+
+        project.value.patch.value = newPatch;
+        core.setPatch(newPatch);
+      },
+    );
   }
 
   final Core core;
