@@ -1,6 +1,5 @@
 use modules::*;
 
-/// Produces quantized impulses as a function of time. For non quantized impulses that aren't a function of time, use the LFO.
 pub struct Beats {
     value: f32,
 }
@@ -34,7 +33,7 @@ impl Module for Beats {
         ()
     }
 
-    fn load(&mut self, version: &str, state: &State) {
+    fn load(&mut self, _version: &str, state: &State) {
         self.value = state.load("value");
     }
 
