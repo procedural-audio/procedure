@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
+import 'package:metasampler/settings.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -59,8 +60,7 @@ class Project {
   }
 
   static Project blank() {
-    var projectDirectory =
-        Directory("/Users/chasekanipe/Github/assets/projects/NewProject");
+    var projectDirectory = Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
     var patch = Patch.from(PatchInfo.blank(patchDirectory));
