@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'widget.dart';
 import 'dart:ffi';
-import '../patch.dart';
-
 import 'dart:ui' as ui;
+
+import 'widget.dart';
+
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
 
 double Function(RawWidgetPointer) ffiXYPadGetX = core
     .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
@@ -29,34 +28,43 @@ double Function(RawWidgetPointer, double) ffiXYPadSetY = core
 class XYPadWidget extends ModuleWidget {
   XYPadWidget(RawNode m, RawWidget w) : super(m, w);
 
+  void update(double x, double y) {
+    setState(() {
+      ffiXYPadSetX(widgetRaw.pointer, x.clamp(0.0, 1.0));
+      ffiXYPadSetY(widgetRaw.pointer, 1.0 - y.clamp(0.0, 1.0));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double x = ffiXYPadGetX(widgetRaw.pointer);
     double y = 1.0 - ffiXYPadGetY(widgetRaw.pointer);
 
-    void update(double x, double y) {
-      setState(() {
-        ffiXYPadSetX(widgetRaw.pointer, x.clamp(0.0, 1.0));
-        ffiXYPadSetY(widgetRaw.pointer, 1.0 - y.clamp(0.0, 1.0));
-      });
-    }
-
-    return LayoutBuilder(builder: (context, constraints) {
-      return Container(
-        decoration: const BoxDecoration(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          decoration: const BoxDecoration(
             color: Color.fromRGBO(20, 20, 20, 1.0),
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        child: GestureDetector(
-            onTapDown: (e) => update(e.localPosition.dx / constraints.maxWidth,
-                e.localPosition.dy / constraints.maxHeight),
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+          child: GestureDetector(
+            onTapDown: (e) => update(
+              e.localPosition.dx / constraints.maxWidth,
+              e.localPosition.dy / constraints.maxHeight,
+            ),
             onPanUpdate: (e) => update(
-                e.localPosition.dx / constraints.maxWidth,
-                e.localPosition.dy / constraints.maxHeight),
+              e.localPosition.dx / constraints.maxWidth,
+              e.localPosition.dy / constraints.maxHeight,
+            ),
             child: CustomPaint(
               painter: XYPadPainter(x, y),
-            )),
-      );
-    });
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -72,18 +80,34 @@ class XYPadPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..color = const Color.fromRGBO(40, 40, 40, 1.0);
 
-    canvas.drawLine(Offset(size.width / 2, 10),
-        Offset(size.width / 2, size.height / 2 - 10), paint);
-    canvas.drawLine(Offset(size.width / 2, size.height / 2 + 10),
-        Offset(size.width / 2, size.height - 10), paint);
-    canvas.drawLine(Offset(10, size.height / 2),
-        Offset(size.width / 2 - 10, size.height / 2), paint);
-    canvas.drawLine(Offset(size.width / 2 + 10, size.height / 2),
-        Offset(size.width - 10, size.height / 2), paint);
+    canvas.drawLine(
+      Offset(size.width / 2, 10),
+      Offset(size.width / 2, size.height / 2 - 10),
+      paint,
+    );
+
+    canvas.drawLine(
+      Offset(size.width / 2, size.height / 2 + 10),
+      Offset(size.width / 2, size.height - 10),
+      paint,
+    );
+
+    canvas.drawLine(
+      Offset(10, size.height / 2),
+      Offset(size.width / 2 - 10, size.height / 2),
+      paint,
+    );
+
+    canvas.drawLine(
+      Offset(size.width / 2 + 10, size.height / 2),
+      Offset(size.width - 10, size.height / 2),
+      paint,
+    );
 
     paint = Paint()
       ..strokeWidth = 1.0
       ..color = const Color.fromRGBO(100, 100, 100, 1.0);
+
     canvas.drawCircle(Offset(x * size.width, y * size.height), 10, paint);
 
     paint = Paint()

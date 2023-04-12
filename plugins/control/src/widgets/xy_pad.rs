@@ -9,7 +9,7 @@ impl Module for XYPadModule {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "",
+        title: "XY Pad",
         id: "default.control.widgets.xy_pad",
         version: "0.0.0",
         color: Color::RED,
