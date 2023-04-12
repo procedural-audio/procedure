@@ -119,14 +119,15 @@ impl Module for LfoModule {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.saw.prepare(sample_rate / block_size as u32, 1);
-        voice.square.prepare(sample_rate / block_size as u32, 1);
-        voice.sine.prepare(sample_rate / block_size as u32, 1);
-        voice.triangle.prepare(sample_rate / block_size as u32, 1);
+        println!("Preparing with sample rate {} and block size {}", sample_rate, block_size);
+        voice.saw.prepare(sample_rate / block_size as u32, block_size);
+        voice.square.prepare(sample_rate / block_size as u32, block_size);
+        voice.sine.prepare(sample_rate / block_size as u32, block_size);
+        voice.triangle.prepare(sample_rate / block_size as u32, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let hz = self.value * 80.0;
+        let hz = self.value * 20.0;
         let reset = inputs.control[1];
 
         if voice.last_reset < 0.5 {

@@ -270,7 +270,8 @@ impl Graph {
 
     pub fn add_module(&mut self, plugins: &Plugins, id: &str) -> Option<Rc<Node>> {
         match plugins.create_module(id) {
-            Some(module) => {
+            Some(mut module) => {
+                module.prepare(self.sample_rate, self.block_size);
                 let node = Rc::new(Node::new(module));
                 self.nodes.push(node.clone());
                 self.refresh();

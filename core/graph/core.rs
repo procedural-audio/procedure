@@ -123,7 +123,9 @@ pub unsafe extern "C" fn api_host_process(
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_core_set_patch(host: &mut Host, patch: *mut Graph) {
-    host.graph = Box::from_raw(patch);
+    let mut patch = Box::from_raw(patch);
+    patch.prepare(host.sample_rate, host.block_size);
+    host.graph = patch;
 }
 
 /* Host Graph */
@@ -294,6 +296,7 @@ pub unsafe extern "C" fn ffi_patch_destroy(graph: *mut Graph) {
 #[no_mangle]
 pub unsafe extern "C" fn ffi_patch_add_module(graph: &mut Graph, plugins: &Plugins, id: &i8) -> *const Node {
     let id = str_from_char(id);
+
     match graph.add_module(plugins, id) {
         Some(node) => Rc::into_raw(node),
         None => std::ptr::null()
