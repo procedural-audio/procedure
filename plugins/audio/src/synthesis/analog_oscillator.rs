@@ -2,8 +2,6 @@ use crate::*;
 
 use pa_dsp::buffers::*;
 
-
-
 pub struct AnalogOscillator {
     wave_index: u32,
     unison: f32,
@@ -178,8 +176,8 @@ impl Module for AnalogOscillator {
                     },
                 },
                 Transform {
-                    position: (55, 40 + 100),
-                    size: (70, 40),
+                    position: (40, 40 + 100),
+                    size: (100, 40),
                     child: Dropdown {
                         index: &mut self.dropdown,
                         color: Color::BLUE,
