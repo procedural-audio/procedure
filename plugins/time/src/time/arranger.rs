@@ -1,8 +1,8 @@
 use crate::*;
 
-pub struct Reverse;
+pub struct Arranger;
 
-impl Module for Reverse {
+impl Module for Arranger {
     type Voice = ();
 
     const INFO: Info = Info {
