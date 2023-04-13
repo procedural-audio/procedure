@@ -20,7 +20,7 @@ impl Module for Crossover {
             Pin::Control("Linear Crossover", 55),
         ],
         outputs: &[Pin::Audio("Audio High", 25), Pin::Audio("Audio Low", 55)],
-        path: &["Audio Effects", "Spectral", "Crossover"],
+        path: &["Audio", "Spectral", "Crossover"],
         presets: Presets::NONE
     };
 

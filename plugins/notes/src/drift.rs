@@ -20,7 +20,7 @@ impl Module for Drift {
             Pin::Control("Drift Steps", 55),
         ],
         outputs: &[Pin::Notes("Notes Output", 25)],
-        path: &["Notes", "Sources", "Drift"],
+        path: &["Notes", "Effects", "Drift"],
         presets: Presets::NONE
     };
     

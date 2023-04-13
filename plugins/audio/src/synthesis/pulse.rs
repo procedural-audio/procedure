@@ -30,7 +30,7 @@ impl Module for PulseModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: &["Audio Sources", "Synthesis", "Pulse"],
+        path: &["Audio", "Synthesis", "Pulse"],
         presets: Presets::NONE
     };
 

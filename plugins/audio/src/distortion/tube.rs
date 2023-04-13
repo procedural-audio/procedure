@@ -38,7 +38,7 @@ impl Module for Tube {
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
-        path: &["Audio Effects", "Distortion", "Tube"],
+        path: &["Audio", "Distortion", "Tube"],
         presets: Presets::NONE
     };
 

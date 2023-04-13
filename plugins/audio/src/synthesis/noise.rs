@@ -20,7 +20,7 @@ impl Module for Noise {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio Sources", "Synthesis", "Noise"],
+        path: &["Audio", "Synthesis", "Noise"],
         presets: Presets::NONE
     };
 
