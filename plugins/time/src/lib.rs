@@ -16,6 +16,7 @@ static PLUGIN: Plugin = Plugin {
         module::<Accumulator>(),
         // module::<Loop>(),
         // module::<Shift>(),
+        module::<Arranger>(),
     ]
 };
 

@@ -17,7 +17,7 @@ impl Module for Reverse {
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: &["Time", "Reverse"],
+        path: &["Time", "Effects", "Reverse"],
         presets: Presets::NONE
     };
     

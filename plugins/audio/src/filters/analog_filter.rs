@@ -348,5 +348,4 @@ impl Korg35LPF {
 			self.fRec3[1] = self.fRec3[0];
 		}
 	}
-
 }
