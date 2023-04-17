@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
@@ -7,7 +5,6 @@ import 'package:metasampler/ui/code_editor/code_text_field.dart';
 import 'dart:math';
 
 import 'projects.dart';
-import 'widgets/widget.dart';
 import 'core.dart';
 import 'plugins.dart';
 import 'ui/ui.dart';
