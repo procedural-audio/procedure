@@ -18,7 +18,9 @@ impl Module for Transpose {
             Pin::Notes("Notes Input", 25),
             Pin::Control("Transpose Steps", 55),
         ],
-        outputs: &[Pin::Notes("Notes Output", 25)],
+        outputs: &[
+            Pin::Notes("Notes Output", 25)
+        ],
         path: &["Notes", "Effects", "Transpose"],
         presets: Presets::NONE
     };
