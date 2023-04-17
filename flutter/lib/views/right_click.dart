@@ -244,6 +244,7 @@ class _RightClickCategoryState extends State<RightClickCategory> {
     return Column(
       children: <Widget>[
             MouseRegion(
+              hitTestBehavior: HitTestBehavior.opaque,
               onEnter: (event) {
                 setState(() {
                   hovering = true;
@@ -255,7 +256,13 @@ class _RightClickCategoryState extends State<RightClickCategory> {
                 });
               },
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
+                  setState(() {
+                    expanded = !expanded;
+                  });
+                },
+                onPanStart: (e) {
                   setState(() {
                     expanded = !expanded;
                   });
