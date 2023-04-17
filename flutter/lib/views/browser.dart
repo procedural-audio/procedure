@@ -1,13 +1,11 @@
-import 'dart:io';
-import 'dart:math';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:metasampler/views/info.dart';
 
-import '../patch.dart';
+import 'dart:io';
+import 'dart:math';
+
 import 'settings.dart';
+
 import '../main.dart';
 
 class BrowserView extends StatefulWidget {
@@ -31,126 +29,130 @@ class _BrowserView extends State<BrowserView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(children: [
-      Column(
-        children: [
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-            child: BrowserSearchBar(
-              onFilter: (s) {
-                setState(() {
-                  searchText = s;
-                });
-              },
+    return Stack(
+      children: [
+        Column(
+          children: [
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+              child: BrowserSearchBar(
+                onFilter: (s) {
+                  setState(() {
+                    searchText = s;
+                  });
+                },
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ValueListenableBuilder<List<ProjectInfo>>(
-              valueListenable: widget.app.assets.projects.list(),
-              builder: (context, projects, child) {
-                List<ProjectInfo> filteredProjects = [];
-                if (searchText == "") {
-                  filteredProjects = projects;
-                } else {
-                  for (var project in projects) {
-                    if (project.name.value
-                            .toLowerCase()
-                            .contains(searchText.toLowerCase()) ||
-                        project.description
-                            .toLowerCase()
-                            .contains(searchText.toLowerCase())) {
-                      filteredProjects.add(project);
+            const SizedBox(height: 10),
+            Expanded(
+              child: ValueListenableBuilder<List<ProjectInfo>>(
+                valueListenable: widget.app.assets.projects.list(),
+                builder: (context, projects, child) {
+                  List<ProjectInfo> filteredProjects = [];
+                  if (searchText == "") {
+                    filteredProjects = projects;
+                  } else {
+                    for (var project in projects) {
+                      if (project.name.value
+                              .toLowerCase()
+                              .contains(searchText.toLowerCase()) ||
+                          project.description
+                              .toLowerCase()
+                              .contains(searchText.toLowerCase())) {
+                        filteredProjects.add(project);
+                      }
                     }
                   }
-                }
 
-                if (filteredProjects.isEmpty) {
-                  return Container();
-                }
+                  if (filteredProjects.isEmpty) {
+                    return Container();
+                  }
 
-                return GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-                  controller: controller,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 200,
-                      childAspectRatio: 1.0,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 15),
-                  itemCount: filteredProjects.length,
-                  itemBuilder: (BuildContext ctx, index) {
-                    return BrowserViewElement(
-                      index: index,
-                      project: filteredProjects[index],
-                      // selectedIndex: selectedIndex,
-                      onTap: (e) {
-                        setState(() {
-                          showInfo = true;
-                          infoVisible = true;
-                        });
+                  return GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                    controller: controller,
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            childAspectRatio: 1.0,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 15),
+                    itemCount: filteredProjects.length,
+                    itemBuilder: (BuildContext ctx, index) {
+                      return BrowserViewElement(
+                        index: index,
+                        project: filteredProjects[index],
+                        // selectedIndex: selectedIndex,
+                        onTap: (e) {
+                          setState(() {
+                            showInfo = true;
+                            infoVisible = true;
+                          });
 
-                        selectedProject = e;
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      Visibility(
-        visible: infoVisible,
-        maintainState: true,
-        maintainAnimation: true,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return AnimatedPadding(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.fastLinearToSlowEaseIn,
-              padding: EdgeInsets.fromLTRB(
-                showInfo ? 0 : 200,
-                showInfo ? 0 : 200,
-                0,
-                0,
+                          selectedProject = e;
+                        },
+                      );
+                    },
+                  );
+                },
               ),
-              child: AnimatedContainer(
+            ),
+          ],
+        ),
+        Visibility(
+          visible: infoVisible,
+          maintainState: true,
+          maintainAnimation: true,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return AnimatedPadding(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.fastLinearToSlowEaseIn,
-                width: showInfo ? constraints.maxWidth : 200,
-                height: showInfo ? constraints.maxHeight : 200,
-                child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.fastLinearToSlowEaseIn,
-                    opacity: showInfo ? 1.0 : 0.0,
-                    child: Builder(
-                      builder: (context) {
-                        if (selectedProject != null) {
-                          return InfoContentsWidget(
-                            widget.app,
-                            project: selectedProject!,
-                            onClose: () {
-                              setState(() {
-                                showInfo = false;
-                              });
+                padding: EdgeInsets.fromLTRB(
+                  showInfo ? 0 : 200,
+                  showInfo ? 0 : 200,
+                  0,
+                  0,
+                ),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.fastLinearToSlowEaseIn,
+                  width: showInfo ? constraints.maxWidth : 200,
+                  height: showInfo ? constraints.maxHeight : 200,
+                  child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.fastLinearToSlowEaseIn,
+                      opacity: showInfo ? 1.0 : 0.0,
+                      child: Builder(
+                        builder: (context) {
+                          if (selectedProject != null) {
+                            return InfoContentsWidget(
+                              widget.app,
+                              project: selectedProject!,
+                              onClose: () {
+                                setState(() {
+                                  showInfo = false;
+                                });
 
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                if (!showInfo) {
-                                  setState(() {
-                                    infoVisible = false;
-                                  });
-                                }
-                              });
-                            },
-                          );
-                        } else {
-                          return Container();
-                        }
-                      },
-                    )
-                    /*child: ValueListenableBuilder<ProjectInfo?>(
+                                Future.delayed(
+                                    const Duration(milliseconds: 500), () {
+                                  if (!showInfo) {
+                                    if (mounted) {
+                                      setState(() {
+                                        infoVisible = false;
+                                      });
+                                    }
+                                  }
+                                });
+                              },
+                            );
+                          } else {
+                            return Container();
+                          }
+                        },
+                      )
+                      /*child: ValueListenableBuilder<ProjectInfo?>(
                     valueListenable: selectedProject,
                     builder: (context, index, child) {
                       if (index < 0) {
@@ -179,13 +181,14 @@ class _BrowserView extends State<BrowserView> {
                       );
                     },
                   ),*/
-                    ),
-              ),
-            );
-          },
+                      ),
+                ),
+              );
+            },
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }
 
