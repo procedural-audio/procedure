@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'settings.dart';
 
-import '../main.dart';
 import '../module.dart';
 import '../plugins.dart';
 
