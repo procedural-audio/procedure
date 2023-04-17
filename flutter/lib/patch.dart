@@ -431,11 +431,6 @@ class _Patch extends State<Patch> {
     }
 
     return GestureDetector(
-      onTapDown: (details) {
-        setState(() {
-          showRightClickMenu = false;
-        });
-      },
       onSecondaryTapDown: (details) {
         setState(() {
           rightClickOffset = details.localPosition;
@@ -460,6 +455,13 @@ class _Patch extends State<Patch> {
               }
             },
             child: GestureDetector(
+              onTap: () {
+                if (showRightClickMenu) {
+                  setState(() {
+                    showRightClickMenu = false;
+                  });
+                }
+              },
               child: SizedBox(
                 width: 10000,
                 height: 10000,

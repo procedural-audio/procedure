@@ -7,11 +7,12 @@ import 'dart:math';
 import 'projects.dart';
 import 'core.dart';
 import 'plugins.dart';
-import 'ui/ui.dart';
 
 import 'views/info.dart';
 import 'views/settings.dart';
 import 'views/bar.dart';
+
+import 'ui/ui.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
