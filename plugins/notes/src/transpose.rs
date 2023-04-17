@@ -42,7 +42,7 @@ impl Module for Transpose {
                 text: "Steps",
                 color: Color::GREEN,
                 value: &mut self.value,
-                feedback: Box::new(|v| {
+                feedback: Box::new(| v | {
                     let steps = f32::round(v * 24.0 - 12.0) as i32;
                     format!("{}", steps)
                 })
