@@ -55,29 +55,13 @@ impl Module for Transpose {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
-        if inputs.events.connected(0) {
-            println!("Events connected");
-        } else {
-            println!("Events not connected");
-        }
-
-        if outputs.events.connected(0) {
-            println!("Output connected");
-        } else {
-            println!("Output not connected");
-        }
-
         if inputs.control.connected(0) {
-            println!("Control connected");
             steps = f32::round(inputs.control[0]);
-        } else {
-            println!("Control not connected");
         }
 
-        if steps < 0.0 {
-            steps = steps / 2.0;
-        }
+        println!("Steps is {}", steps);
 
+        let ratio = f32::powf(2.0, steps / 12.0);
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure } => {
@@ -86,7 +70,7 @@ impl Module for Transpose {
                             id: msg.id,
                             offset: msg.offset,
                             note: Event::NoteOn {
-                                pitch: pitch * (1.0 + steps / 12.0),
+                                pitch: pitch * ratio,
                                 pressure
                             }
                         }
@@ -97,7 +81,7 @@ impl Module for Transpose {
                         NoteMessage {
                             id: msg.id,
                             offset: msg.offset,
-                            note: Event::Pitch(pitch * (1.0 + steps / 12.0))
+                            note: Event::Pitch(pitch * ratio)
                         }
                     );
                 },
