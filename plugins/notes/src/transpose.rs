@@ -59,8 +59,6 @@ impl Module for Transpose {
             steps = f32::round(inputs.control[0]);
         }
 
-        println!("Steps is {}", steps);
-
         let ratio = f32::powf(2.0, steps / 12.0);
         for msg in &inputs.events[0] {
             match msg.note {
