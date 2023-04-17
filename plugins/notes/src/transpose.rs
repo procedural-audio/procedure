@@ -55,8 +55,23 @@ impl Module for Transpose {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let mut steps = f32::round(self.value * 24.0 - 12.0);
 
+        if inputs.events.connected(0) {
+            println!("Events connected");
+        } else {
+            println!("Events not connected");
+        }
+
+        if outputs.events.connected(0) {
+            println!("Output connected");
+        } else {
+            println!("Output not connected");
+        }
+
         if inputs.control.connected(0) {
+            println!("Control connected");
             steps = f32::round(inputs.control[0]);
+        } else {
+            println!("Control not connected");
         }
 
         if steps < 0.0 {

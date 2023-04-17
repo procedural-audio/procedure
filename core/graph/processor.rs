@@ -192,17 +192,21 @@ impl GraphProcessor {
                 _ => panic!("Need to update this"),
             };
 
-            fn is_connected(nodes: &Vec<Rc<Node>>, connectors: &Vec<Connector>, node_id: i32, kind: usize, kind_index: i32, input: bool) -> bool {
+            fn is_connected(nodes: &Vec<Rc<Node>>, connectors: &Vec<Connector>, node_id: i32, kind: usize, mut kind_index: i32, input: bool) -> bool {
                 let mut pin_index = 0;
+                let mut input_count = 0;
+
                 for node in nodes {
                     if node.id == node_id {
+                        let mut kind_count = 0;
+                        input_count = node.module.info().inputs.len() as i32;
+
                         let pins = if input {
                             node.module.info().inputs
                         } else {
                             node.module.info().outputs
                         };
 
-                        let mut kind_count = 0;
                         for pin in pins {
                             match pin {
                                 Pin::Audio(_, _) => {
@@ -270,11 +274,20 @@ impl GraphProcessor {
                 }
 
                 let mut connected = false;
-                connectors.iter().for_each(| conn | {
-                    if conn.end.module_id == node_id && conn.end.pin_index == pin_index {
-                        connected = true;
-                    }
-                });
+
+                if input {
+                    connectors.iter().for_each(| conn | {
+                        if conn.end.module_id == node_id && conn.end.pin_index == pin_index {
+                            connected = true;
+                        }
+                    });
+                } else {
+                    connectors.iter().for_each(| conn | {
+                        if conn.start.module_id == node_id && conn.start.pin_index == (pin_index + input_count) {
+                            connected = true;
+                        }
+                    });
+                }
 
                 return connected;
             }
