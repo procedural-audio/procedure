@@ -1,10 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import '../patch.dart';
-import 'widget.dart';
-import '../main.dart';
-import 'dart:ui' as ui;
+
 import 'dart:ffi';
+
+import 'widget.dart';
+
 import '../core.dart';
 import '../module.dart';
 
@@ -46,13 +48,13 @@ class FaderWidget extends ModuleWidget {
         onTapDown: (e) {
           setState(() {
             double newValue = 1 - (e.localPosition.dy / constraints.maxHeight);
-            ffiFaderSetValue(widgetRaw.pointer, newValue);
+            ffiFaderSetValue(widgetRaw.pointer, newValue.clamp(0.0, 1.0));
           });
         },
         onPanUpdate: (e) {
           setState(() {
             double newValue = 1 - (e.localPosition.dy / constraints.maxHeight);
-            ffiFaderSetValue(widgetRaw.pointer, newValue);
+            ffiFaderSetValue(widgetRaw.pointer, newValue.clamp(0.0, 1.0));
           });
         },
         child: Container(
@@ -61,17 +63,23 @@ class FaderWidget extends ModuleWidget {
           alignment: Alignment.bottomCenter,
           child: Container(
             width: constraints.maxWidth,
-            height: constraints.maxHeight * value,
+            height: max(constraints.maxHeight * value, 0.1),
             decoration: BoxDecoration(
-                color: color,
-                borderRadius: const BorderRadius.all(Radius.circular(3))),
+              color: color,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(3),
+              ),
+            ),
           ),
           decoration: BoxDecoration(
-              border: Border.all(
-                color: color,
-                width: 2.0,
-              ),
-              borderRadius: const BorderRadius.all(Radius.circular(5))),
+            border: Border.all(
+              color: color,
+              width: 2.0,
+            ),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(5),
+            ),
+          ),
         ),
       );
     });

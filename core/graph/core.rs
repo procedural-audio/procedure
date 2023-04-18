@@ -135,22 +135,6 @@ pub unsafe extern "C" fn ffi_host_refresh(host: &mut Host) {
     host.graph.refresh();
 }
 
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_host_add_module(host: &mut Host, buffer: &i8) -> bool {
-    host.graph.add_module(str_from_char(buffer))
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_remove_node(host: &mut Host, id: i32) -> bool {
-    host.graph.remove_module(id);
-    true
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_node_count(host: &mut Host) -> usize {
-    host.graph.nodes.len()
-}*/
-
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &Node {
     host.graph.nodes[index].as_ref()

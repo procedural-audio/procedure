@@ -12,6 +12,7 @@ mod detune;
 mod drift;
 mod portamento;
 mod monophonic;
+mod rene;
 
 pub use arpeggiator::*;
 pub use notes_track::*;
@@ -25,7 +26,7 @@ pub use detune::*;
 pub use drift::*;
 pub use portamento::*;
 pub use monophonic::*;
-
+pub use rene::*;
 
 static PLUGIN: Plugin = Plugin {
     name: "Built-in Notes Modules",
@@ -36,6 +37,7 @@ static PLUGIN: Plugin = Plugin {
         module::<StepSequencer>(),
         module::<Arpeggiator>(),
         module::<Keyboard>(),
+        module::<Rene>(),
 
         // Effects
         module::<Transpose>(),

@@ -11,7 +11,6 @@ import 'dart:async';
 
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
 
 import '../views/variables.dart';
 import 'knob.dart';

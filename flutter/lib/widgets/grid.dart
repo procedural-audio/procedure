@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'widget.dart';
-import 'dart:io';
 import 'dart:ffi';
-import '../patch.dart';
 
-import 'package:ffi/ffi.dart';
+import 'widget.dart';
 
-import '../main.dart';
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
 
 int Function(RawWidgetPointer) ffiGridGetColumns = core
     .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
@@ -22,9 +17,18 @@ class GridWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: ffiGridGetColumns(widgetRaw.pointer),
-      children: children,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: GridView.count(
+            crossAxisCount: ffiGridGetColumns(widgetRaw.pointer),
+            childAspectRatio: constraints.maxHeight / constraints.maxWidth,
+            children: children,
+          ),
+        );
+      },
     );
   }
 }
@@ -55,7 +59,6 @@ class GridBuilderWidget extends ModuleWidget {
 
   @override
   void initState() {
-    print("New gridbuilder state");
     var trait = widgetRaw.getTrait();
 
     int count = ffiGridBuilderGetCount(trait);
@@ -93,12 +96,15 @@ class GridBuilderWidget extends ModuleWidget {
     var trait = widgetRaw.getTrait();
     int columns = ffiGridBuilderGetColumns(trait);
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return GridView.count(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView.count(
           crossAxisCount: columns,
           childAspectRatio: (constraints.maxWidth / columns) /
               (constraints.maxHeight / (childWidgets.length / columns)),
-          children: childWidgets);
-    });
+          children: childWidgets,
+        );
+      },
+    );
   }
 }
