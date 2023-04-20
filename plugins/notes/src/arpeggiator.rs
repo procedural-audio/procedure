@@ -1,12 +1,14 @@
 use std::cmp::Ordering;
 
-use rand::{seq::IteratorRandom, Rng};
+use rand::{seq::{IteratorRandom, SliceRandom}, Rng, rngs::ThreadRng};
 use pa_dsp::*;
 use modules::*;
 
 pub struct Arpeggiator {
     mode: usize,
-    notes: Vec<Note>
+    notes: Vec<Note>,
+    ordered: Vec<Note>,
+    rng: ThreadRng
 }
 
 pub struct ArpeggiatorVoice {
@@ -38,7 +40,9 @@ impl Module for Arpeggiator {
     fn new() -> Self {
         Self {
             mode: 0,
-            notes: Vec::with_capacity(32)
+            notes: Vec::with_capacity(32),
+            ordered: Vec::with_capacity(32),
+            rng: rand::thread_rng()
         }
     }
 
@@ -68,7 +72,9 @@ impl Module for Arpeggiator {
                                 "Up",
                                 "Down",
                                 "Up > Down",
+                                "Up > Down+",
                                 "Down > Up",
+                                "Down > Up+",
                                 "Random"
                             ]
                         }
@@ -128,56 +134,122 @@ impl Module for Arpeggiator {
                 );
             }
 
-            self.notes.sort_by(| a, b | {
-                if self.mode == 0 {
-                    Ordering::Less
-                } else if self.mode == 1 || self.mode == 2 {
-                    if a.pitch <= b.pitch {
-                        Ordering::Less
-                    } else {
-                        Ordering::Greater
-                    }
-                } else if self.mode == 3 {
-                    if a.pitch <= b.pitch {
-                        Ordering::Greater
-                    } else {
-                        Ordering::Less
-                    }
-                // } else if self.mode == 4 {
-                // } else if self.mode == 5 {
-                // } else if self.mode == 6 {
-                } else {
-                    Ordering::Less
+            if voice.index == 0 {
+                self.ordered.clear();
+                for n in &self.notes {
+                    self.ordered.push(*n);
                 }
-            });
 
-            if self.notes.len() > 0 {
-                if voice.index == 0 {
-                    println!("Beat {}", beat);
-
-                    let note = self.notes[beat % self.notes.len()];
-                    let id = Id::new();
-                    voice.playing.push(id);
-
-                    outputs.events[0].push(
-                        NoteMessage {
-                            id,
-                            offset: 0,
-                            note: Event::NoteOn {
-                                pitch: note.pitch,
-                                pressure: note.pressure
-                            }
-                        }
-                    );
+                if self.mode == 0 {
+                    // Don't reorder
                 } else if self.mode == 1 {
-                    if beat < self.notes.len() {
-                        let note = self.notes[beat];
+                    // Don't reorder
+                } else if self.mode == 2 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Less
+                        } else {
+                            Ordering::Greater
+                        }
+                    });
+                } else if self.mode == 3 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Greater
+                        } else {
+                            Ordering::Less
+                        }
+                    });
+                } else if self.mode == 4 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Less
+                        } else {
+                            Ordering::Greater
+                        }
+                    });
+
+                    let l = self.ordered.len();
+                    if l >= 3 {
+                        for i in 1..(l-1) {
+                            self.ordered.push(self.ordered[l - i - 1]);
+                        }
+                    }
+                } else if self.mode == 5 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Less
+                        } else {
+                            Ordering::Greater
+                        }
+                    });
+
+                    let l = self.ordered.len();
+                    for i in 0..l {
+                        self.ordered.push(self.ordered[l - i - 1]);
+                    }
+                } else if self.mode == 6 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Greater
+                        } else {
+                            Ordering::Less
+                        }
+                    });
+
+                    let l = self.ordered.len();
+                    if l >= 3 {
+                        for i in 1..(l-1) {
+                            self.ordered.push(self.ordered[l - i - 1]);
+                        }
+                    }
+                } else if self.mode == 7 {
+                    self.ordered.sort_by(| a, b | {
+                        if a.pitch <= b.pitch {
+                            Ordering::Greater
+                        } else {
+                            Ordering::Less
+                        }
+                    });
+
+                    let l = self.ordered.len();
+                    for i in 0..l {
+                        self.ordered.push(self.ordered[l - i - 1]);
+                    }
+                } else if self.mode == 8 {
+                    self.ordered.shuffle(&mut self.rng);
+                } else {
+                    panic!("Unknown dropdown index");
+                }
+            }
+
+            if self.ordered.len() > 0 {
+                if self.mode != 1 {
+                    if voice.index == 0 {
+                        let note = self.ordered[beat % self.ordered.len()];
                         let id = Id::new();
                         voice.playing.push(id);
 
                         outputs.events[0].push(
                             NoteMessage {
-                                id: Id::new(),
+                                id,
+                                offset: 0,
+                                note: Event::NoteOn {
+                                    pitch: note.pitch,
+                                    pressure: note.pressure
+                                }
+                            }
+                        );
+                    }
+                } else {
+                    if (voice.index as usize) < self.ordered.len() {
+                        let note = self.ordered[voice.index as usize];
+                        let id = Id::new();
+                        voice.playing.push(id);
+
+                        outputs.events[0].push(
+                            NoteMessage {
+                                id,
                                 offset: 0,
                                 note: Event::NoteOn {
                                     pitch: note.pitch,
