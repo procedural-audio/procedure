@@ -33,8 +33,13 @@ impl Module for Transpose {
         ()
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        self.value = state.load("value");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("value", self.value);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {

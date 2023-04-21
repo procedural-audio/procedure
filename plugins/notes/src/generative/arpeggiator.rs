@@ -53,8 +53,13 @@ impl Module for Arpeggiator {
         }
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        self.mode = state.load("mode");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("mode", self.mode);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(
