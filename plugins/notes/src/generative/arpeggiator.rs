@@ -24,14 +24,14 @@ impl Module for Arpeggiator {
         id: "default.sequencing.arpeggiator",
         version: "0.0.0",
         color: Color::GREEN,
-        size: Size::Static(200, 100),
+        size: Size::Static(190, 80),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Notes("Midi Input", 20),
-            Pin::Time("Time", 50)
+            Pin::Notes("Midi Input", 10),
+            Pin::Time("Time", 35)
         ],
         outputs: &[
-            Pin::Notes("Midi Output", 20)
+            Pin::Notes("Midi Output", 10)
         ],
         path: &["Notes", "Generative", "Arpeggiator"],
         presets: Presets::NONE
@@ -61,8 +61,8 @@ impl Module for Arpeggiator {
             Stack {
                 children: (
                     Transform {
-                        position: (35, 40),
-                        size: (130, 40),
+                        position: (35, 35),
+                        size: (120, 35),
                         child: Dropdown {
                             index: &mut self.mode,
                             color: Color::GREEN,
