@@ -22,7 +22,7 @@ impl Module for Rene {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Sequencing", "Rene"],
+        path: &["Notes", "Generative", "Rene"],
         presets: Presets::NONE
     };
 
