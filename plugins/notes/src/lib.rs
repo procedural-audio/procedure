@@ -17,7 +17,6 @@ static PLUGIN: Plugin = Plugin {
         module::<StepSequencer>(),
         module::<Arpeggiator>(),
         module::<Keyboard>(),
-        module::<Rene>(),
 
         // Effects
         module::<Transpose>(),

@@ -20,6 +20,7 @@ static PLUGIN: Plugin = Plugin {
     version: 1,
     modules: &[
         // Sources
+        module::<Steps>(),
         module::<Constant>(),
         module::<LfoModule>(),
         module::<EnvelopeModule>(),
