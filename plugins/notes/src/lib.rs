@@ -22,12 +22,15 @@ static PLUGIN: Plugin = Plugin {
         // Effects
         module::<Transpose>(),
         module::<Scale>(),
-        module::<Pitch>(),
-        module::<Pressure>(),
+        module::<GetPitch>(),
+        module::<SetPitch>(),
+        module::<GetVelocity>(),
+        module::<SetVelocity>(),
         module::<Detune>(),
         module::<Drift>(),
         module::<Portamento>(),
         module::<Monophonic>(),
+        module::<Split>(),
     ]
 };
 
