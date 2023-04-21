@@ -1,32 +1,12 @@
 use modules::{Plugin, module};
 
-mod arpeggiator;
-mod notes_track;
-mod pitch;
-mod pressure;
-mod step_sequencer;
-mod transpose;
-mod keyboard;
-mod scale;
-mod detune;
-mod drift;
-mod portamento;
-mod monophonic;
-mod rene;
+mod sequencing;
+mod generative;
+mod effects;
 
-pub use arpeggiator::*;
-pub use notes_track::*;
-pub use pitch::*;
-pub use pressure::*;
-pub use step_sequencer::*;
-pub use transpose::*;
-pub use keyboard::*;
-pub use scale::*;
-pub use detune::*;
-pub use drift::*;
-pub use portamento::*;
-pub use monophonic::*;
-pub use rene::*;
+pub use sequencing::*;
+pub use generative::*;
+pub use effects::*;
 
 static PLUGIN: Plugin = Plugin {
     name: "Built-in Notes Modules",
