@@ -52,13 +52,13 @@ impl Module for Split {
                     keys: &mut self.keys,
                     on_event: | event, keys | {
                         match event {
-                            KeyEvent::Press(i) => {
-                                self.split_index = i;
-                                for key in keys.iter_mut().enumerate() {
-                                    if key.0 < self.split_index {
-                                        key.1.down = true;
+                            KeyEvent::Press(index) => {
+                                self.split_index = index;
+                                for (i, key) in keys.iter_mut().enumerate() {
+                                    if i < self.split_index {
+                                        key.down = true;
                                     } else {
-                                        key.1.down = false;
+                                        key.down = false;
                                     }
                                 }
                             },
