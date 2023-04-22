@@ -325,76 +325,10 @@ impl Graph {
     pub fn remove_connector(&mut self, id: i32, index: i32) {
         self.connectors
             .retain(|c| !(c.start.module_id == id && c.start.pin_index == index));
-
         self.connectors
             .retain(|c| !(c.end.module_id == id && c.end.pin_index == index));
-
         self.refresh();
     }
-
-    /*pub fn hot_reload(&mut self) {
-        let mut nodes = Vec::new();
-
-        let mut graph_equal = true;
-
-        for node in &self.nodes {
-            if node.module.should_rebuild() {
-                let info1 = &node.info(); // These get the same value
-                let info2 = &node.module.info(); // PROBLEM
-
-
-                let mut node_equal = false;
-
-                if info1.name == info2.name
-                    && info1.color as i32 == info2.color as i32
-                    && info1.size == info2.size
-                    && info1.multi_voice == info2.multi_voice
-                    && info1.inputs.len() == info2.inputs.len()
-                    && info1.outputs.len() == info2.outputs.len() {
-
-                    node_equal = true;
-
-                    for (i1, i2) in info1.inputs.iter().zip(info2.inputs.iter()) {
-                        let mut equal2 = false;
-
-                        match (i1, i2) {
-                            (Pin::Audio(a, b), Pin::Audio(c, d)) => {
-                                if a == c && b == d {
-                                    equal2 = true;
-                                }
-                            },
-                            (Pin::Notes(a, b), Pin::Notes(c, d)) => {
-                                if a == c && b == d {
-                                    equal2 = true;
-                                }
-                            },
-                            (Pin::Control(a, b), Pin::Control(c, d)) => {
-                                if a == c && b == d {
-                                    equal2 = true;
-                                }
-                            },
-                            _ => (),
-                        }
-
-                        if !equal2 {
-                            node_equal = false;
-                        }
-                    }
-                }
-
-                if node_equal {
-                    nodes.push(node.clone());
-                } else {
-                    println!("Detected change in info, rebuilding graph");
-                    graph_equal = false;
-                }
-            }
-
-            if !graph_equal {
-                // Set stuff here
-            }
-        }
-    }*/
 
     pub fn refresh(&mut self) {
         *self.updated.lock().unwrap() = Some(GraphProcessor::new(
