@@ -7,11 +7,9 @@ import '../plugins.dart';
 
 class RightClickView extends StatefulWidget {
   RightClickView({
-    required this.addPosition,
     required this.onAddModule,
   });
 
-  Offset addPosition;
   void Function(ModuleInfo) onAddModule;
 
   @override
@@ -48,7 +46,6 @@ class _RightClickView extends State<RightClickView> {
               Icons.piano,
               spec.color,
               20,
-              widget.addPosition,
               widget.onAddModule,
             );
 
@@ -74,7 +71,6 @@ class _RightClickView extends State<RightClickView> {
               Icons.piano,
               spec.color,
               30,
-              widget.addPosition,
               widget.onAddModule,
             );
 
@@ -108,6 +104,8 @@ class _RightClickView extends State<RightClickView> {
             }
           }
         }
+
+        categories.sort((a, b) => a.name.compareTo(b.name));
 
         List<Widget> filteredWidgets = [];
 
@@ -303,7 +301,6 @@ class RightClickElement extends StatefulWidget {
   final double indent;
   final IconData icon;
   final Color color;
-  final Offset addPosition;
   final void Function(ModuleInfo info) onAddModule;
 
   RightClickElement(
@@ -311,7 +308,6 @@ class RightClickElement extends StatefulWidget {
     this.icon,
     this.color,
     this.indent,
-    this.addPosition,
     this.onAddModule,
   );
 

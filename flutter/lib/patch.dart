@@ -287,6 +287,7 @@ class _Patch extends State<Patch> {
 
   TransformationController controller = TransformationController();
   Offset rightClickOffset = Offset.zero;
+  Offset moduleAddPosition = Offset.zero;
   bool showRightClickMenu = false;
   late Timer timer;
 
@@ -361,8 +362,10 @@ class _Patch extends State<Patch> {
     timer.cancel();
   }
 
-  void addModule(String id) {
+  void addModule(String id, Offset position) {
     var rawNode = widget.rawPatch.addModule(id);
+    rawNode.setX(position.dx);
+    rawNode.setY(position.dy);
   }
 
   void addConnector(Pin start, Pin end) {
@@ -463,22 +466,30 @@ class _Patch extends State<Patch> {
                 });
               }
             },
-            child: GestureDetector(
-              onTap: () {
-                if (showRightClickMenu) {
-                  setState(() {
-                    showRightClickMenu = false;
-                  });
-                }
+            child: Listener(
+              onPointerDown: (e) {
+                print("Add position is ${e.localPosition}");
+                moduleAddPosition = e.localPosition;
               },
-              child: SizedBox(
-                width: 10000,
-                height: 10000,
-                child: CustomPaint(
-                  painter: Grid(),
-                  child: Stack(
-                    children:
-                        <Widget>[widget.newConnector] + nodes + connectors,
+              child: GestureDetector(
+                onTap: () {
+                  if (showRightClickMenu) {
+                    setState(() {
+                      showRightClickMenu = false;
+                    });
+                  }
+                },
+                child: SizedBox(
+                  width: 10000,
+                  height: 10000,
+                  child: CustomPaint(
+                    painter: Grid(),
+                    child: Listener(
+                      child: Stack(
+                        children:
+                            <Widget>[widget.newConnector] + nodes + connectors,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -490,9 +501,8 @@ class _Patch extends State<Patch> {
               left: rightClickOffset.dx,
               top: rightClickOffset.dy,
               child: RightClickView(
-                addPosition: rightClickOffset,
                 onAddModule: (info) {
-                  addModule(info.id);
+                  addModule(info.id, moduleAddPosition);
                   setState(() {
                     showRightClickMenu = false;
                   });
