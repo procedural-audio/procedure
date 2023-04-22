@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import 'package:flutter/services.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -81,6 +82,10 @@ RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
         NativeFunction<
             RawNode Function(
                 RawPatch, RawPlugins, Pointer<Utf8>)>>("ffi_patch_add_module")
+    .asFunction();
+bool Function(RawPatch, int) _ffiPatchRemoveNode = core
+    .lookup<NativeFunction<Bool Function(RawPatch, Int32)>>(
+        "ffi_patch_remove_node")
     .asFunction();
 int Function(RawPatch) _ffiPatchGetNodeCount = core
     .lookup<NativeFunction<Int64 Function(RawPatch)>>(
@@ -175,6 +180,10 @@ class RawPatch extends Struct {
 
   Pointer<Void> getState() {
     return _ffiPatchGetState(this);
+  }
+
+  bool removeNode(int id) {
+    return _ffiPatchRemoveNode(this, id);
   }
 
   void setState(Pointer<Void> state) {
@@ -290,6 +299,8 @@ class _Patch extends State<Patch> {
   Offset moduleAddPosition = Offset.zero;
   bool showRightClickMenu = false;
   late Timer timer;
+
+  final focusNode = FocusNode();
 
   void tick(Timer t) {
     for (var node in nodes) {
@@ -478,15 +489,37 @@ class _Patch extends State<Patch> {
                     });
                   }
                 },
-                child: SizedBox(
-                  width: 10000,
-                  height: 10000,
-                  child: CustomPaint(
-                    painter: Grid(),
-                    child: Listener(
-                      child: Stack(
-                        children:
-                            <Widget>[widget.newConnector] + nodes + connectors,
+                child: KeyboardListener(
+                  focusNode: focusNode,
+                  autofocus: true,
+                  onKeyEvent: (e) {
+                    print("Got key event");
+                    if (e.logicalKey == LogicalKeyboardKey.delete ||
+                        e.logicalKey == LogicalKeyboardKey.backspace) {
+                      print("Get key delete");
+                      for (var node in selectedNodes.value) {
+                        widget.rawPatch.removeNode(node.id);
+                        nodes.removeWhere((n) => n.id == node.id);
+                        connectors.removeWhere((c) =>
+                            c.start.nodeId == node.id ||
+                            c.end.nodeId == node.id);
+                      }
+
+                      selectedNodes.value = [];
+                      setState(() {});
+                    }
+                  },
+                  child: SizedBox(
+                    width: 10000,
+                    height: 10000,
+                    child: CustomPaint(
+                      painter: Grid(),
+                      child: Listener(
+                        child: Stack(
+                          children: <Widget>[widget.newConnector] +
+                              nodes +
+                              connectors,
+                        ),
                       ),
                     ),
                   ),
@@ -550,10 +583,10 @@ class ConnectorPainter extends CustomPainter {
 
     Path path = Path();
 
-    path.moveTo(start.dx, start.dy);
+    path.moveTo(start.dx + 9, start.dy + 2);
     path.quadraticBezierTo(start1.dx + 20, start1.dy, center.dx, center.dy);
 
-    path.moveTo(end.dx, end.dy);
+    path.moveTo(end.dx - 3, end.dy + 2);
     path.quadraticBezierTo(end1.dx - 20, end1.dy, center.dx, center.dy);
 
     canvas.drawPath(path, paint);

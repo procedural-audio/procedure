@@ -142,7 +142,7 @@ class _PinState extends State<Pin> {
                 height: 15,
                 decoration: BoxDecoration(
                   color: hovering || dragging || connected
-                      ? (selected || hovering ? color : color.withOpacity(0.3))
+                      ? (selected || hovering ? color : color.withOpacity(0.5))
                       : Colors.transparent,
                   border: Border.all(
                     color: color,
