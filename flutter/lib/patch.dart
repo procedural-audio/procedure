@@ -594,10 +594,10 @@ class ConnectorPainter extends CustomPainter {
     Path path = Path();
 
     path.moveTo(start.dx, start.dy);
-    path.quadraticBezierTo(start1.dx + 20, start1.dy, center.dx, center.dy);
+    path.quadraticBezierTo(start1.dx + 10, start1.dy, center.dx, center.dy);
 
     path.moveTo(end.dx, end.dy);
-    path.quadraticBezierTo(end1.dx - 20, end1.dy, center.dx, center.dy);
+    path.quadraticBezierTo(end1.dx - 10, end1.dy, center.dx, center.dy);
 
     canvas.drawPath(path, paint);
   }
