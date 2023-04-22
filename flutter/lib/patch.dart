@@ -468,7 +468,6 @@ class _Patch extends State<Patch> {
             },
             child: Listener(
               onPointerDown: (e) {
-                print("Add position is ${e.localPosition}");
                 moduleAddPosition = e.localPosition;
               },
               child: GestureDetector(
