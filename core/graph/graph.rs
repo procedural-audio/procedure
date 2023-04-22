@@ -284,31 +284,6 @@ impl Graph {
         }
     }
 
-    /*pub fn add_module(&mut self, id: &str) -> bool {
-        println!("[Rust] Adding module {}", id);
-
-        for module in &self.modules.modules {
-            if module.id == id {
-                let mut manager = module.create();
-                manager.prepare(self.sample_rate, self.block_size);
-                self.nodes.push(Rc::new(Node::new(manager)));
-                self.refresh();
-                return true;
-            }
-        }
-
-        /*if let Some(mut module) = self.plugins.create_module(id) {
-            module.prepare(self.sample_rate, self.block_size);
-            self.nodes.push(Rc::new(Node::new(module)));
-            self.refresh();
-            return true;
-        }*/
-
-        println!("Couldn't add module {}", id);
-
-        return false;
-    }*/
-
     pub fn remove_module(&mut self, id: i32) {
         self.nodes.retain(|node| node.id != id);
         self.connectors
