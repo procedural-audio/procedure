@@ -356,45 +356,6 @@ impl Graph {
                     println!("Graph buffer swapping");
                     swap(&mut self.processor, p);
                     *processor = None;
-
-                    /*for n in &mut self.nodes {
-                        unsafe {
-                            let const_ptr = n.module.as_ref() as *const dyn PolyphonicModule;
-                            let mut_ptr = const_ptr as *mut dyn PolyphonicModule;
-                            let mut_ref = &mut *mut_ptr;
-                            let connected = mut_ref.get_connected();
-
-                            for c in connected {
-                                *c = false;
-                            }
-
-                        }
-                    }
-
-                    for c in &self.connectors {
-                        for n in &mut self.nodes {
-                            if c.end.module_id == n.id {
-                                unsafe {
-                                    let const_ptr = n.module.as_ref() as *const dyn PolyphonicModule;
-                                    let mut_ptr = const_ptr as *mut dyn PolyphonicModule;
-                                    let mut_ref = &mut *mut_ptr;
-                                    let connected = mut_ref.get_connected();
-                                    connected[c.end.pin_index as usize] = true;
-                                }
-                            }
-
-                            if c.start.module_id == n.id {
-                                unsafe {
-                                    let const_ptr = n.module.as_ref() as *const dyn PolyphonicModule;
-                                    let mut_ptr = const_ptr as *mut dyn PolyphonicModule;
-                                    let mut_ref = &mut *mut_ptr;
-                                    let connected = mut_ref.get_connected();
-                                    connected[c.start.pin_index as usize] = true;
-                                }
-                            }
-                        }
-                    }
-                    */
                 }
             }
             Err(_) => (),
