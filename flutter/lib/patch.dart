@@ -476,6 +476,10 @@ class _Patch extends State<Patch> {
                   showRightClickMenu = false;
                 });
               }
+
+              if (selectedNodes.value.isNotEmpty) {
+                selectedNodes.value = [];
+              }
             },
             child: Listener(
               onPointerDown: (e) {
@@ -487,6 +491,10 @@ class _Patch extends State<Patch> {
                     setState(() {
                       showRightClickMenu = false;
                     });
+                  }
+
+                  if (selectedNodes.value.isNotEmpty) {
+                    selectedNodes.value = [];
                   }
                 },
                 child: KeyboardListener(
