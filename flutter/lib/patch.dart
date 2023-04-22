@@ -549,10 +549,10 @@ class _Patch extends State<Patch> {
 }
 
 class ConnectorPainter extends CustomPainter {
-  ConnectorPainter(this.start, this.end, this.type, this.focused);
+  ConnectorPainter(this.initialStart, this.initialEnd, this.type, this.focused);
 
-  Offset start;
-  Offset end;
+  Offset initialStart;
+  Offset initialEnd;
   IO type;
   bool focused;
 
@@ -573,8 +573,10 @@ class ConnectorPainter extends CustomPainter {
       paint.color = Colors.deepPurpleAccent.withOpacity(focused ? 1.0 : 0.3);
     }
 
-    double distance = (end - start).distance;
+    Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);
+    Offset end = Offset(initialEnd.dx - 3, initialEnd.dy + 2);
 
+    double distance = (end - start).distance;
     double firstOffset = min(distance, 40);
 
     Offset start1 = Offset(start.dx + firstOffset, start.dy);
@@ -583,10 +585,10 @@ class ConnectorPainter extends CustomPainter {
 
     Path path = Path();
 
-    path.moveTo(start.dx + 9, start.dy + 2);
+    path.moveTo(start.dx, start.dy);
     path.quadraticBezierTo(start1.dx + 20, start1.dy, center.dx, center.dy);
 
-    path.moveTo(end.dx - 3, end.dy + 2);
+    path.moveTo(end.dx, end.dy);
     path.quadraticBezierTo(end1.dx - 20, end1.dy, center.dx, center.dy);
 
     canvas.drawPath(path, paint);
@@ -594,10 +596,10 @@ class ConnectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ConnectorPainter oldDelegate) {
-    return oldDelegate.start.dx != start.dx ||
-        oldDelegate.start.dy != start.dy ||
-        oldDelegate.end.dx != end.dy ||
-        oldDelegate.end.dy != end.dy ||
+    return oldDelegate.initialStart.dx != initialStart.dx ||
+        oldDelegate.initialStart.dy != initialStart.dy ||
+        oldDelegate.initialEnd.dx != initialEnd.dy ||
+        oldDelegate.initialEnd.dy != initialEnd.dy ||
         oldDelegate.type != type;
   }
 }
