@@ -16,6 +16,8 @@ class Pin extends StatefulWidget {
     required this.offset,
     required this.type,
     required this.isInput,
+    required this.connectors,
+    required this.selectedNodes,
     required this.onAddConnector,
     required this.onRemoveConnector,
   }) : super(key: UniqueKey());
@@ -26,6 +28,8 @@ class Pin extends StatefulWidget {
   final Offset offset;
   final IO type;
   final bool isInput;
+  final List<Connector> connectors;
+  final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
 
@@ -53,6 +57,14 @@ class _PinState extends State<Pin> {
       color = Colors.red;
     } else if (widget.type == IO.time) {
       color = Colors.deepPurpleAccent;
+    }
+
+    bool connected = false;
+    for (var connector in widget.connectors) {
+      if (connector.start == widget || connector.end == widget) {
+        connected = true;
+        break;
+      }
     }
 
     return Positioned(
@@ -121,17 +133,25 @@ class _PinState extends State<Pin> {
           onDoubleTap: () {
             widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
           },
-          child: Container(
-            width: 15,
-            height: 15,
-            decoration: BoxDecoration(
-              color: hovering || dragging ? color : Colors.transparent,
-              border: Border.all(
-                color: color,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
+          child: ValueListenableBuilder<List<Node>>(
+            valueListenable: widget.selectedNodes,
+            builder: (context, selectedNodes, child) {
+              bool selected = selectedNodes.contains(widget.node);
+              return Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: hovering || dragging || connected
+                      ? (selected || hovering ? color : color.withOpacity(0.3))
+                      : Colors.transparent,
+                  border: Border.all(
+                    color: color,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -196,6 +216,8 @@ class Node extends StatelessWidget {
   Node({
     required this.rawNode,
     required this.patch,
+    required this.connectors,
+    required this.selectedNodes,
     required this.onAddConnector,
     required this.onRemoveConnector,
     required this.onDrag,
@@ -218,6 +240,8 @@ class Node extends StatelessWidget {
           type: type,
           isInput: true,
           node: this,
+          selectedNodes: selectedNodes,
+          connectors: connectors,
           onAddConnector: onAddConnector,
           onRemoveConnector: (nodeId, pinIndex) {
             onRemoveConnector(nodeId, pinIndex);
@@ -239,6 +263,8 @@ class Node extends StatelessWidget {
           type: type,
           isInput: false,
           node: this,
+          selectedNodes: selectedNodes,
+          connectors: connectors,
           onAddConnector: onAddConnector,
           onRemoveConnector: (nodeId, pinIndex) {
             onRemoveConnector(nodeId, pinIndex);
@@ -258,6 +284,8 @@ class Node extends StatelessWidget {
 
   final Patch patch;
   final RawNode rawNode;
+  final List<Connector> connectors;
+  final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
   final void Function(Offset) onDrag;
@@ -285,6 +313,18 @@ class Node extends StatelessWidget {
           left: p.dx,
           top: p.dy,
           child: GestureDetector(
+            onTap: () {
+              if (selectedNodes.value.contains(this)) {
+                selectedNodes.value = [];
+              } else {
+                selectedNodes.value = [this];
+              }
+            },
+            onPanStart: (details) {
+              if (!selectedNodes.value.contains(this)) {
+                selectedNodes.value = [this];
+              }
+            },
             onPanUpdate: (details) {
               var x = rawNode.getX() + details.delta.dx;
               var y = rawNode.getY() + details.delta.dy;
@@ -293,33 +333,45 @@ class Node extends StatelessWidget {
               position.value = Offset(x, y);
               onDrag(details.localPosition);
             },
-            child: Container(
-              width: size.dx,
-              height: size.dy,
-              decoration: const BoxDecoration(
-                color: Color.fromRGBO(40, 40, 40, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-              ),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        name,
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 16,
-                        ),
-                      ),
+            child: ValueListenableBuilder<List<Node>>(
+              valueListenable: selectedNodes,
+              builder: (context, selectedNodes, child) {
+                bool selected = selectedNodes.contains(this);
+                return Container(
+                  width: size.dx,
+                  height: size.dy,
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(
+                      width: 2,
+                      color: selected
+                          ? const Color.fromRGBO(140, 140, 140, 1.0)
+                          : const Color.fromRGBO(40, 40, 40, 1.0),
                     ),
                   ),
-                  Stack(
-                    children: <Widget>[] + widgets + pins,
-                  )
-                ],
-              ),
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(
+                            name,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Stack(
+                        children: <Widget>[] + widgets + pins,
+                      )
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         );

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 
@@ -279,8 +281,9 @@ class Patch extends StatefulWidget {
 }
 
 class _Patch extends State<Patch> {
-  List<Node> nodes = [];
-  List<Connector> connectors = [];
+  final List<Node> nodes = [];
+  final List<Connector> connectors = [];
+  final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
 
   TransformationController controller = TransformationController();
   Offset rightClickOffset = Offset.zero;
@@ -311,6 +314,8 @@ class _Patch extends State<Patch> {
         Node(
           rawNode: rawNode,
           patch: widget,
+          connectors: connectors,
+          selectedNodes: selectedNodes,
           onAddConnector: (start, end) {
             addConnector(start, end);
             setState(() {});
@@ -339,6 +344,7 @@ class _Patch extends State<Patch> {
                 start: startPin,
                 end: endPin,
                 type: startPin.type,
+                selectedNodes: selectedNodes,
               ));
             }
           }
@@ -388,6 +394,8 @@ class _Patch extends State<Patch> {
         var node = Node(
           rawNode: rawNode,
           patch: widget,
+          connectors: connectors,
+          selectedNodes: selectedNodes,
           onAddConnector: (start, end) {
             addConnector(start, end);
             setState(() {});
@@ -420,6 +428,7 @@ class _Patch extends State<Patch> {
                   start: startPin,
                   end: endPin,
                   type: startPin.type,
+                  selectedNodes: selectedNodes,
                 );
 
                 connectors.add(connector);
@@ -498,29 +507,47 @@ class _Patch extends State<Patch> {
 }
 
 class ConnectorPainter extends CustomPainter {
-  ConnectorPainter(this.start, this.end, this.type);
+  ConnectorPainter(this.start, this.end, this.type, this.focused);
 
   Offset start;
   Offset end;
   IO type;
+  bool focused;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
     final paint = Paint()
       ..color = const Color.fromRGBO(255, 255, 255, 1.0)
+      ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
     if (type == IO.audio) {
-      paint.color = Colors.blue;
+      paint.color = Colors.blue.withOpacity(focused ? 1.0 : 0.3);
     } else if (type == IO.midi) {
-      paint.color = Colors.green;
+      paint.color = Colors.green.withOpacity(focused ? 1.0 : 0.3);
     } else if (type == IO.control) {
-      paint.color = Colors.red;
+      paint.color = Colors.red.withOpacity(focused ? 1.0 : 0.3);
     } else if (type == IO.time) {
-      paint.color = Colors.deepPurpleAccent;
+      paint.color = Colors.deepPurpleAccent.withOpacity(focused ? 1.0 : 0.3);
     }
 
-    canvas.drawLine(start, end, paint);
+    double distance = (end - start).distance;
+
+    double firstOffset = min(distance, 40);
+
+    Offset start1 = Offset(start.dx + firstOffset, start.dy);
+    Offset end1 = Offset(end.dx - firstOffset, end.dy);
+    Offset center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+
+    Path path = Path();
+
+    path.moveTo(start.dx, start.dy);
+    path.quadraticBezierTo(start1.dx + 20, start1.dy, center.dx, center.dy);
+
+    path.moveTo(end.dx, end.dy);
+    path.quadraticBezierTo(end1.dx - 20, end1.dy, center.dx, center.dy);
+
+    canvas.drawPath(path, paint);
   }
 
   @override
@@ -538,32 +565,42 @@ class Connector extends StatelessWidget {
     required this.start,
     required this.end,
     required this.type,
+    required this.selectedNodes,
   }) : super(key: UniqueKey());
 
   final Pin start;
   final Pin end;
   final IO type;
+  final ValueNotifier<List<Node>> selectedNodes;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Offset>(
-      valueListenable: start.node.position,
-      builder: (context, startModuleOffset, child) {
+    return ValueListenableBuilder<List<Node>>(
+      valueListenable: selectedNodes,
+      builder: (context, selectedNodes, child) {
+        bool focused = selectedNodes.contains(start.node) ||
+            selectedNodes.contains(end.node);
         return ValueListenableBuilder<Offset>(
-          valueListenable: end.node.position,
-          builder: (context, endModuleOffset, child) {
-            return CustomPaint(
-              painter: ConnectorPainter(
-                Offset(
-                  start.offset.dx + startModuleOffset.dx + 15 / 2,
-                  start.offset.dy + startModuleOffset.dy + 15 / 2,
-                ),
-                Offset(
-                  end.offset.dx + endModuleOffset.dx + 15 / 2,
-                  end.offset.dy + endModuleOffset.dy + 15 / 2,
-                ),
-                type,
-              ),
+          valueListenable: start.node.position,
+          builder: (context, startModuleOffset, child) {
+            return ValueListenableBuilder<Offset>(
+              valueListenable: end.node.position,
+              builder: (context, endModuleOffset, child) {
+                return CustomPaint(
+                  painter: ConnectorPainter(
+                    Offset(
+                      start.offset.dx + startModuleOffset.dx + 15 / 2,
+                      start.offset.dy + startModuleOffset.dy + 15 / 2,
+                    ),
+                    Offset(
+                      end.offset.dx + endModuleOffset.dx + 15 / 2,
+                      end.offset.dy + endModuleOffset.dy + 15 / 2,
+                    ),
+                    type,
+                    focused,
+                  ),
+                );
+              },
             );
           },
         );
@@ -595,7 +632,7 @@ class NewConnector extends StatelessWidget {
           );
 
           return CustomPaint(
-            painter: ConnectorPainter(startOffset, endOffset, type),
+            painter: ConnectorPainter(startOffset, endOffset, type, true),
           );
         } else {
           return Container();
