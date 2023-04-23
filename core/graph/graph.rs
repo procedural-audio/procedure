@@ -2,7 +2,7 @@ use std::mem::swap;
 use std::rc::Rc;
 use std::sync::Mutex;
 
-use serde::de::{self, MapAccess, SeqAccess, Visitor, DeserializeSeed};
+use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::{ser::*, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 
