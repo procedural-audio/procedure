@@ -319,12 +319,21 @@ impl Graph {
         self.sample_rate = sample_rate;
         self.block_size = block_size;
 
-        // self.plugins.prepare(sample_rate, block_size);
+        for node in &mut self.nodes {
+            unsafe {
+                (*((&**node as *const Node) as *mut Node)).module.prepare(sample_rate, block_size);
+            }
+        }
 
         self.refresh();
     }
 
-    pub fn preprocess(&mut self) {
+    pub fn process(
+        &mut self,
+        time: &TimeMessage,
+        audio: &mut [AudioBuffer],
+        midi: &mut NoteBuffer,
+    ) {
         match self.updated.try_lock() {
             Ok(mut processor) => {
                 if let Some(p) = &mut *processor {
@@ -335,17 +344,6 @@ impl Graph {
             }
             Err(_) => (),
         }
-    }
-
-    pub fn process(
-        &mut self,
-        time: &TimeMessage,
-        audio: &mut [AudioBuffer],
-        midi: &mut NoteBuffer,
-    ) {
-        self.preprocess();
-
-        // self.plugins.update();
 
         self.processor.process(time, audio, midi);
     }

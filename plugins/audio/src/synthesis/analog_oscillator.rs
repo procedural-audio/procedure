@@ -58,8 +58,6 @@ impl Module for AnalogOscillator {
     }
 
     fn new_voice(&self, index: u32) -> Self::Voice {
-        println!("Created voice {}", index);
-
         Self::Voice {
             /*saws: vec![Saw::new(); 8],
             squares: vec![Square::new(); 8],

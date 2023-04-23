@@ -51,6 +51,7 @@ impl Module for SawModule {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
+		println!("PREPARING saw voice with sample rate: {}", sample_rate);
         voice.active = false;
         voice.saw.init(sample_rate as i32);
     }
@@ -58,7 +59,7 @@ impl Module for SawModule {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for msg in &inputs.events[0] {
             match msg.note {
-                Event::NoteOn { pitch, pressure } => {
+                Event::NoteOn { pitch, pressure: _ } => {
                     voice.active = true;
                     voice.saw.init(voice.saw.fSampleRate);
                     voice.saw.set_freq(pitch);

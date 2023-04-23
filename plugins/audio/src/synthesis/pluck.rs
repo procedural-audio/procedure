@@ -45,8 +45,6 @@ impl Module for Pluck {
     }
 
     fn new_voice(&self, index: u32) -> Self::Voice {
-        println!("Created voice {}", index);
-
         Self::Voice {
             string: StringVoice::new()
         }
