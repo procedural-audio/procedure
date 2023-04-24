@@ -15,8 +15,11 @@ static PLUGIN: Plugin = Plugin {
         // Sources
         module::<NotesTrack>(),
         module::<StepSequencer>(),
-        module::<Arpeggiator>(),
         module::<Keyboard>(),
+
+        // Generative
+        module::<Generate>(),
+        module::<Arpeggiator>(),
 
         // Effects
         module::<Transpose>(),
