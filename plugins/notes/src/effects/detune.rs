@@ -1,10 +1,11 @@
-use rand::Rng;
-
 use modules::*;
 
 pub struct Detune {
-    rng: rand::rngs::ThreadRng,
     value: f32
+}
+
+fn detune(amount: f32) -> f32 {
+    (amount * 2.0 - 1.0) * (1.0 / 12.0) + 1.0
 }
 
 impl Module for Detune {
@@ -30,7 +31,6 @@ impl Module for Detune {
     
     fn new() -> Self {
         Self {
-            rng: rand::thread_rng(),
             value: 0.5
         }
     }
@@ -47,11 +47,11 @@ impl Module for Detune {
             position: (35, 30),
             size: (50, 70),
             child: Knob {
-                text: "Amount",
+                text: "Cents",
                 color: Color::GREEN,
                 value: &mut self.value,
                 feedback: Box::new(|v| {
-                    format!("{:.2}", v)
+                    format!("{:.2}", v * 200.0 - 100.0)
                 }),
             },
         })
@@ -60,37 +60,37 @@ impl Module for Detune {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if self.value > 0.0 {
-            for msg in &inputs.events[0] {
-                let detune = (self.rng.gen_range(-self.value..self.value) / 60.0) + 1.0;
+        let mut d = detune(self.value);
 
-                match msg.note {
-                    Event::NoteOn { pitch, pressure } => {
-                        outputs.events[0].push(
-                            NoteMessage {
-                                id: msg.id,
-                                offset: msg.offset,
-                                note: Event::NoteOn {
-                                    pitch: pitch * detune,
-                                    pressure: pressure
-                                }
+        if inputs.control.connected(0) {
+            d = detune(f32::clamp(inputs.control[0], 0.0, 1.0));
+        }
+
+        for msg in &inputs.events[0] {
+            match msg.note {
+                Event::NoteOn { pitch, pressure } => {
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::NoteOn {
+                                pitch: pitch * d,
+                                pressure
                             }
-                        );
-                    },
-                    Event::Pitch(pitch) => {
-                        outputs.events[0].push(
-                            NoteMessage {
-                                id: msg.id,
-                                offset: msg.offset,
-                                note: Event::Pitch(pitch * detune)
-                            }
-                        );
-                    },
-                    _ => outputs.events[0].push(*msg)
-                }
+                        }
+                    );
+                },
+                Event::Pitch(pitch) => {
+                    outputs.events[0].push(
+                        NoteMessage {
+                            id: msg.id,
+                            offset: msg.offset,
+                            note: Event::Pitch(pitch * d)
+                        }
+                    );
+                },
+                _ => outputs.events[0].push(*msg)
             }
-        } else {
-            outputs.events[0].replace(&inputs.events[0]);
         }
     }
 }
