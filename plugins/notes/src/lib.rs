@@ -24,6 +24,7 @@ static PLUGIN: Plugin = Plugin {
         // Effects
         module::<Transpose>(),
         module::<Scale>(),
+        module::<Chords>(),
         module::<GetPitch>(),
         module::<SetPitch>(),
         module::<GetVelocity>(),

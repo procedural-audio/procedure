@@ -1,8 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
 
+import 'dart:math';
 import 'dart:ffi';
 
 import 'widget.dart';
@@ -10,20 +8,16 @@ import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
 
-double Function(RawWidgetPointer) ffiFaderGetValue = core
-    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
+double Function(RawWidgetTrait) ffiFaderGetValue = core
+    .lookup<NativeFunction<Float Function(RawWidgetTrait)>>(
         "ffi_fader_get_value")
     .asFunction();
-void Function(RawWidgetPointer, double) ffiFaderSetValue = core
-    .lookup<NativeFunction<Void Function(RawWidgetPointer, Float)>>(
+void Function(RawWidgetTrait, double) ffiFaderSetValue = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Float)>>(
         "ffi_fader_set_value")
     .asFunction();
-Pointer<Utf8> Function(RawWidgetPointer) ffiFaderGetLabel = core
-    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
-        "ffi_fader_get_label")
-    .asFunction();
-int Function(RawWidgetPointer) ffiFaderGetColor = core
-    .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
+int Function(RawWidgetTrait) ffiFaderGetColor = core
+    .lookup<NativeFunction<Int32 Function(RawWidgetTrait)>>(
         "ffi_fader_get_color")
     .asFunction();
 
@@ -35,53 +29,53 @@ class FaderWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = Color(ffiFaderGetColor(widgetRaw.pointer));
+    Color color = Color(ffiFaderGetColor(widgetRaw.getTrait()));
 
-    var labelRaw = ffiFaderGetLabel(widgetRaw.pointer);
-    var labelText = labelRaw.toDartString();
-    calloc.free(labelRaw);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double value = ffiFaderGetValue(widgetRaw.getTrait());
 
-    return LayoutBuilder(builder: (context, constraints) {
-      double value = ffiFaderGetValue(widgetRaw.pointer);
-
-      return GestureDetector(
-        onTapDown: (e) {
-          setState(() {
-            double newValue = 1 - (e.localPosition.dy / constraints.maxHeight);
-            ffiFaderSetValue(widgetRaw.pointer, newValue.clamp(0.0, 1.0));
-          });
-        },
-        onPanUpdate: (e) {
-          setState(() {
-            double newValue = 1 - (e.localPosition.dy / constraints.maxHeight);
-            ffiFaderSetValue(widgetRaw.pointer, newValue.clamp(0.0, 1.0));
-          });
-        },
-        child: Container(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          alignment: Alignment.bottomCenter,
+        return GestureDetector(
+          onTapDown: (e) {
+            setState(() {
+              double newValue =
+                  1 - (e.localPosition.dy / constraints.maxHeight);
+              ffiFaderSetValue(widgetRaw.getTrait(), newValue.clamp(0.0, 1.0));
+            });
+          },
+          onPanUpdate: (e) {
+            setState(() {
+              double newValue =
+                  1 - (e.localPosition.dy / constraints.maxHeight);
+              ffiFaderSetValue(widgetRaw.getTrait(), newValue.clamp(0.0, 1.0));
+            });
+          },
           child: Container(
             width: constraints.maxWidth,
-            height: max(constraints.maxHeight * value, 0.1),
+            height: constraints.maxHeight,
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: constraints.maxWidth,
+              height: max(constraints.maxHeight * value, 0.1),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(3),
+                ),
+              ),
+            ),
             decoration: BoxDecoration(
-              color: color,
+              border: Border.all(
+                color: color,
+                width: 2.0,
+              ),
               borderRadius: const BorderRadius.all(
-                Radius.circular(3),
+                Radius.circular(5),
               ),
             ),
           ),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: color,
-              width: 2.0,
-            ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(5),
-            ),
-          ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

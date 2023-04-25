@@ -9,6 +9,7 @@ mod drift;
 mod portamento;
 mod monophonic;
 mod split;
+mod chords;
 
 pub use get_pitch::*;
 pub use set_pitch::*;
@@ -21,3 +22,4 @@ pub use drift::*;
 pub use portamento::*;
 pub use monophonic::*;
 pub use split::*;
+pub use chords::*;

@@ -1,14 +1,13 @@
 use crate::widget::*;
-
-/* Fader */
+use crate::widget::traits::*;
 
 #[repr(C)]
-pub struct Fader<'a> {
+pub struct Fader<'a, C: IntoColor> {
     pub value: &'a mut f32,
-    pub color: Color,
+    pub color: C,
 }
 
-impl<'a> WidgetNew for Fader<'a> {
+impl<'a, C: IntoColor> WidgetNew for Fader<'a, C> {
     fn get_name(&self) -> &'static str {
         "Fader"
     }
@@ -16,31 +15,47 @@ impl<'a> WidgetNew for Fader<'a> {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &()
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn FaderTrait) }
+    }
+}
+
+pub trait FaderTrait {
+    fn get_value(&self) -> f32;
+    fn set_value(&mut self, value: f32);
+    fn get_color(&self) -> Color;
+}
+
+impl<'a, C: IntoColor> FaderTrait for Fader<'a, C> {
+    fn get_value(&self) -> f32 {
+        *self.value
+    }
+
+    fn set_value(&mut self, value: f32) {
+        *self.value = value;
+    }
+
+    fn get_color(&self) -> Color {
+        self.color.into_color()
+    }
 }
 
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_fader_get_value(widget: &mut Fader) -> f32 {
-    *widget.value
+pub unsafe extern "C" fn ffi_fader_get_value(widget: &dyn FaderTrait) -> f32 {
+    widget.get_value()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_fader_set_value(widget: &mut Fader, value: f32) {
-    *widget.value = value;
+pub unsafe extern "C" fn ffi_fader_set_value(widget: &mut dyn FaderTrait, value: f32) {
+    widget.set_value(value);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_fader_get_color(widget: &mut Fader) -> Color {
-    widget.color
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_fader_get_label(_widget: &mut Fader) -> *const i8 {
-    let s = CString::new("Hi").unwrap();
-    let p = s.as_ptr();
-    std::mem::forget(s);
-    p
+pub unsafe extern "C" fn ffi_fader_get_color(widget: &dyn FaderTrait) -> Color {
+    widget.get_color()
 }
 
 /* Slider */

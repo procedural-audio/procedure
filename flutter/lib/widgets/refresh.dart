@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../patch.dart';
-import 'widget.dart';
 import 'dart:ffi';
+
+import 'widget.dart';
+
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
 
 bool Function(RawWidgetTrait) ffiRefreshGetShouldRefresh = core
     .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
