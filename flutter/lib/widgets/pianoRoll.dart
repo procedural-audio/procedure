@@ -127,7 +127,10 @@ class PianoRollWidget extends ModuleWidget {
   ValueNotifier<Offset> zoom = ValueNotifier(const Offset(1.0, 1.0));
 
   List<NoteEvent> events = [];
-  List<Widget> noteWidgets = [];
+  List<NoteWidget> noteWidgets = [];
+
+  final ScrollController horizontal = ScrollController();
+  final ScrollController vertical = ScrollController();
 
   @override
   void tick() {
@@ -136,7 +139,7 @@ class PianoRollWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).requestFocus(focusNode);
+    // FocusScope.of(context).requestFocus(focusNode);
 
     bool updatedEvents = false;
     int beats = ffiNotesTrackGetLength(widgetRaw.pointer);
@@ -240,6 +243,8 @@ class PianoRollWidget extends ModuleWidget {
               beat: beat,
               beats: beats,
               zoom: zoom,
+              horizontal: horizontal,
+              vertical: vertical,
               children: <Widget>[
                     GestureDetector(
                       onTapUp: (details) {
@@ -318,6 +323,14 @@ class PianoRollWidget extends ModuleWidget {
                 zoom: zoom,
               ),
             ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: NotesMapWidget(
+                noteWidgets,
+                horizontal,
+                vertical,
+              ),
+            )
           ],
         ),
       ),
@@ -354,7 +367,8 @@ class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
                   width: width,
                   height: constraints.maxHeight,
                   decoration: const BoxDecoration(
-                      color: Color.fromRGBO(20, 20, 20, 1.0)),
+                    color: Color.fromRGBO(20, 20, 20, 1.0),
+                  ),
                   child: Column(
                     children: [
                       Slider(
@@ -380,12 +394,15 @@ class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
+                  color: const Color.fromRGBO(40, 40, 40, 1.0),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(5),
+                  ),
+                  border: Border.all(
                     color: const Color.fromRGBO(40, 40, 40, 1.0),
-                    borderRadius: const BorderRadius.only(
-                        bottomRight: Radius.circular(5)),
-                    border: Border.all(
-                        color: const Color.fromRGBO(40, 40, 40, 1.0),
-                        width: 2.0)),
+                    width: 2.0,
+                  ),
+                ),
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
@@ -436,18 +453,21 @@ class TimeIndicator extends StatelessWidget {
 }
 
 class NotesScrollWidget extends StatelessWidget {
-  NotesScrollWidget(
-      {required this.draggingNote,
-      required this.selectedIds,
-      required this.beat,
-      required this.beats,
-      required this.zoom,
-      required this.children});
+  NotesScrollWidget({
+    required this.draggingNote,
+    required this.selectedIds,
+    required this.beat,
+    required this.beats,
+    required this.zoom,
+    required this.children,
+    required this.horizontal,
+    required this.vertical,
+  });
 
   List<Widget> children;
 
-  final ScrollController horizontal = ScrollController();
-  final ScrollController vertical = ScrollController();
+  final ScrollController horizontal;
+  final ScrollController vertical;
 
   ValueNotifier<bool> draggingNote;
   ValueNotifier<List<int>> selectedIds;
@@ -568,13 +588,13 @@ class DragRegion extends StatelessWidget {
 }
 
 class NoteWidget extends StatefulWidget {
-  NoteWidget(
-      {required this.id,
-      required this.selectedIds,
-      required this.selectedRegion,
-      required this.refreshNotes,
-      required this.widgetRaw})
-      : super(key: UniqueKey());
+  NoteWidget({
+    required this.id,
+    required this.selectedIds,
+    required this.selectedRegion,
+    required this.refreshNotes,
+    required this.widgetRaw,
+  }) : super(key: UniqueKey());
 
   int id;
 
@@ -634,12 +654,20 @@ class _NoteWidgetState extends State<NoteWidget> {
     return ValueListenableBuilder<List<int>>(
       valueListenable: widget.selectedIds,
       builder: (context, selectedIds, widgets) {
-        double startTime =
-            ffiNotesTrackIdGetOnTime(widget.widgetRaw.pointer, widget.id);
-        double endTime =
-            ffiNotesTrackIdGetOffTime(widget.widgetRaw.pointer, widget.id);
-        int num =
-            ffiNotesTrackIdGetNoteOnNum(widget.widgetRaw.pointer, widget.id);
+        double startTime = ffiNotesTrackIdGetOnTime(
+          widget.widgetRaw.pointer,
+          widget.id,
+        );
+
+        double endTime = ffiNotesTrackIdGetOffTime(
+          widget.widgetRaw.pointer,
+          widget.id,
+        );
+
+        int num = ffiNotesTrackIdGetNoteOnNum(
+          widget.widgetRaw.pointer,
+          widget.id,
+        );
 
         double x = startTime * BEAT_WIDTH;
         double y = (STEP_COUNT - num) * STEP_HEIGHT;
@@ -753,19 +781,27 @@ class _NoteWidgetState extends State<NoteWidget> {
 
                             for (var id in widget.selectedIds.value) {
                               double startTime = ffiNotesTrackIdGetOnTime(
-                                  widget.widgetRaw.pointer, id);
-                              double endTime = ffiNotesTrackIdGetOffTime(
-                                  widget.widgetRaw.pointer, id);
-                              double width = (endTime - startTime) * BEAT_WIDTH;
+                                widget.widgetRaw.pointer,
+                                id,
+                              );
 
+                              double endTime = ffiNotesTrackIdGetOffTime(
+                                widget.widgetRaw.pointer,
+                                id,
+                              );
+
+                              double width = (endTime - startTime) * BEAT_WIDTH;
                               deltax = deltax.clamp(-width + 10, deltax);
                             }
 
                             /* Update current note */
 
                             width += deltax;
-                            ffiNotesTrackIdSetOffTime(widget.widgetRaw.pointer,
-                                widget.id, x / BEAT_WIDTH + width / BEAT_WIDTH);
+                            ffiNotesTrackIdSetOffTime(
+                              widget.widgetRaw.pointer,
+                              widget.id,
+                              x / BEAT_WIDTH + width / BEAT_WIDTH,
+                            );
 
                             bool shouldRefreshAll = false;
                             for (var id in widget.selectedIds.value) {
@@ -776,17 +812,24 @@ class _NoteWidgetState extends State<NoteWidget> {
                               }
 
                               double startTime = ffiNotesTrackIdGetOnTime(
-                                  widget.widgetRaw.pointer, id);
+                                widget.widgetRaw.pointer,
+                                id,
+                              );
+
                               double endTime = ffiNotesTrackIdGetOffTime(
-                                  widget.widgetRaw.pointer, id);
+                                widget.widgetRaw.pointer,
+                                id,
+                              );
+
                               double x = startTime * BEAT_WIDTH;
                               double width = (endTime - startTime) * BEAT_WIDTH;
 
                               width += deltax;
                               ffiNotesTrackIdSetOffTime(
-                                  widget.widgetRaw.pointer,
-                                  id,
-                                  x / BEAT_WIDTH + width / BEAT_WIDTH);
+                                widget.widgetRaw.pointer,
+                                id,
+                                x / BEAT_WIDTH + width / BEAT_WIDTH,
+                              );
                             }
 
                             if (shouldRefreshAll) {
@@ -871,8 +914,8 @@ class _PitchEventWidgetState extends State<PitchEventWidget> {
 
 class PianoRollPainter extends CustomPainter {
   PianoRollPainter({required this.horizontal, required this.vertical});
-  ScrollController horizontal;
-  ScrollController vertical;
+  final ScrollController horizontal;
+  final ScrollController vertical;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -948,13 +991,24 @@ class PianoRollPainter extends CustomPainter {
     for (int y = size.height.toInt(); y > 0; y -= STEP_HEIGHT.toInt()) {
       if (n == 12) {
         canvas.drawLine(
-            Offset(0, y + 0.0), Offset(size.width, y + 0.0), paint3);
+          Offset(0, y + 0.0),
+          Offset(size.width, y + 0.0),
+          paint3,
+        );
 
         final textSpan = TextSpan(
-            text: "C" + (12 - (y / STEP_HEIGHT ~/ 8)).toString(),
-            style: const TextStyle(color: Colors.grey, fontSize: 10));
-        final textPainter =
-            TextPainter(text: textSpan, textDirection: TextDirection.ltr);
+          text: "C" + (12 - (y / STEP_HEIGHT ~/ 8)).toString(),
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 10,
+          ),
+        );
+
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        );
+
         textPainter.layout(minWidth: 0, maxWidth: 100);
 
         double tempX = 2;
@@ -981,5 +1035,77 @@ class PianoRollPainter extends CustomPainter {
     } else {
       return false;
     }
+  }
+}
+
+class NotesMapWidget extends StatelessWidget {
+  NotesMapWidget(this.notes, this.horizontal, this.vertical);
+
+  final List<NoteWidget> notes;
+  final ScrollController horizontal;
+  final ScrollController vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      ),
+      child: GestureDetector(
+        onTapDown: (e) {
+          horizontal.animateTo(
+            e.localPosition.dx / 200 * BEAT_WIDTH * 32 * 4,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeIn,
+          );
+
+          vertical.animateTo(
+            e.localPosition.dy / 100 * STEP_HEIGHT * STEP_COUNT,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeIn,
+          );
+        },
+        onPanUpdate: (e) {
+          horizontal.jumpTo(e.localPosition.dx / 200 * BEAT_WIDTH * 32 * 4);
+          vertical.jumpTo(e.localPosition.dy / 100 * STEP_HEIGHT * STEP_COUNT);
+        },
+        child: CustomPaint(
+          painter: NotesMapPainter(notes),
+        ),
+      ),
+    );
+  }
+}
+
+class NotesMapPainter extends CustomPainter {
+  NotesMapPainter(this.notes);
+
+  final List<NoteWidget> notes;
+
+  @override
+  void paint(ui.Canvas canvas, ui.Size size) {
+    var paint = Paint()
+      ..color = Colors.green
+      ..strokeWidth = 1.0;
+
+    for (var note in notes) {
+      double start = ffiNotesTrackIdGetOnTime(note.widgetRaw.pointer, note.id);
+      double end = ffiNotesTrackIdGetOffTime(note.widgetRaw.pointer, note.id);
+      int num = ffiNotesTrackIdGetNoteOnNum(note.widgetRaw.pointer, note.id);
+
+      double left = size.width * start / (32 * 4);
+      double top = size.height / 127 * (STEP_COUNT - num);
+      double width = (end - start) * size.width / (32 * 4);
+
+      canvas.drawRect(Rect.fromLTWH(left, top, width, 2), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant NotesMapPainter oldDelegate) {
+    return notes != oldDelegate.notes;
   }
 }
