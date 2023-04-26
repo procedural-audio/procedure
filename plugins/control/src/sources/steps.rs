@@ -32,9 +32,21 @@ impl Module for Steps {
         }
     }
 
-    fn new_voice(&self, index: u32) -> Self::Voice { index }
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn new_voice(&self, index: u32) -> Self::Voice {
+        index
+    }
+
+    fn load(&mut self, _version: &str, state: &State) {
+        for (i, (v, _c)) in self.faders.iter_mut().enumerate() {
+            *v = state.load(i);
+        }
+    }
+
+    fn save(&self, state: &mut State) {
+        for (i, (v, _c)) in self.faders.iter().enumerate() {
+            state.save(i, *v);
+        }
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(
