@@ -1,7 +1,7 @@
 use modules::*;
 use modules::widget::Pad;
 
-use rlua::{Function, Lua, Result, UserData, MetaMethod, prelude::LuaUserData, Table, TablePairs, prelude::LuaTable, Nil};
+use rlua::{Function, Lua, Result, UserData};
 use std::sync::Mutex;
 
 pub struct StepSequencer {
@@ -183,10 +183,6 @@ struct LuaPads<const X: usize, const Y: usize>(pub [[Pad; Y]; X]);
 
 impl<const X: usize, const Y: usize> UserData for LuaPads<X, Y> {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        /*methods.add_meta_function(MetaMethod::Index, | context, pads: LuaPads<X, Y> | {
-            Ok(pads[0])
-        });*/
-
         methods.add_method("down", | context, pads, () | {
             Ok(pads.0[0][0].down)
         });

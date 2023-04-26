@@ -6,12 +6,14 @@ mod fader;
 mod groups;
 mod knob;
 mod traits;
+mod notes_track;
 
 pub use button::*;
 pub use dropdown::*;
 pub use fader::*;
 pub use groups::*;
 pub use knob::*;
+pub use notes_track::*;
 
 pub trait WidgetNew {
     fn get_name(&self) -> &'static str;
