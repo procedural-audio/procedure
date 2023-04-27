@@ -5,7 +5,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'widget.dart';
+
 import '../core.dart';
 import '../module.dart';
 
@@ -79,7 +81,6 @@ double Function(RawWidgetPointer) ffiNotesTrackGetBeat = core
     .asFunction();
 
 /*
-
 Design
  - Highlight and label current row and column
  - Buttons to choose note length to add
@@ -95,11 +96,10 @@ Design
  - Measure numbers
  - Fix quantization to use nearest instead of lowest
  - Drag notes as a group
-
 */
 
-const double BEAT_WIDTH = 40;
-const double STEP_HEIGHT = 20;
+const double BEAT_WIDTH = 30;
+const double STEP_HEIGHT = 15;
 const int STEP_COUNT = 127;
 const int MEASURE_BEATS = 4;
 
@@ -145,7 +145,6 @@ class PianoRollWidget extends ModuleWidget {
     int beats = ffiNotesTrackGetLength(widgetRaw.pointer);
     int count = ffiNotesTrackGetEventCount(widgetRaw.pointer);
 
-    // for (int i = events.length; i < count; i++) {
     events.clear();
     for (int i = 0; i < count; i++) {
       updatedEvents = true;
@@ -179,7 +178,6 @@ class PianoRollWidget extends ModuleWidget {
           bool found = false;
           for (var event2 in events) {
             if (event.id == event2.id && event2.type == NoteType.noteOff) {
-              // && event.index < event2.index) {
               found = true;
               noteWidgets.add(
                 NoteWidget(
@@ -215,123 +213,135 @@ class PianoRollWidget extends ModuleWidget {
       }
     }
 
-    return KeyboardListener(
-      focusNode: focusNode,
-      onKeyEvent: (e) {
-        if (e.logicalKey == LogicalKeyboardKey.delete ||
-            e.logicalKey == LogicalKeyboardKey.backspace) {
-          events.clear();
-          noteWidgets.clear();
-
-          for (int i in selectedIds.value) {
-            ffiNotesTrackIdRemoveNote(widgetRaw.pointer, i);
-          }
-
-          selectedIds.value.clear();
-          selectedIds.notifyListeners();
-
-          setState(() {});
-        }
+    return MouseRegion(
+      onEnter: (e) {
+        FocusScope.of(context).requestFocus(focusNode);
       },
-      child: ClipRRect(
-        borderRadius: const BorderRadius.all(Radius.circular(5)),
-        child: Stack(
-          children: [
-            NotesScrollWidget(
-              draggingNote: draggingNote,
-              selectedIds: selectedIds,
-              beat: beat,
-              beats: beats,
-              zoom: zoom,
-              horizontal: horizontal,
-              vertical: vertical,
-              children: <Widget>[
-                    GestureDetector(
-                      onTapUp: (details) {
-                        double x = details.localPosition.dx;
-                        double y = details.localPosition.dy;
-                        double start = x ~/ BEAT_WIDTH + 0;
-                        int num = (STEP_COUNT - y ~/ STEP_HEIGHT).clamp(0, 127);
+      child: KeyboardListener(
+        focusNode: focusNode,
+        onKeyEvent: (e) {
+          if (e.logicalKey == LogicalKeyboardKey.delete ||
+              e.logicalKey == LogicalKeyboardKey.backspace) {
+            events.clear();
+            noteWidgets.clear();
 
-                        if (start < 0) {
-                          start = 0;
-                        }
+            for (int i in selectedIds.value) {
+              ffiNotesTrackIdRemoveNote(widgetRaw.pointer, i);
+            }
 
-                        ffiNotesTrackAddNote(
-                            widgetRaw.pointer, start, 2.0, num);
-                        events.clear();
-                        selectedIds.value.clear();
-                        selectedIds.notifyListeners();
+            selectedIds.value.clear();
+            selectedIds.notifyListeners();
 
-                        setState(() {});
-                      },
-                      onPanStart: (e) {
-                        selectedStart =
-                            Offset(e.localPosition.dx, e.localPosition.dy);
-                        selectedRegion.value = null;
+            setState(() {});
+          }
+        },
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(5)),
+          child: Stack(
+            children: [
+              NotesScrollWidget(
+                draggingNote: draggingNote,
+                selectedIds: selectedIds,
+                beat: beat,
+                beats: beats,
+                horizontal: horizontal,
+                vertical: vertical,
+                children: <Widget>[
+                      GestureDetector(
+                        onTapUp: (details) {
+                          double x = details.localPosition.dx;
+                          double y = details.localPosition.dy;
+                          double start = x ~/ BEAT_WIDTH + 0;
+                          int num =
+                              (STEP_COUNT - y ~/ STEP_HEIGHT).clamp(0, 127);
 
-                        selectedIds.value.clear();
-                        selectedIds.notifyListeners();
-                      },
-                      onPanUpdate: (e) {
-                        double left = selectedStart.dx;
-                        double width = e.localPosition.dx - left;
-                        double top = selectedStart.dy;
-                        double height = e.localPosition.dy - top;
-
-                        if (width > 0) {
-                          if (height > 0) {
-                            selectedRegion.value =
-                                Rectangle(left, top, width, height);
-                          } else {
-                            selectedRegion.value = Rectangle(
-                                left,
-                                e.localPosition.dy,
-                                width,
-                                top - e.localPosition.dy);
+                          if (start < 0) {
+                            start = 0;
                           }
-                        } else {
-                          if (height > 0) {
-                            selectedRegion.value = Rectangle(e.localPosition.dx,
-                                top, left - e.localPosition.dx, height);
+
+                          ffiNotesTrackAddNote(
+                              widgetRaw.pointer, start, 2.0, num);
+                          events.clear();
+                          selectedIds.value.clear();
+                          selectedIds.notifyListeners();
+
+                          setState(() {});
+                        },
+                        onPanStart: (e) {
+                          selectedStart =
+                              Offset(e.localPosition.dx, e.localPosition.dy);
+                          selectedRegion.value = null;
+
+                          selectedIds.value.clear();
+                          selectedIds.notifyListeners();
+                        },
+                        onPanUpdate: (e) {
+                          double left = selectedStart.dx;
+                          double width = e.localPosition.dx - left;
+                          double top = selectedStart.dy;
+                          double height = e.localPosition.dy - top;
+
+                          if (width > 0) {
+                            if (height > 0) {
+                              selectedRegion.value =
+                                  Rectangle(left, top, width, height);
+                            } else {
+                              selectedRegion.value = Rectangle(
+                                  left,
+                                  e.localPosition.dy,
+                                  width,
+                                  top - e.localPosition.dy);
+                            }
                           } else {
-                            selectedRegion.value = Rectangle(
-                                e.localPosition.dx,
-                                e.localPosition.dy,
-                                left - e.localPosition.dx,
-                                top - e.localPosition.dy);
+                            if (height > 0) {
+                              selectedRegion.value = Rectangle(
+                                  e.localPosition.dx,
+                                  top,
+                                  left - e.localPosition.dx,
+                                  height);
+                            } else {
+                              selectedRegion.value = Rectangle(
+                                  e.localPosition.dx,
+                                  e.localPosition.dy,
+                                  left - e.localPosition.dx,
+                                  top - e.localPosition.dy);
+                            }
                           }
-                        }
-                      },
-                      onPanEnd: (e) {
-                        selectedRegion.value = null;
-                      },
-                      onPanCancel: () {
-                        selectedRegion.value = null;
-                      },
+                        },
+                        onPanEnd: (e) {
+                          selectedRegion.value = null;
+                        },
+                        onPanCancel: () {
+                          selectedRegion.value = null;
+                        },
+                      ),
+                      TimeIndicator(beat),
+                      DragRegion(selectedRegion)
+                    ] +
+                    noteWidgets,
+              ),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: NotesWidgetSidebar(),
+              ),
+              LayoutBuilder(builder: (context, constraints) {
+                return Align(
+                  alignment: Alignment.bottomRight,
+                  child: NotesMapWidget(
+                    noteWidgets,
+                    horizontal,
+                    vertical,
+                    ui.Size(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
                     ),
-                    TimeIndicator(beat),
-                    DragRegion(selectedRegion)
-                  ] +
-                  noteWidgets,
-            ),
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: NotesWidgetSidebar(
-                zoom: zoom,
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: NotesMapWidget(
-                noteWidgets,
-                horizontal,
-                vertical,
-              ),
-            )
-          ],
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
@@ -339,9 +349,7 @@ class PianoRollWidget extends ModuleWidget {
 }
 
 class NotesWidgetSidebar extends StatefulWidget {
-  NotesWidgetSidebar({required this.zoom});
-
-  ValueNotifier<Offset> zoom;
+  NotesWidgetSidebar();
 
   @override
   State<StatefulWidget> createState() => _NotesWidgetSidebar();
@@ -371,7 +379,7 @@ class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
                   ),
                   child: Column(
                     children: [
-                      Slider(
+                      /*Slider(
                           value: (widget.zoom.value.dx - 0.1) / 0.9,
                           onChanged: (v) {
                             widget.zoom.value =
@@ -385,7 +393,7 @@ class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
                               Offset(widget.zoom.value.dx, v * 0.9 + 0.1);
                           setState(() {});
                         },
-                      ),
+                      ),*/
                     ],
                   ),
                 ),
@@ -458,11 +466,20 @@ class NotesScrollWidget extends StatelessWidget {
     required this.selectedIds,
     required this.beat,
     required this.beats,
-    required this.zoom,
     required this.children,
     required this.horizontal,
     required this.vertical,
-  });
+  }) {
+    /*horizontal.addListener(() {
+      controller.toScene(Offset(horizontal.offset, vertical.offset));
+    });
+
+    vertical.addListener(() {
+      controller.toScene(Offset(horizontal.offset, vertical.offset));
+    });
+
+    horizontal.createScrollPosition(ScrollPhysics(), ScrollContext, oldPosition)*/
+  }
 
   List<Widget> children;
 
@@ -472,7 +489,6 @@ class NotesScrollWidget extends StatelessWidget {
   ValueNotifier<bool> draggingNote;
   ValueNotifier<List<int>> selectedIds;
   ValueNotifier<double> beat;
-  ValueNotifier<Offset> zoom;
   int beats;
 
   @override
@@ -496,50 +512,40 @@ class NotesScrollWidget extends StatelessWidget {
                 decoration: const BoxDecoration(
                   color: Color.fromRGBO(30, 30, 30, 1.0),
                 ),
-                child: ValueListenableBuilder<Offset>(
-                  valueListenable: zoom,
-                  builder: (context, zoomValue, child) {
-                    return Scrollbar(
-                      thickness: 10,
-                      thumbVisibility: true,
-                      trackVisibility: true,
+                child: Scrollbar(
+                  thickness: 10,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  controller: horizontal,
+                  child: Scrollbar(
+                    thickness: 10,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    controller: vertical,
+                    notificationPredicate: (notif) => true,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(0),
                       controller: horizontal,
-                      child: Scrollbar(
-                        thickness: 10,
-                        thumbVisibility: true,
-                        trackVisibility: true,
+                      scrollDirection: Axis.horizontal,
+                      child: SingleChildScrollView(
                         controller: vertical,
-                        notificationPredicate: (notif) => true,
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(0),
-                          controller: horizontal,
-                          scrollDirection: Axis.horizontal,
-                          child: Transform.scale(
-                            scaleX: zoomValue.dx,
-                            child: SingleChildScrollView(
-                              controller: vertical,
-                              child: Transform.scale(
-                                scaleY: zoomValue.dy,
-                                child: CustomPaint(
-                                  painter: PianoRollPainter(
-                                      horizontal: horizontal,
-                                      vertical: vertical),
-                                  child: SizedBox(
-                                    width: BEAT_WIDTH * beats,
-                                    height: STEP_HEIGHT * 127,
-                                    child: Stack(
-                                      fit: StackFit.expand,
-                                      children: children,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                        child: CustomPaint(
+                          painter: PianoRollPainter(
+                            horizontal: horizontal,
+                            vertical: vertical,
+                          ),
+                          child: SizedBox(
+                            width: BEAT_WIDTH * beats,
+                            height: STEP_HEIGHT * 127,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: children,
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             );
@@ -903,17 +909,12 @@ class _PitchEventWidgetState extends State<PitchEventWidget> {
   }
 }
 
-/*class PianoRollBackground extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: PianoRollPainter(),
-    );
-  }
-}*/
-
 class PianoRollPainter extends CustomPainter {
-  PianoRollPainter({required this.horizontal, required this.vertical});
+  PianoRollPainter({
+    required this.horizontal,
+    required this.vertical,
+  });
+
   final ScrollController horizontal;
   final ScrollController vertical;
 
@@ -1038,42 +1039,88 @@ class PianoRollPainter extends CustomPainter {
   }
 }
 
-class NotesMapWidget extends StatelessWidget {
-  NotesMapWidget(this.notes, this.horizontal, this.vertical);
+class NotesMapWidget extends StatefulWidget {
+  NotesMapWidget(this.notes, this.horizontal, this.vertical, this.size);
 
   final List<NoteWidget> notes;
   final ScrollController horizontal;
   final ScrollController vertical;
+  final ui.Size size;
+
+  @override
+  _NotesMapWidget createState() => _NotesMapWidget();
+}
+
+class _NotesMapWidget extends State<NotesMapWidget> {
+  double MAP_WIDTH = 200;
+  double MAP_HEIGHT = 100;
+
+  void update() {
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.horizontal.addListener(update);
+    widget.vertical.addListener(update);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.horizontal.removeListener(update);
+    widget.vertical.removeListener(update);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200,
-      height: 100,
+      width: MAP_WIDTH,
+      height: MAP_HEIGHT,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.5),
         borderRadius: const BorderRadius.all(Radius.circular(5)),
       ),
       child: GestureDetector(
         onTapDown: (e) {
-          horizontal.animateTo(
-            e.localPosition.dx / 200 * BEAT_WIDTH * 32 * 4,
+          double x = max(e.localPosition.dx, 0);
+          double y = max(e.localPosition.dy, 0);
+
+          widget.horizontal.animateTo(
+            x / 200 * BEAT_WIDTH * 32 * 4,
             duration: const Duration(milliseconds: 100),
             curve: Curves.easeIn,
           );
 
-          vertical.animateTo(
-            e.localPosition.dy / 100 * STEP_HEIGHT * STEP_COUNT,
+          widget.vertical.animateTo(
+            y / 100 * STEP_HEIGHT * STEP_COUNT,
             duration: const Duration(milliseconds: 100),
             curve: Curves.easeIn,
           );
+          setState(() {});
         },
         onPanUpdate: (e) {
-          horizontal.jumpTo(e.localPosition.dx / 200 * BEAT_WIDTH * 32 * 4);
-          vertical.jumpTo(e.localPosition.dy / 100 * STEP_HEIGHT * STEP_COUNT);
+          /*double offsetX =
+              widget.horizontal.offset / (BEAT_WIDTH * 32 * 4) * MAP_WIDTH / 2;
+          double offsetY = widget.vertical.offset /
+              (STEP_HEIGHT * STEP_COUNT) *
+              MAP_HEIGHT /
+              2;*/
+
+          double x = max(e.localPosition.dx, 0);
+          double y = max(e.localPosition.dy, 0);
+
+          widget.horizontal.jumpTo(x / 200 * BEAT_WIDTH * 32 * 4);
+          widget.vertical.jumpTo(y / 100 * STEP_HEIGHT * STEP_COUNT);
+          setState(() {});
         },
         child: CustomPaint(
-          painter: NotesMapPainter(notes),
+          painter: NotesMapPainter(widget.notes),
+          child: CustomPaint(
+            painter: NotesMapWindowPainter(
+                widget.size, widget.horizontal, widget.vertical),
+          ),
         ),
       ),
     );
@@ -1107,5 +1154,53 @@ class NotesMapPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant NotesMapPainter oldDelegate) {
     return notes != oldDelegate.notes;
+  }
+}
+
+class NotesMapWindowPainter extends CustomPainter {
+  NotesMapWindowPainter(this.windowSize, this.horizontal, this.vertical);
+
+  ui.Size windowSize;
+  final ScrollController horizontal;
+  final ScrollController vertical;
+  double paintedHorizontal = 0;
+  double paintedVertical = 0;
+
+  @override
+  void paint(ui.Canvas canvas, ui.Size size) {
+    var paint = Paint()
+      ..color = Colors.grey.withOpacity(0.5)
+      ..strokeWidth = 1.0;
+
+    paintedHorizontal = horizontal.offset;
+    paintedHorizontal = vertical.offset;
+
+    double x = 0;
+    double y = 0;
+
+    if (horizontal.hasClients) {
+      x = horizontal.offset / (BEAT_WIDTH * 32 * 4) * size.width;
+    }
+
+    if (vertical.hasClients) {
+      y = vertical.offset / (STEP_HEIGHT * STEP_COUNT) * size.height;
+    }
+
+    var width = windowSize.width / (BEAT_WIDTH * 32 * 4) * size.width;
+    var height = windowSize.height / (STEP_COUNT * STEP_HEIGHT) * size.height;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, y, width, height),
+        const Radius.circular(2),
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant NotesMapWindowPainter oldDelegate) {
+    return paintedHorizontal != oldDelegate.horizontal.offset ||
+        paintedVertical != oldDelegate.vertical.offset;
   }
 }
