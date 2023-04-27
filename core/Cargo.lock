@@ -370,6 +370,7 @@ dependencies = [
  "rand 0.8.5",
  "rlua",
  "serde",
+ "serde_json",
  "xml-rs",
 ]
 
@@ -430,6 +431,8 @@ dependencies = [
  "lazy_static",
  "rand 0.8.5",
  "samplerate",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -1,4 +1,5 @@
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 
 use crate::Buffer;
 
@@ -21,8 +22,8 @@ lazy_static!(
 );
 
 #[repr(transparent)]
-#[derive(Copy, Clone, PartialEq)]
-pub struct Id(u64);
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Id(pub u64);
 
 impl Id {
     pub fn num(&self) -> u64 {
@@ -45,14 +46,14 @@ pub struct Note {
     pub pressure: f32
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize)]
 #[repr(C, u32)]
 pub enum Event {
     NoteOn { pitch: f32, pressure: f32 },
     NoteOff,
     Pitch(f32),
     Pressure(f32),
-    Other(&'static str, f32),
+    Other(u32, f32),
 }
 
 impl Display for Event {
@@ -70,8 +71,8 @@ impl Display for Event {
             Event::Pressure(pressure) => {
                 write!(f, "Event::Pressure {{ pressure: {:.2} }}", *pressure)
             },
-            Event::Other(name, value) => {
-                write!(f, "Event::Other {{ name: {}, value: {:.2} }}", *name, *value)
+            Event::Other(id, value) => {
+                write!(f, "Event::Other {{ id: {}, value: {:.2} }}", *id, *value)
             },
         }
     }
@@ -115,7 +116,7 @@ impl NoteMessage {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct NoteEvent {
     pub id: Id,
     pub time: f64,
@@ -189,8 +190,16 @@ impl NotePlayer {
                 return false;
             }
 
-            if !contains(&self.playing, i) {
-                // println!("Note on voice {} pitch {}", i, pitch);
+            fn contains2(playing: &Vec<NoteQueued>, voice: u32) -> bool {
+                for e in playing {
+                    if e.voice_index == voice {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if !contains(&self.playing, i) && !contains2(&self.queue, i){
                 self.queue.push(
                     NoteQueued {
                         voice_index: i,

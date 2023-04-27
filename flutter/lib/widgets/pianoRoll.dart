@@ -131,7 +131,7 @@ class PianoRollWidget extends ModuleWidget {
   List<PartialNote> partialNotes = [];
 
   final ScrollController horizontal = ScrollController();
-  final ScrollController vertical = ScrollController();
+  final ScrollController vertical = ScrollController(initialScrollOffset: 0.5);
 
   @override
   void tick() {

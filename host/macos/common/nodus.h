@@ -23,8 +23,7 @@ struct Pressure {
 };
 
 struct Other {
-    char* s;
-    size_t size;
+    uint32_t id;
     float value;
 };
 

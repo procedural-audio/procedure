@@ -8,6 +8,8 @@ pa-dsp = { path = "../../core/dsp" }
 modules = { path = "../../core/modules" }
 rand = "0.8"
 rlua = "*"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0.91"
 
 [lib]
 crate-type = ["cdylib"]

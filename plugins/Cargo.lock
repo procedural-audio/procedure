@@ -173,6 +173,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d13cdbd5dbb29f9c88095bbdc2590c9cba0d0a1269b983fef6b2cdd7e9f4db1"
 
 [[package]]
+name = "itoa"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -207,6 +213,7 @@ dependencies = [
  "rand",
  "rlua",
  "serde",
+ "serde_json",
  "xml-rs",
 ]
 
@@ -218,6 +225,8 @@ dependencies = [
  "pa-dsp",
  "rand",
  "rlua",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -240,6 +249,8 @@ dependencies = [
  "lazy_static",
  "rand",
  "samplerate",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -327,6 +338,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ryu"
+version = "1.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
+
+[[package]]
 name = "samplerate"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -353,6 +370,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_json"
+version = "1.0.96"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
 ]
 
 [[package]]

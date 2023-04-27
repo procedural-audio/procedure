@@ -98,13 +98,14 @@ impl ToKey for usize {
     }
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum Value {
-    Float(f32),
-    Int(u32),
+    Float(f64),
+    Int(u64),
     Size(usize),
     Bool(bool),
     Color(Color),
+    String(String),
     None,
 }
 
@@ -112,17 +113,33 @@ pub trait ToValue {
     fn to_value(self) -> Value;
 }
 
-pub trait FromValue: Default {
+pub trait FromValue {
     fn from_value(value: Value) -> Self where Self: Sized;
 }
 
 impl ToValue for f32 {
     fn to_value(self) -> Value {
-        Value::Float(self)
+        Value::Float(self as f64)
     }
 }
 
 impl FromValue for f32 {
+    fn from_value(value: Value) -> Self {
+        if let Value::Float(v) = value {
+            v as f32
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
+impl ToValue for f64 {
+    fn to_value(self) -> Value {
+        Value::Float(self)
+    }
+}
+
+impl FromValue for f64 {
     fn from_value(value: Value) -> Self {
         if let Value::Float(v) = value {
             v
@@ -134,11 +151,27 @@ impl FromValue for f32 {
 
 impl ToValue for u32 {
     fn to_value(self) -> Value {
-        Value::Int(self)
+        Value::Int(self as u64)
     }
 }
 
 impl FromValue for u32 {
+    fn from_value(value: Value) -> Self {
+        if let Value::Int(v) = value {
+            v as u32
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
+impl ToValue for u64 {
+    fn to_value(self) -> Value {
+        Value::Int(self)
+    }
+}
+
+impl FromValue for u64 {
     fn from_value(value: Value) -> Self {
         if let Value::Int(v) = value {
             v
@@ -180,6 +213,22 @@ impl FromValue for usize {
     }
 }
 
+impl ToValue for String {
+    fn to_value(self) -> Value {
+        Value::String(self)
+    }
+}
+
+impl FromValue for String {
+    fn from_value(value: Value) -> Self {
+        if let Value::String(v) = value {
+            v
+        } else {
+            panic!("Couldn't get type");
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct State {
     state: Vec<(StateKey, Value)>,
@@ -207,7 +256,7 @@ impl State {
         let key = key.to_key();
         for (k, v) in &self.state {
             if *k == key {
-                return Some(V::from_value(*v));
+                return Some(V::from_value(v.clone()));
             }
         }
 

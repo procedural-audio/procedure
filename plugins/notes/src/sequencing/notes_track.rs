@@ -36,38 +36,8 @@ impl Module for NotesTrack {
     };
 
     fn new() -> Self {
-        let id_1 = Id::new();
-        let id_2 = Id::new();
-
         Self {
-            events: vec![
-                NoteEvent {
-                    id: id_1,
-                    time: 4.0,
-                    note: Event::NoteOn {
-                        pitch: 220.0,
-                        pressure: 0.3
-                    }
-                },
-                NoteEvent {
-                    id: id_1,
-                    time: 8.0,
-                    note: Event::NoteOff
-                },
-                NoteEvent {
-                    id: id_2,
-                    time: 6.0,
-                    note: Event::NoteOn {
-                        pitch: 220.0 * 1.5,
-                        pressure: 0.7
-                    }
-                },
-                NoteEvent {
-                    id: id_2,
-                    time: 10.0,
-                    note: Event::NoteOff
-                }
-            ],
+            events: Vec::with_capacity(512),
             length: 4 * 32,
             beat: 0.0,
             player: NotePlayer::new(),
@@ -83,10 +53,34 @@ impl Module for NotesTrack {
         self.length = state.load("length");
 
         let mut i = 0;
+        while let Some(id_num) = state.try_load(i * 3 + 0) {
+            let id_num: usize = id_num;
+            let id: Id = Id(id_num as u64);
+            let time: f32 = state.load(i * 3 + 1);
+            let time = time as f64;
+            let s: String = state.load(i * 3 + 2);
+            let note = serde_json::from_str::<NoteEvent>(&s).unwrap();
+
+            self.events.push(
+                NoteEvent {
+                    id,
+                    time,
+                    note: note.note
+                }
+            );
+
+            i += 1;
+        }
     }
 
     fn save(&self, state: &mut State) {
         state.save("length", self.length);
+
+        for (i, event) in self.events.iter().enumerate() {
+            state.save(i * 3 + 0, event.id.num() as usize);
+            state.save(i * 3 + 1, event.time as f32);
+            state.save(i * 3 + 2, serde_json::to_string(event).unwrap());
+        }
     }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
@@ -140,7 +134,7 @@ impl Module for NotesTrack {
         if *voice == 0 {
             for event in &self.events {
                 if time.contains(event.time) {
-                    println!("Playing message {}", event.id.num());
+                    println!("Queueing message {}", event.id.num());
                     self.player.message(NoteMessage {
                         id: event.id,
                         offset: 0,
@@ -151,5 +145,9 @@ impl Module for NotesTrack {
         }
 
         self.player.generate(*voice, &mut outputs.events[0]);
+
+        for event in &outputs.events[0] {
+            println!("Playing message {}, voice {}, {}", event.id.num(), *voice, event.note);
+        }
     }
 }
