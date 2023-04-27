@@ -79,8 +79,15 @@ impl Module for NotesTrack {
         index
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        self.length = state.load("length");
+
+        let mut i = 0;
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("length", self.length);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         return Box::new(Padding {

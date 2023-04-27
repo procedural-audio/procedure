@@ -197,20 +197,21 @@ impl State {
     }
 
     pub fn load<K: ToKey, V: FromValue>(&self, key: K) -> V {
+        match self.try_load(key) {
+            Some(value) => return value,
+            None => panic!("Couldn't find value for key")
+        }
+    }
+
+    pub fn try_load<K: ToKey, V: FromValue>(&self, key: K) -> Option<V> {
         let key = key.to_key();
         for (k, v) in &self.state {
             if *k == key {
-                return V::from_value(*v);
+                return Some(V::from_value(*v));
             }
         }
 
-        let s = match key {
-            StateKey::Str(s) => s,
-            StateKey::Int(i) => i.to_string()
-        };
-
-        println!("Couldn't find value for key {}", s);
-        return V::default();
+        return None;
     }
 }
 

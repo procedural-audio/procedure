@@ -128,6 +128,7 @@ class PianoRollWidget extends ModuleWidget {
 
   List<NoteEvent> events = [];
   List<NoteWidget> noteWidgets = [];
+  List<PartialNote> partialNotes = [];
 
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController();
@@ -172,6 +173,7 @@ class PianoRollWidget extends ModuleWidget {
 
     if (updatedEvents) {
       noteWidgets.clear();
+      partialNotes.clear();
 
       for (var event in events) {
         if (event.type == NoteType.noteOn) {
@@ -198,7 +200,19 @@ class PianoRollWidget extends ModuleWidget {
           }
 
           if (!found) {
-            print("COULDN'T FIND NOTE OFF EVENT");
+            partialNotes.add(
+              PartialNote(
+                beat: beat,
+                startTime: ffiNotesTrackIdGetOnTime(
+                  widgetRaw.pointer,
+                  event.id,
+                ),
+                num: ffiNotesTrackIdGetNoteOnNum(
+                  widgetRaw.pointer,
+                  event.id,
+                ),
+              ),
+            );
           }
         } else if (event.type == NoteType.pitch) {
           /*noteWidgets.add(PitchEventWidget(
@@ -318,7 +332,8 @@ class PianoRollWidget extends ModuleWidget {
                       TimeIndicator(beat),
                       DragRegion(selectedRegion)
                     ] +
-                    noteWidgets,
+                    noteWidgets +
+                    partialNotes,
               ),
               Positioned(
                 left: 0,
@@ -344,6 +359,43 @@ class PianoRollWidget extends ModuleWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class PartialNote extends StatelessWidget {
+  PartialNote({
+    required this.startTime,
+    required this.num,
+    required this.beat,
+  });
+
+  double startTime;
+  int num;
+  ValueNotifier<double> beat;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: beat,
+      builder: (context, beat, child) {
+        double x = startTime * BEAT_WIDTH;
+        double y = (STEP_COUNT - num) * STEP_HEIGHT;
+        double width = (beat - startTime) * BEAT_WIDTH;
+
+        return Positioned(
+          left: x,
+          top: (y ~/ STEP_HEIGHT) * STEP_HEIGHT,
+          child: Container(
+            width: width,
+            height: STEP_HEIGHT,
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.5),
+              borderRadius: const BorderRadius.all(Radius.circular(5)),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -603,7 +655,6 @@ class NoteWidget extends StatefulWidget {
   }) : super(key: UniqueKey());
 
   int id;
-
   RawWidget widgetRaw;
 
   ValueNotifier<Rectangle?> selectedRegion;
