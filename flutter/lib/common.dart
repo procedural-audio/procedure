@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class Category {
   Category({required this.name, required this.elements});
@@ -14,6 +13,85 @@ class CategoryElement {
   String name;
   Color? color;
   Icon? icon;
+}
+
+class Dropdown extends StatefulWidget {
+  Dropdown({
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    required this.color,
+    this.underline = true,
+    Key? key,
+  }) : super(key: key);
+
+  List<String> items;
+  String value;
+  void Function(int) onChanged;
+  final Color color;
+  final bool underline;
+
+  @override
+  State<Dropdown> createState() => _DropdownState();
+}
+
+class _DropdownState extends State<Dropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return ButtonTheme(
+      padding: const EdgeInsets.all(0),
+      layoutBehavior: ButtonBarLayoutBehavior.constrained,
+      child: DropdownButton<String>(
+        value: widget.value,
+        iconEnabledColor: widget.color,
+        iconDisabledColor: const Color.fromRGBO(30, 30, 30, 1.0),
+        focusColor: const Color.fromRGBO(40, 40, 40, 1.0),
+        icon: const Icon(
+          Icons.keyboard_arrow_down,
+        ),
+        elevation: 14,
+        style: TextStyle(
+          color: widget.color,
+          fontSize: 14,
+        ),
+        dropdownColor: const Color.fromRGBO(30, 30, 30, 1.0),
+        iconSize: 14,
+        itemHeight: 48,
+        underline: Container(
+          height: widget.underline ? 1 : 0,
+          color: widget.color,
+        ),
+        onChanged: (String? newValue) {
+          int i = 0;
+
+          for (var item in widget.items) {
+            if (item == newValue!) {
+              widget.onChanged(i);
+            }
+
+            i++;
+          }
+
+          setState(() {
+            widget.value = newValue!;
+          });
+        },
+        isDense: false,
+        items: widget.items.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: widget.color,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 }
 
 class SearchableDropdown extends StatefulWidget {

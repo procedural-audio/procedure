@@ -6,6 +6,7 @@ import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
 import '../main.dart';
+import '../common.dart';
 
 int Function(RawWidgetPointer) ffiDropdownGetColor = core
     .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
@@ -102,90 +103,5 @@ class DropdownWidget extends ModuleWidget {
           },
           color: color),
     );*/
-  }
-}
-
-class Dropdown extends StatefulWidget {
-  Dropdown(
-      {required this.value,
-      required this.items,
-      required this.onChanged,
-      required this.color,
-      Key? key})
-      : super(key: key);
-
-  List<String> items;
-  String value;
-  void Function(int) onChanged;
-  final Color color;
-
-  @override
-  State<Dropdown> createState() =>
-      _DropdownState(value: value, items: items, onChanged: onChanged);
-}
-
-class _DropdownState extends State<Dropdown> {
-  List<String> items;
-  String value;
-  void Function(int) onChanged;
-
-  _DropdownState(
-      {required this.value, required this.items, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return ButtonTheme(
-      padding: const EdgeInsets.all(0),
-      layoutBehavior: ButtonBarLayoutBehavior.constrained,
-      child: DropdownButton<String>(
-        value: value,
-        iconEnabledColor: widget.color,
-        iconDisabledColor: const Color.fromRGBO(30, 30, 30, 1.0),
-        focusColor: const Color.fromRGBO(40, 40, 40, 1.0),
-        icon: const Icon(
-          Icons.keyboard_arrow_down,
-        ),
-        elevation: 14,
-        style: TextStyle(
-          color: widget.color,
-          fontSize: 14,
-        ),
-        dropdownColor: const Color.fromRGBO(30, 30, 30, 1.0),
-        iconSize: 14,
-        itemHeight: 48,
-        underline: Container(
-          height: 1,
-          color: widget.color,
-        ),
-        onChanged: (String? newValue) {
-          int i = 0;
-
-          for (var item in items) {
-            if (item == newValue!) {
-              onChanged(i);
-            }
-
-            i++;
-          }
-
-          setState(() {
-            value = newValue!;
-          });
-        },
-        isDense: false,
-        items: items.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: TextStyle(
-                color: widget.color,
-                fontSize: 14,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
   }
 }

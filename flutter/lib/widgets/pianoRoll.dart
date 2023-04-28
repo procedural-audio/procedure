@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:metasampler/common.dart';
 
 import 'widget.dart';
 
@@ -259,95 +260,96 @@ class PianoRollWidget extends ModuleWidget {
           borderRadius: const BorderRadius.all(Radius.circular(5)),
           child: Stack(
             children: [
-              NotesScrollWidget(
-                draggingNote: draggingNote,
-                selectedIds: selectedIds,
-                beat: beat,
-                beats: beats,
-                horizontal: horizontal,
-                vertical: vertical,
-                children: <Widget>[
-                      GestureDetector(
-                        onTapUp: (details) {
-                          double x = details.localPosition.dx;
-                          double y = details.localPosition.dy;
-                          double start = x ~/ BEAT_WIDTH + 0;
-                          int num =
-                              (STEP_COUNT - y ~/ STEP_HEIGHT).clamp(0, 127);
+              Column(
+                children: [
+                  Expanded(
+                    child: NotesScrollWidget(
+                      draggingNote: draggingNote,
+                      selectedIds: selectedIds,
+                      beat: beat,
+                      beats: beats,
+                      horizontal: horizontal,
+                      vertical: vertical,
+                      children: <Widget>[
+                            GestureDetector(
+                              onTapUp: (details) {
+                                double x = details.localPosition.dx;
+                                double y = details.localPosition.dy;
+                                double start = x ~/ BEAT_WIDTH + 0;
+                                int num = (STEP_COUNT - y ~/ STEP_HEIGHT)
+                                    .clamp(0, 127);
 
-                          if (start < 0) {
-                            start = 0;
-                          }
+                                if (start < 0) {
+                                  start = 0;
+                                }
 
-                          ffiNotesTrackAddNote(
-                              widgetRaw.pointer, start, 2.0, num);
-                          events.clear();
-                          selectedIds.value.clear();
-                          selectedIds.notifyListeners();
+                                ffiNotesTrackAddNote(
+                                    widgetRaw.pointer, start, 2.0, num);
+                                events.clear();
+                                selectedIds.value.clear();
+                                selectedIds.notifyListeners();
 
-                          setState(() {});
-                        },
-                        onPanStart: (e) {
-                          selectedStart =
-                              Offset(e.localPosition.dx, e.localPosition.dy);
-                          selectedRegion.value = null;
+                                setState(() {});
+                              },
+                              onPanStart: (e) {
+                                selectedStart = Offset(
+                                    e.localPosition.dx, e.localPosition.dy);
+                                selectedRegion.value = null;
 
-                          selectedIds.value.clear();
-                          selectedIds.notifyListeners();
-                        },
-                        onPanUpdate: (e) {
-                          double left = selectedStart.dx;
-                          double width = e.localPosition.dx - left;
-                          double top = selectedStart.dy;
-                          double height = e.localPosition.dy - top;
+                                selectedIds.value.clear();
+                                selectedIds.notifyListeners();
+                              },
+                              onPanUpdate: (e) {
+                                double left = selectedStart.dx;
+                                double width = e.localPosition.dx - left;
+                                double top = selectedStart.dy;
+                                double height = e.localPosition.dy - top;
 
-                          if (width > 0) {
-                            if (height > 0) {
-                              selectedRegion.value =
-                                  Rectangle(left, top, width, height);
-                            } else {
-                              selectedRegion.value = Rectangle(
-                                  left,
-                                  e.localPosition.dy,
-                                  width,
-                                  top - e.localPosition.dy);
-                            }
-                          } else {
-                            if (height > 0) {
-                              selectedRegion.value = Rectangle(
-                                  e.localPosition.dx,
-                                  top,
-                                  left - e.localPosition.dx,
-                                  height);
-                            } else {
-                              selectedRegion.value = Rectangle(
-                                  e.localPosition.dx,
-                                  e.localPosition.dy,
-                                  left - e.localPosition.dx,
-                                  top - e.localPosition.dy);
-                            }
-                          }
-                        },
-                        onPanEnd: (e) {
-                          selectedRegion.value = null;
-                        },
-                        onPanCancel: () {
-                          selectedRegion.value = null;
-                        },
-                      ),
-                      TimeIndicator(beat),
-                      DragRegion(selectedRegion)
-                    ] +
-                    noteWidgets +
-                    partialNotes,
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: NotesToolbar(
-                  follow: follow,
-                ),
+                                if (width > 0) {
+                                  if (height > 0) {
+                                    selectedRegion.value =
+                                        Rectangle(left, top, width, height);
+                                  } else {
+                                    selectedRegion.value = Rectangle(
+                                        left,
+                                        e.localPosition.dy,
+                                        width,
+                                        top - e.localPosition.dy);
+                                  }
+                                } else {
+                                  if (height > 0) {
+                                    selectedRegion.value = Rectangle(
+                                        e.localPosition.dx,
+                                        top,
+                                        left - e.localPosition.dx,
+                                        height);
+                                  } else {
+                                    selectedRegion.value = Rectangle(
+                                        e.localPosition.dx,
+                                        e.localPosition.dy,
+                                        left - e.localPosition.dx,
+                                        top - e.localPosition.dy);
+                                  }
+                                }
+                              },
+                              onPanEnd: (e) {
+                                selectedRegion.value = null;
+                              },
+                              onPanCancel: () {
+                                selectedRegion.value = null;
+                              },
+                            ),
+                            TimeIndicator(beat),
+                            DragRegion(selectedRegion)
+                          ] +
+                          noteWidgets +
+                          partialNotes,
+                    ),
+                  ),
+                  NotesToolbar(
+                    follow: follow,
+                  ),
+                ],
               ),
               LayoutBuilder(
                 builder: (context, constraints) {
@@ -403,8 +405,28 @@ class NotesToolbar extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.remove, size: 16, color: Colors.grey),
+            icon: const Icon(Icons.view_timeline, size: 16, color: Colors.grey),
             onPressed: () {},
+          ),
+          Dropdown(
+            value: "1/8",
+            items: const [
+              "1/1",
+              "1/2",
+              "1/2 T",
+              "1/4",
+              "1/4 T",
+              "1/8",
+              "1/8 T",
+              "1/16",
+              "1/16 T",
+              "1/32",
+            ],
+            onChanged: (c) {
+              print("On changed");
+            },
+            underline: false,
+            color: Colors.green,
           ),
           IconButton(
             icon: const Icon(Icons.zoom_in, size: 16, color: Colors.grey),
@@ -416,10 +438,6 @@ class NotesToolbar extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings, size: 16, color: Colors.grey),
             onPressed: () {},
           ),
         ],
