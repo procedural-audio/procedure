@@ -119,8 +119,8 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
     return SamplePickerWidget(moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
     return RefreshWidget(moduleRaw, widgetRaw);
-  } else if (name == "Rebuild") {
-    return RebuildWidget(moduleRaw, widgetRaw);
+    // } else if (name == "Rebuild") {
+    // return RebuildWidget(moduleRaw, widgetRaw);
   } else if (name == "Button") {
     return ButtonWidget(moduleRaw, widgetRaw);
   } else if (name == "GridBuilder") {

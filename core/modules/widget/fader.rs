@@ -377,7 +377,7 @@ pub unsafe extern "C" fn ffi_refresh_set_should_refresh(
 
 /* Rebuild */
 
-#[repr(C)]
+/*#[repr(C)]
 pub struct Rebuild<'a, T: WidgetNew> {
     pub callback: &'a mut Callback,
     pub child: T,
@@ -389,6 +389,7 @@ impl<'a, T: WidgetNew> WidgetNew for Rebuild<'a, T> {
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        panic!("Getting rebuild children");
         &(self.child)
     }
 
@@ -425,7 +426,7 @@ pub unsafe extern "C" fn ffi_rebuild_set_should_refresh(
     should_refresh: bool,
 ) {
     widget.set_should_rebuild(should_refresh);
-}
+}*/
 
 /* Fader */
 

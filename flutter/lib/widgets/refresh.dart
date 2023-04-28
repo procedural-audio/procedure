@@ -38,7 +38,7 @@ class RefreshWidget extends ModuleWidget {
   }
 }
 
-bool Function(RawWidgetTrait) ffiRebuildGetShouldRefresh = core
+/*bool Function(RawWidgetTrait) ffiRebuildGetShouldRefresh = core
     .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
         "ffi_rebuild_get_should_refresh")
     .asFunction();
@@ -69,7 +69,7 @@ class RebuildWidget extends ModuleWidget {
   Widget build(BuildContext context) {
     return children[0];
   }
-}
+}*/
 
 int Function(RawWidgetPointer) ffiIndicatorGetColor = core
     .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(
