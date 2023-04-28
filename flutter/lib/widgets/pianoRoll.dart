@@ -133,9 +133,15 @@ class PianoRollWidget extends ModuleWidget {
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController(initialScrollOffset: 0.5);
 
+  final ValueNotifier<bool> follow = ValueNotifier(true);
+
   @override
   void tick() {
     beat.value = ffiNotesTrackGetBeat(widgetRaw.pointer);
+
+    if (follow.value) {
+      horizontal.jumpTo(beat.value * BEAT_WIDTH - 200);
+    }
   }
 
   @override
@@ -337,27 +343,86 @@ class PianoRollWidget extends ModuleWidget {
               ),
               Positioned(
                 left: 0,
-                top: 0,
+                right: 0,
                 bottom: 0,
-                child: NotesWidgetSidebar(),
+                child: NotesToolbar(
+                  follow: follow,
+                ),
               ),
-              LayoutBuilder(builder: (context, constraints) {
-                return Align(
-                  alignment: Alignment.bottomRight,
-                  child: NotesMapWidget(
-                    noteWidgets,
-                    horizontal,
-                    vertical,
-                    ui.Size(
-                      constraints.maxWidth,
-                      constraints.maxHeight,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Align(
+                    alignment: Alignment.bottomRight,
+                    child: NotesMapWidget(
+                      noteWidgets,
+                      horizontal,
+                      vertical,
+                      ui.Size(
+                        constraints.maxWidth,
+                        constraints.maxHeight,
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                },
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class NotesToolbar extends StatelessWidget {
+  NotesToolbar({required this.follow});
+
+  ValueNotifier<bool> follow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 28,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(20, 20, 20, 1.0),
+      ),
+      child: Row(
+        children: [
+          ValueListenableBuilder<bool>(
+            valueListenable: follow,
+            builder: (context, f, child) {
+              return IconButton(
+                icon: Icon(
+                  Icons.fast_forward,
+                  size: 16,
+                  color: f ? Colors.green : Colors.grey,
+                ),
+                onPressed: () {
+                  follow.value = !follow.value;
+                },
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.remove, size: 16, color: Colors.grey),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.zoom_in, size: 16, color: Colors.grey),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.zoom_out, size: 16, color: Colors.grey),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, size: 16, color: Colors.grey),
+            onPressed: () {},
+          ),
+        ],
       ),
     );
   }
@@ -400,7 +465,7 @@ class PartialNote extends StatelessWidget {
   }
 }
 
-class NotesWidgetSidebar extends StatefulWidget {
+/*class NotesWidgetSidebar extends StatefulWidget {
   NotesWidgetSidebar();
 
   @override
@@ -487,7 +552,7 @@ class _NotesWidgetSidebar extends State<NotesWidgetSidebar> {
       },
     );
   }
-}
+}*/
 
 class TimeIndicator extends StatelessWidget {
   TimeIndicator(this.beat);
