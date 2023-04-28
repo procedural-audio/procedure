@@ -365,13 +365,16 @@ class PianoRollWidget extends ModuleWidget {
                 builder: (context, constraints) {
                   return Align(
                     alignment: Alignment.bottomRight,
-                    child: NotesMapWidget(
-                      noteWidgets,
-                      horizontal,
-                      vertical,
-                      ui.Size(
-                        constraints.maxWidth,
-                        constraints.maxHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 10, 40),
+                      child: NotesMapWidget(
+                        noteWidgets,
+                        horizontal,
+                        vertical,
+                        ui.Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        ),
                       ),
                     ),
                   );
@@ -396,12 +399,20 @@ class NotesToolbar extends StatelessWidget {
   Function() onZoomIn;
   Function() onZoomOut;
 
+  TextEditingController lengthController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 28,
       decoration: const BoxDecoration(
         color: Color.fromRGBO(20, 20, 20, 1.0),
+        border: Border(
+          top: BorderSide(
+            width: 1,
+            color: Color.fromRGBO(40, 40, 40, 1.0),
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -443,6 +454,37 @@ class NotesToolbar extends StatelessWidget {
             },
             underline: false,
             color: Colors.green,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: SizedBox(
+              width: 40,
+              height: 24,
+              child: TextField(
+                controller: lengthController,
+                cursorColor: Colors.grey,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+                decoration: const InputDecoration(
+                  filled: true,
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(5.0),
+                  fillColor: Color.fromRGBO(20, 20, 20, 1.0),
+                  focusColor: Colors.green,
+                  iconColor: Colors.green,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Color.fromRGBO(60, 60, 60, 1.0), width: 2.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.green, width: 2.0),
+                  ),
+                ),
+              ),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.zoom_in, size: 16, color: Colors.grey),

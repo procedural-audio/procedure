@@ -15,6 +15,38 @@ class CategoryElement {
   Icon? icon;
 }
 
+class TextBox extends StatelessWidget {
+  TextEditingController controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      onChanged: (String s) {},
+      cursorColor: Colors.grey,
+      style: const TextStyle(
+        color: Colors.red,
+        fontSize: 16,
+      ),
+      decoration: const InputDecoration(
+        filled: true,
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.all(5.0),
+        fillColor: Color.fromRGBO(20, 20, 20, 1.0),
+        focusColor: Colors.red,
+        iconColor: Colors.red,
+        enabledBorder: OutlineInputBorder(
+          borderSide:
+              BorderSide(color: Color.fromRGBO(60, 60, 60, 1.0), width: 2.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 2.0),
+        ),
+      ),
+    );
+  }
+}
+
 class Dropdown extends StatefulWidget {
   Dropdown({
     required this.value,

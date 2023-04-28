@@ -64,41 +64,44 @@ class InputWidget extends ModuleWidget {
     controller.text = knobValue.toString();
 
     return TextField(
-        controller: controller,
-        onChanged: (String s) {
-          var v = double.tryParse(s);
-          if (v != null) {
-            knobValue = v;
-            ffiInputSetValue(widgetRaw.pointer, v);
-            ignoreNextUpdate = true;
+      controller: controller,
+      onChanged: (String s) {
+        var v = double.tryParse(s);
+        if (v != null) {
+          knobValue = v;
+          ffiInputSetValue(widgetRaw.pointer, v);
+          ignoreNextUpdate = true;
 
-            if (assignedVar.value != null) {
-              if (assignedVar.value!.notifier.value is double) {
-                assignedVar.value!.notifier.value = v;
-              } else if (assignedVar.value!.notifier.value is int) {
-                assignedVar.value!.notifier.value = v.toInt();
-              } else if (assignedVar.value!.notifier.value is bool) {
-                assignedVar.value!.notifier.value = v > 0.5;
-              }
+          if (assignedVar.value != null) {
+            if (assignedVar.value!.notifier.value is double) {
+              assignedVar.value!.notifier.value = v;
+            } else if (assignedVar.value!.notifier.value is int) {
+              assignedVar.value!.notifier.value = v.toInt();
+            } else if (assignedVar.value!.notifier.value is bool) {
+              assignedVar.value!.notifier.value = v > 0.5;
             }
-          } else {
-            print("Error: Invalid input");
           }
-        },
-        cursorColor: Colors.grey,
-        style: const TextStyle(color: Colors.red, fontSize: 16),
-        decoration: const InputDecoration(
-            filled: true,
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.all(5.0),
-            fillColor: Color.fromRGBO(20, 20, 20, 1.0),
-            focusColor: Colors.red,
-            iconColor: Colors.red,
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                  color: Color.fromRGBO(60, 60, 60, 1.0), width: 2.0),
-            ),
-            focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.red, width: 2.0))));
+        } else {
+          print("Error: Invalid input");
+        }
+      },
+      cursorColor: Colors.grey,
+      style: const TextStyle(color: Colors.red, fontSize: 16),
+      decoration: const InputDecoration(
+        filled: true,
+        border: OutlineInputBorder(),
+        contentPadding: EdgeInsets.all(5.0),
+        fillColor: Color.fromRGBO(20, 20, 20, 1.0),
+        focusColor: Colors.red,
+        iconColor: Colors.red,
+        enabledBorder: OutlineInputBorder(
+          borderSide:
+              BorderSide(color: Color.fromRGBO(60, 60, 60, 1.0), width: 2.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 2.0),
+        ),
+      ),
+    );
   }
 }
