@@ -99,10 +99,10 @@ Design
  - Drag notes as a group
 */
 
-const double BEAT_WIDTH = 30;
-const double STEP_HEIGHT = 15;
-const int STEP_COUNT = 127;
-const int MEASURE_BEATS = 4;
+double BEAT_WIDTH = 30;
+double STEP_HEIGHT = 15;
+int STEP_COUNT = 127;
+int MEASURE_BEATS = 4;
 
 enum NoteType { noteOn, noteOff, pitch, pressure, other }
 
@@ -141,7 +141,7 @@ class PianoRollWidget extends ModuleWidget {
     beat.value = ffiNotesTrackGetBeat(widgetRaw.pointer);
 
     if (follow.value) {
-      horizontal.jumpTo(beat.value * BEAT_WIDTH - 200);
+      horizontal.jumpTo(max(beat.value * BEAT_WIDTH - 200, 0));
     }
   }
 
@@ -348,6 +348,16 @@ class PianoRollWidget extends ModuleWidget {
                   ),
                   NotesToolbar(
                     follow: follow,
+                    onZoomIn: () {
+                      setState(() {
+                        BEAT_WIDTH *= 4 / 3;
+                      });
+                    },
+                    onZoomOut: () {
+                      setState(() {
+                        BEAT_WIDTH *= 3 / 4;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -376,9 +386,15 @@ class PianoRollWidget extends ModuleWidget {
 }
 
 class NotesToolbar extends StatelessWidget {
-  NotesToolbar({required this.follow});
+  NotesToolbar({
+    required this.follow,
+    required this.onZoomIn,
+    required this.onZoomOut,
+  });
 
   ValueNotifier<bool> follow;
+  Function() onZoomIn;
+  Function() onZoomOut;
 
   @override
   Widget build(BuildContext context) {
@@ -430,11 +446,15 @@ class NotesToolbar extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.zoom_in, size: 16, color: Colors.grey),
-            onPressed: () {},
+            onPressed: () {
+              onZoomIn();
+            },
           ),
           IconButton(
             icon: const Icon(Icons.zoom_out, size: 16, color: Colors.grey),
-            onPressed: () {},
+            onPressed: () {
+              onZoomOut();
+            },
           ),
           IconButton(
             icon: const Icon(Icons.zoom_out_map, size: 16, color: Colors.grey),
