@@ -53,7 +53,7 @@ impl Module for Length {
             position: (35, 30),
             size: (50, 70),
             child: Knob {
-                text: "Length",
+                text: "Beats",
                 color: Color::GREEN,
                 value: &mut self.value,
                 feedback: Box::new(|v| rate_to_str(linear_to_rate_quantized(v))),
