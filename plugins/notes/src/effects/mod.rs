@@ -10,6 +10,7 @@ mod portamento;
 mod monophonic;
 mod split;
 mod chords;
+mod length;
 
 pub use get_pitch::*;
 pub use set_pitch::*;
@@ -23,3 +24,4 @@ pub use portamento::*;
 pub use monophonic::*;
 pub use split::*;
 pub use chords::*;
+pub use length::*;

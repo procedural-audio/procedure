@@ -34,6 +34,7 @@ static PLUGIN: Plugin = Plugin {
         module::<Portamento>(),
         module::<Monophonic>(),
         module::<Split>(),
+        module::<Length>(),
     ]
 };
 
