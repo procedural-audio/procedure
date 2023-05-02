@@ -12,6 +12,10 @@ fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     return array;
 }
 
+pub struct Wavetable {
+    pub table: [f32; 2048]
+}
+
 pub struct WavetableOscillator {
     wavetable: [f32; 2048]
 }
@@ -62,7 +66,7 @@ impl Module for WavetableOscillator {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
             child: Browser {
-                dir: "some/dir/here",
+                dir: "wavetables/serum/reddit-pack",
                 on_event: | _event | {
                     println!("Some browser event");
                 },

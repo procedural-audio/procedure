@@ -63,13 +63,13 @@ impl Module for SawModule {
                     voice.active = true;
                     voice.saw.init(voice.saw.fSampleRate);
                     voice.saw.set_freq(pitch);
-                }
+                },
                 Event::NoteOff => {
                     voice.active = false;
-                }
+                },
                 Event::Pitch(freq) => {
                     voice.saw.set_freq(freq);
-                }
+                },
                 _ => (),
             }
         }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,318 @@ List<List<double>> getWavetable() {
 class BrowserWidget extends ModuleWidget {
   BrowserWidget(RawNode m, RawWidget w) : super(m, w);
 
+  bool showPresets = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(20, 20, 20, 1.0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      child: Column(
+        children: [
+          BrowserWidgetBar(
+            name: "Name",
+            author: "Chase Kanipe",
+            onPressed: () {
+              setState(() {
+                showPresets = !showPresets;
+              });
+            },
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                Visibility(
+                  visible: showPresets,
+                  child: BrowserList(
+                    rootDir: Directory(
+                        "/Users/chasekanipe/Github/assets/wavetables/serum"),
+                  ),
+                ),
+                Visibility(
+                  visible: !showPresets,
+                  child: CustomPaint(
+                    painter: WavetablePainter(getWavetable()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BrowserWidgetBar extends StatelessWidget {
+  BrowserWidgetBar({
+    required this.name,
+    required this.author,
+    required this.onPressed,
+  });
+
+  String name;
+  String author;
+  void Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(5),
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(20, 20, 20, 1.0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: BrowserBarElement(
+              onPressed: () {
+                onPressed();
+              },
+              icon: Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.list,
+                      size: 20,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 30, width: 4),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    " - " + author,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
+          BrowserBarElement(
+            icon: const Icon(
+              Icons.chevron_left,
+              color: Colors.grey,
+            ),
+            onPressed: () {
+              print("Pressed here");
+            },
+          ),
+          const SizedBox(width: 5),
+          BrowserBarElement(
+            icon: const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+            ),
+            onPressed: () {
+              print("Pressed here");
+            },
+          ),
+          const SizedBox(width: 5),
+          BrowserBarElement(
+            icon: const Icon(
+              Icons.folder,
+              color: Colors.blueAccent,
+            ),
+            onPressed: () {
+              print("Pressed here");
+            },
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class BrowserList extends StatefulWidget {
+  BrowserList({required this.rootDir});
+
+  Directory rootDir;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserList();
+}
+
+class _BrowserList extends State<BrowserList> {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: BrowserListDirectory(widget.rootDir),
+    );
+  }
+}
+
+class BrowserListDirectory extends StatefulWidget {
+  BrowserListDirectory(this.directory) {
+    print("Scanning $directory");
+    scan();
+  }
+
+  Directory directory;
+  ValueNotifier<List<Directory>> subDirectories = ValueNotifier([]);
+
+  void scan() async {
+    List<Directory> subDirs = [];
+    await for (var entity in directory.list()) {
+      if (entity is Directory) {
+        print("Adding $entity");
+        subDirs.add(entity);
+        subDirectories.value = subDirs;
+      }
+    }
+  }
+
+  @override
+  State<StatefulWidget> createState() => _BrowserListDirectory();
+}
+
+class _BrowserListDirectory extends State<BrowserListDirectory> {
+  Directory? selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<List<Directory>>(
+      valueListenable: widget.subDirectories,
+      builder: (context, subDirectories, child) {
+        return Row(
+          children: [
+            Container(
+              width: 150,
+              decoration: const BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: Color.fromRGBO(30, 30, 30, 1.0),
+                    width: 1.0,
+                  ),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    widget.directory.name + "/",
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: ListView(
+                      children: subDirectories
+                          .map(
+                            (d) => BrowserListDirectoryElement(
+                              directory: d,
+                              selected: selected == d,
+                              onTap: () {
+                                setState(() {
+                                  if (selected != d) {
+                                    selected = d;
+                                  } else {
+                                    selected = null;
+                                  }
+                                });
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Builder(
+              builder: (context) {
+                if (selected != null) {
+                  return BrowserListDirectory(selected!);
+                } else {
+                  return Container();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class BrowserListDirectoryElement extends StatefulWidget {
+  BrowserListDirectoryElement({
+    required this.directory,
+    required this.selected,
+    required this.onTap,
+  });
+
+  Directory directory;
+  bool selected;
+  void Function() onTap;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserListDirectoryElement();
+}
+
+class _BrowserListDirectoryElement extends State<BrowserListDirectoryElement> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          widget.onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          color: widget.selected
+              ? const Color.fromRGBO(40, 40, 40, 1.0)
+              : (hovering
+                  ? const Color.fromRGBO(30, 30, 30, 1.0)
+                  : const Color.fromRGBO(20, 20, 20, 1.0)),
+          child: Text(
+            widget.directory.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BrowserWidget2 extends ModuleWidget {
+  BrowserWidget2(RawNode m, RawWidget w) : super(m, w);
+
   String name = "Tempered Felt Piano";
   String author = "Chase Kanipe";
 
@@ -44,86 +357,126 @@ class BrowserWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Container(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
           decoration: const BoxDecoration(
-              color: Color.fromRGBO(20, 20, 20, 1.0),
-              borderRadius: BorderRadius.all(Radius.circular(5))),
-          child: Column(children: [
-            Container(
+            color: Color.fromRGBO(20, 20, 20, 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+          child: Column(
+            children: [
+              Container(
                 height: 30 + 8,
                 decoration: const BoxDecoration(
-                    color: Color.fromRGBO(20, 20, 20, 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(5))),
+                  color: Color.fromRGBO(20, 20, 20, 1.0),
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                ),
                 child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Row(children: [
+                  padding: const EdgeInsets.all(4),
+                  child: Row(
+                    children: [
                       Expanded(
-                          child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  browserVisible = !browserVisible;
-                                });
-                              },
-                              child: Container(
-                                  width: 200,
-                                  decoration: const BoxDecoration(
-                                      color: Color.fromRGBO(40, 40, 40, 1.0),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5))),
-                                  child: Row(children: [
-                                    const Padding(
-                                        padding: EdgeInsets.all(4),
-                                        child: Icon(Icons.list,
-                                            size: 20, color: Colors.grey)),
-                                    const SizedBox(height: 30, width: 4),
-                                    Text(
-                                      name,
-                                      style: const TextStyle(
-                                          fontSize: 14, color: Colors.white),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              browserVisible = !browserVisible;
+                            });
+                          },
+                          child: Container(
+                            width: 200,
+                            decoration: const BoxDecoration(
+                              color: Color.fromRGBO(40, 40, 40, 1.0),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.list,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(height: 30, width: 4),
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Visibility(
+                                  visible: constraints.maxWidth > 500,
+                                  child: Text(
+                                    " - " + author,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
                                     ),
-                                    Visibility(
-                                        visible: constraints.maxWidth > 500,
-                                        child: Text(
-                                          " - " + author,
-                                          style: const TextStyle(
-                                              fontSize: 14, color: Colors.grey),
-                                        ))
-                                  ])))),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(width: 4),
                       BrowserBarElement(
-                          icon: const Icon(Icons.chevron_left,
-                              color: Colors.grey),
-                          onPressed: () {
-                            print("Pressed here");
-                          }),
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          print("Pressed here");
+                        },
+                      ),
                       const SizedBox(width: 4),
                       BrowserBarElement(
-                          icon: const Icon(Icons.chevron_right,
-                              color: Colors.grey),
-                          onPressed: () {
-                            print("Pressed here");
-                          }),
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          print("Pressed here");
+                        },
+                      ),
                       const SizedBox(width: 4),
                       BrowserBarElement(
-                          icon: const Icon(Icons.folder,
-                              color: Colors.blueAccent),
-                          onPressed: () {
-                            print("Pressed here");
-                          })
-                    ]))),
-            Expanded(
-                child: Stack(children: [
-              children[0],
-              Visibility(
-                visible: browserVisible,
-                child: BrowserList(
-                    extension: ".multisample",
-                    path: "/Users/chasekanipe/Music/Decent Samples"),
-              )
-            ])),
-          ]));
-    });
+                        icon: const Icon(
+                          Icons.folder,
+                          color: Colors.blueAccent,
+                        ),
+                        onPressed: () {
+                          print("Pressed here");
+                        },
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    children[0],
+                    Visibility(
+                      visible: browserVisible,
+                      child: BrowserList2(
+                        extension: ".multisample",
+                        path: "/Users/chasekanipe/Music/Decent Samples",
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -143,41 +496,45 @@ class _BrowserBarElement extends State<BrowserBarElement> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-        onEnter: (e) => setState(() {
-              hovering = true;
-            }),
-        onExit: (e) => setState(() {
-              hovering = false;
-            }),
-        child: Container(
-            width: 30,
-            decoration: BoxDecoration(
-                color: hovering
-                    ? const Color.fromRGBO(50, 50, 50, 1.0)
-                    : const Color.fromRGBO(40, 40, 40, 1.0),
-                borderRadius: const BorderRadius.all(Radius.circular(5))),
-            child: IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                iconSize: 20,
-                icon: widget.icon,
-                onPressed: () {
-                  widget.onPressed();
-                })));
+      onEnter: (e) => setState(() {
+        hovering = true;
+      }),
+      onExit: (e) => setState(() {
+        hovering = false;
+      }),
+      child: Container(
+        width: 30,
+        decoration: BoxDecoration(
+          color: hovering
+              ? const Color.fromRGBO(50, 50, 50, 1.0)
+              : const Color.fromRGBO(40, 40, 40, 1.0),
+          borderRadius: const BorderRadius.all(Radius.circular(5)),
+        ),
+        child: IconButton(
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          icon: widget.icon,
+          onPressed: () {
+            widget.onPressed();
+          },
+        ),
+      ),
+    );
   }
 }
 
-class BrowserList extends StatefulWidget {
-  BrowserList({required this.path, required this.extension});
+class BrowserList2 extends StatefulWidget {
+  BrowserList2({required this.path, required this.extension});
 
   String path;
   String extension;
 
   @override
-  State<StatefulWidget> createState() => _BrowserList();
+  State<StatefulWidget> createState() => _BrowserList2();
 }
 
-class _BrowserList extends State<BrowserList> {
+class _BrowserList2 extends State<BrowserList2> {
   List<String> categories = [
     "Basic",
     "Natural",
@@ -220,7 +577,8 @@ class _BrowserList extends State<BrowserList> {
     for (String category in categories) {
       bool selected = category == categories[selectedCategory];
 
-      categoryWidgets.add(BrowserListCategory(
+      categoryWidgets.add(
+        BrowserListCategory(
           name: category,
           selected: selected,
           onTap: () {
@@ -234,13 +592,16 @@ class _BrowserList extends State<BrowserList> {
                 }
               }
             });
-          }));
+          },
+        ),
+      );
     }
 
     List<Widget> elementWidgets = [];
 
     for (String element in presets[selectedCategory]) {
-      elementWidgets.add(BrowserListElement(
+      elementWidgets.add(
+        BrowserListElement(
           name: element,
           onTap: () {
             for (int i = 0; i < categories.length; i++) {
@@ -251,40 +612,61 @@ class _BrowserList extends State<BrowserList> {
                 break;
               }
             }
-          }));
+          },
+        ),
+      );
 
-      elementWidgets.add(Padding(
+      elementWidgets.add(
+        Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           child: Container(
-              color: const Color.fromRGBO(50, 50, 50, 1.0), height: 1)));
+            color: const Color.fromRGBO(50, 50, 50, 1.0),
+            height: 1,
+          ),
+        ),
+      );
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return Container(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           decoration: const BoxDecoration(
-              color: Color.fromRGBO(20, 20, 20, 1.0),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))),
-          child: Row(children: [
-            Expanded(
+            color: Color.fromRGBO(20, 20, 20, 1.0),
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(5),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
                 child: SizedBox(
-                    height: constraints.maxHeight,
-                    child: SingleChildScrollView(
-                        child: Column(
+                  height: constraints.maxHeight,
+                  child: SingleChildScrollView(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: categoryWidgets,
-                    )))),
-            const SizedBox(width: 10),
-            Expanded(
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
                 child: SizedBox(
-                    height: constraints.maxHeight,
-                    child: SingleChildScrollView(
-                        child: Column(
+                  height: constraints.maxHeight,
+                  child: SingleChildScrollView(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: elementWidgets,
-                    ))))
-          ]));
-    });
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -299,33 +681,36 @@ class BrowserListCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(5),
-        child: GestureDetector(
-            onTap: () {
-              onTap();
-            },
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-              child: Row(children: [
-                Icon(
-                  Icons.person,
-                  color: selected ? Colors.white : Colors.grey,
-                  size: 14,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: selected ? Colors.white : Colors.grey,
-                  ),
-                ),
-              ]),
-              decoration: BoxDecoration(
-                  border: Border.all(
-                      color:
-                          selected ? Colors.grey : Colors.grey.withAlpha(100),
-                      width: 1.0)),
-            )));
+      padding: const EdgeInsets.all(5),
+      child: GestureDetector(
+        onTap: () {
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+          child: Row(children: [
+            Icon(
+              Icons.person,
+              color: selected ? Colors.white : Colors.grey,
+              size: 14,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              name,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.grey,
+              ),
+            ),
+          ]),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected ? Colors.grey : Colors.grey.withAlpha(100),
+              width: 1.0,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -338,23 +723,29 @@ class BrowserListElement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
-          onTap();
-        },
-        child: Container(
-            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-            height: 30,
-            child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  name,
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                ))));
+      onTap: () {
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+        height: 30,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            name,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
-class BrowserWidget2 extends ModuleWidget {
-  BrowserWidget2(RawNode m, RawWidget w) : super(m, w);
+class BrowserWidget3 extends ModuleWidget {
+  BrowserWidget3(RawNode m, RawWidget w) : super(m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;
@@ -398,24 +789,26 @@ class BrowserWidget2 extends ModuleWidget {
     for (String category in categories) {
       bool selected = category == categories[selectedCategory];
 
-      categoryWidgets.add(Padding(
+      categoryWidgets.add(
+        Padding(
           padding: const EdgeInsets.all(5),
           child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  for (int i = 0; i < categories.length; i++) {
-                    if (categories[i] == category) {
-                      setState(() {
-                        selectedCategory = i;
-                      });
-                      break;
-                    }
+            onTap: () {
+              setState(() {
+                for (int i = 0; i < categories.length; i++) {
+                  if (categories[i] == category) {
+                    setState(() {
+                      selectedCategory = i;
+                    });
+                    break;
                   }
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                child: Row(children: [
+                }
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+              child: Row(
+                children: [
                   Icon(
                     Icons.person,
                     color: selected ? Colors.white : Colors.grey,
@@ -428,19 +821,25 @@ class BrowserWidget2 extends ModuleWidget {
                       color: selected ? Colors.white : Colors.grey,
                     ),
                   ),
-                ]),
-                decoration: BoxDecoration(
-                    border: Border.all(
-                        color:
-                            selected ? Colors.grey : Colors.grey.withAlpha(100),
-                        width: 1.0)),
-              ))));
+                ],
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: selected ? Colors.grey : Colors.grey.withAlpha(100),
+                  width: 1.0,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     List<Widget> elementWidgets = [];
 
     for (String element in presets[selectedCategory]) {
-      elementWidgets.add(GestureDetector(
+      elementWidgets.add(
+        GestureDetector(
           onTap: () {
             for (int i = 0; i < categories.length; i++) {
               if (presets[selectedCategory][i] == element) {
@@ -452,14 +851,21 @@ class BrowserWidget2 extends ModuleWidget {
             }
           },
           child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-              height: 30,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    element,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
-                  )))));
+            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+            height: 30,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                element,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 
       elementWidgets.add(Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -467,139 +873,169 @@ class BrowserWidget2 extends ModuleWidget {
     }
 
     return Container(
-        decoration: BoxDecoration(
-            color: const Color.fromRGBO(20, 20, 20, 1.0),
-            borderRadius: BorderRadius.circular(5)),
-        child: Column(children: [
+      decoration: BoxDecoration(
+          color: const Color.fromRGBO(20, 20, 20, 1.0),
+          borderRadius: BorderRadius.circular(5)),
+      child: Column(
+        children: [
           SizedBox(
-              height: 40,
-              child: Row(children: [
+            height: 40,
+            child: Row(
+              children: [
                 Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 5, 0, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                showPresets = !showPresets;
-                              });
-                            },
-                            child: Icon(
-                              showPresets ? Icons.waves : Icons.list,
-                              color: Colors.grey,
-                              size: 20,
-                            )),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
+                  padding: const EdgeInsets.fromLTRB(5, 5, 0, 5),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          showPresets = !showPresets;
+                        });
+                      },
+                      child: Icon(
+                        showPresets ? Icons.waves : Icons.list,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                    ),
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                  ),
+                ),
                 Expanded(
-                    child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Container(
-                          decoration: const BoxDecoration(
-                              color: Color.fromRGBO(40, 40, 40, 1.0)),
-                          child: MouseRegion(
-                              onEnter: (e) {
-                                setState(() {
-                                  presetsHovering = true;
-                                });
-                              },
-                              onExit: (e) {
-                                setState(() {
-                                  presetsHovering = false;
-                                });
-                              },
-                              child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                  child: Container(
-                                      width: 100,
-                                      child: Row(children: [
-                                        const Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Icon(
-                                            Icons.book,
-                                            color: Colors.grey,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              10, 0, 0, 0),
-                                          child: Text(
-                                            presets[selectedCategory]
-                                                [selectedPreset],
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        )
-                                      ])))),
-                        ))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
                     child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.chevron_left,
-                          color: Colors.grey,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.chevron_right,
-                          color: Colors.grey,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-                Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                    child: Container(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(
-                          Icons.folder,
-                          color: Colors.blueAccent,
-                          size: 20,
-                        ),
-                        color: const Color.fromRGBO(40, 40, 40, 1.0))),
-              ])),
-          Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                  child: Stack(fit: StackFit.expand, children: [
-                    Visibility(
-                      visible: showPresets,
-                      child: Row(children: [
-                        SingleChildScrollView(
-                          controller: ScrollController(),
+                      decoration: const BoxDecoration(
+                        color: Color.fromRGBO(40, 40, 40, 1.0),
+                      ),
+                      child: MouseRegion(
+                        onEnter: (e) {
+                          setState(() {
+                            presetsHovering = true;
+                          });
+                        },
+                        onExit: (e) {
+                          setState(() {
+                            presetsHovering = false;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                           child: Container(
-                            width: 150,
-                            child: Column(
-                              children: categoryWidgets,
+                            width: 100,
+                            child: Row(
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Icon(
+                                    Icons.book,
+                                    color: Colors.grey,
+                                    size: 18,
+                                  ),
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                  child: Text(
+                                    presets[selectedCategory][selectedPreset],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            controller: ScrollController(),
-                            child: Column(children: elementWidgets),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    child: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.grey,
+                    ),
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    child: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    child: const Icon(
+                      Icons.folder,
+                      color: Colors.blueAccent,
+                      size: 20,
+                    ),
+                    color: const Color.fromRGBO(40, 40, 40, 1.0),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Visibility(
+                    visible: showPresets,
+                    child: Row(children: [
+                      SingleChildScrollView(
+                        controller: ScrollController(),
+                        child: Container(
+                          width: 150,
+                          child: Column(
+                            children: categoryWidgets,
                           ),
                         ),
-                      ]),
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: ScrollController(),
+                          child: Column(
+                            children: elementWidgets,
+                          ),
+                        ),
+                      ),
+                    ]),
+                  ),
+                  Visibility(
+                    visible: !showPresets,
+                    child: CustomPaint(
+                      painter: WavetablePainter(wavetable),
                     ),
-                    Visibility(
-                        visible: !showPresets,
-                        child: CustomPaint(
-                          painter: WavetablePainter(wavetable),
-                        ))
-                  ])))
-        ]));
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -639,7 +1075,7 @@ class WavetablePainter extends CustomPainter {
     for (var line in lines) {
       double mult = 1 - (i / lines.length).clamp(0.1, 1.0);
 
-      print(mult.toString());
+      // print(mult.toString());
 
       Paint paint = Paint()
         ..color = Colors.blue.withAlpha((255.0 * mult).toInt())

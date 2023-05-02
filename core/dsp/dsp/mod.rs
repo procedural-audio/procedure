@@ -5,6 +5,7 @@ pub mod dynamics;
 mod envelopes;
 mod oscillator;
 mod wavetable;
+mod interpolators;
 
 pub use dynamics::*;
 pub use envelopes::*;

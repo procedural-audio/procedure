@@ -3,6 +3,7 @@ pub mod dsp;
 pub mod math;
 pub mod sample;
 pub mod voice;
+mod loadable;
 // pub mod widget;
 
 // pub use crate::buffers::audio::*;
