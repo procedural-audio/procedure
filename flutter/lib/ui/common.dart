@@ -2444,7 +2444,7 @@ class _VarField extends State<VarField> with TickerProviderStateMixin {
       });
     } else {
       _overlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_overlayEntry!);
+      Overlay.of(context).insert(_overlayEntry!);
       setState(() => _isOpen = true);
       _animationController?.forward();
     }

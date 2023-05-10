@@ -1,8 +1,8 @@
 use crate::buffers::*;
+use crate::loadable::Loadable;
 
 use std::sync::Arc;
 
-pub use crate::cache::FileLoad;
 use crate::Generator;
 use crate::Pitched;
 use std::ops::{Deref, DerefMut};

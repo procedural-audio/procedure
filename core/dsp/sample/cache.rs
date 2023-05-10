@@ -1,5 +1,6 @@
 use std::sync::RwLock;
 
+use crate::loadable::Loadable;
 use crate::sample::sample::*;
 use crate::buffers::*;
 
@@ -15,7 +16,32 @@ lazy_static! {
 
 use std::sync::Arc;
 
-pub trait FileLoad<T> {
+impl Loadable for SampleFile<Stereo2> {
+    fn load(path: &str) -> Result<Self, String> {
+        /* Load sample from cache */
+        for sample in &*SAMPLE_CACHE_STEREO.read().unwrap() {
+            if sample.path() == path {
+                return Ok(sample.clone());
+            }
+        }
+
+        /* Load sample from files asynchronously */
+        println!("Loading {}", path);
+
+        let reader = hound::WavReader::open(path.to_string()).unwrap();
+        let spec = reader.spec();
+
+        if spec.bits_per_sample == 16 {
+            Ok(load_sample_file_i16(path, reader, spec.channels))
+        } else if spec.bits_per_sample == 24 {
+            Ok(load_sample_file_i24(path, reader, spec.channels))
+        } else {
+            Err("Unsupported WAV bit depth".to_string())
+        }
+    }
+}
+
+/*pub trait FileLoad<T> {
     fn load(_path: &str) -> T {
         panic!("File loader note implemented");
     }
@@ -44,7 +70,7 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
             panic!("Unsupported WAV bit depth");
         }
     }
-}
+}*/
 
 fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
     let sample_rate = reader.spec().sample_rate;

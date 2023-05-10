@@ -1,4 +1,5 @@
 use std::sync::{Arc, RwLock};
+use modules::loadable::Loadable;
 use rand::{rngs::ThreadRng, Rng};
 use rlua::Thread;
 
@@ -54,7 +55,7 @@ impl Module for Granular {
         };
 
         return Self {
-            sample: Arc::new(RwLock::new(SampleFile::load(path))),
+            sample: Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
             buffer: StereoBuffer::init(Stereo2 {left: 0.0, right: 0.0 }, 512),
             rng: rand::thread_rng(),
             positions: [0.0; 32],

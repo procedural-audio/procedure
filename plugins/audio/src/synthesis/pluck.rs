@@ -1,3 +1,5 @@
+use modules::conv::freq_to_note;
+
 use crate::*;
 
 pub struct Pluck {
@@ -246,6 +248,67 @@ impl Module for Pluck {
 		}
     }
 }
+
+struct ExtendedKarplus {}
+
+struct Karplus {
+	freq: f32,
+	damping: f32,
+	rate: u32,
+	buffer: Vec<f32>,
+}
+
+impl Karplus {
+	pub fn new() -> Karplus {
+		Self {
+			freq: 440.0,
+			damping: 0.0,
+			rate: 44100,
+			buffer: Vec::new(),
+		}
+	}
+
+	pub fn set_damping(&mut self, damping: f32) {
+		self.damping = damping;
+	}
+}
+
+/*impl Generator for Karplus {
+	fn reset(&mut self) {}
+
+	fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+		self.rate = sample_rate;
+		self.buffer = Vec::with_capacity(block_size);		
+	}
+
+	fn gen(&mut self) -> Self::Item {
+		
+	}
+}*/
+
+/*impl Karplus {
+    pub fn new(frequency: f32, sample_rate: u32) -> Karplus {
+        let size = (sample_rate as f32 / frequency) as usize;
+        let mut v: Vec<f32> = Vec::with_capacity(size);
+        let mut r = rand::thread_rng();
+        for _ in 0..size {
+            v.push((r.gen::<f32>() * 2.0) -1.0);
+        }
+        Karplus{
+            frequency: frequency,
+            sample_rate: sample_rate,
+            buffer: v
+        }
+    }
+
+    pub fn sample(&mut self, damping: f32) -> f32 {
+        let v: f32 = self.buffer.remove(0);
+        let s: f32 = (v + self.buffer[0])*0.5 * damping;
+
+        self.buffer.push(s);
+        s
+    }
+}*/
 
 struct StringVoice {
 	sample_rate: f32,

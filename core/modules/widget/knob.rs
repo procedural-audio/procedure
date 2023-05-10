@@ -1,4 +1,4 @@
-use pa_dsp::{SampleFile, FileLoad};
+use pa_dsp::{SampleFile, loadable::{Loadable, Lock}};
 
 use crate::widget::*;
 use crate::widget::traits::IntoColor;
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn ffi_sample_file_picker_set_sample(widget: &mut SampleFi
     let sample = SampleFile::load(path);
     match widget.sample.write() {
         Ok(mut old) => {
-            *old = sample.clone();
+            *old = sample.clone().unwrap();
         },
         _ => ()
     }
@@ -334,19 +334,30 @@ impl<T: WidgetNew, F: FnMut(&str)> WidgetNew for Scripter<T, F> {
     }
 }
 
+pub struct Directory(&'static str);
+
+impl Directory {
+    pub const IMAGES: Directory = Directory("assets/samples");
+    pub const PLUGINS: Directory = Directory("assets/samples");
+    pub const PROJCTS: Directory = Directory("assets/samples");
+    pub const SAMPLES: Directory = Directory("assets/samples");
+    pub const SCRIPTS: Directory = Directory("assets/samples");
+    pub const WAVETABLES: Directory = Directory("assets/samples");
+}
+
 pub enum BrowserEvent {
     Load(String),
     Save,
     Import(String)
 }
 
-pub struct Browser<T: WidgetNew, F: FnMut(BrowserEvent)> {
-    pub dir: &'static str,
-    pub on_event: F,
-    pub child: T
+pub struct Browser<T: WidgetNew, L: Loadable> {
+    pub directory: Directory,
+    pub loadable: Lock<L>,
+    pub child: T,
 }
 
-impl<T: WidgetNew, F: FnMut(BrowserEvent)> WidgetNew for Browser<T, F> {
+impl<'a, T: WidgetNew, L: Loadable> WidgetNew for Browser<T, L> {
     fn get_name(&self) -> &'static str {
         "Browser"
     }

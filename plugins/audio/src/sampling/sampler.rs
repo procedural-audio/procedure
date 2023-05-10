@@ -1,9 +1,9 @@
-use std::sync::{Arc, RwLock};
+use pa_dsp::loadable::{Loadable, Lock};
 
 use crate::*;
 
 pub struct Sampler {
-    sample: Arc<RwLock<SampleFile<Stereo2>>>,
+    sample: Lock<SampleFile<Stereo2>>,
     positions: [f32; 32]
 }
 
@@ -20,7 +20,7 @@ impl Module for Sampler {
         id: "default.sampling.sampler",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(300, 150),
+        size: Size::Static(300, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10)
@@ -42,7 +42,7 @@ impl Module for Sampler {
         };
 
         return Self {
-            sample: Arc::new(RwLock::new(SampleFile::load(path))),
+            sample: Lock::new(SampleFile::load(path).unwrap()),
             positions: [0.0; 32]
         };
     }
@@ -54,30 +54,35 @@ impl Module for Sampler {
         }
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        let path: String = state.load("sample");
+        *self.sample.write() = SampleFile::load(&path).unwrap();
+    }
+
+    fn save(&self, state: &mut State) {
+        let path = self.sample.read().path().to_string();
+        state.save("sample", path);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: Stack {
-                children: (
-                    SampleFilePicker {
-                        sample: self.sample.clone()
-                    },
-                    Painter {
-                        paint: | canvas | {
-                            for position in self.positions {
-                                if position != 0.0 {
-                                    canvas.draw_line(
-                                        (canvas.width * position, 0.0),
-                                        (canvas.width * position, canvas.height),
-                                        Paint::new());
-                                }
+            child: Browser {
+                directory: Directory::SAMPLES,
+                loadable: self.sample.clone(),
+                child: Painter {
+                    paint: | canvas | {
+                        for position in self.positions {
+                            if position != 0.0 {
+                                canvas.draw_line(
+                                    (canvas.width * position, 0.0),
+                                    (canvas.width * position, canvas.height),
+                                    Paint::new()
+                                );
                             }
                         }
                     }
-                )
+                }
             }
         })
     }

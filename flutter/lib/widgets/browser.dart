@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import '../patch.dart';
 import 'widget.dart';
-import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
 import '../core.dart';
@@ -38,7 +37,102 @@ List<List<double>> getWavetable() {
 class BrowserWidget extends ModuleWidget {
   BrowserWidget(RawNode m, RawWidget w) : super(m, w);
 
-  bool showPresets = false;
+  @override
+  Widget build(BuildContext context) {
+    return BrowserOverlay();
+  }
+}
+
+class BrowserOverlay extends StatefulWidget {
+  BrowserOverlay({Key? key}) : super(key: key);
+
+  @override
+  _BrowserOverlay createState() => _BrowserOverlay();
+}
+
+class _BrowserOverlay extends State<BrowserOverlay> {
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+
+  void _toggleDropdown({bool close = false}) async {
+    if (_isOpen || close) {
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    } else {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+    }
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+      builder: (entryContext) {
+        return FocusScope(
+          autofocus: true,
+          node: _focusScopeNode,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              _toggleDropdown(close: true);
+            },
+            onPanStart: (e) {
+              _toggleDropdown(close: true);
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: offset.dx,
+                    top: offset.dy + 40.0,
+                    child: Material(
+                      color: Colors.transparent,
+                      textStyle: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {},
+                        onPanStart: (e) {},
+                        child: Container(
+                          width: 600,
+                          height: 400,
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(20, 20, 20, 1.0),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(5)),
+                            border: Border.all(
+                              color: const Color.fromRGBO(40, 40, 40, 1.0),
+                            ),
+                          ),
+                          child: BrowserList(
+                            rootDir: Directory(
+                              "/Users/chasekanipe/Github/assets/wavetables/serum",
+                            ),
+                            onLoadFile: (file) {
+                              print("Loading file $file");
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,29 +147,11 @@ class BrowserWidget extends ModuleWidget {
             name: "Name",
             author: "Chase Kanipe",
             onPressed: () {
-              setState(() {
-                showPresets = !showPresets;
-              });
+              _toggleDropdown();
             },
           ),
-          Expanded(
-            child: Stack(
-              children: [
-                Visibility(
-                  visible: showPresets,
-                  child: BrowserList(
-                    rootDir: Directory(
-                        "/Users/chasekanipe/Github/assets/wavetables/serum"),
-                  ),
-                ),
-                Visibility(
-                  visible: !showPresets,
-                  child: CustomPaint(
-                    painter: WavetablePainter(getWavetable()),
-                  ),
-                ),
-              ],
-            ),
+          CustomPaint(
+            painter: WavetablePainter(getWavetable()),
           ),
         ],
       ),
@@ -139,7 +215,7 @@ class BrowserWidgetBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 5),
+          /*const SizedBox(width: 5),
           BrowserBarElement(
             icon: const Icon(
               Icons.chevron_left,
@@ -158,7 +234,7 @@ class BrowserWidgetBar extends StatelessWidget {
             onPressed: () {
               print("Pressed here");
             },
-          ),
+          ),*/
           const SizedBox(width: 5),
           BrowserBarElement(
             icon: const Icon(
@@ -176,40 +252,57 @@ class BrowserWidgetBar extends StatelessWidget {
 }
 
 class BrowserList extends StatefulWidget {
-  BrowserList({required this.rootDir});
+  BrowserList({required this.rootDir, required this.onLoadFile});
 
   Directory rootDir;
+  void Function(File) onLoadFile;
 
   @override
   State<StatefulWidget> createState() => _BrowserList();
 }
 
 class _BrowserList extends State<BrowserList> {
+  ScrollController controller = ScrollController();
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: BrowserListDirectory(widget.rootDir),
+    return Scrollbar(
+      thumbVisibility: true,
+      controller: controller,
+      child: SingleChildScrollView(
+        controller: controller,
+        scrollDirection: Axis.horizontal,
+        child: BrowserListDirectory(
+          directory: widget.rootDir,
+          onLoadFile: (f) => widget.onLoadFile(f),
+        ),
+      ),
     );
   }
 }
 
 class BrowserListDirectory extends StatefulWidget {
-  BrowserListDirectory(this.directory) {
-    print("Scanning $directory");
+  BrowserListDirectory({
+    required this.directory,
+    required this.onLoadFile,
+  }) : super(key: UniqueKey()) {
     scan();
   }
 
   Directory directory;
+  void Function(File) onLoadFile;
   ValueNotifier<List<Directory>> subDirectories = ValueNotifier([]);
+  ValueNotifier<List<File>> files = ValueNotifier([]);
 
   void scan() async {
     List<Directory> subDirs = [];
+    List<File> fs = [];
     await for (var entity in directory.list()) {
       if (entity is Directory) {
-        print("Adding $entity");
         subDirs.add(entity);
         subDirectories.value = subDirs;
+      } else if (entity is File) {
+        fs.add(entity);
+        files.value = fs;
       }
     }
   }
@@ -219,71 +312,102 @@ class BrowserListDirectory extends StatefulWidget {
 }
 
 class _BrowserListDirectory extends State<BrowserListDirectory> {
-  Directory? selected;
+  dynamic selected;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Directory>>(
       valueListenable: widget.subDirectories,
       builder: (context, subDirectories, child) {
-        return Row(
-          children: [
-            Container(
-              width: 150,
-              decoration: const BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: Color.fromRGBO(30, 30, 30, 1.0),
-                    width: 1.0,
+        return ValueListenableBuilder<List<File>>(
+          valueListenable: widget.files,
+          builder: (context, files, child) {
+            return Row(
+              children: [
+                Container(
+                  width: 200,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                        color: Color.fromRGBO(30, 30, 30, 1.0),
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Text(
+                          widget.directory.name + "/",
+                          maxLines: 1,
+                          overflow: TextOverflow.clip,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: ListView(
+                          children: <Widget>[] +
+                              subDirectories
+                                  .map(
+                                    (d) => BrowserListDirectoryElement(
+                                      directory: d,
+                                      selected: selected == d,
+                                      onTap: () {
+                                        setState(() {
+                                          if (selected != d) {
+                                            selected = d;
+                                          } else {
+                                            selected = null;
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  )
+                                  .toList() +
+                              files
+                                  .map((e) => BrowserListFileElement(
+                                        file: e,
+                                        selected: selected == e,
+                                        onTap: () {
+                                          setState(() {
+                                            if (selected != e) {
+                                              selected = e;
+                                            } else {
+                                              selected = null;
+                                            }
+                                          });
+                                        },
+                                        onDoubleTap: () {
+                                          print("Double tap");
+                                          widget.onLoadFile(e);
+                                        },
+                                      ))
+                                  .toList(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    widget.directory.name + "/",
-                    maxLines: 1,
-                    overflow: TextOverflow.clip,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Expanded(
-                    child: ListView(
-                      children: subDirectories
-                          .map(
-                            (d) => BrowserListDirectoryElement(
-                              directory: d,
-                              selected: selected == d,
-                              onTap: () {
-                                setState(() {
-                                  if (selected != d) {
-                                    selected = d;
-                                  } else {
-                                    selected = null;
-                                  }
-                                });
-                              },
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Builder(
-              builder: (context) {
-                if (selected != null) {
-                  return BrowserListDirectory(selected!);
-                } else {
-                  return Container();
-                }
-              },
-            ),
-          ],
+                Builder(
+                  builder: (context) {
+                    if (selected != null && selected is Directory) {
+                      return BrowserListDirectory(
+                        directory: selected!,
+                        onLoadFile: (f) => widget.onLoadFile(f),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -295,7 +419,7 @@ class BrowserListDirectoryElement extends StatefulWidget {
     required this.directory,
     required this.selected,
     required this.onTap,
-  });
+  }) : super(key: UniqueKey());
 
   Directory directory;
   bool selected;
@@ -337,8 +461,88 @@ class _BrowserListDirectoryElement extends State<BrowserListDirectoryElement> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BrowserListFileElement extends StatefulWidget {
+  BrowserListFileElement({
+    required this.file,
+    required this.selected,
+    required this.onTap,
+    required this.onDoubleTap,
+  }) : super(key: UniqueKey());
+
+  File file;
+  bool selected;
+  void Function() onTap;
+  void Function() onDoubleTap;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserListFileElement();
+}
+
+class _BrowserListFileElement extends State<BrowserListFileElement> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: Listener(
+        behavior: HitTestBehavior.deferToChild,
+        /*onPointerDown: (e) {
+          widget.onTap();
+        },*/
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {},
+          onDoubleTap: () {
+            widget.onDoubleTap();
+          },
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+            color: widget.selected
+                ? const Color.fromRGBO(40, 40, 40, 1.0)
+                : (hovering
+                    ? const Color.fromRGBO(30, 30, 30, 1.0)
+                    : const Color.fromRGBO(20, 20, 20, 1.0)),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.equalizer,
+                  size: 14,
+                  color: Colors.blue,
+                ),
+                const SizedBox(width: 5),
+                SizedBox(
+                  width: 200 - 20 - 60 - 6,
+                  child: Text(
+                    widget.file.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

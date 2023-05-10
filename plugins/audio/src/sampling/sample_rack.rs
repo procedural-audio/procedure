@@ -1,5 +1,7 @@
 use std::sync::{Arc, RwLock};
 
+use modules::loadable::Loadable;
+
 use crate::*;
 
 pub struct SampleRack {
@@ -77,18 +79,18 @@ impl Module for SampleRack {
 
         return Self {
             samples: [
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path2))),
-                Arc::new(RwLock::new(SampleFile::load(path3))),
-                Arc::new(RwLock::new(SampleFile::load(path4))),
-                Arc::new(RwLock::new(SampleFile::load(path5))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
-                Arc::new(RwLock::new(SampleFile::load(path))),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path2).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path3).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path4).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path5).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
+                Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
             ],
             positions: [0.0; 32]
         };

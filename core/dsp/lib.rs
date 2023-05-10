@@ -3,26 +3,14 @@ pub mod dsp;
 pub mod math;
 pub mod sample;
 pub mod voice;
-mod loadable;
-// pub mod widget;
-
-// pub use crate::buffers::audio::*;
-// pub use crate::buffers::event::*;
-// pub use crate::buffers::control::*;
+pub mod loadable;
 
 pub use crate::buffers::*;
-
 pub use crate::math::*;
 pub use crate::sample::*;
 
 pub use buffers::*;
 pub use dsp::*;
-// pub use widget::*;
-
-// pub use faust_state::FaustDSP;
-// pub use faust_types::FaustDsp;
-
-use std::time::Duration;
 
 extern crate lazy_static;
 

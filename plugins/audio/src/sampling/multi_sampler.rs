@@ -1,9 +1,9 @@
 use crate::*;
 
-use std::sync::{Arc, RwLock};
+use pa_dsp::loadable::{Loadable, Lock};
 
 pub struct MultiSampler {
-    map: Arc<RwLock<SampleMap>>,
+    map: Lock<SampleMap>,
 }
 
 impl Module for MultiSampler {
@@ -31,7 +31,7 @@ impl Module for MultiSampler {
 
     fn new() -> Self {
         Self {
-            map: Arc::new(RwLock::new(SampleMap::new())),
+            map: Lock::new(SampleMap::new()),
         }
     }
 
@@ -51,20 +51,8 @@ impl Module for MultiSampler {
         return Box::new(Padding {
             padding: (5, 35, 5, 5),
             child: Browser {
-                dir: "directory/goes/here",
-                on_event: | event | {
-                    match event {
-                        BrowserEvent::Load(path) => {
-                            println!("Load path {}", path);
-                        },
-                        BrowserEvent::Save => {
-                            println!("Save stuff here");
-                        },
-                        BrowserEvent::Import(path) => {
-                            println!("Import file {}", path);
-                        }
-                    }
-                },
+                directory: Directory::SAMPLES,
+                loadable: self.map.clone(),
                 child: Scripter {
                     dir: "directory/goes/here",
                     on_update: | script | {
@@ -86,7 +74,7 @@ impl Module for MultiSampler {
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
-                    if let Ok(map) = self.map.try_read() {
+                    /*if let Ok(map) = self.map.try_read() {
                         for region in &map.regions {
                             let num = pitch_to_num(pitch);
                             if region.low_note <= num && region.high_note >= num {
@@ -97,7 +85,7 @@ impl Module for MultiSampler {
                                 break;
                             }
                         }
-                    }
+                    }*/
                 },
                 Event::NoteOff => voice.stop(),
                 Event::Pitch(pitch) => voice.set_pitch(pitch),
@@ -112,7 +100,7 @@ impl Module for MultiSampler {
 /* ===== Sample Mapper ===== */
 
 pub struct SampleMapper {
-    pub map: Arc<RwLock<SampleMap>>,
+    pub map: Lock<SampleMap>,
 }
 
 impl WidgetNew for SampleMapper {
@@ -127,7 +115,7 @@ impl WidgetNew for SampleMapper {
 
 #[no_mangle]
 pub extern "C" fn ffi_sample_mapper_get_region_count(widget: &mut SampleMapper) -> usize {
-    (*widget.map.read().unwrap()).regions.len()
+    (*widget.map.read()).regions.len()
 }
 
 #[no_mangle]
@@ -138,7 +126,7 @@ pub extern "C" fn ffi_sample_mapper_add_region(
     low_velocity: f32,
     high_velocity: f32,
 ) {
-    (*widget.map.write().unwrap())
+    (*widget.map.write())
         .regions
         .push(SoundRegion::<SampleFile<Stereo2>> {
             low_note,
@@ -153,12 +141,12 @@ pub extern "C" fn ffi_sample_mapper_add_region(
 #[no_mangle]
 pub extern "C" fn ffi_sample_mapper_load(widget: &mut SampleMapper, path: &i8) {
     let path= str_from_char(path);
-    widget.map.write().unwrap().load(path);
+    *widget.map.write() = SampleMap::load(path).unwrap();
 }
 
 #[no_mangle]
 pub extern "C" fn ffi_sample_mapper_remove_region(widget: &mut SampleMapper, index: usize) {
-    (*widget.map.write().unwrap()).regions.remove(index);
+    (*widget.map.write()).regions.remove(index);
 }
 
 #[no_mangle]
@@ -166,7 +154,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_low_note(
     widget: &mut SampleMapper,
     index: usize,
 ) -> u32 {
-    (*widget.map.read().unwrap()).regions[index].low_note
+    (*widget.map.read()).regions[index].low_note
 }
 
 #[no_mangle]
@@ -175,7 +163,7 @@ pub extern "C" fn ffi_sample_mapper_set_region_low_note(
     index: usize,
     low_note: u32,
 ) {
-    (*widget.map.write().unwrap()).regions[index].low_note = low_note;
+    (*widget.map.write()).regions[index].low_note = low_note;
 }
 
 #[no_mangle]
@@ -183,7 +171,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_high_note(
     widget: &mut SampleMapper,
     index: usize,
 ) -> u32 {
-    (*widget.map.read().unwrap()).regions[index].high_note
+    (*widget.map.read()).regions[index].high_note
 }
 
 #[no_mangle]
@@ -192,7 +180,7 @@ pub extern "C" fn ffi_sample_mapper_set_region_high_note(
     index: usize,
     high_note: u32,
 ) {
-    (*widget.map.write().unwrap()).regions[index].high_note = high_note;
+    (*widget.map.write()).regions[index].high_note = high_note;
 }
 
 #[no_mangle]
@@ -200,7 +188,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_low_velocity(
     widget: &mut SampleMapper,
     index: usize,
 ) -> f32 {
-    (*widget.map.read().unwrap()).regions[index].low_velocity
+    (*widget.map.read()).regions[index].low_velocity
 }
 
 #[no_mangle]
@@ -209,7 +197,7 @@ pub extern "C" fn ffi_sample_mapper_set_region_low_velocity(
     index: usize,
     low_velocity: f32,
 ) {
-    (*widget.map.write().unwrap()).regions[index].low_velocity = low_velocity;
+    (*widget.map.write()).regions[index].low_velocity = low_velocity;
 }
 
 #[no_mangle]
@@ -217,7 +205,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_high_velocity(
     widget: &mut SampleMapper,
     index: usize,
 ) -> f32 {
-    (*widget.map.read().unwrap()).regions[index].high_velocity
+    (*widget.map.read()).regions[index].high_velocity
 }
 
 #[no_mangle]
@@ -226,7 +214,7 @@ pub extern "C" fn ffi_sample_mapper_set_region_high_velocity(
     index: usize,
     high_velocity: f32,
 ) {
-    (*widget.map.write().unwrap()).regions[index].high_velocity = high_velocity;
+    (*widget.map.write()).regions[index].high_velocity = high_velocity;
 }
 
 #[no_mangle]
@@ -234,7 +222,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_count(
     widget: &mut SampleMapper,
     index: usize,
 ) -> usize {
-    (*widget.map.write().unwrap()).regions[index].sounds.len()
+    (*widget.map.write()).regions[index].sounds.len()
 }
 
 #[no_mangle]
@@ -243,7 +231,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_path(
     index: usize,
     sample_index: usize,
 ) -> *const i8 {
-    let map = &*widget.map.read().unwrap();
+    let map = &*widget.map.read();
     let path = map.regions[index].sounds[sample_index].path().clone();
     let s = std::ffi::CString::new(path).unwrap();
     let p = s.as_ptr();
@@ -258,7 +246,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_left(
     sample_index: usize,
 ) -> FFIBuffer {
     // let mut buffer_new = Vec::new();
-    let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
+    let sample = &(*widget.map.read()).regions[index].sounds[sample_index];
 
     todo!();
 
@@ -285,7 +273,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_right(
     sample_index: usize,
 ) -> FFIBuffer {
     // let mut buffer_new = Vec::new();
-    let sample = &(*widget.map.read().unwrap()).regions[index].sounds[sample_index];
+    let sample = &(*widget.map.read()).regions[index].sounds[sample_index];
 
     todo!();
 
@@ -331,13 +319,13 @@ impl WidgetNew for SampleEditor {
 }
 
 pub struct MySampler {
-    pub map: Arc<RwLock<SampleMap>>,
+    pub map: Lock<SampleMap>,
 }
 
 impl MySampler {
     pub fn new() -> Self {
         Self {
-            map: Arc::new(RwLock::new(SampleMap::new())),
+            map: Lock::new(SampleMap::new()),
         }
     }
 }
@@ -353,22 +341,19 @@ impl SampleMap {
         };
 
         if cfg!(target_os = "macos") {
-            // temp.load("/Users/chasekanipe/Music/Decent Samples/Winter Felt Piano/Winter Felt Piano Prototype.dspreset");
-            // temp.load("/Users/chasekanipe/Music/Decent Samples/Electric Celeste/Pitched Electric Celeste.dspreset");
-            temp.load("/Users/chasekanipe/Music/Decent Samples/Flamenco Dreams Guitar/FlamencoDreams2.dspreset");
+            Self::load("/Users/chasekanipe/Music/Decent Samples/Flamenco Dreams Guitar/FlamencoDreams2.dspreset").unwrap()
         } else {
-            temp.load("/home/chase/guitar_samples/guitar.dspreset");
+            Self::load("/home/chase/guitar_samples/guitar.dspreset").unwrap()
         }
-
-        return temp;
     }
+}
 
-    pub fn load(&mut self, path: &str) {
-        self.regions.clear();
+impl Loadable for SampleMap {
+    fn load(path: &str) -> Result<Self, String> {
         if path.ends_with(".dspreset") {
-            self.regions = load_dspreset(path);
+            Ok(SampleMap { regions: load_dspreset(path) })
         } else {
-            panic!("Load not implemented");
+            Err("Load not implemented".to_string())
         }
     }
 }
@@ -490,7 +475,7 @@ fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2>>> {
                                                                 && r.high_note
                                                                     == region.high_note
                                                             {
-                                                                let mut sample = SampleFile::load(&sample_path);
+                                                                let mut sample = SampleFile::load(&sample_path).unwrap();
                                                                 sample.pitch = Some(num_to_pitch(root_note));
 
                                                                 if start != 0 {
@@ -508,7 +493,7 @@ fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2>>> {
                                                         }
 
                                                         if !found {
-                                                            let mut sample = SampleFile::load(&sample_path);
+                                                            let mut sample = SampleFile::load(&sample_path).unwrap();
                                                             sample.pitch = Some(num_to_pitch(root_note));
                                                             println!("Set num to {}", root_note);
 

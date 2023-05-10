@@ -1,5 +1,7 @@
 use std::sync::{Arc, RwLock};
 
+use modules::loadable::Loadable;
+
 use crate::*;
 
 pub struct AudioTrack {
@@ -44,7 +46,7 @@ impl Module for AudioTrack {
             todo!()
         };
 
-        let sample = SampleFile::load(path);
+        let sample = SampleFile::load(path).unwrap();
         let mut player = PitchedSamplePlayer::new();
 
         player.set_sample(sample.clone());

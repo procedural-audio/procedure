@@ -1,3 +1,5 @@
+use modules::loadable::Loadable;
+
 use crate::*;
 
 use std::sync::{Arc, RwLock};
@@ -75,10 +77,10 @@ impl Module for Slicer {
         if cfg!(target_os = "macos") {
             sample = SampleFile::load(
                 "/Users/chasekanipe/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav",
-            );
+            ).unwrap();
         } else {
             sample =
-                SampleFile::load("/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav");
+                SampleFile::load("/home/chase/guitar_samples/Samples/FlamencoDreams_55_C2_G_2.wav").unwrap();
         }
 
         Self {

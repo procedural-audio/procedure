@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 use crate::*;
 
 fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
@@ -16,8 +18,16 @@ pub struct Wavetable {
     pub table: [f32; 2048]
 }
 
+impl Wavetable {
+    pub fn new() -> Self {
+        Self {
+            table: wavetable(|x| x.sin())
+        }
+    }
+}
+
 pub struct WavetableOscillator {
-    wavetable: [f32; 2048]
+    wavetable: Arc<RwLock<Wavetable>>
 }
 
 pub struct WavetableOscillatorVoice {
@@ -49,7 +59,7 @@ impl Module for WavetableOscillator {
 
     fn new() -> Self {
         Self {
-            wavetable: [0.0; 2048]
+            wavetable: Arc::new(RwLock::new(Wavetable::new()))
         }
     }
 
@@ -63,18 +73,17 @@ impl Module for WavetableOscillator {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Padding {
+        /*return Box::new(Padding {
             padding: (5, 35, 5, 5),
             child: Browser {
-                dir: "wavetables/serum/reddit-pack",
-                on_event: | _event | {
-                    println!("Some browser event");
-                },
+                directory: Directory::WAVETABLES,
+                loadable: self.wavetable.clone(),
                 child: WavetablePicker {
                     wavetable: &mut self.wavetable
                 }
             }
-        });
+        });*/
+        return Box::new(EmptyWidget);
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
