@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import '../common.dart';
 import '../patch.dart';
 import 'widget.dart';
 import 'dart:ui' as ui;
@@ -10,10 +11,14 @@ import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
 
-/*double Function(RawWidgetPointer) ffiFaderGetValue = core
-    .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
-        "ffi_fader_get_value")
-    .asFunction();*/
+void Function(RawWidgetTrait, Pointer<Utf8>) ffiBrowserLoad = core
+    .lookup<NativeFunction<Void Function(RawWidgetTrait, Pointer<Utf8>)>>(
+        "ffi_browser_load")
+    .asFunction();
+Pointer<Utf8> Function(RawWidgetTrait) ffiBrowserGetRootPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
+        "ffi_browser_get_root_path")
+    .asFunction();
 
 List<List<double>> getWavetable() {
   List<List<double>> wavetable = [];
@@ -35,16 +40,40 @@ List<List<double>> getWavetable() {
 // https://www.didierboelens.com/2019/01/futures-isolates-event-loop/
 
 class BrowserWidget extends ModuleWidget {
-  BrowserWidget(RawNode m, RawWidget w) : super(m, w);
+  BrowserWidget(RawNode m, RawWidget w) : super(m, w) {
+    var path = ffiBrowserGetRootPath(w.getTrait());
+    root = pathToDirectory(path.toDartString());
+    calloc.free(path);
+  }
+
+  Directory root = Directory("");
 
   @override
   Widget build(BuildContext context) {
-    return BrowserOverlay();
+    return BrowserOverlay(
+      rootDirectory: root,
+      onLoadFile: (file) {
+        print("Loading file $file");
+        var rawPath = file.path.toNativeUtf8();
+        ffiBrowserLoad(widgetRaw.getTrait(), rawPath);
+        calloc.free(rawPath);
+      },
+      child: children[0],
+    );
   }
 }
 
 class BrowserOverlay extends StatefulWidget {
-  BrowserOverlay({Key? key}) : super(key: key);
+  BrowserOverlay({
+    required this.rootDirectory,
+    required this.onLoadFile,
+    required this.child,
+    Key? key,
+  }) : super(key: key);
+
+  Directory rootDirectory;
+  void Function(File) onLoadFile;
+  Widget child;
 
   @override
   _BrowserOverlay createState() => _BrowserOverlay();
@@ -107,19 +136,16 @@ class _BrowserOverlay extends State<BrowserOverlay> {
                           height: 400,
                           decoration: BoxDecoration(
                             color: const Color.fromRGBO(20, 20, 20, 1.0),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(5),
+                            ),
                             border: Border.all(
                               color: const Color.fromRGBO(40, 40, 40, 1.0),
                             ),
                           ),
                           child: BrowserList(
-                            rootDir: Directory(
-                              "/Users/chasekanipe/Github/assets/wavetables/serum",
-                            ),
-                            onLoadFile: (file) {
-                              print("Loading file $file");
-                            },
+                            rootDir: widget.rootDirectory,
+                            onLoadFile: widget.onLoadFile,
                           ),
                         ),
                       ),
@@ -150,8 +176,14 @@ class _BrowserOverlay extends State<BrowserOverlay> {
               _toggleDropdown();
             },
           ),
-          CustomPaint(
-            painter: WavetablePainter(getWavetable()),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: widget.child,
+              ),
+            ),
           ),
         ],
       ),
@@ -265,16 +297,71 @@ class _BrowserList extends State<BrowserList> {
   ScrollController controller = ScrollController();
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      thumbVisibility: true,
-      controller: controller,
-      child: SingleChildScrollView(
-        controller: controller,
-        scrollDirection: Axis.horizontal,
-        child: BrowserListDirectory(
-          directory: widget.rootDir,
-          onLoadFile: (f) => widget.onLoadFile(f),
+    return Column(
+      children: [
+        BrowserListBar(),
+        Expanded(
+          child: Scrollbar(
+            thumbVisibility: true,
+            controller: controller,
+            child: SingleChildScrollView(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              child: BrowserListDirectory(
+                directory: widget.rootDir,
+                onLoadFile: (f) => widget.onLoadFile(f),
+              ),
+            ),
+          ),
         ),
+      ],
+    );
+  }
+}
+
+class BrowserListBar extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _BrowserListBar();
+}
+
+class _BrowserListBar extends State<BrowserListBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 35,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(30, 30, 30, 1.0),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(5),
+        ),
+      ),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+            child: Container(
+              width: 200,
+              child: const TextField(
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  hintText: "Search",
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              decoration: const BoxDecoration(
+                color: Color.fromRGBO(20, 20, 20, 1.0),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -383,7 +470,6 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                                           });
                                         },
                                         onDoubleTap: () {
-                                          print("Double tap");
                                           widget.onLoadFile(e);
                                         },
                                       ))

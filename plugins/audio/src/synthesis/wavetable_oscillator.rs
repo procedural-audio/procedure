@@ -1,6 +1,6 @@
-use std::sync::{Arc, RwLock};
-
 use crate::*;
+
+use pa_dsp::loadable::{Loadable, Lock};
 
 fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     let mut array = [0.0; C];
@@ -26,8 +26,14 @@ impl Wavetable {
     }
 }
 
+impl Loadable for Wavetable {
+    fn load(path: &str) -> Result<Self, String> where Self: Sized {
+        Ok( Self { table: wavetable(|x| x.sin()) } )
+    }
+}
+
 pub struct WavetableOscillator {
-    wavetable: Arc<RwLock<Wavetable>>
+    wavetable: Lock<Wavetable>
 }
 
 pub struct WavetableOscillatorVoice {
@@ -59,7 +65,7 @@ impl Module for WavetableOscillator {
 
     fn new() -> Self {
         Self {
-            wavetable: Arc::new(RwLock::new(Wavetable::new()))
+            wavetable: Lock::new(Wavetable::new())
         }
     }
 
@@ -73,17 +79,18 @@ impl Module for WavetableOscillator {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        /*return Box::new(Padding {
+        return Box::new(Padding {
             padding: (5, 35, 5, 5),
             child: Browser {
-                directory: Directory::WAVETABLES,
                 loadable: self.wavetable.clone(),
-                child: WavetablePicker {
+                directory: Directory::WAVETABLES,
+                extensions: &[".wavetable"],
+                child: EmptyWidget,
+                /*child: WavetablePicker {
                     wavetable: &mut self.wavetable
-                }
+                }*/
             }
-        });*/
-        return Box::new(EmptyWidget);
+        });
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}

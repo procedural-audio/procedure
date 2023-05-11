@@ -337,23 +337,18 @@ impl<T: WidgetNew, F: FnMut(&str)> WidgetNew for Scripter<T, F> {
 pub struct Directory(&'static str);
 
 impl Directory {
-    pub const IMAGES: Directory = Directory("assets/samples");
-    pub const PLUGINS: Directory = Directory("assets/samples");
-    pub const PROJCTS: Directory = Directory("assets/samples");
+    pub const IMAGES: Directory = Directory("assets/images");
+    pub const PLUGINS: Directory = Directory("assets/plugins");
+    pub const PROJCTS: Directory = Directory("assets/projects");
     pub const SAMPLES: Directory = Directory("assets/samples");
-    pub const SCRIPTS: Directory = Directory("assets/samples");
-    pub const WAVETABLES: Directory = Directory("assets/samples");
-}
-
-pub enum BrowserEvent {
-    Load(String),
-    Save,
-    Import(String)
+    pub const SCRIPTS: Directory = Directory("assets/scripts");
+    pub const WAVETABLES: Directory = Directory("assets/wavetables");
 }
 
 pub struct Browser<T: WidgetNew, L: Loadable> {
-    pub directory: Directory,
     pub loadable: Lock<L>,
+    pub directory: Directory,
+    pub extensions: &'static [&'static str],
     pub child: T,
 }
 
@@ -365,6 +360,42 @@ impl<'a, T: WidgetNew, L: Loadable> WidgetNew for Browser<T, L> {
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &(self.child)
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn BrowserTrait) }
+    }
+}
+
+pub trait BrowserTrait {
+    fn load(&mut self, path: &str);
+    fn get_root_path(&self) -> &str;
+}
+
+impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
+    fn load(&mut self, path: &str) {
+        self.loadable.do_write(| l | {
+            if let Ok(v) = L::load(path) {
+                *l = v;
+            }
+        });
+    }
+
+    fn get_root_path(&self) -> &str {
+       self.directory.0 
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_browser_get_root_path(widget: &mut dyn BrowserTrait) -> *const i8 {
+    let s = CString::new(widget.get_root_path()).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_browser_load(widget: &mut dyn BrowserTrait, path: *const i8) {
+    widget.load(str_from_char(&*path));
 }
 
 pub struct IconButton<T: IntoColor, F: FnMut(bool)> {

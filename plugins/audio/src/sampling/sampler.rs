@@ -68,8 +68,9 @@ impl Module for Sampler {
         Box::new(Padding {
             padding: (5, 35, 5, 5),
             child: Browser {
-                directory: Directory::SAMPLES,
                 loadable: self.sample.clone(),
+                directory: Directory::SAMPLES,
+                extensions: &[".wav", ".mp3"],
                 child: Painter {
                     paint: | canvas | {
                         for position in self.positions {

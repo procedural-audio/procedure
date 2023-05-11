@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'dart:io';
+
+Directory pathToDirectory(String path) {
+  if (path.startsWith("assets/")) {
+    return Directory("/Users/chasekanipe/Github/assets" + path.substring(6));
+  } else {
+    return Directory(path);
+  }
+}
+
 class Category {
   Category({required this.name, required this.elements});
 

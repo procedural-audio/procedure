@@ -48,22 +48,25 @@ impl Module for MultiSampler {
     }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        return Box::new(Padding {
-            padding: (5, 35, 5, 5),
-            child: Browser {
-                directory: Directory::SAMPLES,
-                loadable: self.map.clone(),
-                child: Scripter {
-                    dir: "directory/goes/here",
-                    on_update: | script | {
-                        println!("Update script with {}", script);
-                    },
-                    child: SampleMapper {
-                        map: self.map.clone(),
+        return Box::new(
+            Padding {
+                padding: (5, 35, 5, 5),
+                child: Browser {
+                    loadable: self.map.clone(),
+                    directory: Directory::SAMPLES,
+                    extensions: &[".multisample", ".dspreset"],
+                    child: Scripter {
+                        dir: "directory/goes/here",
+                        on_update: | script | {
+                            println!("Update script with {}", script);
+                        },
+                        child: SampleMapper {
+                            map: self.map.clone(),
+                        }
                     }
                 }
             }
-        });
+        );
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
