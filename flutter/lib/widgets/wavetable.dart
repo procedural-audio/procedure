@@ -118,7 +118,8 @@ class WavetableWidget extends ModuleWidget {
     List<Widget> elementWidgets = [];
 
     for (String element in presets[selectedCategory]) {
-      elementWidgets.add(GestureDetector(
+      elementWidgets.add(
+        GestureDetector(
           onTap: () {
             for (int i = 0; i < categories.length; i++) {
               if (presets[selectedCategory][i] == element) {
@@ -130,30 +131,46 @@ class WavetableWidget extends ModuleWidget {
             }
           },
           child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-              height: 30,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    element,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
-                  )))));
+            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+            height: 30,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                element,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 
-      elementWidgets.add(Padding(
+      elementWidgets.add(
+        Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          child: Container(color: Colors.grey, height: 0.5)));
+          child: Container(
+            color: Colors.grey,
+            height: 0.5,
+          ),
+        ),
+      );
     }
 
     return Container(
-        decoration: BoxDecoration(
-            color: const Color.fromRGBO(20, 20, 20, 1.0),
-            borderRadius: BorderRadius.circular(5)),
-        child: Padding(
-            padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-            child: Stack(fit: StackFit.expand, children: [
-              Visibility(
-                visible: showPresets,
-                child: Row(children: [
+      decoration: BoxDecoration(
+          color: const Color.fromRGBO(20, 20, 20, 1.0),
+          borderRadius: BorderRadius.circular(5)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Visibility(
+              visible: showPresets,
+              child: Row(
+                children: [
                   SingleChildScrollView(
                     controller: ScrollController(),
                     child: Container(
@@ -172,14 +189,19 @@ class WavetableWidget extends ModuleWidget {
                       child: Column(children: elementWidgets),
                     ),
                   ),
-                ]),
+                ],
               ),
-              Visibility(
-                  visible: !showPresets,
-                  child: CustomPaint(
-                    painter: WavetablePainter(wavetable),
-                  ))
-            ])));
+            ),
+            Visibility(
+              visible: !showPresets,
+              child: CustomPaint(
+                painter: WavetablePainter(wavetable),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -199,12 +221,17 @@ class WavetablePainter extends CustomPainter {
       double offsetX = i * 3 + size.width / wavetable.length;
       double offsetY = (1 - i / wavetable.length) * size.height * 9 / 10;
 
-      List<Offset> points = [Offset(0.0 + offsetX, offsetY)];
+      List<Offset> points = [
+        Offset(0.0 + offsetX, offsetY),
+      ];
+
       int j = 0;
 
       for (var w in wave) {
-        var curr =
-            Offset(width / wave.length * j + offsetX, height / 2 * w + offsetY);
+        var curr = Offset(
+          width / wave.length * j + offsetX,
+          height / 2 * w + offsetY,
+        );
 
         points.add(curr);
         points.add(curr);
@@ -218,8 +245,6 @@ class WavetablePainter extends CustomPainter {
     i = 0;
     for (var line in lines) {
       double mult = 1 - (i / lines.length).clamp(0.1, 1.0);
-
-      print(mult.toString());
 
       Paint paint = Paint()
         ..color = Colors.blue.withAlpha((255.0 * mult).toInt())
