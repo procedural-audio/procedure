@@ -76,24 +76,26 @@ class WavetableWidget extends ModuleWidget {
     for (String category in categories) {
       bool selected = category == categories[selectedCategory];
 
-      categoryWidgets.add(Padding(
+      categoryWidgets.add(
+        Padding(
           padding: const EdgeInsets.all(5),
           child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  for (int i = 0; i < categories.length; i++) {
-                    if (categories[i] == category) {
-                      setState(() {
-                        selectedCategory = i;
-                      });
-                      break;
-                    }
+            onTap: () {
+              setState(() {
+                for (int i = 0; i < categories.length; i++) {
+                  if (categories[i] == category) {
+                    setState(() {
+                      selectedCategory = i;
+                    });
+                    break;
                   }
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                child: Row(children: [
+                }
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+              child: Row(
+                children: [
                   Icon(
                     Icons.person,
                     color: selected ? Colors.white : Colors.grey,
@@ -106,13 +108,18 @@ class WavetableWidget extends ModuleWidget {
                       color: selected ? Colors.white : Colors.grey,
                     ),
                   ),
-                ]),
-                decoration: BoxDecoration(
-                    border: Border.all(
-                        color:
-                            selected ? Colors.grey : Colors.grey.withAlpha(100),
-                        width: 1.0)),
-              ))));
+                ],
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: selected ? Colors.grey : Colors.grey.withAlpha(100),
+                  width: 1.0,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     List<Widget> elementWidgets = [];
