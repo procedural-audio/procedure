@@ -74,9 +74,9 @@ impl Module for AudioTrack {
             padding: (5, 35, 5, 5),
             child: Stack {
                 children: (
-                    SampleFilePicker {
+                    /*SampleFilePicker {
                         sample: self.sample.clone()
-                    },
+                    },*/
                     Painter {
                         paint: | canvas | {
                             canvas.draw_line(

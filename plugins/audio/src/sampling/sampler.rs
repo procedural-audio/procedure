@@ -71,18 +71,25 @@ impl Module for Sampler {
                 loadable: self.sample.clone(),
                 directory: Directory::SAMPLES,
                 extensions: &[".wav", ".mp3"],
-                child: Painter {
-                    paint: | canvas | {
-                        for position in self.positions {
-                            if position != 0.0 {
-                                canvas.draw_line(
-                                    (canvas.width * position, 0.0),
-                                    (canvas.width * position, canvas.height),
-                                    Paint::new()
-                                );
+                child: Stack {
+                    children: (
+                        SampleEditor {
+                            sample: self.sample.clone(),
+                        },
+                        Painter {
+                            paint: | canvas | {
+                                for position in self.positions {
+                                    if position != 0.0 {
+                                        canvas.draw_line(
+                                            (canvas.width * position, 0.0),
+                                            (canvas.width * position, canvas.height),
+                                            Paint::new()
+                                        );
+                                    }
+                                }
                             }
                         }
-                    }
+                    )
                 }
             }
         })

@@ -4,7 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/iconButton.dart';
-import 'package:metasampler/widgets/samplePicker.dart';
+import 'package:metasampler/widgets/sampleEditor.dart';
 
 import 'dart:ui' as ui;
 import 'dart:async';
@@ -107,16 +107,14 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
     return KeyboardWidget(moduleRaw, widgetRaw);
   } else if (name == "SampleMapper") {
     return SampleMapperWidget(moduleRaw, widgetRaw);
-  } else if (name == "SampleEditor") {
-    return SampleEditorWidget(moduleRaw, widgetRaw);
   } else if (name == "LuaEditor") {
     return LuaEditorWidget(moduleRaw, widgetRaw);
   } else if (name == "Tabs") {
     return TabsWidget(moduleRaw, widgetRaw);
   } else if (name == "NodeSequencer") {
     return NodeSequencerWidget(moduleRaw, widgetRaw);
-  } else if (name == "SamplePicker") {
-    return SamplePickerWidget(moduleRaw, widgetRaw);
+  } else if (name == "SampleEditor") {
+    return SampleEditorWidget(moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
     return RefreshWidget(moduleRaw, widgetRaw);
     // } else if (name == "Rebuild") {
@@ -194,9 +192,7 @@ abstract class ModuleWidget extends StatefulWidget {
     }
   }
 
-  void refresh() {
-    state.refresh();
-  }
+  void refresh() {}
 
   bool canAcceptVars() {
     return false;
@@ -209,7 +205,7 @@ abstract class ModuleWidget extends StatefulWidget {
   void onVarUpdate(dynamic value) {}
 
   void refreshRecursive() {
-    state.refresh();
+    refresh();
     for (var child in children) {
       child.refreshRecursive();
     }

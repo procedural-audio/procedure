@@ -307,20 +307,6 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_time_ms(
     todo!()
 }
 
-/* ===== Sample Editor ===== */
-
-pub struct SampleEditor {}
-
-impl WidgetNew for SampleEditor {
-    fn get_name(&self) -> &'static str {
-        "SampleEditor"
-    }
-
-    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
-        &()
-    }
-}
-
 pub struct MySampler {
     pub map: Lock<SampleMap>,
 }

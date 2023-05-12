@@ -131,13 +131,13 @@ pub struct FFIBuffer {
 }
 
 #[repr(C)]
-pub struct SampleFilePicker {
-    pub sample: std::sync::Arc<std::sync::RwLock<crate::SampleFile<crate::Stereo2>>>,
+pub struct SampleEditor {
+    pub sample: Lock<crate::SampleFile<crate::Stereo2>>,
 }
 
-impl WidgetNew for SampleFilePicker {
+impl WidgetNew for SampleEditor {
     fn get_name(&self) -> &'static str {
-        "SamplePicker"
+        "SampleEditor"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
@@ -148,30 +148,27 @@ impl WidgetNew for SampleFilePicker {
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_file_picker_get_buffer_length(widget: &mut SampleFilePicker) -> usize {
-    widget.sample.read().unwrap().len()
+pub unsafe extern "C" fn ffi_sample_editor_get_buffer_path(widget: &mut SampleEditor) -> *const i8 {
+    let sample = widget.sample.read();
+    let s = CString::new(sample.path()).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_file_picker_get_sample_left(widget: &mut SampleFilePicker, index: usize) -> f32 {
-    (*widget.sample.read().unwrap()).as_slice()[index].left
+pub unsafe extern "C" fn ffi_sample_editor_get_buffer_length(widget: &mut SampleEditor) -> usize {
+    widget.sample.read().len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_file_picker_get_sample_right(widget: &mut SampleFilePicker, index: usize) -> f32 {
-    (*widget.sample.read().unwrap()).as_slice()[index].right
+pub unsafe extern "C" fn ffi_sample_editor_get_sample_left(widget: &mut SampleEditor, index: usize) -> f32 {
+    (*widget.sample.read()).as_slice()[index].left
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_file_picker_set_sample(widget: &mut SampleFilePicker, path: &i8) {
-    let path= str_from_char(path);
-    let sample = SampleFile::load(path);
-    match widget.sample.write() {
-        Ok(mut old) => {
-            *old = sample.clone().unwrap();
-        },
-        _ => ()
-    }
+pub unsafe extern "C" fn ffi_sample_editor_get_sample_right(widget: &mut SampleEditor, index: usize) -> f32 {
+    (*widget.sample.read()).as_slice()[index].right
 }
 
 #[repr(C)]

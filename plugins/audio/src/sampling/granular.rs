@@ -97,12 +97,12 @@ impl Module for Granular {
         Box::new(
             Stack {
                 children: (
-                    Padding {
+                    /*Padding {
                         padding: (35, 35, 10, 85),
-                        child: SampleFilePicker {
+                        child: SampleEditor {
                             sample: self.sample.clone()
                         }
-                    },
+                    },*/
                     Padding {
                         padding: (10, 35+130, 5, 5),
                         child: Row {

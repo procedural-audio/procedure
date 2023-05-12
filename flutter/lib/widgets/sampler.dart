@@ -124,7 +124,7 @@ class _SampleAreaItem extends State<SampleAreaItem> {
   }
 }
 
-class SampleEditorWidget extends ModuleWidget {
+/*class SampleEditorWidget extends ModuleWidget {
   SampleEditorWidget(RawNode m, RawWidget w) : super(m, w);
 
   @override
@@ -148,7 +148,7 @@ class SampleEditorWidget extends ModuleWidget {
         decoration:
             const BoxDecoration(color: Color.fromRGBO(20, 20, 20, 1.0)));
   }
-}
+}*/
 
 class SampleMapperWidget extends ModuleWidget {
   SampleMapperWidget(RawNode m, RawWidget w) : super(m, w) {

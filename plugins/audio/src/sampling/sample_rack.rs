@@ -107,7 +107,7 @@ impl Module for SampleRack {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Padding {
+        /*Box::new(Padding {
             padding: (5, 35, 5, 0),
             child: Row {
                 children: (
@@ -117,7 +117,7 @@ impl Module for SampleRack {
                                 padding: (0, 0, 5, 5),
                                 child: Stack {
                                     children: (
-                                        SampleFilePicker {
+                                        SampleEditor {
                                             sample: self.samples[0].clone()
                                         }
                                     )
@@ -127,7 +127,7 @@ impl Module for SampleRack {
                                 padding: (0, 0, 5, 5),
                                 child: Stack {
                                     children: (
-                                        SampleFilePicker {
+                                        SampleEditor {
                                             sample: self.samples[1].clone()
                                         }
                                     )
@@ -249,7 +249,8 @@ impl Module for SampleRack {
                     }
                 )
             }
-        })
+        })*/
+        return Box::new(EmptyWidget);
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}

@@ -53,10 +53,11 @@ class BrowserWidget extends ModuleWidget {
     return BrowserOverlay(
       rootDirectory: root,
       onLoadFile: (file) {
-        print("Loading file $file");
         var rawPath = file.path.toNativeUtf8();
         ffiBrowserLoad(widgetRaw.getTrait(), rawPath);
         calloc.free(rawPath);
+
+        children[0].refreshRecursive();
       },
       child: children[0],
     );
