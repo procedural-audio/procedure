@@ -65,6 +65,7 @@ static PLUGIN: Plugin = Plugin {
         module::<Mixer>(),
         module::<Gate>(),
         module::<Compressor>(),
+        module::<VoiceSpread>(),
         // module::<TransientShaper>(),
         // module::<TransientSeparator>(),
 

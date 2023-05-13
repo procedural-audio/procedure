@@ -234,10 +234,10 @@ impl Module for MidiInput {
             }
 
             self.listener.push(msg);
-            println!("NoteMessage: id: {}, offset: {}, note: {}", msg.id.num(), msg.offset, msg.note);
         }
 
         while let Some(msg) = self.listener.gen() {
+            println!("NoteMessage: voice: {}, id: {}, offset: {}, note: {}", voice.index, msg.id.num(), msg.offset, msg.note);
             outputs.events[0].push(msg);
         }
     }

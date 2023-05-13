@@ -4,11 +4,11 @@ use std::ops::*;
 use crate::math::faster;
 
 pub fn db_to_linear(value: f32) -> f32 {
-    f32::powf(10.0, value / 20.0)
+    f32::powf(10.0, value / 40.0) / 2.0
 }
 
 pub fn linear_to_db(value: f32) -> f32 {
-    20.0 * f32::log10(f32::max(f32::MIN, value))
+    40.0 * f32::log10(f32::max(f32::MIN, value * 2.0))
 }
 
 pub trait IntoDecibals {

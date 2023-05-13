@@ -5,7 +5,7 @@ pub struct Panner {
 }
 
 impl Module for Panner {
-    type Voice = (); // PannerDSP;
+    type Voice = ();
 
     const INFO: Info = Info {
         title: "Panner",
@@ -13,7 +13,7 @@ impl Module for Panner {
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),
-        voicing: Voicing::Monophonic,
+        voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Pan Amount", 55),
@@ -31,11 +31,16 @@ impl Module for Panner {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        () // PannerDSP::new()
+        ()
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {}
-    fn save(&self, _state: &mut State) {}
+    fn load(&mut self, _version: &str, state: &State) {
+        self.value = state.load("pan");
+    }
+
+    fn save(&self, state: &mut State) {
+        state.save("pan", self.value);
+    }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
@@ -45,26 +50,34 @@ impl Module for Panner {
                 text: "Pan",
                 color: Color::BLUE,
                 value: &mut self.value,
-                feedback: Box::new(|_v| String::new()),
+                feedback: Box::new(| v| {
+                    if v == 0.5 {
+                        String::from("C")
+                    } else if v < 0.5 {
+                        format!("{:.1} L", linear_to_db(1.0 - v))
+                    } else {
+                        format!("{:.1} R", linear_to_db(v))
+                    }
+                }),
             },
         })
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        // voice.prepare(sample_rate, block_size)
-    }
+    fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*voice.set_param(0, self.value);
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        let mut value = self.value;
 
-        voice.process(
-            &inputs.audio[0].as_array(),
-            &mut outputs.audio[0].as_array_mut(),
-        );*/
+        if inputs.control.connected(0) {
+            value = inputs.control[0];
+        }
+
+        value = f32::clamp(value, 0.0, 1.0);
+        outputs.audio[0].copy_from(&inputs.audio[0]);
+
+        for sample in &mut outputs.audio[0] {
+            sample.left = sample.left * (1.0 - value);
+            sample.right = sample.right * value;
+        }
     }
 }
-
-/*faust!(PannerDSP,
-    pan = hslider("value", 0.5, 0, 1, 0.0001) : si.smoo;
-    process = sp.panner(pan);
-);*/
