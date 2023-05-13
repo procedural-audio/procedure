@@ -372,7 +372,10 @@ impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
     fn load(&mut self, path: &str) {
         self.loadable.do_write(| l | {
             if let Ok(v) = L::load(path) {
+                println!("Loading loadable {}", path);
                 *l = v;
+            } else {
+                println!("Failed to load {}", path);
             }
         });
     }

@@ -7,6 +7,7 @@ mod groups;
 mod knob;
 mod traits;
 mod notes_track;
+mod sample_mapper;
 
 pub use button::*;
 pub use dropdown::*;
@@ -14,6 +15,7 @@ pub use fader::*;
 pub use groups::*;
 pub use knob::*;
 pub use notes_track::*;
+pub use sample_mapper::*;
 
 pub trait WidgetNew {
     fn get_name(&self) -> &'static str;

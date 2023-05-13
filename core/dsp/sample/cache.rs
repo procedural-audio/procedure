@@ -26,7 +26,7 @@ impl Loadable for SampleFile<Stereo2> {
         }
 
         /* Load sample from files asynchronously */
-        println!("Loading {}", path);
+        // println!("Loading {}", path);
 
         let reader = hound::WavReader::open(path.to_string()).unwrap();
         let spec = reader.spec();
