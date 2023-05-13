@@ -1,4 +1,5 @@
 use crate::*;
+use pa_dsp::*;
 
 pub struct Gain {
     value: f32,
@@ -16,7 +17,7 @@ impl Module for Gain {
         voicing: Voicing::Monophonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
-            Pin::Control("Linear Gain", 55),
+            Pin::Control("Gain (0-1)", 55),
         ],
         outputs: &[
             Pin::Audio("Audio Output", 25)
@@ -25,7 +26,6 @@ impl Module for Gain {
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Self { value: 0.5 }
     }
@@ -45,7 +45,7 @@ impl Module for Gain {
                 text: "Gain",
                 color: Color::BLUE,
                 value: &mut self.value,
-                feedback: Box::new(|v| format!("{:.1}", v)),
+                feedback: Box::new(|v| format!("{:.1}", linear_to_db(v))),
             },
         })
     }
@@ -56,7 +56,7 @@ impl Module for Gain {
         let mut value = self.value;
 
         if inputs.control.connected(0) {
-            value = inputs.control[0];
+            value = f32::clamp(inputs.control[0], 0.0, 1.0);
         }
 
         outputs.audio[0].copy_from(&inputs.audio[0]);
