@@ -193,6 +193,7 @@ public:
                 if (path.contains(name)) {
                     OwnedArray<PluginDescription> descs;
                     format->findAllTypesForFile(descs, path); // THIS CAUSES KONTAKT CRASH ???
+                    // TODO: ^^^ Call this from message thread (not main thread)
 
                     for (auto desc : descs) {
                         if (desc->name.contains(name)) {
@@ -201,10 +202,10 @@ public:
                                 auto plugin = new MyAudioPlugin(*desc, manager);
                                 auto messageManager = juce::MessageManager::getInstance();
                                 messageManager->callFunctionOnMessageThread(pluginInitialiseCallback, (void *) plugin);
-                                // return plugin;
+                                return plugin;
                             } else {
                                 puts("Can't create plugin instance");
-                                // return nullptr;
+                                return nullptr;
                             }
                         }
                     }
@@ -227,6 +228,8 @@ public:
             juce::MessageManager::callAsync([this] {
                 window->setContentOwned(plugin->createEditor(), true);
                 window->setUsingNativeTitleBar(true);
+                window->setInterceptsMouseClicks(true, true);
+                window->setMouseClickGrabsKeyboardFocus(true);
                 window->setResizable(true, true);
             });
         }
@@ -234,6 +237,7 @@ public:
         juce::MessageManager::callAsync([this] {
             puts("Setting window visibility to true");
             window->setVisible(true);
+            window->grabKeyboardFocus();
         });
 
         /*if (window == nullptr) {
