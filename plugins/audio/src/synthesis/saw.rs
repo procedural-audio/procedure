@@ -51,7 +51,6 @@ impl Module for SawModule {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
-		println!("PREPARING saw voice with sample rate: {}", sample_rate);
         voice.active = false;
         voice.saw.init(sample_rate as i32);
     }

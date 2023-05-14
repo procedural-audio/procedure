@@ -119,7 +119,6 @@ impl Module for LfoModule {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        println!("Preparing with sample rate {} and block size {}", sample_rate, block_size);
         voice.saw.prepare(sample_rate / block_size as u32, block_size);
         voice.square.prepare(sample_rate / block_size as u32, block_size);
         voice.sine.prepare(sample_rate / block_size as u32, block_size);
