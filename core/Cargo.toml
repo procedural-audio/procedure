@@ -3,6 +3,5 @@
 members = [
 	"dsp",
 	"graph",
-	"modules",
-    "io"
+	"modules"
 ]

@@ -386,14 +386,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nodio"
-version = "0.1.0"
-dependencies = [
- "cmake",
- "pa-dsp",
-]
-
-[[package]]
 name = "notify"
 version = "4.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -666,7 +658,6 @@ dependencies = [
  "dynamic_reload",
  "libloading",
  "modules",
- "nodio",
  "pa-dsp",
  "serde",
  "serde_json",

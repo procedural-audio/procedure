@@ -4,6 +4,7 @@ members = [
 	"audio",
 	"notes",
 	"control",
-    "time",
+	"time",
+	"plugin",
 	"utilities"
 ]

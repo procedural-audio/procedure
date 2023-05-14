@@ -82,7 +82,7 @@ pub enum StateKey {
     Int(usize)
 }
 
-pub trait ToKey {
+pub trait ToKey: ToString {
     fn to_key(self) -> StateKey;
 }
 
@@ -113,7 +113,7 @@ pub trait ToValue {
     fn to_value(self) -> Value;
 }
 
-pub trait FromValue {
+pub trait FromValue: Default {
     fn from_value(value: Value) -> Self where Self: Sized;
 }
 
@@ -248,7 +248,10 @@ impl State {
     pub fn load<K: ToKey, V: FromValue>(&self, key: K) -> V {
         match self.try_load(key) {
             Some(value) => return value,
-            None => panic!("Couldn't find value for key")
+            None => {
+                println!("Couldn't find key using default value");
+                V::default()
+            }
         }
     }
 

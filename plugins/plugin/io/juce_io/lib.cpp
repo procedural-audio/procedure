@@ -129,21 +129,57 @@ public:
     }
 };
 
+void* pluginInitialiseCallback(void* data);
+
 class MyAudioPlugin {
 public:
-    MyAudioPlugin() {
-        midiBuffer.ensureSize(128);
-        playing.reserve(64);
-    }
-
-    MyAudioPlugin(std::unique_ptr<juce::AudioPluginInstance> p) {
-        plugin.swap(p);
+    MyAudioPlugin(juce::PluginDescription desc, juce::AudioPluginFormatManager* manager) : description(desc), manager(manager) {
         midiBuffer.ensureSize(128);
         playing.reserve(64);
     }
 
     ~MyAudioPlugin() {
 
+    }
+
+    void initialise() {
+        juce::String error = "";
+
+        auto messageManager = juce::MessageManager::getInstance();
+        if (messageManager->isThisTheMessageThread()) {
+            puts("Creating plugin instance");
+            std::cout << " > Name: " << description.name << std::endl;
+            std::cout << " > Category: " << description.category << std::endl;
+            std::cout << " > Manufacturer: " << description.manufacturerName << std::endl;
+
+            auto instance = manager->createPluginInstance(description, 44100, 256, error);
+            puts("Enabling all buses");
+            instance->enableAllBuses();
+            puts("Setting instance");
+            setInstance(std::move(instance));
+
+            juce::MessageManager::callAsync([this] {
+                puts("Creating new window");
+                auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
+                window.swap(w);
+            });
+
+            /*puts("Set using native title bar");
+            w->setUsingNativeTitleBar(true);
+            puts("Setting content owned");
+            w->setContentOwned(plugin->createEditor(), true);
+            puts("Setting resizable");
+            w->setResizable(true, true);
+            // w->centreWithSize(w->getWidth(), w->getHeight());
+            puts("Setting visible");
+            w->setVisible(true);
+
+            puts("Swapping window");
+            window.swap(w);*/
+        } else {
+            puts("Error: Initialised from not the message thread");
+            exit(0);
+        }
     }
 
     static MyAudioPlugin* create(juce::AudioPluginFormatManager* manager, juce::String name) {
@@ -162,61 +198,68 @@ public:
                         if (desc->name.contains(name)) {
                             if (manager->doesPluginStillExist(*desc)) {
                                 puts("Creating plugin instance");
-                                auto plugin = new MyAudioPlugin();
-
-                                // juce::MessageManager::callAsync([plugin, manager, desc] {
-                                    juce::String error = "";
-                                    auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
-                                    instance->enableAllBuses();
-                                    plugin->setInstance(std::move(instance));
-
-                                    /*auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
-
-                                    w->setUsingNativeTitleBar(true);
-                                    w->setContentOwned(plugin->plugin->createEditor(), true);
-                                    w->centreWithSize(w->getWidth(), w->getHeight());
-                                    w->setVisible(true);
-
-                                    plugin->window.swap(w);*/
-                                // });
-
-                                return plugin;
+                                auto plugin = new MyAudioPlugin(*desc, manager);
+                                auto messageManager = juce::MessageManager::getInstance();
+                                messageManager->callFunctionOnMessageThread(pluginInitialiseCallback, (void *) plugin);
+                                // return plugin;
                             } else {
-
                                 puts("Can't create plugin instance");
-                                return nullptr;
+                                // return nullptr;
                             }
                         }
                     }
                 }
             }
         }
+
+        puts("Error: Failed to create plugin");
+        return nullptr;
     }
 
     void showGui() {
-        puts("Creating gui");
-
         if (window == nullptr) {
+            puts("Error: Showing GUI before it was created");
+            return;
+        }
+
+        if (window->getContentComponent() == nullptr) {
+            puts("Creating window content");
             juce::MessageManager::callAsync([this] {
-                puts("Crate gui callback");
-
-                auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
-
-                puts("Created plugin");
-
-                w->setUsingNativeTitleBar(true);
-                w->setContentOwned(plugin->createEditor(), true);
-                w->centreWithSize(w->getWidth(), w->getHeight());
-                w->setVisible(true);
-
-                window.swap(w);
-            });
-        } else {
-            juce::MessageManager::callAsync([this] {
-                window->setVisible(true);
+                window->setContentOwned(plugin->createEditor(), true);
+                window->setUsingNativeTitleBar(true);
+                window->setResizable(true, true);
             });
         }
 
+        juce::MessageManager::callAsync([this] {
+            puts("Setting window visibility to true");
+            window->setVisible(true);
+        });
+
+        /*if (window == nullptr) {
+            juce::MessageManager::callAsync([this] {
+                puts("Creating GUI window");
+                auto w = std::unique_ptr<AudioPluginWindow>(new AudioPluginWindow());
+
+                puts("Set using native title bar");
+                w->setUsingNativeTitleBar(true);
+                w->setContentOwned(plugin->createEditor(), true);
+                w->setResizable(true, true);
+                // w->centreWithSize(w->getWidth(), w->getHeight());
+                // puts("Set visible");
+                // w->setVisible(true);
+
+                puts("Swapping window");
+                window.swap(w);
+            });
+        } else {
+            puts("Showing GUI async");
+            juce::MessageManager::callAsync([this] {
+                puts("Showing GUI callback");
+                // window->centreWithSize(window->getWidth(), window->getHeight());
+                window->setVisible(true);
+            });
+        }*/
     }
 
     void setInstance(std::unique_ptr<juce::AudioPluginInstance> instance) {
@@ -273,11 +316,25 @@ public:
     }
 
 private:
+    juce::PluginDescription description;
+    juce::AudioPluginFormatManager* manager;
     std::unique_ptr<juce::AudioPluginInstance> plugin;
-    std::unique_ptr<AudioPluginWindow> window;
+    std::unique_ptr<AudioPluginWindow> window = nullptr;
     juce::MidiBuffer midiBuffer = juce::MidiBuffer();
     std::vector<NoteMessage> playing;
 };
+
+void* pluginInitialiseCallback(void* data) {
+    MyAudioPlugin* plugin = (MyAudioPlugin*) data;
+
+    auto messageManager = juce::MessageManager::getInstance();
+    if (messageManager->isThisTheMessageThread()) {
+        plugin->initialise();
+    } else {
+        puts("Error: This is not the message thread");
+        exit(0);
+    }
+}
 
 extern "C" juce::AudioPluginFormatManager* create_audio_plugin_manager() {
     puts("Creating plugin format manager");
@@ -305,37 +362,6 @@ extern "C" void destroy_audio_plugin_manager(juce::AudioPluginFormatManager* man
 }
 
 extern "C" MyAudioPlugin* create_audio_plugin(juce::AudioPluginFormatManager* manager, char* name) {
-    /*for (auto format : manager->getFormats()) {
-        std::cout << "Found format with name " << format->getName() << std::endl;
-
-        auto locations = format->getDefaultLocationsToSearch();
-        auto paths = format->searchPathsForPlugins(locations, false);
-
-        for (auto path : paths) {
-            if (path.contains(name)) {
-                OwnedArray<PluginDescription> descs;
-                format->findAllTypesForFile(descs, path); // THIS CAUSES KONTAKT CRASH ???
-
-                for (auto desc : descs) {
-                    if (desc->name.contains(name)) {
-                        juce::String error = "";
-                        if (manager->doesPluginStillExist(*desc)) {
-                            puts("Creating plugin instance");
-                            auto instance = manager->createPluginInstance(*desc, 44100, 256, error);
-                            instance->enableAllBuses();
-                            return new MyAudioPlugin(std::move(instance));
-                        } else {
-                            puts("Can't create plugin instance");
-                            return nullptr;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return nullptr;*/
-
     return MyAudioPlugin::create(manager, juce::String(name));
 }
 

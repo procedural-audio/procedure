@@ -26,7 +26,7 @@ impl Module for AnalogFilter {
         id: "default.effects.filters.analog_filter",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(200, 170),
+        size: Size::Static(200, 160),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 20),
@@ -68,8 +68,8 @@ impl Module for AnalogFilter {
         return Box::new(Stack {
             children: (
                 Transform {
-                    position: (50, 40 + 70),
-                    size: (100, 40),
+                    position: (40, 110),
+                    size: (120, 40),
                     child: Dropdown {
                         index: &mut self.selected,
                         color: Color::BLUE,
@@ -85,7 +85,7 @@ impl Module for AnalogFilter {
                     },
                 },
                 Transform {
-                    position: (40, 40),
+                    position: (40, 35),
                     size: (60, 70),
                     child: Knob {
                         text: "Cutoff", // Cutoff
@@ -95,7 +95,7 @@ impl Module for AnalogFilter {
                     },
                 },
                 Transform {
-                    position: (40 + 70, 40),
+                    position: (40 + 70, 35),
                     size: (60, 70),
                     child: Knob {
                         text: "Res", // Resonance

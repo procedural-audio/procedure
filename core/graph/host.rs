@@ -1,6 +1,5 @@
 use pa_dsp::*;
 
-use nodio::{IOManager, AudioPluginManager};
 use crate::graph::*;
 
 use std::sync::Arc;
@@ -11,8 +10,8 @@ pub struct Host {
     pub block_size: usize,
     pub time: TimeMessage,
     pub bpm: f64,
-    pub io_manager: Option<IOManager>,
-    pub plugin_manager: Arc<AudioPluginManager>
+    // pub io_manager: Option<IOManager>,
+    // pub plugin_manager: Arc<AudioPluginManager>
 }
 
 impl Host {
@@ -23,8 +22,8 @@ impl Host {
             sample_rate: 44100,
             time: TimeMessage::from(0.0, 0.0),
             bpm: 120.0,
-            io_manager: None,
-            plugin_manager: Arc::new(AudioPluginManager::new())
+            // io_manager: None,
+            // plugin_manager: Arc::new(AudioPluginManager::new())
         }
     }
 
