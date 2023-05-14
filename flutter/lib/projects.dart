@@ -60,7 +60,8 @@ class Project {
   }
 
   static Project blank() {
-    var projectDirectory = Directory(Settings2.projectsDirectory() + "/NewProject");
+    var projectDirectory =
+        Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
     var patch = Patch.from(PatchInfo.blank(patchDirectory));
@@ -130,6 +131,7 @@ class Project {
       var info = await PatchInfo.load(patchDirectory);
       if (info != null) {
         infos.add(info);
+        infos.sort((a, b) => a.name.value.compareTo(b.name.value));
         patches.value = infos;
       }
     }

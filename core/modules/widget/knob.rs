@@ -132,7 +132,7 @@ pub struct FFIBuffer {
 
 #[repr(C)]
 pub struct SampleEditor {
-    pub sample: Lock<crate::SampleFile<crate::Stereo2>>,
+    pub sample: Lock<crate::SampleFile<crate::Stereo2<f32>>>,
 }
 
 impl WidgetNew for SampleEditor {

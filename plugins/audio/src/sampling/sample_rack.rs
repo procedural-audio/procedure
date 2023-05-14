@@ -6,13 +6,13 @@ use crate::*;
 
 pub struct SampleRack {
     samples: [
-        Arc<RwLock<SampleFile<Stereo2>>>; 12
+        Arc<RwLock<SampleFile<Stereo2<f32>>>>; 12
     ],
     positions: [f32; 32]
 }
 
 pub struct SampleRackVoice {
-    player: PitchedSamplePlayer<Stereo2>,
+    player: PitchedSamplePlayer<Stereo2<f32>>,
     index: u32
 }
 

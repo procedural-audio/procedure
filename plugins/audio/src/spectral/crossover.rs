@@ -1,6 +1,5 @@
 use crate::*;
 
-
 pub struct Crossover {
     value: f32,
 }
@@ -17,9 +16,12 @@ impl Module for Crossover {
         voicing: Voicing::Monophonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
-            Pin::Control("Linear Crossover", 55),
+            Pin::Control("Crossover (hz)", 55),
         ],
-        outputs: &[Pin::Audio("Audio High", 25), Pin::Audio("Audio Low", 55)],
+        outputs: &[
+            Pin::Audio("Audio High", 25),
+            Pin::Audio("Audio Low", 55)
+        ],
         path: &["Audio", "Spectral", "Crossover"],
         presets: Presets::NONE
     };
@@ -42,7 +44,7 @@ impl Module for Crossover {
             size: (50, 70),
             child: Knob {
                 text: "Crossover",
-                color: Color::GREEN,
+                color: Color::BLUE,
                 value: &mut self.value,
                 feedback: Box::new(|_v| String::new()),
             },

@@ -5,8 +5,8 @@ use modules::loadable::Loadable;
 use crate::*;
 
 pub struct AudioTrack {
-    sample: Arc<RwLock<SampleFile<Stereo2>>>,
-    player: PitchedSamplePlayer<Stereo2>,
+    sample: Arc<RwLock<SampleFile<Stereo2<f32>>>>,
+    player: PitchedSamplePlayer<Stereo2<f32>>,
     rate: u32,
     position: f32
 }

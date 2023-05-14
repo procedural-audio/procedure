@@ -190,7 +190,7 @@ impl Triangle {
         self.fHslider0 = value;
     }
 
-    fn compute(&mut self, count: i32, _inputs: &[&[Stereo2]], outputs: &mut [&mut [Stereo2]]) {
+    fn compute(&mut self, count: i32, _inputs: &[&[Stereo2<f32>]], outputs: &mut [&mut [Stereo2<f32>]]) {
         let outputs0 = if let [outputs0, ..] = outputs {
             let outputs0 = outputs0[..count as usize].iter_mut();
             outputs0

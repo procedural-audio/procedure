@@ -7,7 +7,7 @@ pub struct MultiSampler {
 }
 
 impl Module for MultiSampler {
-    type Voice = PitchedSamplePlayer<Stereo2>;
+    type Voice = PitchedSamplePlayer<Stereo2<f32>>;
 
     const INFO: Info = Info {
         title: "Multi-Sampler",

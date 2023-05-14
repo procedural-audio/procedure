@@ -2,13 +2,13 @@ use crate::*;
 
 use pa_dsp::*;
 
-pub struct AnalogFilter {
+pub struct DigitalFilter {
     selected: usize,
     cutoff: f32,
     resonance: f32,
 }
 
-pub struct AnalogFilterVoice {
+pub struct DigitalFilterVoice {
     korg: [Korg35LPF; 2],
     /*diode: DiodeLPF,
     oberheim: OberheimLPF,
@@ -18,12 +18,12 @@ pub struct AnalogFilterVoice {
     sallen_key: SallenKeyLPF,*/
 }
 
-impl Module for AnalogFilter {
-    type Voice = AnalogFilterVoice;
+impl Module for DigitalFilter {
+    type Voice = DigitalFilterVoice;
 
     const INFO: Info = Info {
-        title: "Analog Filter",
-        id: "default.effects.filters.analog_filter",
+        title: "Digital Filter",
+        id: "default.effects.filters.digital_filter",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(200, 160),
@@ -36,7 +36,7 @@ impl Module for AnalogFilter {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Filters", "Analog Filter"],
+        path: &["Audio", "Spectral", "Digital Filter"],
         presets: Presets::NONE
     };
 
@@ -304,7 +304,7 @@ impl Korg35LPF {
 		}
 	}
 
-	fn compute(&mut self, count: i32, inputs: &[&[Stereo2]], outputs: &mut[&mut[Stereo2]], left: bool) {
+	fn compute(&mut self, count: i32, inputs: &[&[Stereo2<f32>]], outputs: &mut[&mut[Stereo2<f32>]], left: bool) {
 		let (inputs0) = if let [inputs0, ..] = inputs {
 			let inputs0 = inputs0[..count as usize].iter();
 			(inputs0)

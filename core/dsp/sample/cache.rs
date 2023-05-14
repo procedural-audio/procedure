@@ -11,12 +11,12 @@ use std::fs::File;
 use lazy_static::*;
 
 lazy_static! {
-    static ref SAMPLE_CACHE_STEREO: RwLock<Vec<SampleFile<Stereo2>>> = RwLock::new(Vec::new());
+    static ref SAMPLE_CACHE_STEREO: RwLock<Vec<SampleFile<Stereo2<f32>>>> = RwLock::new(Vec::new());
 }
 
 use std::sync::Arc;
 
-impl Loadable for SampleFile<Stereo2> {
+impl Loadable for SampleFile<Stereo2<f32>> {
     fn load(path: &str) -> Result<Self, String> {
         /* Load sample from cache */
         for sample in &*SAMPLE_CACHE_STEREO.read().unwrap() {
@@ -72,7 +72,7 @@ impl FileLoad<SampleFile<Stereo2>> for SampleFile<Stereo2> {
     }
 }*/
 
-fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
+fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2<f32>> {
     let sample_rate = reader.spec().sample_rate;
     let size = reader.samples::<i16>().len();
     let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
@@ -103,7 +103,7 @@ fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>
     return sample;
 }
 
-fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2> {
+fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo2<f32>> {
     // let sample_rate = reader.spec().sample_rate;
     let size = reader.samples::<i32>().len();
     let mut buffer_new = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, size / 2);
