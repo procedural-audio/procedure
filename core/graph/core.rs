@@ -387,6 +387,7 @@ pub unsafe extern "C" fn ffi_node_get_min_width(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got min width on statically sized module"),
         Size::Reisizable { default: _, min, max: _ } => min.0 as i32,
+        Size::Dynamic(_) => unimplemented!(),
     }
 }
 
@@ -395,6 +396,7 @@ pub unsafe extern "C" fn ffi_node_get_min_height(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got min height on statically sized module"),
         Size::Reisizable { default: _, min, max: _ } => min.1 as i32,
+        Size::Dynamic(_) => unimplemented!(),
     }
 }
 
@@ -403,6 +405,7 @@ pub unsafe extern "C" fn ffi_node_get_max_width(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got max width on statically sized module"),
         Size::Reisizable { default: _, min: _, max } => max.0 as i32,
+        Size::Dynamic(_) => unimplemented!(),
     }
 }
 
@@ -411,6 +414,7 @@ pub unsafe extern "C" fn ffi_node_get_max_height(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got max height on statically sized module"),
         Size::Reisizable { default: _, min: _, max } => max.1 as i32,
+        Size::Dynamic(_) => unimplemented!(),
     }
 }
 
@@ -419,6 +423,7 @@ pub unsafe extern "C" fn ffi_node_get_resizable(node: &mut Node) -> bool {
     match node.info().size {
         Size::Static(_w, _h) => false,
         Size::Reisizable { default: _, min: _, max: _ } => true,
+        Size::Dynamic(_) => unimplemented!(),
     }
 }
 

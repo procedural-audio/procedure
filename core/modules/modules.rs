@@ -337,6 +337,7 @@ pub enum Size {
         min: (u32, u32),
         max: (u32, u32),
     },
+    Dynamic(fn(&[bool], &[bool]) -> (u32, u32))
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -410,6 +411,7 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         let module_size = match module.info().size {
             Size::Static(w, h) => (w as f32, h as f32),
             Size::Reisizable { default, min: _, max: _ } => (default.0 as f32, default.1 as f32),
+            Size::Dynamic(f) => unimplemented!(),
         };
 
         let module_ptr = (&mut *module) as *mut T;

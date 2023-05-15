@@ -23,8 +23,17 @@ impl Module for Mixer {
         id: "default.effects.dynamics.mixer",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(120, 505),
-        voicing: Voicing::Monophonic,
+        size: Size::Dynamic(| inputs, _outputs | {
+            let mut max = 0;
+            for i in 0..inputs.len() / 2 {
+                if inputs[i] {
+                    max = i as u32;
+                }
+            }
+
+            (120, 25 + 60 * (max / 2 + 1))
+        }),
+        voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25 + 60 * 0),
             Pin::Control("Linear Gain", 50 + 60 * 0),
@@ -50,7 +59,6 @@ impl Module for Mixer {
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Self {
             value_1: 0.5,
@@ -77,6 +85,7 @@ impl Module for Mixer {
         let top = 15;
         let space = 60;
 
+        // TODO: Simplify to use column widget instead of stack
         Box::new(Stack {
             children: (
                 Transform {

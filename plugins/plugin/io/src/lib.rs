@@ -226,7 +226,7 @@ impl AudioPlugin {
         unsafe { audio_plugin_prepare(self.plugin, sample_rate, block_size); }
     }
 
-    pub fn process(&mut self, inputs: &Buffer<Stereo2>, notes: &Buffer<NoteMessage>, outputs: &mut Buffer<Stereo2>) {
+    pub fn process(&mut self, inputs: &Buffer<Stereo2<f32>>, notes: &Buffer<NoteMessage>, outputs: &mut Buffer<Stereo2<f32>>) {
         unsafe {
             for (i, l) in inputs.as_slice().iter().zip(self.left.as_slice_mut()) {
                 *l = i.left;
