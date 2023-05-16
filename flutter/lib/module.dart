@@ -1,4 +1,5 @@
 import 'package:ffi/ffi.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:ffi';
@@ -224,9 +225,10 @@ class Node extends StatelessWidget {
   }) : super(key: UniqueKey()) {
     id = rawNode.getId();
     position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
-    size = Offset(rawNode.getWidth() + 0.0, rawNode.getHeight() + 0.0);
     name = rawNode.getName();
     color = rawNode.getColor();
+
+    refreshSize();
 
     int inputsCount = rawNode.getInputPinsCount();
     for (int i = 0; i < inputsCount; i++) {
@@ -253,7 +255,7 @@ class Node extends StatelessWidget {
     int outputsCount = rawNode.getOutputPinsCount();
     for (int i = 0; i < outputsCount; i++) {
       var type = rawNode.getOutputPinType(i);
-      var x = rawNode.getWidth() - 25;
+      var x = rawNode.getWidth(patch) - 25;
       var offset = Offset(x, 0.0 + rawNode.getOutputPinY(i));
       pins.add(
         Pin(
@@ -301,6 +303,18 @@ class Node extends StatelessWidget {
   void tick() {
     for (var widget in widgets) {
       widget.tick();
+    }
+  }
+
+  void refreshSize() {
+    var newSize = Offset(
+      rawNode.getWidth(patch) + 0.0,
+      rawNode.getHeight(patch) + 0.0,
+    );
+
+    if (newSize.dx != size.dx || newSize.dy != size.dy) {
+      size = newSize;
+      position.notifyListeners();
     }
   }
 
@@ -425,12 +439,12 @@ class RawNode extends Struct {
     _ffiNodeSetY(this, i);
   }
 
-  double getWidth() {
-    return _ffiNodeGetWidth(this);
+  double getWidth(Patch patch) {
+    return _ffiNodeGetWidth(this, patch.rawPatch);
   }
 
-  double getHeight() {
-    return _ffiNodeGetHeight(this);
+  double getHeight(Patch patch) {
+    return _ffiNodeGetHeight(this, patch.rawPatch);
   }
 
   int getMinWidth() {
@@ -554,11 +568,13 @@ void Function(RawNode, double) _ffiNodeSetY = core
     .lookup<NativeFunction<Void Function(RawNode, Double)>>("ffi_node_set_y")
     .asFunction();
 
-double Function(RawNode) _ffiNodeGetWidth = core
-    .lookup<NativeFunction<Float Function(RawNode)>>("ffi_node_get_width")
+double Function(RawNode, RawPatch) _ffiNodeGetWidth = core
+    .lookup<NativeFunction<Float Function(RawNode, RawPatch)>>(
+        "ffi_node_get_width")
     .asFunction();
-double Function(RawNode) _ffiNodeGetHeight = core
-    .lookup<NativeFunction<Float Function(RawNode)>>("ffi_node_get_height")
+double Function(RawNode, RawPatch) _ffiNodeGetHeight = core
+    .lookup<NativeFunction<Float Function(RawNode, RawPatch)>>(
+        "ffi_node_get_height")
     .asFunction();
 int Function(RawNode) _ffiNodeGetMinWidth = core
     .lookup<NativeFunction<Int32 Function(RawNode)>>("ffi_node_get_min_width")

@@ -411,7 +411,10 @@ impl<T: Module + 'static> PolyphonicModule for ModuleManager<T> {
         let module_size = match module.info().size {
             Size::Static(w, h) => (w as f32, h as f32),
             Size::Reisizable { default, min: _, max: _ } => (default.0 as f32, default.1 as f32),
-            Size::Dynamic(f) => unimplemented!(),
+            Size::Dynamic(f) => {
+                let temp = f(&[], &[]);
+                (temp.0 as f32, temp.1 as f32)
+            }
         };
 
         let module_ptr = (&mut *module) as *mut T;

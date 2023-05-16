@@ -458,8 +458,6 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.audio_outputs.channel(index1);
-
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
                                     && (action2.voice_index == action1.voice_index
@@ -470,8 +468,6 @@ impl GraphProcessor {
                                         action2.node.clone(),
                                         connector.end.pin_index,
                                     ) as usize;
-
-                                    let dest1 = action2.audio_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -512,8 +508,6 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.events_outputs.channel(index1);
-
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
                                     && (action2.voice_index == action1.voice_index
@@ -524,8 +518,6 @@ impl GraphProcessor {
                                         action2.node.clone(),
                                         connector.end.pin_index,
                                     ) as usize;
-
-                                    let dest1 = action2.events_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -565,8 +557,6 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.control_outputs.channel(index1);
-
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
                                     && (action2.voice_index == action1.voice_index
@@ -577,8 +567,6 @@ impl GraphProcessor {
                                         action2.node.clone(),
                                         connector.end.pin_index,
                                     ) as usize;
-
-                                    let dest1 = action2.control_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -618,8 +606,6 @@ impl GraphProcessor {
                                 connector.start.pin_index,
                             ) as usize;
 
-                            let source1 = action1.time_outputs.channel(index1);
-
                             for action2 in process_actions.iter() {
                                 if connector.end.module_id == action2.id
                                     && (action2.voice_index == action1.voice_index
@@ -630,8 +616,6 @@ impl GraphProcessor {
                                         action2.node.clone(),
                                         connector.end.pin_index,
                                     ) as usize;
-
-                                    let dest1 = action2.time_inputs.channel(index2);
 
                                     let dest_id = action2.node.id;
                                     let dest_voice_index = action2.voice_index;
@@ -899,11 +883,11 @@ impl GraphProcessor {
             }
 
             match input {
-                Pin::Audio(_, _) => audio_channel += 2,
+                Pin::Audio(_, _) => audio_channel += 1,
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
-                Pin::ExternalAudio(_) => audio_channel += 2,
+                Pin::ExternalAudio(_) => audio_channel += 1,
                 Pin::ExternalNotes(_) => events_channel += 1,
             }
 
@@ -928,11 +912,11 @@ impl GraphProcessor {
             }
 
             match output {
-                Pin::Audio(_, _) => audio_channel += 2,
+                Pin::Audio(_, _) => audio_channel += 1,
                 Pin::Notes(_, _) => events_channel += 1,
                 Pin::Control(_, _) => control_channel += 1,
                 Pin::Time(_, _) => time_channel += 1,
-                Pin::ExternalAudio(_) => audio_channel += 2,
+                Pin::ExternalAudio(_) => audio_channel += 1,
                 Pin::ExternalNotes(_) => events_channel += 1,
             }
 

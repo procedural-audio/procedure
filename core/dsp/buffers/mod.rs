@@ -474,6 +474,10 @@ impl<T> Bus<T> {
     pub fn connected(&self, index: usize) -> bool {
         self.channels[index].connected
     }
+
+    pub fn len(&self) -> usize {
+        self.channels.len()
+    }
 }
 
 /*impl Index<usize> for Bus<StereoBuffer> {

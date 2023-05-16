@@ -386,7 +386,9 @@ class _Patch extends State<Patch> {
       end.nodeId,
       end.pinIndex,
     )) {
-      //connectors.add(connector);
+      for (var node in nodes) {
+        node.refreshSize();
+      }
     }
   }
 
@@ -397,6 +399,10 @@ class _Patch extends State<Patch> {
           (e.start.nodeId == nodeId && e.start.pinIndex == pinIndex) ||
           (e.end.nodeId == nodeId && e.end.pinIndex == pinIndex),
     );
+
+    for (var node in nodes) {
+      node.refreshSize();
+    }
   }
 
   @override
@@ -452,6 +458,8 @@ class _Patch extends State<Patch> {
         }
       }
     }
+
+    print("Building patch");
 
     return GestureDetector(
       onSecondaryTapDown: (details) {

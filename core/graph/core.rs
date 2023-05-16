@@ -361,13 +361,65 @@ pub unsafe extern "C" fn ffi_node_set_y(node: &mut Node, y: f64) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_get_width(node: &mut Node) -> f32 {
-    node.module.get_module_size().0
+pub unsafe extern "C" fn ffi_node_get_width(node: &mut Node, patch: &Graph) -> f32 {
+    match node.info().size {
+        Size::Static(w, h) => w as f32,
+        Size::Reisizable { default, min, max } => node.module.get_module_size().0,
+        Size::Dynamic(f) => {
+            let mut inputs = Vec::new();
+            for _ in 0..node.info().inputs.len() {
+                inputs.push(false);
+            }
+
+            let mut outputs = Vec::new();
+            for _ in 0..node.info().outputs.len() {
+                outputs.push(false);
+            }
+
+            for connector in &patch.connectors {
+                if connector.start.module_id == node.id {
+                    outputs[connector.start.pin_index as usize - inputs.len()] = true;
+                }
+
+                if connector.end.module_id == node.id {
+                    inputs[connector.end.pin_index as usize] = true;
+                }
+            }
+
+            f(&inputs, &outputs).0 as f32
+        }
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_node_get_height(node: &mut Node) -> f32 {
-    node.module.get_module_size().1
+pub unsafe extern "C" fn ffi_node_get_height(node: &mut Node, patch: &Graph) -> f32 {
+    match node.info().size {
+        Size::Static(w, h) => h as f32,
+        Size::Reisizable { default, min, max } => node.module.get_module_size().1,
+        Size::Dynamic(f) => {
+            let mut inputs = Vec::new();
+            for _ in 0..node.info().inputs.len() {
+                inputs.push(false);
+            }
+
+            let mut outputs = Vec::new();
+            for _ in 0..node.info().outputs.len() {
+                outputs.push(false);
+            }
+
+            for connector in &patch.connectors {
+                if connector.start.module_id == node.id {
+                    outputs[connector.start.pin_index as usize - inputs.len()] = true;
+                }
+
+                if connector.end.module_id == node.id {
+                    inputs[connector.end.pin_index as usize] = true;
+                }
+            }
+
+            f(&inputs, &outputs).1 as f32
+        }
+    }
 }
 
 #[no_mangle]
@@ -387,7 +439,8 @@ pub unsafe extern "C" fn ffi_node_get_min_width(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got min width on statically sized module"),
         Size::Reisizable { default: _, min, max: _ } => min.0 as i32,
-        Size::Dynamic(_) => unimplemented!(),
+        Size::Dynamic(f) => f(&[], &[]).0 as i32,
+        Size::Dynamic(_) => panic!("Got min width on dynamic module"),
     }
 }
 
@@ -396,7 +449,7 @@ pub unsafe extern "C" fn ffi_node_get_min_height(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got min height on statically sized module"),
         Size::Reisizable { default: _, min, max: _ } => min.1 as i32,
-        Size::Dynamic(_) => unimplemented!(),
+        Size::Dynamic(_) => panic!("Got min height on dynamic module"),
     }
 }
 
@@ -405,7 +458,7 @@ pub unsafe extern "C" fn ffi_node_get_max_width(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got max width on statically sized module"),
         Size::Reisizable { default: _, min: _, max } => max.0 as i32,
-        Size::Dynamic(_) => unimplemented!(),
+        Size::Dynamic(_) => panic!("Got max width on dynamic module"),
     }
 }
 
@@ -414,7 +467,7 @@ pub unsafe extern "C" fn ffi_node_get_max_height(node: &mut Node) -> i32 {
     match node.info().size {
         Size::Static(_w, _h) => panic!("Got max height on statically sized module"),
         Size::Reisizable { default: _, min: _, max } => max.1 as i32,
-        Size::Dynamic(_) => unimplemented!(),
+        Size::Dynamic(_) => panic!("Got max height on dynamic module"),
     }
 }
 

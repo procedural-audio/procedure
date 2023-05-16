@@ -11,12 +11,8 @@ pub struct Mixer {
     value_8: f32,
 }
 
-pub struct MixerVoice {
-    buffer: StereoBuffer,
-}
-
 impl Module for Mixer {
-    type Voice = MixerVoice;
+    type Voice = ();
 
     const INFO: Info = Info {
         title: "",
@@ -24,36 +20,36 @@ impl Module for Mixer {
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Dynamic(| inputs, _outputs | {
-            let mut max = 0;
+            let mut max = 1;
             for i in 0..inputs.len() / 2 {
                 if inputs[i] {
-                    max = i as u32;
+                    max = (i as u32 + 2) / 2;
                 }
             }
 
-            (120, 25 + 60 * (max / 2 + 1))
+            (120, 70 + 60 * max)
         }),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Audio Input", 25 + 60 * 0),
-            Pin::Control("Linear Gain", 50 + 60 * 0),
-            Pin::Audio("Audio Input", 25 + 60 * 1),
-            Pin::Control("Linear Gain", 50 + 60 * 1),
-            Pin::Audio("Audio Input", 25 + 60 * 2),
-            Pin::Control("Linear Gain", 50 + 60 * 2),
-            Pin::Audio("Audio Input", 25 + 60 * 3),
-            Pin::Control("Linear Gain", 50 + 60 * 3),
-            Pin::Audio("Audio Input", 25 + 60 * 4),
-            Pin::Control("Linear Gain", 50 + 60 * 4),
-            Pin::Audio("Audio Input", 25 + 60 * 5),
-            Pin::Control("Linear Gain", 50 + 60 * 5),
-            Pin::Audio("Audio Input", 25 + 60 * 6),
-            Pin::Control("Linear Gain", 50 + 60 * 6),
-            Pin::Audio("Audio Input", 25 + 60 * 7),
-            Pin::Control("Linear Gain", 50 + 60 * 7),
+            Pin::Audio("Audio Input", 15 + 60 * 0),
+            Pin::Control("Linear Gain", 40 + 60 * 0),
+            Pin::Audio("Audio Input", 15 + 60 * 1),
+            Pin::Control("Linear Gain", 40 + 60 * 1),
+            Pin::Audio("Audio Input", 15 + 60 * 2),
+            Pin::Control("Linear Gain", 40 + 60 * 2),
+            Pin::Audio("Audio Input", 15 + 60 * 3),
+            Pin::Control("Linear Gain", 40 + 60 * 3),
+            Pin::Audio("Audio Input", 15 + 60 * 4),
+            Pin::Control("Linear Gain", 40 + 60 * 4),
+            Pin::Audio("Audio Input", 15 + 60 * 5),
+            Pin::Control("Linear Gain", 40 + 60 * 5),
+            Pin::Audio("Audio Input", 15 + 60 * 6),
+            Pin::Control("Linear Gain", 40 + 60 * 6),
+            Pin::Audio("Audio Input", 15 + 60 * 7),
+            Pin::Control("Linear Gain", 40 + 60 * 7),
         ],
         outputs: &[
-            Pin::Audio("Audio Output", 25)
+            Pin::Audio("Audio Output", 15)
         ],
         path: &["Audio", "Dynamics", "Mixer"],
         presets: Presets::NONE
@@ -73,16 +69,14 @@ impl Module for Mixer {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Self::Voice {
-            buffer: StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, 256),
-        }
+        ()
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        let top = 15;
+        let top = 10;
         let space = 60;
 
         // TODO: Simplify to use column widget instead of stack
@@ -172,25 +166,28 @@ impl Module for Mixer {
         })
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, _sample_rate: u32, block_size: usize) {
-        voice.buffer = StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size);
-    }
+    fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        /*voice.buffer.copy_from(&inputs.audio[0]);
-        voice.buffer.gain(self.value_1);
-        outputs.audio[0].copy_from(&voice.buffer);
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        let values = &[
+            self.value_1,
+            self.value_2,
+            self.value_3,
+            self.value_4,
+            self.value_5,
+            self.value_6,
+            self.value_7,
+            self.value_8,
+        ];
 
-        voice.buffer.copy_from(&inputs.audio[1]);
-        voice.buffer.gain(self.value_2);
-        outputs.audio[0].add_from(&voice.buffer);
-
-        voice.buffer.copy_from(&inputs.audio[2]);
-        voice.buffer.gain(self.value_3);
-        outputs.audio[0].add_from(&voice.buffer);
-
-        voice.buffer.copy_from(&inputs.audio[4]);
-        voice.buffer.gain(self.value_4);
-        outputs.audio[0].add_from(&voice.buffer);*/
+        for i in 0..inputs.audio.len() {
+            if inputs.audio.connected(i) {
+                let m = values[i];
+                for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(&inputs.audio[i]) {
+                    o.left = o.left + i.left * m;
+                    o.right = o.right + i.right * m;
+                }
+            }
+        }
     }
 }
