@@ -88,7 +88,7 @@ static PLUGIN: Plugin = Plugin {
         // module::<DigitalFilter>(),
         module::<AnalogFilter>(),
         module::<Crossover>(),
-        // module::<PitchShifter>(),
+        module::<PitchShifter>(),
         // module::<CreativeFilter>(),
 
         // module::<Equalizer>(),

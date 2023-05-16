@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use crate::*;
 
+// TODO: Output latency as time, better knob feedback
 pub struct PitchShifter {
 	dsp: PitchShifterDSP<Stereo2<f32>>,
     value: f32
@@ -78,7 +79,7 @@ impl Module for PitchShifter {
 }
 
 pub struct PitchShifterDSP<F: Frame> {
-	shifters: Vec<pitch_shift_rs::PitchShifter>,
+	shifters: Vec<signalsmith_stretch_sys::PitchShifter>,
 	input_buffers: Vec<Vec<f32>>,
 	output_buffers: Vec<Vec<f32>>,
 	phantom: PhantomData<F>,
@@ -108,7 +109,7 @@ impl<F: Frame> PitchShifterDSP<F> {
 
 		self.shifters.clear();
 		for _ in 0..F::CHANNELS {
-			self.shifters.push(pitch_shift_rs::PitchShifter::new());
+			self.shifters.push(signalsmith_stretch_sys::PitchShifter::new());
 		}
 
 		if self.cheap {

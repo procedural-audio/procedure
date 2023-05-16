@@ -8,9 +8,9 @@ version = "0.1.0"
 dependencies = [
  "modules",
  "pa-dsp",
- "pitch-shift-rs",
  "rand",
  "rlua",
+ "signalsmith-stretch-sys",
  "xml-rs",
 ]
 
@@ -263,14 +263,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pitch-shift-rs"
-version = "0.1.0"
-source = "git+https://github.com/0xchase/pitch-shift-rs#5e59c560170cbc3c1ca4cdb9ea3629cd69c491e8"
-dependencies = [
- "cmake",
-]
-
-[[package]]
 name = "pkg-config"
 version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -407,6 +399,14 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "signalsmith-stretch-sys"
+version = "0.1.0"
+source = "git+https://github.com/0xchase/signalsmith-stretch-sys#37773a690c5578c5667bd4f791819fad4b3dc6f5"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
