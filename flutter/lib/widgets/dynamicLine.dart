@@ -1,15 +1,12 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
 
 import 'dart:ffi';
 
-import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
 
 double Function(RawWidgetPointer) ffiDynamicLineGetValue = core
     .lookup<NativeFunction<Float Function(RawWidgetPointer)>>(
@@ -30,7 +27,7 @@ class DynamicLineWidget extends ModuleWidget {
   }
 
   late Color color;
-  int count = 50;
+  int count = 60;
   List<double> values = [];
 
   @override
@@ -47,11 +44,11 @@ class DynamicLineWidget extends ModuleWidget {
     if (value < 0.0) {
       value = 0.0;
     }
-    ;
+
     values.add(1.0 - value);
     values.removeAt(0);
 
-    refresh();
+    setState(() {});
   }
 
   @override
@@ -59,8 +56,9 @@ class DynamicLineWidget extends ModuleWidget {
     double width = ffiDynamicLineGetWidth(widgetRaw.pointer);
 
     return CustomPaint(
-        size: const ui.Size(250, 150),
-        painter: DynamicLinePainter(values, count, width, color));
+      size: const ui.Size(250, 150),
+      painter: DynamicLinePainter(values, count, width, color),
+    );
   }
 }
 

@@ -23,11 +23,18 @@ pub struct IO {
 
 pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
+    const CHANNELS: usize;
 
     fn from(value: f32) -> Self;
+    fn channel(&self, index: usize) -> &f32;
+    fn channel_mut(&mut self, index: usize) -> &mut f32;
+
+
     fn zero(&mut self);
     // fn fill(&mut self, value: Self);
     fn gain(&mut self, db: f32);
+    fn sqrt(self) -> Self;
+    fn mono(&self) -> f32;
 }
 
 #[derive(Copy, Clone)]
@@ -38,9 +45,26 @@ pub struct Stereo2<T> {
 
 impl Frame for f32 {
     type Output = f32;
+    const CHANNELS: usize = 1;
 
     fn from(value: f32) -> Self {
         value
+    }
+
+    fn channel(&self, index: usize) -> &f32 {
+        if index == 0 {
+            self
+        } else {
+            panic!("Invalid frame channel");
+        }
+    }
+
+    fn channel_mut(&mut self, index: usize) -> &mut f32 {
+        if index == 0 {
+            self
+        } else {
+            panic!("Invalid frame channel");
+        }
     }
 
     fn zero(&mut self) {
@@ -50,15 +74,44 @@ impl Frame for f32 {
     fn gain(&mut self, db: f32) {
         *self = *self * db;
     }
+
+    fn sqrt(self) -> Self {
+        self.sqrt()
+    }
+
+    fn mono(&self) -> f32 {
+        *self
+    }
 }
 
 impl Frame for Stereo2<f32> {
     type Output = Stereo2<f32>;
+    const CHANNELS: usize = 2;
 
     fn from(value: f32) -> Self {
         Stereo2 {
             left: value,
             right: value
+        }
+    }
+
+    fn channel(&self, index: usize) -> &f32 {
+        if index == 0 {
+            &self.left
+        } else if index == 1 {
+            &self.right
+        } else {
+            panic!("Invalid frame channel");
+        }
+    }
+
+    fn channel_mut(&mut self, index: usize) -> &mut f32 {
+        if index == 0 {
+            &mut self.left
+        } else if index == 1 {
+            &mut self.right
+        } else {
+            panic!("Invalid frame channel");
         }
     }
 
@@ -70,6 +123,17 @@ impl Frame for Stereo2<f32> {
     fn gain(&mut self, db: f32) {
         self.left = self.left * db;
         self.right = self.right * db;
+    }
+
+    fn sqrt(self) -> Self {
+        Self {
+            left: self.left.sqrt(),
+            right: self.right.sqrt(),
+        }
+    }
+
+    fn mono(&self) -> f32 {
+        (self.left + self.right) / 2.0
     }
 }
 
@@ -553,6 +617,30 @@ impl<T> DerefMut for Channel<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.buffer
     }
+}
+
+impl<F: Frame> Buffer<F> {
+    pub fn rms(&self) -> F {
+        let mut sum = F::from(0.0);
+        for sample in self {
+            sum += *sample * *sample;
+        }
+
+        let avg = sum / F::from(self.len() as f32);
+        return F::sqrt(avg);
+    }
+
+    /*pub fn peak(&self) -> f32 {
+        let mut max = 0.0;
+
+        for sample in self {
+            if f32::abs(*sample) > max {
+                max = f32::abs(*sample);
+            }
+        }
+
+        max
+    }*/
 }
 
 pub trait AudioChannel<const C: usize> {

@@ -459,8 +459,6 @@ class _Patch extends State<Patch> {
       }
     }
 
-    print("Building patch");
-
     return GestureDetector(
       onSecondaryTapDown: (details) {
         setState(() {

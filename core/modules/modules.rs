@@ -330,6 +330,18 @@ pub trait Module {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) where Self: Sized;
 }
 
+pub struct VoiceIndex {
+    pub index: u32
+}
+
+impl VoiceIndex {
+    pub fn from(index: u32) -> Self {
+        VoiceIndex {
+            index
+        }
+    }
+}
+
 pub enum Size {
     Static(u32, u32),
     Reisizable {

@@ -1,26 +1,24 @@
 use crate::*;
 
 pub struct Compressor {
-    compress_amount: f32,
+    input_rms: f32,
     output_rms: f32,
     threshold: f32,
     ratio: f32,
     attack: f32,
     release: f32,
-    release2: f32,
-    release3: f32,
 }
 
 impl Module for Compressor {
-    type Voice = ();
+    type Voice = VoiceIndex;
 
     const INFO: Info = Info {
         title: "Compressor",
         id: "default.effects.dynamics.compressor",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(410, 220),
-        voicing: Voicing::Monophonic,
+        size: Size::Static(340, 200),
+        voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Threshold", 55),
@@ -38,19 +36,17 @@ impl Module for Compressor {
     
     fn new() -> Self {
         Self {
-            compress_amount: 0.5,
+            input_rms: 0.5,
             output_rms: 0.3,
             threshold: 0.0,
             ratio: 1.0,
             attack: 0.0,
             release: 0.0,
-            release2: 0.0,
-            release3: 0.0,
         }
     }
 
-    fn new_voice(&self, _index: u32) -> Self::Voice {
-        ()
+    fn new_voice(&self, index: u32) -> Self::Voice {
+        VoiceIndex::from(index)
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -62,7 +58,7 @@ impl Module for Compressor {
             child: Stack {
                 children: (
                     Transform {
-                        position: (30, 30),
+                        position: (30, 25),
                         size: (50, 70),
                         child: Knob {
                             text: "Threshold",
@@ -72,7 +68,7 @@ impl Module for Compressor {
                         },
                     },
                     Transform {
-                        position: (30, 110),
+                        position: (30, 100),
                         size: (50, 70),
                         child: Knob {
                             text: "Attack",
@@ -82,7 +78,7 @@ impl Module for Compressor {
                         },
                     },
                     Transform {
-                        position: (30 + 60, 30),
+                        position: (30 + 60, 25),
                         size: (50, 70),
                         child: Knob {
                             text: "Ratio",
@@ -92,7 +88,7 @@ impl Module for Compressor {
                         },
                     },
                     Transform {
-                        position: (30 + 60, 110),
+                        position: (30 + 60, 100),
                         size: (50, 70),
                         child: Knob {
                             text: "Release",
@@ -101,7 +97,7 @@ impl Module for Compressor {
                             feedback: Box::new(|_v| String::new()),
                         },
                     },
-                    Positioned {
+                    /*Positioned {
                         position: (100 + 60, 30),
                         child: Container {
                             size: (200, 150),
@@ -126,25 +122,23 @@ impl Module for Compressor {
                                 ),
                             },
                         },
-                    },
+                    },*/
                     Transform {
-                        position: (30 + 60, 110),
-                        size: (50, 70),
-                        child: Knob {
-                            text: "Release",
-                            color: Color::BLUE,
-                            value: &mut self.release2,
-                            feedback: Box::new(|_v| String::new()),
-                        },
-                    },
-                    Transform {
-                        position: (30 + 60, 110),
-                        size: (50, 70),
-                        child: Knob {
-                            text: "Release",
-                            color: Color::BLUE,
-                            value: &mut self.release3,
-                            feedback: Box::new(|_v| String::new()),
+                        position: (100 + 60, 25),
+                        size: (140, 140),
+                        child: Stack {
+                            children: (
+                                DynamicLine {
+                                    value: &self.input_rms,
+                                    width: 3.0,
+                                    color: Color(0xffb4b4b4),
+                                },
+                                DynamicLine {
+                                    value: &self.output_rms,
+                                    width: 3.0,
+                                    color: Color::RED,
+                                },
+                            ),
                         },
                     },
                 ),
@@ -154,25 +148,18 @@ impl Module for Compressor {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, _voice: &mut Self::Voice, _inputs: &IO, _outputs: &mut IO) {
-        self.compress_amount += 0.01;
-        self.output_rms += 0.03;
-
-        if self.compress_amount > 1.0 {
-            self.compress_amount = 0.0;
+    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, _outputs: &mut IO) {
+        if voice.index == 0 {
+            self.input_rms = 0.0;
         }
 
+        self.input_rms = f32::max(inputs.audio[0].rms().mono(), self.input_rms);
+
+        println!("input rms: {}", self.input_rms);
+
+        self.output_rms += 0.03;
         if self.output_rms > 1.0 {
             self.output_rms = 0.0;
         }
     }
 }
-
-/*
-faust!(CompressorDSP,
-    freq = hslider("freq",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0,10,0.01);
-
-    process = _,_ : Compressor_stereo(thresh,att,hold,rel);
-);
-*/

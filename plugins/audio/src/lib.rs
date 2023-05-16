@@ -76,11 +76,6 @@ static PLUGIN: Plugin = Plugin {
         // module::<Wavefolder>(),
         module::<Waveshaper>(),
 
-        // Filter
-        // module::<DigitalFilter>(),
-        module::<AnalogFilter>(),
-        // module::<CreativeFilter>(),
-
         // Space
         // module::<Reverb>(),
         // module::<Delay>(),
@@ -90,6 +85,12 @@ static PLUGIN: Plugin = Plugin {
         // module::<BinauralPanner>(),
 
         // Spectral
+        // module::<DigitalFilter>(),
+        module::<AnalogFilter>(),
+        module::<Crossover>(),
+        // module::<PitchShifter>(),
+        // module::<CreativeFilter>(),
+
         // module::<Equalizer>(),
         // module::<Exciter>(),
         // module::<PitchShifter>(),
