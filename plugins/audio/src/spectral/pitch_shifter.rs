@@ -41,12 +41,12 @@ impl Module for PitchShifter {
 		()
     }
 
-    fn load(&mut self, _version: &str, _state: &State) {
-
+    fn load(&mut self, _version: &str, state: &State) {
+		self.value = state.load("value");
     }
 
-    fn save(&self, _state: &mut State) {
-
+    fn save(&self, state: &mut State) {
+		state.save("value", self.value);
     }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
@@ -73,7 +73,12 @@ impl Module for PitchShifter {
     }
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-		self.dsp.set_shift_factor(self.value + 0.5);
+		let mut value = self.value;
+		if inputs.control.connected(0) {
+			value = f32::clamp(inputs.control[0], 0.0, 1.0);
+		}
+
+		self.dsp.set_shift_factor(value + 0.5);
 		self.dsp.process( &inputs.audio[0], &mut outputs.audio[0]);
     }
 }
