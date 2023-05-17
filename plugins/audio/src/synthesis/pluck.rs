@@ -13,6 +13,7 @@ pub struct Pluck {
 
 pub struct PluckVoice {
     string: daisysp_rs::KarplusString,
+	string2: KarplusString,
 }
 
 impl Module for Pluck {
@@ -49,7 +50,8 @@ impl Module for Pluck {
 
     fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice {
-            string: daisysp_rs::KarplusString::new()
+            string: daisysp_rs::KarplusString::new(),
+			string2: KarplusString::new()
         }
     }
 
@@ -209,6 +211,7 @@ impl Module for Pluck {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
         voice.string.init(sample_rate as f32);
+		voice.string2.init(sample_rate as f32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -218,22 +221,37 @@ impl Module for Pluck {
 					println!("Set frequency and brightness to {} {}", pitch, pressure);
 					voice.string.set_freq(pitch);
 					voice.string.set_brightness(pressure);
+					voice.string2.set_freq(pitch);
+					voice.string2.set_brightness(pressure);
 				},
 				Event::NoteOff => {
 				},
 				Event::Pitch(pitch) => {
 					voice.string.set_freq(pitch);
+					voice.string2.set_freq(pitch);
 				},
 				Event::Pressure(pressure) => {
 					voice.string.set_brightness(pressure);
+					voice.string2.set_brightness(pressure);
 				}
 				_ => ()
 			}
 		}
 
-		for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
-			o.left = voice.string.process(i.left);
-			o.right = o.left;
+		match self.dropdown {
+			0 => {
+				for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
+					o.left = voice.string.process(i.left);
+					o.right = o.left;
+				}
+			}
+			1 => {
+				for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
+					o.left = voice.string2.process(i.left);
+					o.right = o.left;
+				}
+			}
+			_ => ()
 		}
     }
 }
