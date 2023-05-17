@@ -221,14 +221,22 @@ impl Module for Pluck {
 			match msg.note {
 				Event::NoteOn { pitch, pressure } => {
 					println!("Set frequency and brightness to {} {}", pitch, pressure);
-					voice.string.set_freq(pitch);
-					voice.string.set_brightness(pressure);
-
-					voice.pluck.trig();
-					voice.pluck.set_freq(pitch);
-					voice.pluck.set_damp(self.unison);
-					voice.pluck.set_amp(self.detune);
-					voice.pluck.set_decay(self.spread);
+					match self.dropdown {
+						0 => {
+							voice.string.set_freq(pitch);
+							voice.string.set_brightness(pressure);
+							voice.string.set_damping(self.unison);
+							voice.string.set_nonlinearity(self.detune);
+						}
+						1 => {
+							voice.pluck.trig();
+							voice.pluck.set_freq(pitch);
+							voice.pluck.set_damp(self.unison);
+							voice.pluck.set_amp(self.detune);
+							voice.pluck.set_decay(self.spread);
+						}
+						_ => ()
+					}
 				},
 				Event::NoteOff => {
 				},
