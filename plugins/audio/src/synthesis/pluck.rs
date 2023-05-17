@@ -12,7 +12,7 @@ pub struct Pluck {
 }
 
 pub struct PluckVoice {
-    string: StringVoice,
+    string: daisysp_rs::KarplusString,
 }
 
 impl Module for Pluck {
@@ -26,6 +26,7 @@ impl Module for Pluck {
         size: Size::Static(310, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[
+            Pin::Audio("Audio Input", 20),
             Pin::Notes("Midi Input", 20),
         ],
         outputs: &[
@@ -48,7 +49,7 @@ impl Module for Pluck {
 
     fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice {
-            string: StringVoice::new()
+            string: daisysp_rs::KarplusString::new()
         }
     }
 
@@ -217,8 +218,6 @@ impl Module for Pluck {
 					println!("Set frequency and brightness to {} {}", pitch, pressure);
 					voice.string.set_freq(pitch);
 					voice.string.set_brightness(pressure);
-					voice.string.trig();
-					voice.string.set_sustain(true);
 				},
 				Event::NoteOff => {
 				},
@@ -232,19 +231,9 @@ impl Module for Pluck {
 			}
 		}
 
-		let temp = voice.string.trig;
-        for out in outputs.audio[0].as_slice_mut() {
-            let sample = voice.string.process(false);
-            out.left = sample;
-            out.right = sample;
-
-			if temp {
-				print!("{} ", sample);
-			}
-        }
-
-		if temp {
-			println!("");
+		for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
+			o.left = voice.string.process(i.left);
+			o.right = o.left;
 		}
     }
 }

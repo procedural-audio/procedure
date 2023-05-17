@@ -38,6 +38,7 @@ static PLUGIN: Plugin = Plugin {
         module::<AnalogOscillator>(),
         module::<WavetableOscillator>(),
         module::<synthesis::Noise>(),
+        module::<synthesis::Pluck>(),
         // module::<AdditiveOscillator>(),
         // module::<HarmonicOscillator>(),
         // module::<modules::Noise>(),

@@ -23,7 +23,6 @@ impl Module for Mute {
         path: &["Audio", "Dynamics", "Mute"],
         presets: Presets::NONE
     };
-
     
     fn new() -> Self {
         Self { muted: false }
