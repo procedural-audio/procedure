@@ -27,7 +27,7 @@ impl Module for Pluck {
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 20),
-            Pin::Notes("Midi Input", 20),
+            Pin::Notes("Midi Input", 20+25),
         ],
         outputs: &[
             Pin::Audio("Audio Output", 20),
