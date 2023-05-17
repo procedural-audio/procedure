@@ -12,8 +12,9 @@ pub struct Pluck {
 }
 
 pub struct PluckVoice {
+	index: u32,
     string: daisysp_rs::KarplusString,
-	string2: KarplusString,
+	pluck: daisysp_rs::Pluck,
 }
 
 impl Module for Pluck {
@@ -40,9 +41,9 @@ impl Module for Pluck {
     fn new() -> Self {
         Self {
             wave_index: 0,
-            unison: 1.0,
-            detune: 0.0,
-            spread: 0.0,
+            unison: 0.5,
+            detune: 0.5,
+            spread: 0.5,
             glide: 0.0,
             dropdown: 0,
         }
@@ -50,8 +51,9 @@ impl Module for Pluck {
 
     fn new_voice(&self, index: u32) -> Self::Voice {
         Self::Voice {
+			index,
             string: daisysp_rs::KarplusString::new(),
-			string2: KarplusString::new()
+			pluck: daisysp_rs::Pluck::new()
         }
     }
 
@@ -157,7 +159,7 @@ impl Module for Pluck {
                     position: (60 + size * 2, 40 + size * 0),
                     size: (60, 70),
                     child: Knob {
-                        text: "Unison",
+                        text: "Damp",
                         color: Color::BLUE,
                         value: &mut self.unison,
                         feedback: Box::new(|value| {
@@ -179,7 +181,7 @@ impl Module for Pluck {
                     position: (60 + size * 3 + 10, 40 + size * 0),
                     size: (60, 70),
                     child: Knob {
-                        text: "Detune",
+                        text: "Amp",
                         color: Color::BLUE,
                         value: &mut self.detune,
                         feedback: Box::new(|_value| String::new()),
@@ -189,7 +191,7 @@ impl Module for Pluck {
                     position: (60 + size * 2, 40 + 70 * 1),
                     size: (60, 70),
                     child: Knob {
-                        text: "Spread",
+                        text: "Decay",
                         color: Color::BLUE,
                         value: &mut self.spread,
                         feedback: Box::new(|_value| String::new()),
@@ -209,9 +211,9 @@ impl Module for Pluck {
         });
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
         voice.string.init(sample_rate as f32);
-		voice.string2.init(sample_rate as f32);
+		voice.pluck.init(sample_rate as f32, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -221,18 +223,21 @@ impl Module for Pluck {
 					println!("Set frequency and brightness to {} {}", pitch, pressure);
 					voice.string.set_freq(pitch);
 					voice.string.set_brightness(pressure);
-					voice.string2.set_freq(pitch);
-					voice.string2.set_brightness(pressure);
+
+					voice.pluck.trig();
+					voice.pluck.set_freq(pitch);
+					voice.pluck.set_damp(self.unison);
+					voice.pluck.set_amp(self.detune);
+					voice.pluck.set_decay(self.spread);
 				},
 				Event::NoteOff => {
 				},
 				Event::Pitch(pitch) => {
 					voice.string.set_freq(pitch);
-					voice.string2.set_freq(pitch);
+					voice.pluck.set_freq(pitch);
 				},
 				Event::Pressure(pressure) => {
 					voice.string.set_brightness(pressure);
-					voice.string2.set_brightness(pressure);
 				}
 				_ => ()
 			}
@@ -246,8 +251,8 @@ impl Module for Pluck {
 				}
 			}
 			1 => {
-				for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
-					o.left = voice.string2.process(i.left);
+				for o in outputs.audio[0].as_slice_mut().iter_mut() {
+					o.left = voice.pluck.gen();
 					o.right = o.left;
 				}
 			}
