@@ -13,12 +13,13 @@ impl Module for Mute {
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(100, 80),
-        voicing: Voicing::Monophonic,
+        voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Audio Input", 25)
+            Pin::Audio("Audio Input", 15),
+            Pin::Control("Mute", 15+25)
         ],
         outputs: &[
-            Pin::Audio("Audio Output", 25)
+            Pin::Audio("Audio Output", 15)
         ],
         path: &["Audio", "Dynamics", "Mute"],
         presets: Presets::NONE
@@ -53,7 +54,12 @@ impl Module for Mute {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if !self.muted {
+        let mut mute = self.muted;
+        if inputs.control.connected(0) {
+            mute = inputs.control[0] >= 0.5;
+        }
+
+        if !mute {
             outputs.audio[0].copy_from(&inputs.audio[0]);
         }
     }
