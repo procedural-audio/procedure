@@ -35,6 +35,33 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
     fn gain(&mut self, db: f32);
     fn sqrt(self) -> Self;
     fn mono(&self) -> f32;
+
+    fn apply(v: Self, f: fn(f32) -> f32) -> Self;
+    fn apply_2(a: Self, b: Self, f: fn(f32, f32) -> f32) -> Self;
+
+    fn min(a: Self, b: Self) -> Self {
+        Self::apply_2(a, b, f32::min)
+    }
+
+    fn max(a: Self, b: Self) -> Self {
+        Self::apply_2(a, b, f32::max)
+    }
+
+    fn sin(v: Self) -> Self {
+        Self::apply(v, f32::sin)
+    }
+
+    fn cos(v: Self) -> Self {
+        Self::apply(v, f32::cos)
+    }
+
+    fn tan(v: Self) -> Self {
+        Self::apply(v, f32::tan)
+    }
+
+    fn powf(a: Self, b: Self) -> Self {
+        Self::apply_2(a, b, f32::powf)
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -81,6 +108,14 @@ impl Frame for f32 {
 
     fn mono(&self) -> f32 {
         *self
+    }
+
+    fn apply(v: Self, f: fn(f32) -> f32) -> Self {
+        f(v)
+    }
+
+    fn apply_2(a: Self, b: Self, f: fn(f32, f32) -> f32) -> Self {
+        f(a, b)
     }
 }
 
@@ -134,6 +169,20 @@ impl Frame for Stereo2<f32> {
 
     fn mono(&self) -> f32 {
         (self.left + self.right) / 2.0
+    }
+
+    fn apply(v: Self, f: fn(f32) -> f32) -> Self {
+        Self {
+            left: f(v.left),
+            right: f(v.right),
+        }
+    }
+
+    fn apply_2(a: Self, b: Self, f: fn(f32, f32) -> f32) -> Self {
+        Self {
+            left: f(a.left, b.left),
+            right: f(a.right, b.right),
+        }
     }
 }
 

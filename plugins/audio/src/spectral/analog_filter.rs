@@ -2,6 +2,7 @@ use crate::*;
 
 use pa_dsp::*;
 
+// TODO: Implement resonance. Add high pass, band pass filters.
 pub struct AnalogFilter {
     selected: usize,
     cutoff: f32,
@@ -9,13 +10,12 @@ pub struct AnalogFilter {
 }
 
 pub struct AnalogFilterVoice {
-    korg: [Korg35LPF; 2],
-    diode: Stereo2<DiodeLPF>,
-    /*oberheim: OberheimLPF,
-    ladder: LadderLPF,
-    half_ladder: HalfLadderLPF,
-    moog: MoogLPF,
-    sallen_key: SallenKeyLPF,*/
+    korg: Korg35LPF<Stereo2<f32>>,
+    diode: DiodeLPF<Stereo2<f32>>,
+    oberheim: OberheimLPF<Stereo2<f32>>,
+    ladder: MoogLadderLPF<Stereo2<f32>>,
+    half_ladder: HalfLadderLPF<Stereo2<f32>>,
+    sallen_key: SallenKeyLPF<Stereo2<f32>>,
 }
 
 impl Module for AnalogFilter {
@@ -40,7 +40,6 @@ impl Module for AnalogFilter {
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Self {
             selected: 0,
@@ -51,22 +50,23 @@ impl Module for AnalogFilter {
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
-            korg: [Korg35LPF::new(), Korg35LPF::new()],
-            diode: Stereo2 { left: DiodeLPF::new(), right: DiodeLPF::new() },
-            /*oberheim: OberheimLPF::new(),
-            ladder: LadderLPF::new(),
+            korg: Korg35LPF::new(),
+            diode: DiodeLPF::new(),
+            oberheim: OberheimLPF::new(),
+            ladder: MoogLadderLPF::new(),
             half_ladder: HalfLadderLPF::new(),
-            moog: MoogLPF::new(),
-            sallen_key: SallenKeyLPF::new(),*/
+            sallen_key: SallenKeyLPF::new(),
         }
     }
 
     fn load(&mut self, _version: &str, state: &State) {
+		self.selected = state.load("selected");
         self.cutoff = state.load("cutoff");
         self.resonance = state.load("resonance");
     }
 
     fn save(&self, state: &mut State) {
+		state.save("selected", self.selected);
         state.save("cutoff", self.cutoff);
         state.save("resonance", self.resonance);
     }
@@ -86,7 +86,6 @@ impl Module for AnalogFilter {
                             "Oberheim",
                             "Ladder",
                             "Half Ladder",
-                            "Moog",
                             "Sallen Key",
                         ],
                     },
@@ -115,292 +114,398 @@ impl Module for AnalogFilter {
         });
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.korg[0].init(sample_rate as i32);
-        voice.korg[1].init(sample_rate as i32);
-        /*voice.diode.prepare(sample_rate, block_size);
-        voice.oberheim.prepare(sample_rate, block_size);
-        voice.ladder.prepare(sample_rate, block_size);
-        voice.half_ladder.prepare(sample_rate, block_size);
-        voice.moog.prepare(sample_rate, block_size);
-        voice.sallen_key.prepare(sample_rate, block_size);*/
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
+        voice.korg.init(sample_rate as i32);
+        voice.diode.init(sample_rate as i32);
+		voice.oberheim.init(sample_rate as i32);
+		voice.ladder.init(sample_rate as i32);
+		voice.half_ladder.init(sample_rate as i32);
+        voice.sallen_key.init(sample_rate as i32);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let input = inputs.audio[0].as_slice();
         let output = outputs.audio[0].as_slice_mut();
 
-        let cutoff = f32::clamp(inputs.control[0], 0.0, 1.0);
+        let mut cutoff = self.cutoff;
+		if inputs.control.connected(0) {
+        	cutoff = f32::clamp(inputs.control[0], 0.0, 1.0);
+		}
+
+        /*let mut res = self.resonance;
+		if inputs.control.connected(1) {
+        	res = f32::clamp(inputs.control[1], 0.0, 1.0);
+		}*/
 
         match self.selected {
             0 => {
-                voice.korg[0].set_param(0, cutoff);
-                voice.korg[0].set_param(1, self.resonance);
-                voice.korg[0].compute(input.len() as i32, &[input], &mut [output], true);
-
-                voice.korg[1].set_param(0, cutoff);
-                voice.korg[1].set_param(1, self.resonance);
-                voice.korg[1].compute(input.len() as i32, &[input], &mut [output], false);
+                voice.korg.set_cutoff(cutoff);
+				// voice.korg.set_res(res);
+                voice.korg.compute(input.len() as i32, &[input], &mut [output]);
             }
             1 => {
-                voice.diode.left.set_cutoff(self.cutoff);
-                voice.diode.right.set_cutoff(self.cutoff);
-                voice.diode.left.set_resonance(self.cutoff);
-                voice.diode.right.set_resonance(self.cutoff);
+                voice.diode.set_cutoff(cutoff);
+				// voice.diode.set_res(res);
+                voice.diode.compute(input.len() as i32, &[input], &mut [output]);
             }
-            /*2 => {
-                voice.oberheim.set_param(0, self.cutoff);
-                voice.oberheim.set_param(1, self.resonance);
-                voice.oberheim.process(&input, &mut output);
+            2 => {
+				voice.oberheim.set_cutoff(cutoff);
+				// voice.oberheim.set_res(res);
+				voice.oberheim.compute(input.len() as i32, &[input], &mut [output]);
             }
             3 => {
-                voice.ladder.set_param(0, self.cutoff);
-                voice.ladder.set_param(1, self.resonance);
-                voice.ladder.process(&input, &mut output);
+				voice.ladder.set_cutoff(cutoff);
+				// voice.ladder.set_res(res);
+				voice.ladder.compute(input.len() as i32, &[input], &mut [output]);
             }
             4 => {
-                voice.half_ladder.set_param(0, self.cutoff);
-                voice.half_ladder.set_param(1, self.resonance);
-                voice.half_ladder.process(&input, &mut output);
+				voice.half_ladder.set_cutoff(cutoff);
+				// voice.half_ladder.set_res(res);
+				voice.half_ladder.compute(input.len() as i32, &[input], &mut [output]);
             }
             5 => {
-                voice.moog.set_param(0, self.cutoff);
-                voice.moog.set_param(1, self.resonance);
-                voice.moog.process(&input, &mut output);
+				voice.sallen_key.set_cutoff(cutoff);
+				// voice.sallen_key.set_res(res);
+				voice.sallen_key.compute(input.len() as i32, &[input], &mut [output]);
             }
-            6 => {
-                voice.sallen_key.set_param(0, self.cutoff);
-                voice.sallen_key.set_param(1, self.resonance);
-                voice.sallen_key.process(&input, &mut output);
-            }*/
             _ => ()
         }
     }
 }
 
-/*faust!(Korg35LPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0,10,0.01);
-    process = _,_ : ve.korg35LPF(freq, res), ve.korg35LPF(freq, res);
-);
+/*
+import("stdfaust.lib");
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0,10,0.01);
+process = ve.korg35LPF(freq, res);
+*/
 
-faust!(DiodeLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.diodeLadder(freq, res), ve.diodeLadder(freq, res);
-);
-
-faust!(OberheimLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.oberheimLPF(freq, res), ve.oberheimLPF(freq, res);
-);
-
-faust!(LadderLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.moogLadder(freq * 0.8, res), ve.moogLadder(freq * 0.8, res);
-);
-
-faust!(HalfLadderLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.moogHalfLadder(freq, res), ve.moogHalfLadder(freq, res);
-);
-
-faust!(MoogLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.moog_vcf(res, freq), ve.moog_vcf(res, freq);
-);
-
-faust!(SallenKeyLPF,
-    freq = hslider("freq[style:knob][position: 100 100][scale: 1 1][location: config]",0.5,0,1,0.001) : si.smoo;
-    res = hslider("res",1,0.5,10,0.01);
-    process = _,_ : ve.sallenKeyOnePoleLPF(freq), ve.sallenKeyOnePoleLPF(freq);
-);*/
-
-pub struct Korg35LPF {
+pub struct Korg35LPF<F: Frame> {
 	fSampleRate: i32,
-	fConst1: f32,
-	fConst2: f32,
+	fConst0: f32,
 	fHslider0: f32,
-	fConst3: f32,
-	fRec4: [f32;2],
 	fHslider1: f32,
-	fRec1: [f32;2],
-	fRec2: [f32;2],
-	fRec3: [f32;2],
+	fRec0: [F;2],
+	fRec1: [F;2],
+	fRec2: [F;2],
 }
 
-impl Korg35LPF {
-	fn new() -> Korg35LPF {
-		Korg35LPF {
-			fSampleRate: 0,
-			fConst1: 0.0,
-			fConst2: 0.0,
-			fHslider0: 0.0,
-			fConst3: 0.0,
-			fRec4: [0.0;2],
-			fHslider1: 0.0,
-			fRec1: [0.0;2],
-			fRec2: [0.0;2],
-			fRec3: [0.0;2],
-		}
-	}
-
-	fn get_sample_rate(&self) -> i32 {
-		return self.fSampleRate;
-	}
-	fn get_num_inputs(&self) -> i32 {
-		return 1;
-	}
-	fn get_num_outputs(&self) -> i32 {
-		return 1;
-	}
-
-	fn class_init(sample_rate: i32) {
-	}
-	fn instance_reset_params(&mut self) {
-		self.fHslider0 = 0.5;
-		self.fHslider1 = 1.0;
-	}
-	fn instance_clear(&mut self) {
-		for l0 in 0..2 {
-			self.fRec4[(l0) as usize] = 0.0;
-		}
-		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = 0.0;
-		}
-		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = 0.0;
-		}
-		for l3 in 0..2 {
-			self.fRec3[(l3) as usize] = 0.0;
-		}
-	}
-	fn instance_constants(&mut self, sample_rate: i32) {
-		self.fSampleRate = sample_rate;
-		let mut fConst0: f32 = f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
-		self.fConst1 = 6.28318548 / fConst0;
-		self.fConst2 = 44.0999985 / fConst0;
-		self.fConst3 = 1.0 - self.fConst2;
-	}
-	fn instance_init(&mut self, sample_rate: i32) {
-		self.instance_constants(sample_rate);
-		self.instance_reset_params();
-		self.instance_clear();
-	}
-	fn init(&mut self, sample_rate: i32) {
-		Korg35LPF::class_init(sample_rate);
-		self.instance_init(sample_rate);
-	}
-
-	fn get_param(&self, param: usize) -> Option<f32> {
-		match param {
-			0 => Some(self.fHslider0),
-			1 => Some(self.fHslider1),
-			_ => None,
-		}
-	}
-
-	fn set_param(&mut self, param: usize, value: f32) {
-		match param {
-			0 => { self.fHslider0 = value }
-			1 => { self.fHslider1 = value }
-			_ => {}
-		}
-	}
-
-	fn compute(&mut self, count: i32, inputs: &[&[Stereo2<f32>]], outputs: &mut[&mut[Stereo2<f32>]], left: bool) {
-		let (inputs0) = if let [inputs0, ..] = inputs {
-			let inputs0 = inputs0[..count as usize].iter();
-			(inputs0)
-		} else {
-			panic!("wrong number of inputs");
-		};
-		let (outputs0) = if let [outputs0, ..] = outputs {
-			let outputs0 = outputs0[..count as usize].iter_mut();
-			(outputs0)
-		} else {
-			panic!("wrong number of outputs");
-		};
-		let mut fSlow0: f32 = self.fConst2 * ((self.fHslider0) as f32);
-		let mut fSlow1: f32 = 0.215215757 * (((self.fHslider1) as f32) + -0.707000017);
-		let zipped_iterators = inputs0.zip(outputs0);
-		for (input0, output0) in zipped_iterators {
-			self.fRec4[0] = fSlow0 + self.fConst3 * self.fRec4[1];
-			let mut fTemp0: f32 = f32::tan(self.fConst1 * f32::powf(10.0, 3.0 * self.fRec4[0] + 1.0));
-			let mut fTemp1: f32 = if left {
-                (((input0.left) as f32) - self.fRec3[1]) * fTemp0
-            } else {
-                (((input0.right) as f32) - self.fRec3[1]) * fTemp0
-            };
-
-			let mut fTemp2: f32 = fTemp0 + 1.0;
-			let mut fTemp3: f32 = 1.0 - fTemp0 / fTemp2;
-			let mut fTemp4: f32 = (fTemp0 * ((self.fRec3[1] + (fTemp1 + fSlow1 * self.fRec1[1] * fTemp3) / fTemp2 + self.fRec2[1] * (0.0 - 1.0 / fTemp2)) / (1.0 - fSlow1 * (fTemp0 * fTemp3) / fTemp2) - self.fRec1[1])) / fTemp2;
-			let mut fTemp5: f32 = self.fRec1[1] + fTemp4;
-			let mut fRec0: f32 = fTemp5;
-			self.fRec1[0] = self.fRec1[1] + 2.0 * fTemp4;
-			self.fRec2[0] = self.fRec2[1] + 2.0 * (fTemp0 * (fSlow1 * fTemp5 - self.fRec2[1])) / fTemp2;
-			self.fRec3[0] = self.fRec3[1] + 2.0 * fTemp1 / fTemp2;
-            if left {
-			    output0.left = ((fRec0) as f32);
-            } else {
-                output0.right = ((fRec0) as f32);
-            };
-			self.fRec4[1] = self.fRec4[0];
-			self.fRec1[1] = self.fRec1[0];
-			self.fRec2[1] = self.fRec2[0];
-			self.fRec3[1] = self.fRec3[0];
-		}
-	}
-}
-
-fn mydsp_faustpower2_f(value: f32) -> f32 {
-	return value * value;
-}
-fn mydsp_faustpower10_f(value: f32) -> f32 {
-	return value * value * value * value * value * value * value * value * value * value;
-}
-fn mydsp_faustpower3_f(value: f32) -> f32 {
-	return value * value * value;
-}
-fn mydsp_faustpower4_f(value: f32) -> f32 {
-	return value * value * value * value;
-}
-
-pub struct DiodeLPF {
-	fSampleRate: i32,
-	fConst1: f32,
-	fConst2: f32,
-	fHslider0: f32,
-	fConst3: f32,
-	fRec5: [f32;2],
-	fHslider1: f32,
-	fRec1: [f32;2],
-	fRec2: [f32;2],
-	fRec3: [f32;2],
-	fRec4: [f32;2],
-}
-
-impl DiodeLPF {
+impl<F: Frame> Korg35LPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
-			fConst1: 0.0,
-			fConst2: 0.0,
+			fConst0: 0.0,
 			fHslider0: 0.0,
-			fConst3: 0.0,
-			fRec5: [0.0;2],
 			fHslider1: 0.0,
-			fRec1: [0.0;2],
-			fRec2: [0.0;2],
-			fRec3: [0.0;2],
-			fRec4: [0.0;2],
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+			fRec2: [F::from(0.0);2],
 		}
-    }
+	}
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec0[(l0) as usize] = F::from(0.0);
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = F::from(0.0);
+		}
+		for l2 in 0..2 {
+			self.fRec2[(l2) as usize] = F::from(0.0);
+		}
+	}
+
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		self.fConst0 = 6.28318548 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+	}
+
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+
+	fn init(&mut self, sample_rate: i32) {
+		self.instance_init(sample_rate);
+	}
+
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
+
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
+
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = f32::tan(self.fConst0 * f32::powf(10.0, 3.0 * ((self.fHslider0) as f32) + 1.0));
+		let mut fSlow1: f32 = fSlow0 + 1.0;
+		let mut fSlow2: f32 = fSlow0 / fSlow1;
+		let mut fSlow3: f32 = 2.0 * fSlow2;
+		let mut fSlow4: f32 = ((self.fHslider1) as f32) + -0.707000017;
+		let mut fSlow5: f32 = 1.0 - fSlow2;
+		let mut fSlow6: f32 = 1.0 / (1.0 - 0.215215757 * (fSlow0 * fSlow4 * fSlow5) / fSlow1);
+		let mut fSlow7: f32 = 1.0 / fSlow1;
+		let mut fSlow8: f32 = 0.215215757 * fSlow4 * fSlow5;
+		let mut fSlow9: f32 = 0.0 - fSlow7;
+		let mut fSlow10: f32 = 0.215215757 * fSlow4;
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			let mut fTemp0: F = ((*input0)) - self.fRec2[1];
+			let mut fTemp1: F = F::from(fSlow6) * (self.fRec2[1] + F::from(fSlow7) * (F::from(fSlow0) * fTemp0 + F::from(fSlow8) * self.fRec0[1]) + F::from(fSlow9) * self.fRec1[1]) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp1;
+			let mut fTemp2: F = self.fRec0[1] + F::from(fSlow2) * fTemp1;
+			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * (F::from(fSlow10) * fTemp2 - self.fRec1[1]);
+			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp0;
+			let mut fRec3: F = fTemp2;
+			*output0 = ((fRec3) as F);
+			self.fRec0[1] = self.fRec0[0];
+			self.fRec1[1] = self.fRec1[0];
+			self.fRec2[1] = self.fRec2[0];
+		}
+	}
+}
+
+/*
+import("stdfaust.lib");
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0.5,10,0.01);
+process = ve.diodeLadder(freq, res);
+*/
+
+fn mydsp_faustpower2_f<F: Frame>(value: F) -> F {
+	return value * value;
+}
+fn mydsp_faustpower10_f<F: Frame>(value: F) -> F {
+	return value * value * value * value * value * value * value * value * value * value;
+}
+fn mydsp_faustpower3_f<F: Frame>(value: F) -> F {
+	return value * value * value;
+}
+fn mydsp_faustpower4_f<F: Frame>(value: F) -> F {
+	return value * value * value * value;
+}
+
+pub struct DiodeLPF<F: Frame> {
+	fSampleRate: i32,
+	fConst0: f32,
+	fHslider0: f32,
+	fHslider1: f32,
+	fRec0: [F;2],
+	fRec1: [F;2],
+	fRec2: [F;2],
+	fRec3: [F;2],
+}
+
+impl<F: Frame> DiodeLPF<F> {
+	fn new() -> Self {
+		Self {
+			fSampleRate: 0,
+			fConst0: 0.0,
+			fHslider0: 0.0,
+			fHslider1: 0.0,
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+			fRec2: [F::from(0.0);2],
+			fRec3: [F::from(0.0);2],
+		}
+	}
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec0[(l0) as usize] = F::from(0.0);
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = F::from(0.0);
+		}
+		for l2 in 0..2 {
+			self.fRec2[(l2) as usize] = F::from(0.0);
+		}
+		for l3 in 0..2 {
+			self.fRec3[(l3) as usize] = F::from(0.0);
+		}
+	}
+
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		self.fConst0 = 6.28318548 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+	}
+
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+
+	fn init(&mut self, sample_rate: i32) {
+		self.instance_init(sample_rate);
+	}
+
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
+
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
+
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = ((self.fHslider0) as f32);
+		let mut fSlow1: f32 = f32::tan(self.fConst0 * f32::powf(10.0, 3.0 * fSlow0 + 1.0));
+		let mut fSlow2: f32 = fSlow1 + 1.0;
+		let mut fSlow3: f32 = fSlow1 / fSlow2;
+		let mut fSlow4: f32 = 2.0 * fSlow3;
+		let mut fSlow5: f32 = mydsp_faustpower2_f(fSlow1);
+		let mut fSlow6: f32 = fSlow1 * (1.0 - 0.25 * fSlow3) + 1.0;
+		let mut fSlow7: f32 = fSlow2 * fSlow6;
+		let mut fSlow8: f32 = 0.25 * fSlow5 / fSlow7 + 1.0;
+		let mut fSlow9: f32 = fSlow1 / fSlow6;
+		let mut fSlow10: f32 = fSlow1 * (1.0 - 0.25 * fSlow9) + 1.0;
+		let mut fSlow11: f32 = fSlow6 * fSlow10;
+		let mut fSlow12: f32 = 0.25 * fSlow5 / fSlow11 + 1.0;
+		let mut fSlow13: f32 = fSlow1 / fSlow10;
+		let mut fSlow14: f32 = 0.5 * fSlow13;
+		let mut fSlow15: f32 = fSlow1 * (1.0 - fSlow14) + 1.0;
+		let mut fSlow16: f32 = 17.0 - 9.69999981 * mydsp_faustpower10_f(fSlow0);
+		let mut fSlow17: f32 = ((self.fHslider1) as f32) + -0.707000017;
+		let mut fSlow18: f32 = (0.5 * fSlow5 / (fSlow10 * fSlow15) + 1.0) / (0.00514551532 * (mydsp_faustpower4_f(fSlow1) * fSlow16 * fSlow17) / (fSlow7 * fSlow10 * fSlow15) + 1.0);
+		let mut fSlow19: f32 = (fSlow16 * fSlow17) / fSlow2;
+		let mut fSlow20: f32 = 0.0205820613 * fSlow9;
+		let mut fSlow21: f32 = 0.5 * fSlow3;
+		let mut fSlow22: f32 = 0.0205820613 * fSlow13;
+		let mut fSlow23: f32 = 0.5 * fSlow9;
+		let mut fSlow24: f32 = 0.00514551532 * mydsp_faustpower3_f(fSlow1) / (fSlow11 * fSlow15);
+		let mut fSlow25: f32 = 1.0 / fSlow10;
+		let mut fSlow26: f32 = 0.5 * fSlow1 / fSlow15;
+		let mut fSlow27: f32 = 1.0 / fSlow6;
+		let mut fSlow28: f32 = 1.0 / fSlow2;
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			let mut fTemp0: F = F::max(F::from(-1.0), F::min(F::from(1.0), ((*input0) as F)));
+			let mut fTemp1: F = F::from(fSlow21) * self.fRec0[1] + self.fRec1[1];
+			let mut fTemp2: F = F::from(fSlow23) * fTemp1;
+			let mut fTemp3: F = fTemp2 + self.fRec2[1];
+			let mut fTemp4: F = F::from(fSlow13) * fTemp3 + self.fRec3[1];
+			let mut fTemp5: F = (F::from(fSlow18) * (F::from(1.5) * fTemp0 * (F::from(1.0) - F::from(0.333333343) * mydsp_faustpower2_f(fTemp0)) + F::from(fSlow19) * (F::from(0.0) - (F::from(0.0411641225) * self.fRec0[1] + F::from(fSlow20) * fTemp1) - F::from(fSlow22) * fTemp3 - F::from(fSlow24) * fTemp4)) + F::from(fSlow25) * (fTemp3 + F::from(fSlow26) * fTemp4)) - self.fRec3[1];
+			let mut fTemp6: F = F::from(0.5) * (F::from(fSlow12) * (self.fRec3[1] + F::from(fSlow3) * fTemp5) + F::from(fSlow27) * (fTemp1 + F::from(fSlow14) * fTemp3)) - self.fRec2[1];
+			let mut fTemp7: F = F::from(0.5) * (F::from(fSlow8) * (self.fRec2[1] + F::from(fSlow3) * fTemp6) + F::from(fSlow28) * (self.fRec0[1] + fTemp2)) - self.fRec1[1];
+			let mut fTemp8: F = F::from(0.5) * (self.fRec1[1] + F::from(fSlow3) * fTemp7) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow4) * fTemp8;
+			self.fRec1[0] = self.fRec1[1] + F::from(fSlow4) * fTemp7;
+			self.fRec2[0] = self.fRec2[1] + F::from(fSlow4) * fTemp6;
+			self.fRec3[0] = self.fRec3[1] + F::from(fSlow4) * fTemp5;
+			let mut fRec4: F = self.fRec0[1] + F::from(fSlow3) * fTemp8;
+			*output0 = ((fRec4) as F);
+			self.fRec0[1] = self.fRec0[0];
+			self.fRec1[1] = self.fRec1[0];
+			self.fRec2[1] = self.fRec2[0];
+			self.fRec3[1] = self.fRec3[0];
+		}
+	}
+}
+
+/*
+import("stdfaust.lib");
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0.5,10,0.01);
+process = ve.oberheimLPF(freq, res);
+*/
+
+pub struct OberheimLPF<F: Frame> {
+	fSampleRate: i32,
+	fConst0: f32,
+	fHslider0: f32,
+	fHslider1: f32,
+	fRec0: [F;2],
+	fRec1: [F;2],
+}
+
+impl<F: Frame> OberheimLPF<F> {
+	fn new() -> Self {
+		Self {
+			fSampleRate: 0,
+			fConst0: 0.0,
+			fHslider0: 0.0,
+			fHslider1: 0.0,
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+		}
+	}
 
 	fn get_sample_rate(&self) -> i32 {
 		return self.fSampleRate;
@@ -418,30 +523,18 @@ impl DiodeLPF {
 		self.fHslider0 = 0.5;
 		self.fHslider1 = 1.0;
 	}
+
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec5[(l0) as usize] = 0.0;
+			self.fRec0[(l0) as usize] = F::from(0.0);
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = 0.0;
-		}
-		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = 0.0;
-		}
-		for l3 in 0..2 {
-			self.fRec3[(l3) as usize] = 0.0;
-		}
-		for l4 in 0..2 {
-			self.fRec4[(l4) as usize] = 0.0;
+			self.fRec1[(l1) as usize] = F::from(0.0);
 		}
 	}
-
 	fn instance_constants(&mut self, sample_rate: i32) {
 		self.fSampleRate = sample_rate;
-		let mut fConst0: f32 = f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
-		self.fConst1 = 6.28318548 / fConst0;
-		self.fConst2 = 44.0999985 / fConst0;
-		self.fConst3 = 1.0 - self.fConst2;
+		self.fConst0 = 6.28318548 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
 	}
 	fn instance_init(&mut self, sample_rate: i32) {
 		self.instance_constants(sample_rate);
@@ -453,15 +546,23 @@ impl DiodeLPF {
 		self.instance_init(sample_rate);
 	}
 
-    fn set_cutoff(&mut self, freq: f32) {
-        self.fHslider0 = freq;
-    }
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
 
-    fn set_resonance(&mut self, resonance: f32) {
-        self.fHslider1 = resonance;
-    }
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
 
-	fn compute(&mut self, count: i32, inputs: &[&[f32]], outputs: &mut[&mut[f32]]) {
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
 		let (inputs0) = if let [inputs0, ..] = inputs {
 			let inputs0 = inputs0[..count as usize].iter();
 			(inputs0)
@@ -474,43 +575,398 @@ impl DiodeLPF {
 		} else {
 			panic!("wrong number of outputs");
 		};
-		let mut fSlow0: f32 = self.fConst2 * ((self.fHslider0) as f32);
-		let mut fSlow1: f32 = ((self.fHslider1) as f32) + -0.707000017;
-		let mut fSlow2: f32 = 0.00514551532 * fSlow1;
+		let mut fSlow0: f32 = f32::tan(self.fConst0 * f32::powf(10.0, 3.0 * ((self.fHslider0) as f32) + 1.0));
+		let mut fSlow1: f32 = 2.0 * fSlow0;
+		let mut fSlow2: f32 = 1.0 / ((self.fHslider1) as f32) + fSlow0;
+		let mut fSlow3: f32 = fSlow0 * fSlow2 + 1.0;
+		let mut fSlow4: f32 = fSlow0 / fSlow3;
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			self.fRec5[0] = fSlow0 + self.fConst3 * self.fRec5[1];
-			let mut fTemp0: f32 = f32::tan(self.fConst1 * f32::powf(10.0, 3.0 * self.fRec5[0] + 1.0));
-			let mut fTemp1: f32 = f32::max(-1.0, f32::min(1.0, 100.0 * ((*input0) as f32)));
-			let mut fTemp2: f32 = 17.0 - 9.69999981 * mydsp_faustpower10_f(self.fRec5[0]);
-			let mut fTemp3: f32 = fTemp0 + 1.0;
-			let mut fTemp4: f32 = 0.5 * (self.fRec1[1] * fTemp0) / fTemp3 + self.fRec2[1];
-			let mut fTemp5: f32 = fTemp0 * (1.0 - 0.25 * fTemp0 / fTemp3) + 1.0;
-			let mut fTemp6: f32 = (fTemp0 * fTemp4) / fTemp5;
-			let mut fTemp7: f32 = 0.5 * fTemp6;
-			let mut fTemp8: f32 = fTemp7 + self.fRec3[1];
-			let mut fTemp9: f32 = fTemp0 * (1.0 - 0.25 * fTemp0 / fTemp5) + 1.0;
-			let mut fTemp10: f32 = (fTemp0 * fTemp8) / fTemp9;
-			let mut fTemp11: f32 = fTemp10 + self.fRec4[1];
-			let mut fTemp12: f32 = fTemp5 * fTemp9;
-			let mut fTemp13: f32 = fTemp0 * (1.0 - 0.5 * fTemp0 / fTemp9) + 1.0;
-			let mut fTemp14: f32 = mydsp_faustpower2_f(fTemp0);
-			let mut fTemp15: f32 = fTemp3 * fTemp5;
-			let mut fTemp16: f32 = (fTemp0 * ((((1.5 * fTemp1 * (1.0 - 0.333333343 * mydsp_faustpower2_f(fTemp1)) + fSlow1 * (fTemp2 * (0.0 - (0.0205820613 * fTemp6 + 0.0411641225 * self.fRec1[1]) - 0.0205820613 * fTemp10 - 0.00514551532 * (mydsp_faustpower3_f(fTemp0) * fTemp11) / (fTemp12 * fTemp13))) / fTemp3) * (0.5 * fTemp14 / (fTemp9 * fTemp13) + 1.0)) / (fSlow2 * (mydsp_faustpower4_f(fTemp0) * fTemp2) / (fTemp15 * fTemp9 * fTemp13) + 1.0) + (fTemp8 + 0.5 * (fTemp0 * fTemp11) / fTemp13) / fTemp9) - self.fRec4[1])) / fTemp3;
-			let mut fTemp17: f32 = (fTemp0 * (0.5 * ((self.fRec4[1] + fTemp16) * (0.25 * fTemp14 / fTemp12 + 1.0) + (fTemp4 + 0.5 * fTemp10) / fTemp5) - self.fRec3[1])) / fTemp3;
-			let mut fTemp18: f32 = (fTemp0 * (0.5 * ((self.fRec3[1] + fTemp17) * (0.25 * fTemp14 / fTemp15 + 1.0) + (self.fRec1[1] + fTemp7) / fTemp3) - self.fRec2[1])) / fTemp3;
-			let mut fTemp19: f32 = (fTemp0 * (0.5 * (self.fRec2[1] + fTemp18) - self.fRec1[1])) / fTemp3;
-			let mut fRec0: f32 = self.fRec1[1] + fTemp19;
-			self.fRec1[0] = self.fRec1[1] + 2.0 * fTemp19;
-			self.fRec2[0] = self.fRec2[1] + 2.0 * fTemp18;
-			self.fRec3[0] = self.fRec3[1] + 2.0 * fTemp17;
-			self.fRec4[0] = self.fRec4[1] + 2.0 * fTemp16;
-			*output0 = ((fRec0) as f32);
-			self.fRec5[1] = self.fRec5[0];
+			let mut fTemp0: F = ((*input0)) - (self.fRec0[1] + F::from(fSlow2) * self.fRec1[1]);
+			let mut fTemp1: F = F::from(fSlow4) * fTemp0;
+			let mut fTemp2: F = F::max(F::from(-1.0), F::min(F::from(1.0), self.fRec1[1] + fTemp1));
+			let mut fTemp3: F = fTemp2 * (F::from(1.0) - F::from(0.333333343) * mydsp_faustpower2_f(fTemp2));
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow1) * fTemp3;
+			self.fRec1[0] = fTemp1 + fTemp3;
+			let mut fTemp4: F = F::from(fSlow0) * fTemp3;
+			let mut fRec2: F = self.fRec0[1] + fTemp4;
+			*output0 = fRec2;
+			self.fRec0[1] = self.fRec0[0];
+			self.fRec1[1] = self.fRec1[0];
+		}
+	}
+}
+
+/*
+import("stdfaust.lib");
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0.5,10,0.01);
+process = ve.moogLadder(freq, res);
+*/
+
+pub struct MoogLadderLPF<F: Frame> {
+	fHslider0: f32,
+	fHslider1: f32,
+	fRec0: [F;2],
+	fRec1: [F;2],
+	fRec2: [F;2],
+	fRec3: [F;2],
+	fSampleRate: i32,
+}
+
+impl<F: Frame> MoogLadderLPF<F> {
+	fn new() -> Self {
+		Self {
+			fHslider0: 0.0,
+			fHslider1: 0.0,
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+			fRec2: [F::from(0.0);2],
+			fRec3: [F::from(0.0);2],
+			fSampleRate: 0,
+		}
+	}
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec0[(l0) as usize] = F::from(0.0);
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = F::from(0.0);
+		}
+		for l2 in 0..2 {
+			self.fRec2[(l2) as usize] = F::from(0.0);
+		}
+		for l3 in 0..2 {
+			self.fRec3[(l3) as usize] = F::from(0.0);
+		}
+	}
+
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+	}
+
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+
+	fn init(&mut self, sample_rate: i32) {
+		self.instance_init(sample_rate);
+	}
+
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
+
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
+
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = f32::tan(1.57079637 * ((self.fHslider0) as f32));
+		let mut fSlow1: f32 = fSlow0 + 1.0;
+		let mut fSlow2: f32 = fSlow0 / fSlow1;
+		let mut fSlow3: f32 = 2.0 * fSlow2;
+		let mut fSlow4: f32 = ((self.fHslider1) as f32) + -0.707000017;
+		let mut fSlow5: f32 = 1.0 / (0.16465649 * (mydsp_faustpower4_f(fSlow0) * fSlow4) / mydsp_faustpower4_f(fSlow1) + 1.0);
+		let mut fSlow6: f32 = 0.16465649 * fSlow4 * (1.0 - fSlow2);
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			let mut fTemp0: F = F::from(fSlow5) * (((*input0)) - F::from(fSlow6) * (self.fRec3[1] + F::from(fSlow2) * (self.fRec2[1] + F::from(fSlow2) * (self.fRec1[1] + F::from(fSlow2) * self.fRec0[1])))) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp0;
+			let mut fTemp1: F = (self.fRec0[1] + F::from(fSlow2) * fTemp0) - self.fRec1[1];
+			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * fTemp1;
+			let mut fTemp2: F = (self.fRec1[1] + F::from(fSlow2) * fTemp1) - self.fRec2[1];
+			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp2;
+			let mut fTemp3: F = (self.fRec2[1] + F::from(fSlow2) * fTemp2) - self.fRec3[1];
+			self.fRec3[0] = self.fRec3[1] + F::from(fSlow3) * fTemp3;
+			let mut fRec4: F = self.fRec3[1] + F::from(fSlow2) * fTemp3;
+			*output0 = fRec4;
+			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];
 			self.fRec2[1] = self.fRec2[0];
 			self.fRec3[1] = self.fRec3[0];
-			self.fRec4[1] = self.fRec4[0];
+		}
+	}
+}
+
+/*
+import("stdfaust.lib");
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0.5,10,0.01);
+process = ve.moogHalfLadder(freq, res);
+*/
+
+pub struct HalfLadderLPF<F: Frame> {
+	fSampleRate: i32,
+	fConst0: f32,
+	fHslider0: f32,
+	fHslider1: f32,
+	fRec0: [F;2],
+	fRec1: [F;2],
+	fRec2: [F;2],
+}
+
+impl<F: Frame> HalfLadderLPF<F> {
+	fn new() -> Self {
+		Self {
+			fSampleRate: 0,
+			fConst0: 0.0,
+			fHslider0: 0.0,
+			fHslider1: 0.0,
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+			fRec2: [F::from(0.0);2],
+		}
+	}
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec0[(l0) as usize] = F::from(0.0);
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = F::from(0.0);
+		}
+		for l2 in 0..2 {
+			self.fRec2[(l2) as usize] = F::from(0.0);
+		}
+	}
+
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		self.fConst0 = 6.28318548 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+	}
+
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+	fn init(&mut self, sample_rate: i32) {
+		self.instance_init(sample_rate);
+	}
+
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
+
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
+
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = f32::tan(self.fConst0 * f32::powf(10.0, 3.0 * ((self.fHslider0) as f32) + 1.0));
+		let mut fSlow1: f32 = fSlow0 + 1.0;
+		let mut fSlow2: f32 = fSlow0 / fSlow1;
+		let mut fSlow3: f32 = 2.0 * fSlow2;
+		let mut fSlow4: f32 = ((self.fHslider1) as f32) + -0.707000017;
+		let mut fSlow5: f32 = fSlow3 + -1.0;
+		let mut fSlow6: f32 = 1.0 / (0.082328245 * (mydsp_faustpower2_f(fSlow0) * fSlow4 * fSlow5) / mydsp_faustpower2_f(fSlow1) + 1.0);
+		let mut fSlow7: f32 = fSlow4 / fSlow1;
+		let mut fSlow8: f32 = 0.082328245 * fSlow5;
+		let mut fSlow9: f32 = 0.082328245 * (fSlow0 * fSlow5) / fSlow1;
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			let mut fTemp0: F = F::from(fSlow6) * (((*input0)) + F::from(fSlow7) * (F::from(0.0) - (F::from(0.16465649) * self.fRec0[1] + F::from(fSlow8) * self.fRec1[1]) - F::from(fSlow9) * self.fRec2[1])) - self.fRec2[1];
+			let mut fTemp1: F = (self.fRec2[1] + F::from(fSlow2) * fTemp0) - self.fRec1[1];
+			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow2) * fTemp1;
+			let mut fTemp3: F = fTemp2 - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp3;
+			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * fTemp1;
+			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp0;
+			let mut fRec3: F = F::from(2.0) * (self.fRec0[1] + F::from(fSlow2) * fTemp3) - fTemp2;
+			*output0 = ((fRec3) as F);
+			self.fRec0[1] = self.fRec0[0];
+			self.fRec1[1] = self.fRec1[0];
+			self.fRec2[1] = self.fRec2[0];
+		}
+	}
+}
+
+/*
+import("stdfaust.lib")
+freq = hslider("freq",0.5,0,1,0.001);
+res = hslider("res",1,0.5,10,0.01);
+process = ve.sallenKey2ndOrderLPF(freq, res);
+*/
+
+pub struct SallenKeyLPF<F: Frame> {
+	fSampleRate: i32,
+	fConst0: f32,
+	fHslider0: f32,
+	fHslider1: f32,
+	fRec0: [F;2],
+	fRec1: [F;2],
+}
+
+impl<F: Frame> SallenKeyLPF<F> {
+	fn new() -> Self {
+		Self {
+			fSampleRate: 0,
+			fConst0: 0.0,
+			fHslider0: 0.0,
+			fHslider1: 0.0,
+			fRec0: [F::from(0.0);2],
+			fRec1: [F::from(0.0);2],
+		}
+	}
+
+
+	fn get_sample_rate(&self) -> i32 {
+		return self.fSampleRate;
+	}
+	fn get_num_inputs(&self) -> i32 {
+		return 1;
+	}
+	fn get_num_outputs(&self) -> i32 {
+		return 1;
+	}
+
+	fn instance_reset_params(&mut self) {
+		self.fHslider0 = 0.5;
+		self.fHslider1 = 1.0;
+	}
+	fn instance_clear(&mut self) {
+		for l0 in 0..2 {
+			self.fRec0[(l0) as usize] = F::from(0.0);
+		}
+		for l1 in 0..2 {
+			self.fRec1[(l1) as usize] = F::from(0.0);
+		}
+	}
+	fn instance_constants(&mut self, sample_rate: i32) {
+		self.fSampleRate = sample_rate;
+		self.fConst0 = 6.28318548 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+	}
+	fn instance_init(&mut self, sample_rate: i32) {
+		self.instance_constants(sample_rate);
+		self.instance_reset_params();
+		self.instance_clear();
+	}
+	fn init(&mut self, sample_rate: i32) {
+		self.instance_init(sample_rate);
+	}
+
+	fn get_cutoff(&self) -> f32 {
+		return self.fHslider0;
+	}
+
+	fn set_cutoff(&mut self, freq: f32) {
+		self.fHslider0 = freq;
+	}
+
+	fn get_res(&self) -> f32 {
+		return self.fHslider1;
+	}
+
+	fn set_res(&mut self, res: f32) {
+		self.fHslider1 = res;
+	}
+
+	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+		let (inputs0) = if let [inputs0, ..] = inputs {
+			let inputs0 = inputs0[..count as usize].iter();
+			(inputs0)
+		} else {
+			panic!("wrong number of inputs");
+		};
+		let (outputs0) = if let [outputs0, ..] = outputs {
+			let outputs0 = outputs0[..count as usize].iter_mut();
+			(outputs0)
+		} else {
+			panic!("wrong number of outputs");
+		};
+		let mut fSlow0: f32 = f32::tan(self.fConst0 * f32::powf(10.0, 3.0 * ((self.fHslider0) as f32) + 1.0));
+		let mut fSlow1: f32 = 2.0 * fSlow0;
+		let mut fSlow2: f32 = 1.0 / ((self.fHslider1) as f32) + fSlow0;
+		let mut fSlow3: f32 = fSlow0 * fSlow2 + 1.0;
+		let mut fSlow4: f32 = fSlow0 / fSlow3;
+		let mut fSlow5: f32 = 2.0 * fSlow4;
+		let zipped_iterators = inputs0.zip(outputs0);
+		for (input0, output0) in zipped_iterators {
+			let mut fTemp0: F = ((*input0) as F) - (self.fRec0[1] + F::from(fSlow2) * self.fRec1[1]);
+			let mut fTemp1: F = self.fRec1[1] + F::from(fSlow4) * fTemp0;
+			self.fRec0[0] = self.fRec0[1] + F::from(fSlow1) * fTemp1;
+			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow5) * fTemp0;
+			self.fRec1[0] = fTemp2;
+			let mut fRec2: F = self.fRec0[1] + F::from(fSlow0) * fTemp2;
+			*output0 = ((fRec2) as F);
+			self.fRec0[1] = self.fRec0[0];
+			self.fRec1[1] = self.fRec1[0];
 		}
 	}
 }
