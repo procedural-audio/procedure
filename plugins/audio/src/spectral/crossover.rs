@@ -76,8 +76,7 @@ impl Module for Crossover {
 
         unsafe {
             voice.compute(
-                inputs.audio[0].len() as i32,
-                &[inputs.audio[0].as_slice()],
+        		inputs.audio[0].as_slice(),
                 &mut [
                     std::slice::from_raw_parts_mut(&mut *out2, outputs.audio[1].len()),
                     std::slice::from_raw_parts_mut(&mut *out1, outputs.audio[0].len()),
@@ -120,18 +119,6 @@ impl<F: Frame> CrossoverDSP<F> {
 		}
     }
 
-	fn get_sample_rate(&self) -> i32 {
-		return self.fSampleRate;
-	}
-
-	fn get_num_inputs(&self) -> i32 {
-		return 1;
-	}
-
-	fn get_num_outputs(&self) -> i32 {
-		return 2;
-	}
-
 	fn instance_reset_params(&mut self) {
 		self.fHslider0 = 0.5;
 	}
@@ -159,7 +146,7 @@ impl<F: Frame> CrossoverDSP<F> {
 
 	fn instance_constants(&mut self, sample_rate: i32) {
 		self.fSampleRate = sample_rate;
-		self.fConst0 = 3.14159274 / f32::min(192000.0, f32::max(1.0, ((self.fSampleRate) as f32)));
+		self.fConst0 = 3.14159274 / f32::min(192000.0, f32::max(1.0, self.fSampleRate as f32));
 	}
 
 	fn instance_init(&mut self, sample_rate: i32) {
@@ -176,13 +163,9 @@ impl<F: Frame> CrossoverDSP<F> {
         self.fHslider0 = freq;
 	}
 
-	pub fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
-		let (inputs0) = if let [inputs0, ..] = inputs {
-			let inputs0 = inputs0[..count as usize].iter();
-			(inputs0)
-		} else {
-			panic!("wrong number of inputs");
-		};
+	pub fn compute(&mut self, inputs: &[F], outputs: &mut[&mut[F]; 2]) {
+		let count = inputs.len() as i32;
+		let inputs0 = inputs.iter();
 		let (outputs0, outputs1) = if let [outputs0, outputs1, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			let outputs1 = outputs1[..count as usize].iter_mut();

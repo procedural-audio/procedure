@@ -100,7 +100,6 @@ impl Module for DigitalFilter {
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let input = inputs.audio[0].as_slice();
         let output = outputs.audio[0].as_slice_mut();
-
         let cutoff = f32::clamp(inputs.control[0], 0.0, 1.0);
     }
 }
