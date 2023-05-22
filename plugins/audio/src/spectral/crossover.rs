@@ -13,7 +13,7 @@ impl Module for Crossover {
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),
-        voicing: Voicing::Monophonic,
+        voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
             Pin::Control("Crossover (0-1)", 55),
