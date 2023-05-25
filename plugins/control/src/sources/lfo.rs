@@ -1,5 +1,7 @@
 use modules::*;
 
+use std::f32::consts::PI;
+
 pub struct LfoModule {
     wave: usize,
     value: f32,
@@ -42,14 +44,12 @@ impl Module for LfoModule {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        use std::f32::consts::PI;
-
         Self::Voice {
             saw: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
                 let y = x / PI / 2.0;
                 -y + 1.0
-            }),
+            }, 60.0),
             square: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
 
@@ -58,10 +58,10 @@ impl Module for LfoModule {
                 } else {
                     0.0
                 }
-            }),
+            }, 60.0),
             sine: Lfo::from(| x | {
                 f32::sin(x) / 2.0 + 0.5
-            }),
+            }, 60.0),
             triangle: Lfo::from(|x| {
                 let x = x % (2.0 * PI);
                 let y = x / PI - 1.0;
@@ -71,7 +71,7 @@ impl Module for LfoModule {
                 } else {
                     1.0 - y
                 }
-            }),
+            }, 60.0),
             last_reset: 0.0,
         }
     }

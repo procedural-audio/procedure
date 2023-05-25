@@ -1,4 +1,5 @@
 use crate::dsp::*;
+use crate::Processor2;
 
 use rand::distributions::Uniform;
 use rand::prelude::ThreadRng;
@@ -29,18 +30,18 @@ impl Generator for Noise {
 }
 
 pub struct Lfo {
-    f: fn(f32) -> f32,
+    shape: fn(f32) -> f32,
+    pitch: f32,
     phase: f32,
-    hz: f32,
     rate: u32,
 }
 
 impl Lfo {
-    pub fn from(f: fn(f32) -> f32) -> Self {
+    pub fn from(shape: fn(f32) -> f32, pitch: f32) -> Self {
         Self {
-            f,
+            shape,
+            pitch,
             phase: 0.0,
-            hz: 440.0,
             rate: 44100,
         }
     }
@@ -53,26 +54,35 @@ impl Generator for Lfo {
         self.phase = 0.0;
     }
 
-    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         self.rate = sample_rate;
     }
 
     fn gen(&mut self) -> Self::Output {
         let phase = self.phase;
-        let delta = (1.0 / self.rate as f32) * self.hz;
-
+        let delta = (1.0 / self.rate as f32) * self.pitch.gen();
         self.phase += delta;
-
-        (self.f)(phase)
+        (self.shape)(phase)
     }
 }
 
+/*impl<F: Fn(f32) -> f32> Processor2 for F {
+    type Input = f32;
+    type Output = f32;
+
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        self(input)
+    }
+}*/
+
 impl Pitched for Lfo {
     fn get_pitch(&self) -> f32 {
-        self.hz
+        self.pitch
     }
 
     fn set_pitch(&mut self, hz: f32) {
-        self.hz = hz;
+        self.pitch = hz;
     }
 }
