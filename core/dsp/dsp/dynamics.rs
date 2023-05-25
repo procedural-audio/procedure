@@ -31,8 +31,8 @@ impl<T: Default> Default for Clipper<T> {
     }
 }
 
-impl<T: Generator<Item = f32>> Generator for Clipper<T> {
-    type Item = f32;
+impl<T: Generator<Output = f32>> Generator for Clipper<T> {
+    type Output = f32;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
@@ -95,8 +95,8 @@ impl<T: Default> Default for Amplifier<T> {
     }
 }
 
-impl<T: Generator<Item = f32>> Generator for Amplifier<T> {
-    type Item = f32;
+impl<T: Generator<Output = f32>> Generator for Amplifier<T> {
+    type Output = f32;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}

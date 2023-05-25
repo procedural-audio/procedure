@@ -17,7 +17,7 @@ impl Default for Noise {
 }
 
 impl Generator for Noise {
-    type Item = f32;
+    type Output = f32;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
@@ -47,7 +47,7 @@ impl Lfo {
 }
 
 impl Generator for Lfo {
-    type Item = f32;
+    type Output = f32;
 
     fn reset(&mut self) {
         self.phase = 0.0;
@@ -57,7 +57,7 @@ impl Generator for Lfo {
         self.rate = sample_rate;
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         let phase = self.phase;
         let delta = (1.0 / self.rate as f32) * self.hz;
 

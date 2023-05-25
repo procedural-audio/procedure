@@ -84,13 +84,13 @@ impl Frame for f32 {
 */
 
 pub trait Generator {
-    type Item: Clone + Copy;
+    type Output: Clone + Copy;
 
     fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
-    fn gen(&mut self) -> Self::Item;
+    fn gen(&mut self) -> Self::Output;
 
-    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
         for item in output.as_slice_mut().iter_mut() {
             *item = self.gen();
         }
@@ -167,7 +167,7 @@ impl<T: Generator> Player<T> {
 }
 
 impl<T: Generator> Generator for Player<T> {
-    type Item = T::Item;
+    type Output = T::Output;
 
     fn reset(&mut self) {
         self.source.reset();
@@ -177,11 +177,11 @@ impl<T: Generator> Generator for Player<T> {
         self.source.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         self.source.gen()
     }
 
-    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
         self.source.generate_block(output);
     }
 }
@@ -196,7 +196,7 @@ impl<T: Frame> Playhead<T> {
 }
 
 impl<T: Frame> Generator for Playhead<T> {
-    type Item = T;
+    type Output = T;
 
     fn reset(&mut self) {
         self.index = 0;
@@ -204,13 +204,13 @@ impl<T: Frame> Generator for Playhead<T> {
 
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         let item = self.src[self.index];
         self.index += 1;
         return item;
     }
 
-    fn generate_block(&mut self, output: &mut Buffer<Self::Item>) {
+    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
         if self.index + output.len() < self.src.len() {
             let end = usize::min(self.index + output.len(), self.src.len());
             for (buf, out) in self.src.into_iter().zip(&mut output.as_slice_mut()[self.index..end]) {
@@ -248,12 +248,12 @@ impl<T: Generator + Pitched + Default> Default for Pitch<T> {
 }
 
 impl<T: Generator + Pitched> Generator for Pitch<T> {
-    type Item = T::Item;
+    type Output = T::Output;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output{
         self.src.gen()
     }
 }
@@ -301,7 +301,7 @@ impl<T: Processor + Pitched> DerefMut for Pitch<T> {
 }*/
 
 impl Generator for f32 {
-    type Item = f32;
+    type Output = f32;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}

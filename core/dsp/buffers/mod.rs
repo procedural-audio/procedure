@@ -537,7 +537,7 @@ impl<T: Clone> Buffer<T> {
         self.items.clear();
     }
 
-    pub fn fill<G: Generator<Item = T>>(&mut self, src: &mut G) {
+    pub fn fill<G: Generator<Output = T>>(&mut self, src: &mut G) {
         for d in &mut self.items {
             *d = src.gen();
         }

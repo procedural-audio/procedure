@@ -91,14 +91,14 @@ impl<T: Frame> SampleFile<T> {
     }
 }*/
 
-pub struct Converter<G: Generator, I: Interpolator<Item = G::Item>> {
+pub struct Converter<G: Generator, I: Interpolator<Item = G::Output>> {
     src: G,
     interpolator: I,
     interpolation_value: f32,
     ratio: f32
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Item>> Converter<G, I> {
+impl<G: Generator, I: Interpolator<Item = G::Output>> Converter<G, I> {
     pub fn from(src: G) -> Self {
         Self {
             src,
@@ -113,8 +113,8 @@ impl<G: Generator, I: Interpolator<Item = G::Item>> Converter<G, I> {
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Item>> Generator for Converter<G, I> {
-    type Item = G::Item;
+impl<G: Generator, I: Interpolator<Item = G::Output>> Generator for Converter<G, I> {
+    type Output = G::Output;
 
     fn reset(&mut self) {
         self.interpolator.reset();
@@ -125,7 +125,7 @@ impl<G: Generator, I: Interpolator<Item = G::Item>> Generator for Converter<G, I
         self.src.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         while self.interpolation_value >= 1.0 {
             self.interpolator.next_sample(self.src.gen());
             self.interpolation_value -= 1.0;
@@ -137,7 +137,7 @@ impl<G: Generator, I: Interpolator<Item = G::Item>> Generator for Converter<G, I
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Item>> std::ops::Deref for Converter<G, I> {
+impl<G: Generator, I: Interpolator<Item = G::Output>> std::ops::Deref for Converter<G, I> {
     type Target = G;
 
     fn deref(&self) -> &Self::Target {
@@ -145,7 +145,7 @@ impl<G: Generator, I: Interpolator<Item = G::Item>> std::ops::Deref for Converte
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Item>> std::ops::DerefMut for Converter<G, I> {
+impl<G: Generator, I: Interpolator<Item = G::Output>> std::ops::DerefMut for Converter<G, I> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.src
     }
@@ -317,12 +317,12 @@ impl<T: Frame> SamplePlayer<T> {
 }
 
 impl<T: Frame> Generator for SamplePlayer<T> {
-    type Item = T;
+    type Output = T;
 
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
 
         if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
@@ -339,7 +339,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
             }
         }
 
-        Self::Item::from(0.0)
+        Self::Output::from(0.0)
     }
 
     fn generate_block(&mut self, output: &mut Buffer<T>) {
@@ -386,7 +386,7 @@ impl<T: Frame> PitchedSamplePlayer<T> {
 }
 
 impl<T: Frame> Generator for PitchedSamplePlayer<T> {
-    type Item = T;
+    type Output = T;
 
     fn reset(&mut self) {}
 
@@ -394,7 +394,7 @@ impl<T: Frame> Generator for PitchedSamplePlayer<T> {
         self.player.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         self.player.gen()
     }
 
@@ -510,7 +510,7 @@ impl<F: Frame> GranularSamplePlayer<F> {
 }
 
 impl<T: Frame> Generator for GranularSamplePlayer<T> {
-    type Item = T;
+    type Output = T;
 
     fn reset(&mut self) {}
 
@@ -518,7 +518,7 @@ impl<T: Frame> Generator for GranularSamplePlayer<T> {
         self.player.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn gen(&mut self) -> Self::Output {
         self.player.gen()
     }
 
