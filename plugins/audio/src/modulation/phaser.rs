@@ -29,7 +29,6 @@ impl Module for Phaser {
         path: &["Audio", "Modulation", "Phaser"],
         presets: Presets::NONE
     };
-
     
     fn new() -> Self {
         Phaser {
@@ -156,5 +155,5 @@ impl Module for Phaser {
     fb = hslider("Feedback", 0, -0.999, 0.999, 0.001);
     invert = 0;
 
-    process = _,_ : pf.phaser2_stereo(Notches,width,frqmin,fratio,frqmax,speed,depth,fb,invert) : _,_;
+    process = _ : pf.phaser2_mono(Notches,width,frqmin,fratio,frqmax,speed,depth,fb,invert) : _;
 );*/

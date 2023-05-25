@@ -84,7 +84,7 @@ impl Frame for f32 {
 */
 
 pub trait Generator {
-    type Item: Copy + Clone;
+    type Item: Clone + Copy;
 
     fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
@@ -98,7 +98,9 @@ pub trait Generator {
 }
 
 pub trait Processor {
-    type Item: Copy + Clone;
+    type Item: Clone + Copy;
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
 
     fn process(&mut self, input: Self::Item) -> Self::Item;
 

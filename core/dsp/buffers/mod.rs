@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::slice;
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
@@ -64,12 +65,6 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct Stereo2<T> {
-    pub left: T,
-    pub right: T,
-}
-
 impl Frame for f32 {
     type Output = f32;
     const CHANNELS: usize = 1;
@@ -117,6 +112,12 @@ impl Frame for f32 {
     fn apply_2(a: Self, b: Self, f: fn(f32, f32) -> f32) -> Self {
         f(a, b)
     }
+}
+
+#[derive(Copy, Clone)]
+pub struct Stereo2<T> {
+    pub left: T,
+    pub right: T,
 }
 
 impl Frame for Stereo2<f32> {
@@ -258,84 +259,6 @@ impl DivAssign for Stereo2<f32> {
     }
 }
 
-// type Stereo = Buffer<Stereo2>;
-
-/*pub struct Stereo {
-    pub left: AudioBuffer,
-    pub right: AudioBuffer,
-}
-
-impl Stereo {
-    pub fn new() -> Self {
-        Self {
-            left: AudioBuffer::new(),
-            right: AudioBuffer::new()
-        }
-    }
-
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            left: AudioBuffer::with_capacity(capacity),
-            right: AudioBuffer::with_capacity(capacity),
-        }
-    }
-
-    pub fn init(value: f32, size: usize) -> Self {
-        Self {
-            left: AudioBuffer::init(value, size),
-            right: AudioBuffer::init(value, size)
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        self.left.len()
-    }
-
-    pub fn as_array<'a>(&'a self) -> [&'a [f32]; 2] {
-        [self.left.as_slice(), self.right.as_slice()]
-    }
-
-    pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [f32]; 2] {
-        [self.left.as_slice_mut(), self.right.as_slice_mut()]
-    }
-
-    pub fn copy_from(&mut self, src: &Stereo) {
-        self.left.copy_from(&src.left);
-        self.right.copy_from(&src.right);
-    }
-
-    pub fn add_from(&mut self, src: &Stereo) {
-        self.left.add_from(&src.left);
-        self.right.add_from(&src.right);
-    }
-
-    pub fn gain(&mut self, db: f32) {
-        self.left.gain(db);
-        self.right.gain(db);
-    }
-}*/
-
-/*impl<'a, T> IntoIterator for &'a Stereo {
-    type Item = (&'a f32, &'a f32);
-    type IntoIter = std::iter::Zip<std::slice::Iter<'a, f32>, std::slice::Iter<'a, f32>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.left.as_slice().iter().zip(self.right.as_slice())
-    }
-}
-
-impl<'a> IntoIterator for &'a mut Stereo {
-    type Item = (&'a mut f32, &'a mut f32);
-    type IntoIter = std::iter::Zip<std::slice::IterMut<'a, f32>, std::slice::IterMut<'a, f32>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.left
-            .as_slice_mut()
-            .iter_mut()
-            .zip(self.right.as_slice_mut())
-    }
-}*/
-
 pub type AudioBuffer = Buffer<f32>;
 pub type StereoBuffer = Buffer<Stereo2<f32>>;
 pub type NoteBuffer = Buffer<NoteMessage>;
@@ -354,9 +277,171 @@ impl<T: Copy + Clone, const C: usize> Channels<T, C> {
     }
 }
 
+pub trait MultiChannel {
+    const INPUTS: usize;
+    const OUTPUTS: usize;
+}
+
+pub trait Processor2 {
+    type Input: Copy + Clone;
+    type Output: Copy + Clone;
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
+
+    fn process(&mut self, input: Self::Input) -> Self::Output;
+
+    fn process_block(&mut self, input: &Buffer<Self::Input>, output: &mut Buffer<Self::Output>) {
+        for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
+            *dest = self.process(*src);
+        }
+    }
+}
+
+// TODO: Implement deref for all Processor2's to return AudioNode<T>
+// TODO: Create functions for each node that take all arguments
+// TODO: Make it so AudioNodes can be used as references also
+
+pub struct AudioNode<P: Processor2>(pub P);
+
+impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
+    type Output = AudioNode<Chain<F, A, B>>;
+
+    fn shr(self, rhs: AudioNode<B>) -> Self::Output {
+        AudioNode(Chain(self.0, rhs.0))
+    }
+}
+
+impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> std::ops::Shl<AudioNode<B>> for AudioNode<A> {
+    type Output = AudioNode<Chain<F, B, A>>;
+
+    fn shl(self, rhs: AudioNode<B>) -> Self::Output {
+        AudioNode(Chain(rhs.0, self.0))
+    }
+}
+
+pub struct Series<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize>(pub [A; C]);
+
+impl<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize> Processor2 for Series<F, A, C> {
+    type Input = F;
+    type Output = F;
+
+    fn process(&mut self, input: F) -> F {
+        let mut v = input;
+        for p in &mut self.0 {
+           v = p.process(v);
+        }
+
+        return v;
+    }
+}
+
+pub struct Chain<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>>(pub A, pub B);
+
+impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> Processor2 for Chain<F, A, B> {
+    type Input = F;
+    type Output = F;
+
+    fn process(&mut self, input: F) -> F {
+        self.1.process(self.0.process(input))
+    }
+}
+
+pub struct Split<I, O, X, Y, A: Processor2<Input = I, Output = O>, B: Processor2<Input = X, Output = Y>>(pub A, pub B);
+
+impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> Processor2 for Split<F, F, F, F, A, B> {
+    type Input = F;
+    type Output = (F, F);
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        let v = self.0.process(input);
+        (v, v)
+    }
+}
+
+impl<F: Frame, const C: usize, A: Processor2<Input = F, Output = F>, B: Processor2<Input = [F; C], Output = [F; C]>> Processor2 for Split<F, F, [F; C], [F; C], A, B> {
+    type Input = F;
+    type Output = [F; C];
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        let mut arr = [F::from(0.0); C];
+        let v = self.0.process(input);
+        for i in 0..C {
+            arr[i] = v;
+        }
+        return arr;
+    }
+}
+
+pub struct Merge<I, O, A: Processor2<Input = I, Output = O>>(pub A);
+
+impl<F: Frame, A: Processor2<Input = F, Output = (F, F)>> Processor2 for Merge<F, (F, F), A> {
+    type Input = F;
+    type Output = F;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        let v = self.0.process(input);
+        v.0 + v.1
+    }
+}
+
+impl<F: Frame, const C: usize, A: Processor2<Input = [F; C], Output = [F; C]>> Processor2 for Merge<[F; C], [F; C], A> {
+    type Input = [F; C];
+    type Output = F;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        self.0.process(input).iter().fold(F::from(0.0), | v, a| v + *a)
+    }
+}
+
+pub struct Parallel<const C: usize, I, O, P: Processor2<Input = I, Output = O>>(pub [P; C]);
+
+impl<F: Frame, const C: usize, P: Processor2<Input = F, Output = F>> Processor2 for Parallel<C, F, F, P> {
+    type Input = [F; C];
+    type Output = [F; C];
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        let mut output = [F::from(0.0); C];
+
+        for i in 0..C {
+            output[i] = self.0[i].process(input[i]);
+        }
+
+        output
+    }
+}
+
+/*pub struct Adder<A: Processor2, B: Processor2>(pub A, pub B);
+
+impl<A: Processor2, B: Processor2<Input = A::Output>> std::ops::Add<B> for B {
+    type Output = Adder<A, B>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Adder(self, rhs)
+    }
+}*/
+
+/*pub struct Multi<T, const C: usize> {
+    channels: [T; C]
+}
+
+impl<P: Processor, const C: usize> Multi<P, C> {
+    fn process(&mut self, input: &[P::Item; C], output: &mut Multi<P, C>) {
+        todo!()
+    }
+
+    fn process_block(&mut self, inputs: &Multi<Buffer<P::Item>, C>, outputs: &mut Multi<Buffer<P::Item>, C>) {
+        for i in 0..C {
+            let input = &inputs.channels[i];
+            let output = &mut outputs.channels[i];
+            let dsp = &mut self.channels[i];
+            dsp.process_block(input, output);
+        }
+    }
+}*/
+
 /* Buffer Type */
 
-pub struct Buffer<T: Copy + Clone> {
+pub struct Buffer<T: Clone> {
     items: Vec<T>,
 }
 
@@ -385,7 +470,7 @@ impl<T: Frame + Copy> Buffer<T> {
     }
 }
 
-impl<T: Copy + Clone> Buffer<T> {
+impl<T: Clone> Buffer<T> {
     pub fn from(items: Vec<T>) -> Self {
         Self { items }
     }
@@ -840,3 +925,63 @@ impl<T: AudioChannelMut<1>> BufferMut for T {
         self.as_array_mut()[0]
     }
 }*/
+
+pub struct RingBuffer<F: Frame> {
+    buffer: Buffer<F>,
+    length: usize,
+    index: usize
+}
+
+/*impl<F: Frame> Generator for RingBuffer<F> {
+    type Item = F;
+
+    fn reset(&mut self) {
+        self.index = 0;
+        for sample in self.buffer.as_slice_mut() {
+            sample.zero();
+        }
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        panic!("Prepare not implemented for ");
+    }
+
+    fn gen(&mut self) -> Self::Item {
+    }
+}*/
+
+impl<F: Frame> RingBuffer<F> {
+    pub fn init(value: F, size: usize) -> Self {
+        Self {
+            buffer: Buffer::init(value, size),
+            length: 1,
+            index: 0
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.length
+    }
+
+    pub fn capacity(&self) -> usize {
+        self.buffer.capacity()
+    }
+
+    pub fn resize(&mut self, length: usize) {
+        if length > self.buffer.capacity() {
+            self.buffer.items.resize(length, F::from(0.0));
+        } else {
+            self.length = length;
+            for sample in self.buffer.as_slice_mut().iter_mut().skip(length) {
+                *sample = F::from(0.0);
+            }
+        }
+    }
+
+    pub fn next(&mut self, input: F) -> F {
+        let output = self.buffer.items[self.index];
+        self.buffer.items[self.index] = input;
+        self.index = (self.index + 1) % self.length;
+        output
+    }
+}

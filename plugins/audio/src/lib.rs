@@ -3,7 +3,7 @@ mod synthesis;
 mod distortion;
 mod dynamics;
 mod modulation;
-//mod space;
+mod space;
 mod spectral;
 
 pub use sampling::*;
@@ -11,7 +11,7 @@ pub use synthesis::*;
 pub use distortion::*;
 pub use dynamics::*;
 pub use modulation::*;
-//pub use space::*;
+pub use space::*;
 pub use spectral::*;
 
 use modules::*;
@@ -78,7 +78,7 @@ static PLUGIN: Plugin = Plugin {
         module::<Waveshaper>(),
 
         // Space
-        // module::<Reverb>(),
+        module::<Reverb>(),
         // module::<Delay>(),
         // module::<Shimmer>(),
         // module::<Convolution>(),
