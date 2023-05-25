@@ -167,23 +167,12 @@ impl Module for Reverb {
         for (input, output) in inputs.audio[0].as_slice().iter().zip(outputs.audio[0].as_slice_mut()) {
             *output = voice.delay.process(*input);
         }
-
-        /*
-        Elegant DSP structures 
-
-        outputs.audio[0] << self.reverb << inputs.audio[0];
-        inputs.audio[0] >> self.reverb >> outputs.audio[0];
-
-        outputs.audio[0] << [Allpass::new(), Allpass::from(0.0, 1.0)] << inputs.audio[0];
-        */
     }
 }
 
 fn temp() {
     let input = Buffer::init(0.0, 512);
     let mut output = Buffer::init(0.0, 512);
-
-    // (delay(0.0, 1.0) << other(0.0, 1.0) << inputs.audio[0]) >> outputs.audio[0];
 
     /* Graph construction from audio nodes */
 
@@ -193,8 +182,7 @@ fn temp() {
     let node_4 = AudioNode(Delay::new(512*100));
 
     let mut chain = (node_1 << node_2 << node_3) >> node_4;
-
-    chain.0.process_block(&input, &mut output);
+    chain.process_block(&input, &mut output);
 
     /* Declarative graph construction */
 

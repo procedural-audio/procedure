@@ -303,6 +303,20 @@ pub trait Processor2 {
 
 pub struct AudioNode<P: Processor2>(pub P);
 
+impl<P: Processor2> std::ops::Deref for AudioNode<P> {
+    type Target = P;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<P: Processor2> std::ops::DerefMut for AudioNode<P> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
     type Output = AudioNode<Chain<F, A, B>>;
 
