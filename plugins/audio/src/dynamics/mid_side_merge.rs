@@ -10,14 +10,14 @@ impl Module for MidSideMerge {
         id: "default.audio.dynamics.mid_side_merge",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(100, 75),
+        size: Size::Static(150, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Mid", 15),
             Pin::Audio("Side", 45),
         ],
         outputs: &[
-            Pin::Audio("Output", 15),
+            Pin::Audio("Output", 30),
         ],
         path: &["Audio", "Dynamics", "Mid-Side Merge"],
         presets: Presets::NONE
@@ -33,7 +33,7 @@ impl Module for MidSideMerge {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (30, 25),
+            position: (50, 25),
             size: (40, 40),
             child: Icon {
                 path: "operations/multiply.svg",
