@@ -86,7 +86,8 @@ static PLUGIN: Plugin = Plugin {
         // module::<BinauralPanner>(),
 
         // Spectral
-        // module::<DigitalFilter>(),
+        module::<DigitalFilter>(),
+        module::<ShelfFilter>(),
         module::<AnalogFilter>(),
         module::<Crossover>(),
         module::<PitchShifter>(),

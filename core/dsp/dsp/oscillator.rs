@@ -1,5 +1,4 @@
 use crate::dsp::*;
-use crate::Processor2;
 
 use rand::distributions::Uniform;
 use rand::prelude::ThreadRng;
