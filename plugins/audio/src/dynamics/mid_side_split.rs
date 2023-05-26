@@ -10,14 +10,14 @@ impl Module for MidSideSplit {
         id: "default.audio.dynamics.mid_side_split",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(150, 75),
+        size: Size::Static(110, 90),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Input", 30),
         ],
         outputs: &[
-            Pin::Audio("Mid", 15),
-            Pin::Audio("Side", 45),
+            Pin::Audio("Mid", 30),
+            Pin::Audio("Side", 60),
         ],
         path: &["Audio", "Dynamics", "Mid-Side Split"],
         presets: Presets::NONE
@@ -33,7 +33,7 @@ impl Module for MidSideSplit {
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Transform {
-            position: (50, 25),
+            position: (35, 35),
             size: (40, 40),
             child: Icon {
                 path: "operations/divide.svg",
