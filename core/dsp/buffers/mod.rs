@@ -657,7 +657,7 @@ impl<'a, T: Copy + Clone> IntoIterator for &'a mut Buffer<T> {
 }
 
 pub struct Bus<T> {
-    channels: Vec<Channel<T>>,
+    pub channels: Vec<Channel<T>>,
 }
 
 impl<T> Bus<T> {

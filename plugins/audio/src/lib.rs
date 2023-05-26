@@ -64,6 +64,8 @@ static PLUGIN: Plugin = Plugin {
         module::<Gate>(),
         module::<Compressor>(),
         module::<VoiceSpread>(),
+        module::<MidSideSplit>(),
+        module::<MidSideMerge>(),
         // module::<TransientShaper>(),
         // module::<TransientSeparator>(),
 
