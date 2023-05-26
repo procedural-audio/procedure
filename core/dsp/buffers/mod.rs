@@ -60,6 +60,10 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
         Self::apply(v, f32::tan)
     }
 
+    fn exp(v: Self) -> Self {
+        Self::apply(v, f32::exp)
+    }
+
     fn powf(a: Self, b: Self) -> Self {
         Self::apply_2(a, b, f32::powf)
     }

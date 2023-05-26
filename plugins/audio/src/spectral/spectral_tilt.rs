@@ -25,7 +25,6 @@ impl Module for SpectralTilt {
         path: &["Audio", "Spectral", "Crossover"],
         presets: Presets::NONE
     };
-
     
     fn new() -> Self {
         Self { value: 0.5 }
