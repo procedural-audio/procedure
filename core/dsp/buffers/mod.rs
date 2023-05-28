@@ -30,7 +30,6 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
     fn channel(&self, index: usize) -> &f32;
     fn channel_mut(&mut self, index: usize) -> &mut f32;
 
-
     fn zero(&mut self);
     // fn fill(&mut self, value: Self);
     fn gain(&mut self, db: f32);
@@ -62,6 +61,10 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
 
     fn exp(v: Self) -> Self {
         Self::apply(v, f32::exp)
+    }
+
+    fn abs(v: Self) -> Self {
+        Self::apply(v, f32::abs)
     }
 
     fn powf(a: Self, b: Self) -> Self {

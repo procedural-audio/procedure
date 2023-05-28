@@ -3,6 +3,22 @@ use std::ops::*;
 
 use crate::math::faster;
 
+pub fn db_to_gain(db: f32) -> f32 {
+    f32::powf(10.0, db / 20.0)
+}
+
+pub fn db_to_gain_floor(db: f32, floor: f32) -> f32 {
+    if db > floor {
+        f32::powf(10.0, db / 20.0)
+    } else {
+        floor
+    }
+}
+
+pub fn gain_to_db(gain: f32) -> f32 {
+    20.0 * f32::log10(f32::max(f32::MIN, gain))
+}
+
 pub fn db_to_linear(value: f32) -> f32 {
     f32::powf(10.0, value / 40.0) / 2.0
 }
