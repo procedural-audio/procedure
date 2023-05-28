@@ -7,6 +7,7 @@ pub struct Compressor {
     ratio: f32,
     attack: f32,
     release: f32,
+    points: Vec<(f32, f32)>,
 }
 
 impl Module for Compressor {
@@ -17,7 +18,7 @@ impl Module for Compressor {
         id: "default.effects.dynamics.compressor",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(340, 200),
+        size: Size::Static(345, 200),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
@@ -33,7 +34,6 @@ impl Module for Compressor {
         presets: Presets::NONE
     };
 
-    
     fn new() -> Self {
         Self {
             input_rms: 0.5,
@@ -42,6 +42,7 @@ impl Module for Compressor {
             ratio: 1.0,
             attack: 0.0,
             release: 0.0,
+            points: Vec::new()
         }
     }
 
@@ -64,8 +65,8 @@ impl Module for Compressor {
                             text: "Threshold",
                             color: Color::BLUE,
                             value: &mut self.threshold,
-                            feedback: Box::new(|_v| String::new()),
-                        },
+                            feedback: Box::new(|_v| String::new())
+                        }
                     },
                     Transform {
                         position: (30, 100),
@@ -74,8 +75,8 @@ impl Module for Compressor {
                             text: "Attack",
                             color: Color::BLUE,
                             value: &mut self.attack,
-                            feedback: Box::new(|_v| String::new()),
-                        },
+                            feedback: Box::new(|_v| String::new())
+                        }
                     },
                     Transform {
                         position: (30 + 60, 25),
@@ -84,8 +85,8 @@ impl Module for Compressor {
                             text: "Ratio",
                             color: Color::BLUE,
                             value: &mut self.ratio,
-                            feedback: Box::new(|_v| String::new()),
-                        },
+                            feedback: Box::new(|_v| String::new())
+                        }
                     },
                     Transform {
                         position: (30 + 60, 100),
@@ -94,55 +95,33 @@ impl Module for Compressor {
                             text: "Release",
                             color: Color::BLUE,
                             value: &mut self.release,
-                            feedback: Box::new(|_v| String::new()),
-                        },
+                            feedback: Box::new(|_v| String::new())
+                        }
                     },
-                    /*Positioned {
-                        position: (100 + 60, 30),
-                        child: Container {
-                            size: (200, 150),
-                            color: Color(0xff141414),
-                            border: Border {
-                                radius: 5,
-                                thickness: 2,
-                                color: Color::BLUE, // Color(0xff505050)
-                            },
-                            child: Stack {
-                                children: (
-                                    DynamicLine {
-                                        value: &self.compress_amount,
-                                        width: 3.0,
-                                        color: Color::RED,
-                                    },
-                                    DynamicLine {
-                                        value: &self.output_rms,
-                                        width: 3.0,
-                                        color: Color(0xffb4b4b4),
-                                    },
-                                ),
-                            },
-                        },
-                    },*/
                     Transform {
                         position: (100 + 60, 25),
                         size: (140, 140),
-                        child: Stack {
-                            children: (
-                                DynamicLine {
-                                    value: &self.input_rms,
-                                    width: 3.0,
-                                    color: Color(0xffb4b4b4),
-                                },
-                                DynamicLine {
-                                    value: &self.output_rms,
-                                    width: 3.0,
-                                    color: Color::RED,
-                                },
-                            ),
-                        },
-                    },
-                ),
-            },
+                        child: Background {
+                            color: Color(0xff141414),
+                            border: Border::radius(5),
+                            child: Stack {
+                                children: (
+                                    Plotter {
+                                        value: &self.output_rms,
+                                        color: Color::RED,
+                                        thickness: 2.0
+                                    },
+                                    Plotter {
+                                        value: &self.input_rms,
+                                        color: Color::BLUE,
+                                        thickness: 2.0
+                                    }
+                                )
+                            }
+                        }
+                    }
+                )
+            }
         })
     }
 
@@ -153,13 +132,7 @@ impl Module for Compressor {
             self.input_rms = 0.0;
         }
 
-        self.input_rms = f32::max(inputs.audio[0].rms().mono(), self.input_rms);
-
-        println!("input rms: {}", self.input_rms);
-
-        self.output_rms += 0.03;
-        if self.output_rms > 1.0 {
-            self.output_rms = 0.0;
-        }
+        self.input_rms = f32::max(inputs.audio[0].rms().mono() * 2.0, self.input_rms);
+        self.output_rms = 0.0;
     }
 }

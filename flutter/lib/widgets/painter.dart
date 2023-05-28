@@ -1,5 +1,7 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'widget.dart';
@@ -13,9 +15,9 @@ import '../core.dart';
 import '../module.dart';
 import '../main.dart';
 
-bool Function(RawWidgetTrait) ffiPainterShouldPaint = core
+bool Function(RawWidgetTrait) ffiPainterShouldRepaint = core
     .lookup<NativeFunction<Bool Function(RawWidgetTrait)>>(
-        "ffi_painter_should_paint")
+        "ffi_painter_repaint")
     .asFunction();
 void Function(RawWidgetTrait, Pointer<CanvasFFI>) ffiPainterPaint = core
     .lookup<NativeFunction<Void Function(RawWidgetTrait, Pointer<CanvasFFI>)>>(
@@ -61,9 +63,10 @@ class PainterWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-        size: ui.Size.infinite,
-        painter: CanvasPainter(widgetRaw, canvasRaw),
-        child: const SizedBox.expand());
+      size: ui.Size.infinite,
+      painter: CanvasPainter(widgetRaw, canvasRaw),
+      child: const SizedBox.expand(),
+    );
   }
 }
 
@@ -80,6 +83,9 @@ class PairFFIList extends Struct {
 
   @Int64()
   external int len;
+
+  @Int64()
+  external int capacity;
 }
 
 class CanvasFFI extends Struct {
@@ -126,8 +132,7 @@ class PaintAction extends Struct {
   @Float()
   external double f5;
 
-  @Float()
-  external double f6;
+  external Pointer<PairFFIList> p1;
 
   external PaintFFI paint;
 
@@ -139,6 +144,7 @@ class CanvasPainter extends CustomPainter {
 
   RawWidget widgetRaw;
   Pointer<CanvasFFI> canvasRaw;
+  Paint p = Paint();
 
   @override
   bool hitTest(Offset position) {
@@ -155,47 +161,76 @@ class CanvasPainter extends CustomPainter {
     Pointer<PaintAction> actionsRaw = ffiCanvasGetActions(canvasRaw);
     int count = ffiCanvasGetActionsCount(canvasRaw);
 
-    Paint paint = Paint();
-
     for (int i = 0; i < count; i++) {
       var action = actionsRaw.elementAt(i);
 
-      paint.color = intToColor(action.ref.paint.color);
-      paint.strokeWidth = action.ref.paint.width;
+      p.color = intToColor(action.ref.paint.color);
+      p.strokeWidth = action.ref.paint.width;
 
       if (action.ref.action == 0) {
+        // Draw circle
         canvas.drawCircle(
-            Offset(action.ref.f1, action.ref.f2), action.ref.f3, paint);
+          Offset(action.ref.f1, action.ref.f2),
+          action.ref.f3,
+          p,
+        );
       } else if (action.ref.action == 1) {
+        // Draw rect
         canvas.drawRect(
             Rect.fromLTWH(
-                action.ref.f1, action.ref.f2, action.ref.f3, action.ref.f4),
-            paint);
+              action.ref.f1,
+              action.ref.f2,
+              action.ref.f3,
+              action.ref.f4,
+            ),
+            p);
       } else if (action.ref.action == 2) {
+        // Draw rrect
         canvas.drawRRect(
-            RRect.fromLTRBR(action.ref.f1, action.ref.f2, action.ref.f3,
-                action.ref.f4, Radius.circular(action.ref.f5)),
-            paint);
+            RRect.fromLTRBR(
+              action.ref.f1,
+              action.ref.f2,
+              action.ref.f3,
+              action.ref.f4,
+              Radius.circular(action.ref.f5),
+            ),
+            p);
       } else if (action.ref.action == 3) {
-        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+        // Fill
+        canvas.drawRect(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          p,
+        );
       } else if (action.ref.action == 4) {
-        List<Offset> list = [];
-
-        for (int j = 0; j < action.ref.points.len; j++) {
-          Pointer<PairFFI> pair = action.ref.points.pointer.elementAt(j);
-          list.add(Offset(pair.ref.x, pair.ref.y));
-        }
-
-        canvas.drawPoints(ui.PointMode.polygon, list, paint);
+        // Draw line
+        canvas.drawLine(
+          Offset(action.ref.f1, action.ref.f2),
+          Offset(action.ref.f3, action.ref.f4),
+          p,
+        );
       } else if (action.ref.action == 5) {
-        canvas.drawLine(Offset(action.ref.f1, action.ref.f2),
-            Offset(action.ref.f3, action.ref.f4), paint);
+        // Points
+        Pointer<Float> rawList = action.ref.points.pointer.cast<Float>();
+        Float32List rawPoints = rawList.asTypedList(action.ref.points.len * 2);
+        canvas.drawRawPoints(ui.PointMode.points, rawPoints, p);
+      } else if (action.ref.action == 6) {
+        // Path
+        Pointer<Float> rawList = action.ref.points.pointer.cast<Float>();
+        Float32List rawPoints = rawList.asTypedList(action.ref.points.len * 2);
+        canvas.drawRawPoints(ui.PointMode.lines, rawPoints, p);
+      } else if (action.ref.action == 7) {
+        // Polygon
+        Pointer<Float> rawList = action.ref.points.pointer.cast<Float>();
+        Float32List rawPoints = rawList.asTypedList(action.ref.points.len * 2);
+        canvas.drawRawPoints(ui.PointMode.polygon, rawPoints, p);
+      } else if (action.ref.action == 8) {
+        // Raw fast draw points
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(covariant CanvasPainter oldDelegate) {
+    return ffiPainterShouldRepaint(widgetRaw.getTrait());
   }
 }

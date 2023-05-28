@@ -75,8 +75,8 @@ impl Module for Sampler {
                     children: (
                         SampleEditor {
                             sample: self.sample.clone(),
-                        },
-                        Painter {
+                        }
+                        /*Painter {
                             paint: | canvas | {
                                 for position in self.positions {
                                     if position != 0.0 {
@@ -88,7 +88,7 @@ impl Module for Sampler {
                                     }
                                 }
                             }
-                        }
+                        }*/
                     )
                 }
             }

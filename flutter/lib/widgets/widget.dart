@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/iconButton.dart';
+import 'package:metasampler/widgets/plotter.dart';
 import 'package:metasampler/widgets/sampleEditor.dart';
 
 import 'dart:ui' as ui;
@@ -13,6 +14,7 @@ import '../core.dart';
 import '../module.dart';
 
 import '../views/variables.dart';
+import 'background.dart';
 import 'knob.dart';
 import 'nodeSequencer.dart';
 import 'stack.dart';
@@ -73,6 +75,8 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
     return ButtonSVG(moduleRaw, widgetRaw);
   } else if (name == "Svg") {
     return SvgWidget(moduleRaw, widgetRaw);
+  } else if (name == "Background") {
+    return BackgroundWidget(moduleRaw, widgetRaw);
   } else if (name == "ButtonGrid") {
     return ButtonGridWidget(moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
@@ -141,6 +145,8 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
     return BrowserWidget(moduleRaw, widgetRaw);
   } else if (name == "Painter") {
     return PainterWidget(moduleRaw, widgetRaw);
+  } else if (name == "Plotter") {
+    return PlotterWidget(moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
     return EmptyWidget(moduleRaw, widgetRaw);
   } else {

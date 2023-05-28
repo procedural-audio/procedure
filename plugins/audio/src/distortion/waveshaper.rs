@@ -64,7 +64,7 @@ impl Module for Waveshaper {
                         elements: &["Sine", "Tan", "Abs"],
                     },
                 },
-                Transform {
+                /*Transform {
                     position: (40, 40),
                     size: (100, 60),
                     child: Painter {
@@ -94,7 +94,7 @@ impl Module for Waveshaper {
                             }*/
                         },
                     },
-                },
+                },*/
                 Transform {
                     position: (40 + 70 + 40, 40),
                     size: (60, 70),

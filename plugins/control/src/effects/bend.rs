@@ -52,7 +52,7 @@ impl Module for Bend {
         println!("Building stuff");
         return Box::new(Stack {
             children: (
-                Transform {
+                /*Transform {
                     position: (40, 40),
                     size: (100, 60),
                     child: Painter {
@@ -74,7 +74,7 @@ impl Module for Bend {
                             }
                         }
                     }
-                },
+                },*/
                 Transform {
                     position: (40 + 70 + 40, 40),
                     size: (60, 70),
@@ -84,7 +84,7 @@ impl Module for Bend {
                         value: &mut self.value,
                         feedback: Box::new(|_value| String::new()),
                     },
-                },
+                }
             ),
         });
     }

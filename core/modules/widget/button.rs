@@ -269,63 +269,90 @@ pub unsafe extern "C" fn ffi_svg_get_color(button: &mut dyn IconTrait) -> u32 {
 
 pub struct Border {
     pub radius: u32,
-    pub thickness: u32,
+    pub width: u32,
     pub color: Color,
 }
 
+impl Border {
+    pub const NONE: Self = Self {
+        radius: 0,
+        width: 0,
+        color: Color(0),
+    };
+
+    pub fn radius(radius: u32) -> Self {
+        Self {
+            radius,
+            width: 0,
+            color: Color(0),
+        }
+    }
+}
+
 #[repr(C)]
-pub struct Container<T: WidgetNew> {
-    pub size: (u32, u32),
+pub struct Background<T: WidgetNew> {
     pub color: Color,
     pub border: Border,
     pub child: T,
 }
 
-impl<T: WidgetNew> WidgetNew for Container<T> {
+impl<T: WidgetNew> WidgetNew for Background<T> {
     fn get_name(&self) -> &'static str {
-        "Container"
+        "Background"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
         &(self.child)
     }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn BackgroundTrait) }
+    }
 }
 
-#[repr(C)]
-pub struct ContainerFFI {
-    size: (u32, u32),
-    color: Color,
-    border: Border,
+pub trait BackgroundTrait {
+    fn get_color(&self) -> Color;
+    fn get_border_radius(&self) -> u32;
+    fn get_border_width(&self) -> u32;
+    fn get_border_color(&self) -> Color;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_width(w: &mut ContainerFFI) -> u32 {
-    w.size.0
-}
+impl<T: WidgetNew> BackgroundTrait for Background<T> {
+    fn get_color(&self) -> Color {
+        self.color
+    }
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_height(w: &mut ContainerFFI) -> u32 {
-    w.size.1
-}
+    fn get_border_radius(&self) -> u32 {
+        self.border.radius
+    }
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_color(w: &mut ContainerFFI) -> u32 {
-    w.color.0
-}
+    fn get_border_width(&self) -> u32 {
+        self.border.width
+    }
 
-#[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_border_radius(w: &mut ContainerFFI) -> u32 {
-    w.border.radius
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_border_thickness(w: &mut ContainerFFI) -> u32 {
-    w.border.thickness
+    fn get_border_color(&self) -> Color {
+        self.border.color
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_container_get_border_color(w: &mut ContainerFFI) -> u32 {
-    w.border.color.0
+pub unsafe extern "C" fn ffi_background_get_color(w: &dyn BackgroundTrait) -> u32 {
+    w.get_color().0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_background_get_border_radius(w: &dyn BackgroundTrait) -> u32 {
+    w.get_border_radius()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_background_get_border_width(w: &dyn BackgroundTrait) -> u32 {
+    w.get_border_width()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_background_get_border_color(w: &dyn BackgroundTrait) -> u32 {
+    w.get_border_color().0
 }
 
 /* Simple Button */

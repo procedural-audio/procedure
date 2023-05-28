@@ -145,30 +145,32 @@ pub enum PaintActionKind {
     Rect = 1,
     RRect = 2,
     Fill = 3,
-    Points = 4,
-    Line = 5,
+    Line = 4,
+    Points = 5,
+    Path = 6,
+    Polygon = 7,
 }
 
 #[repr(C)]
-pub struct PaintAction<'a> {
+pub struct PaintAction {
     action: PaintActionKind,
     f1: f32,
     f2: f32,
     f3: f32,
     f4: f32,
     f5: f32,
-    f6: f32,
+    p1: *mut std::ffi::c_void,
     paint: Paint,
-    points: &'a [(f32, f32)],
+    points: Vec<(f32, f32)>
 }
 
-pub struct Canvas<'a> {
-    actions: Vec<PaintAction<'a>>,
+pub struct Canvas {
+    actions: Vec<PaintAction>,
     pub width: f32,
     pub height: f32,
 }
 
-impl<'a> Canvas<'a> {
+impl Canvas {
     pub fn clear(&mut self) {
         self.actions.clear();
     }
@@ -181,9 +183,9 @@ impl<'a> Canvas<'a> {
             f3: radius,
             f4: 0.0,
             f5: 0.0,
-            f6: 0.0,
+            p1: std::ptr::null_mut(),
             paint,
-            points: &[],
+            points: Vec::new(),
         });
     }
 
@@ -195,9 +197,9 @@ impl<'a> Canvas<'a> {
             f3: size.0,
             f4: size.1,
             f5: 0.0,
-            f6: 0.0,
+            p1: std::ptr::null_mut(),
             paint,
-            points: &[],
+            points: Vec::new(),
         });
     }
 
@@ -209,9 +211,9 @@ impl<'a> Canvas<'a> {
             f3: size.0,
             f4: size.1,
             f5: radius,
-            f6: 0.0,
+            p1: std::ptr::null_mut(),
             paint,
-            points: &[],
+            points: Vec::new(),
         });
     }
 
@@ -226,23 +228,9 @@ impl<'a> Canvas<'a> {
             f3: 0.0,
             f4: 0.0,
             f5: 0.0,
-            f6: 0.0,
+            p1: std::ptr::null_mut(),
             paint,
-            points: &[],
-        });
-    }
-
-    pub fn draw_points(&mut self, points: &'a [(f32, f32)], paint: Paint) {
-        self.actions.push(PaintAction {
-            action: PaintActionKind::Points,
-            f1: 0.0,
-            f2: 0.0,
-            f3: 0.0,
-            f4: 0.0,
-            f5: 0.0,
-            f6: 0.0,
-            paint,
-            points: points,
+            points: Vec::new(),
         });
     }
 
@@ -254,20 +242,61 @@ impl<'a> Canvas<'a> {
             f3: p2.0,
             f4: p2.1,
             f5: 0.0,
-            f6: 0.0,
+            p1: std::ptr::null_mut(),
             paint,
-            points: &[],
+            points: Vec::new(),
         });
     }
 
-    //pub fn draw_image(&mut self) {}
+    pub fn draw_points(&mut self, points: Vec<(f32, f32)>, paint: Paint) {
+        self.actions.push(PaintAction {
+            action: PaintActionKind::Points,
+            f1: 0.0,
+            f2: 0.0,
+            f3: 0.0,
+            f4: 0.0,
+            f5: 0.0,
+            p1: std::ptr::null_mut(),
+            paint,
+            points,
+        });
+    }
+
+    pub fn draw_path(&mut self, points: Vec<(f32, f32)>, paint: Paint) {
+        self.actions.push(PaintAction {
+            action: PaintActionKind::Path,
+            f1: 0.0,
+            f2: 0.0,
+            f3: 0.0,
+            f4: 0.0,
+            f5: 0.0,
+            p1: std::ptr::null_mut(),
+            paint,
+            points,
+        });
+    }
+
+    pub fn draw_polygon(&mut self, points: Vec<(f32, f32)>, paint: Paint) {
+        self.actions.push(PaintAction {
+            action: PaintActionKind::Polygon,
+            f1: 0.0,
+            f2: 0.0,
+            f3: 0.0,
+            f4: 0.0,
+            f5: 0.0,
+            p1: std::ptr::null_mut(),
+            paint,
+            points,
+        });
+    }
 }
 
-pub struct Painter<F: Fn(&mut Canvas)> {
-    pub paint: F
+pub struct Painter<F: Fn(&mut Canvas), G: Fn() -> bool> {
+    pub paint: F,
+    pub repaint: G
 }
 
-impl<F: Fn(&mut Canvas)> WidgetNew for Painter<F> {
+impl<F: Fn(&mut Canvas), G: Fn() -> bool> WidgetNew for Painter<F, G> {
     fn get_name(&self) -> &'static str {
         "Painter"
     }
@@ -283,11 +312,16 @@ impl<F: Fn(&mut Canvas)> WidgetNew for Painter<F> {
 
 pub trait PainterTrait {
     fn paint(&self, canvas: &mut Canvas);
+    fn repaint(&self) -> bool;
 }
 
-impl<F: Fn(&mut Canvas)> PainterTrait for Painter<F> {
+impl<F: Fn(&mut Canvas), G: Fn() -> bool> PainterTrait for Painter<F, G> {
     fn paint(&self, canvas: &mut Canvas) {
         (self.paint)(canvas);
+    }
+
+    fn repaint(&self) -> bool {
+        (self.repaint)()
     }
 }
 
@@ -298,13 +332,12 @@ pub unsafe extern "C" fn ffi_painter_paint(painter: &mut dyn PainterTrait, canva
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_painter_should_paint(_painter: &mut dyn PainterTrait) -> bool {
-    println!("Always returns true (shouldn't)");
-    true
+pub unsafe extern "C" fn ffi_painter_repaint(painter: &mut dyn PainterTrait) -> bool {
+    painter.repaint()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_new_canvas() -> *mut Canvas<'static> {
+pub unsafe extern "C" fn ffi_new_canvas() -> *mut Canvas {
     return Box::into_raw(Box::new(Canvas {
         actions: Vec::new(),
         width: 0.0,
@@ -318,13 +351,44 @@ pub unsafe extern "C" fn ffi_canvas_delete(canvas: *mut Canvas) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_canvas_get_actions(canvas: &mut Canvas) -> *mut PaintAction<'static> {
+pub unsafe extern "C" fn ffi_canvas_get_actions(canvas: &mut Canvas) -> *mut PaintAction {
     canvas.actions.as_ptr() as *mut PaintAction
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_canvas_get_actions_count(canvas: &mut Canvas) -> usize {
     canvas.actions.len()
+}
+
+pub struct Plotter<'w> {
+    pub value: &'w f32,
+    pub thickness: f32,
+    pub color: Color,
+}
+
+impl<'a> WidgetNew for Plotter<'a> {
+    fn get_name(&self) -> &'static str {
+        "Plotter"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plotter_get_value(plotter: &Plotter) -> f32 {
+    *plotter.value
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plotter_get_color(plotter: &Plotter) -> Color {
+    plotter.color
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_plotter_get_thickness(plotter: &Plotter) -> f32 {
+    plotter.thickness
 }
 
 pub enum MouseEvent {

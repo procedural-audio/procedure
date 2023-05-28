@@ -77,14 +77,14 @@ impl Module for AudioTrack {
                     /*SampleFilePicker {
                         sample: self.sample.clone()
                     },*/
-                    Painter {
+                    /*Painter {
                         paint: | canvas | {
                             canvas.draw_line(
                                 (canvas.width * self.position, 0.0),
                                 (canvas.width * self.position, canvas.height),
                                 Paint::new());
                         }
-                    }
+                    }*/
                 )
             }
         })

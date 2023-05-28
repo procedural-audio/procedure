@@ -72,7 +72,7 @@ impl Module for Gate {
                             feedback: Box::new(|_v| String::new()),
                         },
                     },
-                    Positioned {
+                    /*Positioned {
                         position: (100, 30),
                         child: Container {
                             size: (200, 150),
@@ -94,18 +94,18 @@ impl Module for Gate {
                                         width: 3.0,
                                         color: Color(0xffb4b4b4),
                                     },
-                                    Painter {
+                                    /*Painter {
                                         paint: | canvas | {
                                             let mut paint = Paint::new();
                                             paint.set_color(Color::BLUE);
 
                                             canvas.draw_rect((0.0, 50.0), (150.0, 3.0), paint);
                                         },
-                                    },
+                                    },*/
                                 ),
                             },
                         },
-                    },
+                    },*/
                 ),
             },
         })
