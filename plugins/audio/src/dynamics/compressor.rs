@@ -42,12 +42,12 @@ impl Module for Compressor {
 
     fn new() -> Self {
         Self {
-            input_rms: 0.5,
-            output_rms: 0.3,
-            threshold: 0.0,
-            ratio: 1.0,
-            attack: 0.0,
-            release: 0.0,
+            input_rms: 0.0,
+            output_rms: 0.0,
+            threshold: 0.5,
+            ratio: 0.5,
+            attack: 0.1,
+            release: 0.1,
         }
     }
 
@@ -73,7 +73,9 @@ impl Module for Compressor {
                             text: "Threshold",
                             color: Color::BLUE,
                             value: &mut self.threshold,
-                            feedback: Box::new(|_v| String::new())
+                            feedback: Box::new(| v| {
+                                format!("{:.1} dB", linear_to_db(v))
+                            })
                         }
                     },
                     Transform {
@@ -133,11 +135,14 @@ impl Module for Compressor {
         })
     }
 
-    fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
+        voice.compressor.prepare(sample_rate, block_size);
+    }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         if voice.index == 0 {
             self.input_rms = 0.0;
+            self.output_rms = 0.0;
         }
 
         let mut threshold = self.threshold;
@@ -161,15 +166,24 @@ impl Module for Compressor {
             release = inputs.control[0];
         }
 
+        let threshold = linear_to_db(threshold);
+        let ratio = ratio * 15.0 + 1.0;
+        let attack = attack * 1000.0;
+        let release = release * 1000.0;
+
+        voice.compressor.set_threshold(threshold);
+        voice.compressor.set_ratio(ratio);
+        voice.compressor.set_attack(attack);
+        voice.compressor.set_release(release);
         voice.compressor.process_block(&inputs.audio[0], &mut outputs.audio[0]);
 
         self.input_rms = f32::max(inputs.audio[0].rms().mono() * 2.0, self.input_rms);
-        self.output_rms = voice.compressor.ballistics_filter.prev;
+        self.output_rms = f32::max(outputs.audio[0].rms().mono() * 2.0 + 0.1, self.output_rms);
     }
 }
 
 pub struct CompressorDSP<F: Frame> {
-    ballistics_filter: BallisticsFilter,
+    ballistics_filter: BallisticsFilter<F>,
     threshold: f32,
     threshold_inverse: f32,
     ratio: f32,
@@ -201,7 +215,7 @@ impl<F: Frame> CompressorDSP<F> {
     }
 
     pub fn set_ratio(&mut self, ratio: f32) {
-        self.ratio = ratio;
+        self.ratio = f32::max(ratio, 1.0);
         self.update();
     }
 
@@ -241,15 +255,21 @@ impl<F: Frame> Processor2 for CompressorDSP<F> {
     }
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
-        let env = self.ballistics_filter.process(input.mono());
+        let env = self.ballistics_filter.process(input);
 
-        let gain = if env < self.threshold {
-            1.0
-        } else {
-            f32::powf(env * self.threshold_inverse, self.ratio_inverse - 1.0)
-        };
+        let gain = F::apply(env, | s| {
+            if s < self.threshold {
+                1.0
+            } else {
+                f32::powf(s * self.threshold_inverse, self.ratio_inverse - 1.0)
+            }
+        });
 
-        F::from(gain) * input
+        if gain != F::from(1.0) {
+            println!("gain: {}", gain.mono());
+        }
+
+        return input * gain;
     }
 }
 
@@ -259,8 +279,8 @@ pub enum LevelType {
     Rms
 }
 
-pub struct BallisticsFilter {
-    prev: f32,
+pub struct BallisticsFilter<F: Frame> {
+    prev: F,
     sample_rate: f32,
     exp_factor: f32,
     attack: f32,
@@ -270,10 +290,10 @@ pub struct BallisticsFilter {
     level: LevelType
 }
 
-impl BallisticsFilter {
+impl<F: Frame> BallisticsFilter<F> {
     pub fn new() -> Self {
         Self {
-            prev: 0.0,
+            prev: F::from(0.0),
             sample_rate: 44100.0,
             exp_factor: 0.0,
             attack: 0.0,
@@ -296,6 +316,7 @@ impl BallisticsFilter {
 
     pub fn set_level_type(&mut self, level: LevelType) {
         self.level = level;
+        self.reset();
     }
 
     fn calculate_limited_cte(&self, ms: f32) -> f32 {
@@ -307,13 +328,13 @@ impl BallisticsFilter {
     }
 
     pub fn reset(&mut self) {
-        self.prev = 0.0;
+        self.prev = F::from(0.0);
     }
 }
 
-impl Processor2 for BallisticsFilter {
-    type Input = f32;
-    type Output = f32;
+impl<F: Frame> Processor2 for BallisticsFilter<F> {
+    type Input = F;
+    type Output = F;
 
     fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
         self.sample_rate = sample_rate as f32;
@@ -321,24 +342,30 @@ impl Processor2 for BallisticsFilter {
 
         self.set_attack(self.attack);
         self.set_release(self.release);
+
+        self.reset();
     }
 
     fn process(&mut self, mut input: Self::Input) -> Self::Output {
         match self.level {
-            LevelType::Peak => input *= input,
-            LevelType::Rms => input = f32::abs(input)
+            LevelType::Rms => input *= input,
+            LevelType::Peak => input = F::abs(input)
         }
 
-        let cte = if input > self.prev {
-            self.cte_attack
-        } else {
-            self.cte_release
-        };
+        let mut cte = F::from(0.0);
+        for i in 0..F::CHANNELS {
+            *cte.channel_mut(i) = if self.prev.channel(i) > input.channel(i) {
+                self.cte_attack
+            } else {
+                self.cte_release
+            };
+        }
 
         let result = input + cte * (self.prev - input);
+        self.prev = result;
 
         if self.level == LevelType::Rms {
-            f32::sqrt(result)
+            F::sqrt(result)
         } else {
             result
         }

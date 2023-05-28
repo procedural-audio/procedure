@@ -22,7 +22,7 @@ pub struct IO {
 
 /* Individual Buffer Types */
 
-pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
+pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
     const CHANNELS: usize;
 
@@ -36,7 +36,7 @@ pub trait Frame: Copy + Clone + Add<Output = Self> + Sub<Output = Self> + Mul<Ou
     fn sqrt(self) -> Self;
     fn mono(&self) -> f32;
 
-    fn apply(v: Self, f: fn(f32) -> f32) -> Self;
+    fn apply<F: Fn(f32) -> f32>(v: Self, f: F) -> Self;
     fn apply_2(a: Self, b: Self, f: fn(f32, f32) -> f32) -> Self;
 
     fn min(a: Self, b: Self) -> Self {
@@ -112,7 +112,7 @@ impl Frame for f32 {
         *self
     }
 
-    fn apply(v: Self, f: fn(f32) -> f32) -> Self {
+    fn apply<F: Fn(f32) -> f32>(v: Self, f: F) -> Self {
         f(v)
     }
 
@@ -121,7 +121,7 @@ impl Frame for f32 {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Stereo2<T> {
     pub left: T,
     pub right: T,
@@ -179,7 +179,7 @@ impl Frame for Stereo2<f32> {
         (self.left + self.right) / 2.0
     }
 
-    fn apply(v: Self, f: fn(f32) -> f32) -> Self {
+    fn apply<F: Fn(f32) -> f32>(v: Self, f: F) -> Self {
         Self {
             left: f(v.left),
             right: f(v.right),
