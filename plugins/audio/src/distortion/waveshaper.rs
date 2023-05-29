@@ -94,7 +94,7 @@ impl Module for Waveshaper {
             Stack {
                 children: (
                     Transform {
-                        position: (30, 35),
+                        position: (35, 35),
                         size: (50, 70),
                         child: Knob {
                             text: "Gain",
@@ -106,7 +106,7 @@ impl Module for Waveshaper {
                         }
                     },
                     Transform {
-                        position: (30 + 60, 35),
+                        position: (35 + 60, 35),
                         size: (50, 70),
                         child: Knob {
                             text: "Shape",
@@ -116,8 +116,8 @@ impl Module for Waveshaper {
                         }
                     },
                     Transform {
-                        position: (30, 115),
-                        size: (120, 40),
+                        position: (35, 115),
+                        size: (115, 40),
                         child: Dropdown {
                             index: &mut self.selected,
                             color: Color::BLUE,
