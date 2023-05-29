@@ -68,7 +68,6 @@ impl Module for Waveshaper {
         path: &["Audio", "Distortion", "Waveshaper"],
         presets: Presets::NONE
     };
-
     
     fn new() -> Self {
         Self {

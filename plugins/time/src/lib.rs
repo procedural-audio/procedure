@@ -14,6 +14,7 @@ static PLUGIN: Plugin = Plugin {
         module::<Rate>(),
         module::<Reverse>(),
         module::<Accumulator>(),
+        module::<Spacetime>(),
         // module::<Loop>(),
         // module::<Shift>(),
         module::<Arranger>(),
