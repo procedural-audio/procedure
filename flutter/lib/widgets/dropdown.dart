@@ -74,15 +74,12 @@ class DropdownWidget extends ModuleWidget {
             .toList(),
         onChanged: (v) {
           if (v != null) {
-            print("v not null");
             for (int i = 0; i < elements.length; i++) {
               if (v == elements[i]) {
                 ffiDropdownSetIndex(widgetRaw.pointer, i);
                 setState(() {});
               }
             }
-          } else {
-            print("v is null");
           }
         },
         isDense: true,
