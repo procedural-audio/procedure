@@ -89,6 +89,8 @@ impl Module for Waveshaper {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
+        let selected_ptr = (&self.selected) as *const usize;
+        let gain_ptr = (&self.gain) as *const f32;
         Box::new(
             Stack {
                 children: (
@@ -135,16 +137,21 @@ impl Module for Waveshaper {
                         child: Background {
                             color: Color(0xff141414),
                             border: Border::radius(5),
-                            child: EmptyWidget
-                            /*child: Stack {
-                                children: (
-                                    Plotter {
-                                        value: &self.pregain,
-                                        color: Color::RED,
-                                        thickness: 2.0
+                            child: Painter2 {
+                                width: 2,
+                                color: Color::BLUE,
+                                paint: move | x | {
+                                    unsafe {
+                                        let x = x * 2.0 * std::f32::consts::PI;
+                                        match *selected_ptr {
+                                            0 => f32::sin(x * *gain_ptr) / 2.0 + 0.5,
+                                            1 => f32::cos(x) / 2.0 * *gain_ptr + 0.5,
+                                            2 => f32::atan(x * *gain_ptr) / 2.0,
+                                            _ => f32::atan(x * *gain_ptr) / 2.0
+                                        }
                                     }
-                                )
-                            }*/
+                                }
+                            }
                         }
                     }
                 )

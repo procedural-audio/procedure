@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/iconButton.dart';
+import 'package:metasampler/widgets/painter2.dart';
 import 'package:metasampler/widgets/plotter.dart';
 import 'package:metasampler/widgets/sampleEditor.dart';
 
@@ -119,6 +120,8 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
     return NodeSequencerWidget(moduleRaw, widgetRaw);
   } else if (name == "SampleEditor") {
     return SampleEditorWidget(moduleRaw, widgetRaw);
+  } else if (name == "Painter2") {
+    return Painter2Widget(moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
     return RefreshWidget(moduleRaw, widgetRaw);
     // } else if (name == "Rebuild") {

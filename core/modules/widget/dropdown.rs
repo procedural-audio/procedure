@@ -360,6 +360,61 @@ pub unsafe extern "C" fn ffi_canvas_get_actions_count(canvas: &mut Canvas) -> us
     canvas.actions.len()
 }
 
+pub struct Painter2<F: Fn(f32) -> f32> {
+    pub width: u32,
+    pub color: Color,
+    pub paint: F
+}
+
+impl<F: Fn(f32) -> f32> WidgetNew for Painter2<F> {
+    fn get_name(&self) -> &'static str {
+        "Painter2"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+
+    fn get_trait<'w>(&'w self) -> &'w dyn WidgetNew {
+        unsafe { std::mem::transmute(self as &dyn Painter2Trait) }
+    }
+}
+
+pub trait Painter2Trait {
+    fn get_stroke_width(&self) -> u32;
+    fn get_color(&self) -> Color;
+    fn paint(&self, x: f32) -> f32;
+}
+
+impl<F: Fn(f32) -> f32> Painter2Trait for Painter2<F> {
+    fn get_stroke_width(&self) -> u32 {
+        self.width
+    }
+
+    fn get_color(&self) -> Color {
+        self.color
+    }
+
+    fn paint(&self, x: f32) -> f32 {
+        (self.paint)(x)
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_painter2_get_stroke_width(painter: &dyn Painter2Trait) -> u32 {
+    painter.get_stroke_width()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_painter2_get_color(painter: &dyn Painter2Trait) -> u32 {
+    painter.get_color().0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_painter2_paint(painter: &dyn Painter2Trait, x: f32) -> f32{
+    painter.paint(x)
+}
+
 pub struct Plotter<'w> {
     pub value: &'w f32,
     pub thickness: f32,

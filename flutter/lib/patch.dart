@@ -257,6 +257,7 @@ class Patch extends StatefulWidget {
   final RawPatch rawPatch;
   final PatchInfo info;
   final NewConnector newConnector = NewConnector();
+  bool shouldTick = true;
 
   static Patch from(PatchInfo info) {
     return Patch(
@@ -285,6 +286,14 @@ class Patch extends StatefulWidget {
     info.save();
   }
 
+  void disableTick() {
+    shouldTick = false;
+  }
+
+  void enableTick() {
+    shouldTick = true;
+  }
+
   @override
   _Patch createState() => _Patch();
 }
@@ -299,13 +308,14 @@ class _Patch extends State<Patch> {
   Offset moduleAddPosition = Offset.zero;
   bool showRightClickMenu = false;
   late Timer timer;
-
   final focusNode = FocusNode();
 
   void tick(Timer t) {
-    for (var node in nodes) {
-      for (var widget in node.widgets) {
-        callTickRecursive(widget);
+    if (widget.shouldTick) {
+      for (var node in nodes) {
+        for (var widget in node.widgets) {
+          callTickRecursive(widget);
+        }
       }
     }
   }

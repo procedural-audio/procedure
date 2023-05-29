@@ -44,6 +44,7 @@ class App extends StatefulWidget {
     PLUGINS.addListener(
       () {
         print("Regenerating patch");
+        project.value.patch.value.disableTick();
         var oldPatch = project.value.patch.value;
         var newPatch = Patch.from(oldPatch.info);
 
