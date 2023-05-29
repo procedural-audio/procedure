@@ -16,6 +16,7 @@ static PLUGIN: Plugin = Plugin {
         module::<NotesTrack>(),
         module::<StepSequencer>(),
         module::<Keyboard>(),
+        module::<XYSequencer>(),
 
         // Generative
         module::<Generate>(),

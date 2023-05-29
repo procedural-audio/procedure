@@ -84,7 +84,7 @@ impl Module for Compressor {
                         child: Knob {
                             text: "Ratio",
                             color: Color::BLUE,
-                            value: &mut self.attack,
+                            value: &mut self.ratio,
                             feedback: Box::new(|_v| String::new())
                         }
                     },
@@ -94,7 +94,7 @@ impl Module for Compressor {
                         child: Knob {
                             text: "Attack",
                             color: Color::BLUE,
-                            value: &mut self.ratio,
+                            value: &mut self.attack,
                             feedback: Box::new(|_v| String::new())
                         }
                     },
@@ -210,21 +210,25 @@ impl<F: Frame> CompressorDSP<F> {
     }
 
     pub fn set_threshold(&mut self, db: f32) {
+        println!("Threshold is {} db", db);
         self.threshold = db;
         self.update();
     }
 
     pub fn set_ratio(&mut self, ratio: f32) {
+        println!("Ratio is {}", ratio);
         self.ratio = f32::max(ratio, 1.0);
         self.update();
     }
 
     pub fn set_attack(&mut self, ms: f32) {
+        println!("Attack is {} ms", ms);
         self.attack = ms;
         self.update();
     }
 
     pub fn set_release(&mut self, ms: f32) {
+        println!("Release is {} ms", ms);
         self.release = ms;
         self.update();
     }
@@ -295,9 +299,9 @@ impl<F: Frame> BallisticsFilter<F> {
         Self {
             prev: F::from(0.0),
             sample_rate: 44100.0,
-            exp_factor: 0.0,
-            attack: 0.0,
-            release: 0.0,
+            exp_factor: -0.142,
+            attack: 1.0,
+            release: 100.0,
             cte_attack: 0.0,
             cte_release: 0.0,
             level: LevelType::Peak
@@ -354,7 +358,7 @@ impl<F: Frame> Processor2 for BallisticsFilter<F> {
 
         let mut cte = F::from(0.0);
         for i in 0..F::CHANNELS {
-            *cte.channel_mut(i) = if self.prev.channel(i) > input.channel(i) {
+            *cte.channel_mut(i) = if input.channel(i) > self.prev.channel(i) {
                 self.cte_attack
             } else {
                 self.cte_release
