@@ -155,7 +155,8 @@ impl Module for Waveshaper {
                         }
                     }
                 )
-        })
+            }
+        )
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
