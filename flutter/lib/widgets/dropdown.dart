@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'dart:ffi';
-import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
-import '../common.dart';
 
 int Function(RawWidgetPointer) ffiDropdownGetColor = core
     .lookup<NativeFunction<Int32 Function(RawWidgetPointer)>>(

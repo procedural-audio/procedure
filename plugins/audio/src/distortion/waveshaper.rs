@@ -10,8 +10,9 @@ pub struct Waveshaper {
     gain2: f32,
 }
 
-fn tan(x: f32) -> f32 {
-    x.tan()
+fn shape_0<F: Frame> (x: F) -> F {
+    let x = x * F::from(2.0 * std::f32::consts::PI);
+    F::apply(x, f32::atan)
 }
 
 // https://www.musicdsp.org/en/latest/Effects/41-waveshaper.html
@@ -81,7 +82,7 @@ impl Module for Waveshaper {
     fn new_voice(&self, _index: u32) -> Self::Voice {
         Self::Voice {
             // gain: Gain::new(),
-            tan: WaveshaperDSP::new(tan)
+            tan: WaveshaperDSP::new(f32::atan)
         }
     }
 
@@ -144,7 +145,7 @@ impl Module for Waveshaper {
                                     unsafe {
                                         let x = x * 2.0 * std::f32::consts::PI;
                                         match *selected_ptr {
-                                            0 => f32::sin(x * *gain_ptr) / 2.0 + 0.5,
+                                            0 => shape_0(x * *gain_ptr) / 2.0 + 0.5,
                                             1 => f32::cos(x) / 2.0 * *gain_ptr + 0.5,
                                             2 => f32::atan(x * *gain_ptr) / 2.0,
                                             _ => f32::atan(x * *gain_ptr) / 2.0
@@ -162,8 +163,13 @@ impl Module for Waveshaper {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        let g = Frame::from(db_to_gain(linear_to_db(self.gain)));
         match self.selected {
-            0 => voice.tan.process_block(&inputs.audio[0], &mut outputs.audio[0]),
+            0 => {
+                for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
+                    *o = shape_0(*i) * g;
+                }
+            },
             _ => (),
         }
     }
@@ -171,6 +177,7 @@ impl Module for Waveshaper {
 
 pub struct WaveshaperDSP<F: Frame> {
     shape: fn(f32) -> f32,
+    gain: f32,
     data: PhantomData<F>
 }
 
@@ -178,8 +185,13 @@ impl<F: Frame> WaveshaperDSP<F> {
     pub fn new(shape: fn(f32) -> f32) -> Self {
         Self {
             shape,
+            gain: 0.0,
             data: PhantomData
         }
+    }
+
+    pub fn set_gain(&mut self, db: f32) {
+        self.gain = db;
     }
 }
 
@@ -188,6 +200,6 @@ impl<F: Frame> Processor2 for WaveshaperDSP<F> {
     type Output = F;
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
-        F::apply(input, self.shape)
+        F::apply(input * F::from(db_to_gain(self.gain)), self.shape)
     }
 }
