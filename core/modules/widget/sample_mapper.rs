@@ -235,6 +235,10 @@ impl Loadable for SampleMap {
             Err("Load not implemented".to_string())
         }
     }
+
+    fn path(&self) -> String {
+        todo!()
+    }
 }
 
 fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2<f32>>>> {

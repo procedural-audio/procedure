@@ -30,6 +30,10 @@ impl Loadable for Wavetable {
     fn load(path: &str) -> Result<Self, String> where Self: Sized {
         Ok( Self { table: wavetable(|x| x.sin()) } )
     }
+
+    fn path(&self) -> String {
+        todo!()
+    }
 }
 
 pub struct WavetableOscillator {

@@ -366,6 +366,7 @@ impl<'a, T: WidgetNew, L: Loadable> WidgetNew for Browser<T, L> {
 pub trait BrowserTrait {
     fn load(&mut self, path: &str);
     fn get_root_path(&self) -> &str;
+    fn get_loaded_path(&self) -> String;
 }
 
 impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
@@ -383,6 +384,10 @@ impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
     fn get_root_path(&self) -> &str {
        self.directory.0 
     }
+
+    fn get_loaded_path(&self) -> String {
+        (*self.loadable.read()).path()
+    }
 }
 
 #[no_mangle]
@@ -396,6 +401,20 @@ pub unsafe extern "C" fn ffi_browser_get_root_path(widget: &mut dyn BrowserTrait
 #[no_mangle]
 pub unsafe extern "C" fn ffi_browser_load(widget: &mut dyn BrowserTrait, path: *const i8) {
     widget.load(str_from_char(&*path));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_browser_get_loaded_path(widget: &mut dyn BrowserTrait) -> *const i8 {
+    let s = match CString::new(widget.get_loaded_path()) {
+        Ok(s) => s,
+        Err(_) => {
+            CString::new("Error").unwrap()
+        }
+    };
+
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
 }
 
 pub struct IconButton<T: IntoColor, F: FnMut(bool)> {

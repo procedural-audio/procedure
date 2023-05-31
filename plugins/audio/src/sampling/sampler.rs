@@ -20,7 +20,7 @@ impl Module for Sampler {
         id: "default.sampling.sampler",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(300, 200),
+        size: Size::Static(300, 180),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10)
@@ -76,19 +76,6 @@ impl Module for Sampler {
                         SampleEditor {
                             sample: self.sample.clone(),
                         }
-                        /*Painter {
-                            paint: | canvas | {
-                                for position in self.positions {
-                                    if position != 0.0 {
-                                        canvas.draw_line(
-                                            (canvas.width * position, 0.0),
-                                            (canvas.width * position, canvas.height),
-                                            Paint::new()
-                                        );
-                                    }
-                                }
-                            }
-                        }*/
                     )
                 }
             }

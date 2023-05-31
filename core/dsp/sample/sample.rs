@@ -11,7 +11,7 @@ use rand::{rngs::ThreadRng, Rng};
 #[derive(Clone)]
 pub struct SampleFile<T: Frame> {
     buffer: Arc<Buffer<T>>,
-    path: String,
+    pub path: String,
     pub start: usize,
     pub end: usize,
     pub pitch: Option<f32>

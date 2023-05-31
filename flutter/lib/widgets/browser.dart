@@ -19,6 +19,10 @@ Pointer<Utf8> Function(RawWidgetTrait) ffiBrowserGetRootPath = core
     .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
         "ffi_browser_get_root_path")
     .asFunction();
+Pointer<Utf8> Function(RawWidgetTrait) ffiBrowserGetLoadedPath = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
+        "ffi_browser_get_loaded_path")
+    .asFunction();
 
 List<List<double>> getWavetable() {
   List<List<double>> wavetable = [];
@@ -50,7 +54,12 @@ class BrowserWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
+    var rawLoaded = ffiBrowserGetLoadedPath(widgetRaw.getTrait());
+    var loaded = rawLoaded.toDartString();
+    calloc.free(rawLoaded);
+
     return BrowserOverlay(
+      loaded: loaded,
       rootDirectory: root,
       onLoadFile: (file) {
         var rawPath = file.path.toNativeUtf8();
@@ -58,6 +67,7 @@ class BrowserWidget extends ModuleWidget {
         calloc.free(rawPath);
 
         children[0].refreshRecursive();
+        setState(() {});
       },
       child: children[0],
     );
@@ -66,6 +76,7 @@ class BrowserWidget extends ModuleWidget {
 
 class BrowserOverlay extends StatefulWidget {
   BrowserOverlay({
+    required this.loaded,
     required this.rootDirectory,
     required this.onLoadFile,
     required this.child,
@@ -73,6 +84,7 @@ class BrowserOverlay extends StatefulWidget {
   }) : super(key: key);
 
   Directory rootDirectory;
+  String loaded;
   void Function(File) onLoadFile;
   Widget child;
 
@@ -121,7 +133,7 @@ class _BrowserOverlay extends State<BrowserOverlay> {
               child: Stack(
                 children: [
                   Positioned(
-                    left: offset.dx,
+                    left: offset.dx + 5.0,
                     top: offset.dy + 40.0,
                     child: Material(
                       color: Colors.transparent,
@@ -168,11 +180,36 @@ class _BrowserOverlay extends State<BrowserOverlay> {
         color: Color.fromRGBO(20, 20, 20, 1.0),
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
-      child: Column(
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: widget.child,
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: SizedBox(
+                height: 30,
+                child: BrowserBarElement(
+                  icon: const Icon(
+                    Icons.folder,
+                    color: Colors.blueAccent,
+                  ),
+                  onPressed: () {
+                    print("Pressed here");
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      /*child: Column(
         children: [
           BrowserWidgetBar(
-            name: "Name",
-            author: "Chase Kanipe",
+            name: widget.loaded.split("/").last.split(".").first,
             onPressed: () {
               _toggleDropdown();
             },
@@ -187,7 +224,7 @@ class _BrowserOverlay extends State<BrowserOverlay> {
             ),
           ),
         ],
-      ),
+      ),*/
     );
   }
 }
@@ -195,12 +232,10 @@ class _BrowserOverlay extends State<BrowserOverlay> {
 class BrowserWidgetBar extends StatelessWidget {
   BrowserWidgetBar({
     required this.name,
-    required this.author,
     required this.onPressed,
   });
 
   String name;
-  String author;
   void Function() onPressed;
 
   @override
@@ -214,7 +249,7 @@ class BrowserWidgetBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
+          /*Expanded(
             child: BrowserBarElement(
               onPressed: () {
                 onPressed();
@@ -237,17 +272,17 @@ class BrowserWidgetBar extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  Text(
+                  /*Text(
                     " - " + author,
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             ),
-          ),
+          ),*/
           /*const SizedBox(width: 5),
           BrowserBarElement(
             icon: const Icon(
@@ -342,6 +377,7 @@ class _BrowserListBar extends State<BrowserListBar> {
             padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
             child: Container(
               width: 200,
+              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
               child: const TextField(
                 style: TextStyle(
                   fontSize: 14,
@@ -352,13 +388,15 @@ class _BrowserListBar extends State<BrowserListBar> {
                   isDense: true,
                   hintText: "Search",
                   hintStyle: TextStyle(
-                    color: Colors.grey,
+                    color: Color.fromRGBO(80, 80, 80, 1.0),
                   ),
                 ),
               ),
               decoration: const BoxDecoration(
                 color: Color.fromRGBO(20, 20, 20, 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5)),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(5),
+                ),
               ),
             ),
           ),

@@ -39,6 +39,10 @@ impl Loadable for SampleFile<Stereo2<f32>> {
             Err("Unsupported WAV bit depth".to_string())
         }
     }
+
+    fn path(&self) -> String {
+        self.path.clone()
+    }
 }
 
 /*pub trait FileLoad<T> {
