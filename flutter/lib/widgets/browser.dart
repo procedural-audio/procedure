@@ -189,7 +189,8 @@ class _BrowserOverlay extends State<BrowserOverlay>
                           sizeFactor: _expandAnimation,
                           child: SizedBox(
                             width: 275,
-                            child: BrowserDropdownList(
+                            height: 280,
+                            child: BrowserList(
                               rootDir: widget.rootDirectory,
                               extensions: widget.extensions,
                               onLoadFile: (f) => widget.onLoadFile(f),
@@ -213,7 +214,9 @@ class _BrowserOverlay extends State<BrowserOverlay>
     return Container(
       decoration: const BoxDecoration(
         color: Color.fromRGBO(20, 20, 20, 1.0),
-        borderRadius: BorderRadius.all(Radius.circular(5)),
+        borderRadius: BorderRadius.all(
+          Radius.circular(5),
+        ),
       ),
       child: Column(
         children: [
@@ -346,7 +349,7 @@ class _BrowserBarButton extends State<BrowserBarButton> {
   }
 }
 
-class BrowserDropdownList extends StatefulWidget {
+/*class BrowserDropdownList extends StatefulWidget {
   BrowserDropdownList({
     required this.rootDir,
     required this.extensions,
@@ -362,6 +365,37 @@ class BrowserDropdownList extends StatefulWidget {
 }
 
 class _BrowserDropdownList extends State<BrowserDropdownList> {
+  List<String> selected = [];
+  ValueNotifier<List<File>> files = ValueNotifier([]);
+  ValueNotifier<List<Directory>> dirs = ValueNotifier([]);
+
+  void scan() async {
+    List<Directory> newDirs = [];
+    List<File> fs = [];
+
+    var directory = Directory(widget.rootDir.path + "/" + selected.join("/"));
+    await for (var entity in directory.list()) {
+      if (entity is Directory) {
+        newDirs.add(entity);
+        dirs.value = newDirs;
+      } else if (entity is File) {
+        for (var e in widget.extensions) {
+          if (entity.path.endsWith(e)) {
+            print("Adding " + entity.name);
+            fs.add(entity);
+            files.value = fs;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    scan();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -375,17 +409,36 @@ class _BrowserDropdownList extends State<BrowserDropdownList> {
             Radius.circular(5),
           ),
         ),
-        child: ListView(
-          shrinkWrap: true,
-          children: const [
-            "Item 1",
-            "Item 2",
-            "Item 3",
-            "Item 4",
-            "Item 5",
-            "Item 6",
-            "Item 7",
-          ].map((e) => BrowserDropdownListItem(name: e, onTap: () {})).toList(),
+        child: ValueListenableBuilder<List<Directory>>(
+          valueListenable: dirs,
+          builder: (context, dirs, child) {
+            return ValueListenableBuilder<List<File>>(
+              valueListenable: files,
+              builder: (context, files, child) {
+                return ListView(
+                  shrinkWrap: true,
+                  children: <Widget>[] +
+                      dirs
+                          .map((d) => BrowserDropdownListItem(
+                                name: d.name,
+                                onTap: () {
+                                  selected.add(d.name);
+                                  scan();
+                                },
+                              ))
+                          .toList() +
+                      files
+                          .map((e) => BrowserDropdownListItem(
+                                name: e.name,
+                                onTap: () {
+                                  widget.onLoadFile(e);
+                                },
+                              ))
+                          .toList(),
+                );
+              },
+            );
+          },
         ),
       ),
     );
@@ -452,9 +505,9 @@ class _BrowserDropdownListItem extends State<BrowserDropdownListItem> {
       ),
     );
   }
-}
+}*/
 
-/*class BrowserList extends StatefulWidget {
+class BrowserList extends StatefulWidget {
   BrowserList({
     required this.rootDir,
     required this.extensions,
@@ -472,30 +525,57 @@ class _BrowserDropdownListItem extends State<BrowserDropdownListItem> {
 class _BrowserList extends State<BrowserList> {
   ScrollController controller = ScrollController();
 
+  void onScroll(int index) {
+    controller.animateTo(
+      index * 275,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.linearToEaseOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        BrowserListBar(),
-        Expanded(
-          child: Scrollbar(
-            thumbVisibility: true,
-            controller: controller,
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(20, 20, 20, 1.0),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(5),
+        ),
+        border: Border.all(
+          color: const Color.fromRGBO(60, 60, 60, 1.0),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(5),
+        ),
+        child: Column(
+          children: [
+            //BrowserListBar(),
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: false,
                 controller: controller,
-                scrollDirection: Axis.horizontal,
-                child: BrowserListDirectory(
-                  directory: widget.rootDir,
-                  extensions: widget.extensions,
-                  onLoadFile: (f) => widget.onLoadFile(f),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: SingleChildScrollView(
+                    controller: controller,
+                    scrollDirection: Axis.horizontal,
+                    child: BrowserListDirectory(
+                      directory: widget.rootDir,
+                      extensions: widget.extensions,
+                      index: 0,
+                      onScroll: onScroll,
+                      onLoadFile: (f) => widget.onLoadFile(f),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -555,6 +635,8 @@ class BrowserListDirectory extends StatefulWidget {
   BrowserListDirectory({
     required this.directory,
     required this.extensions,
+    required this.index,
+    required this.onScroll,
     required this.onLoadFile,
   }) : super(key: UniqueKey()) {
     scan();
@@ -562,6 +644,8 @@ class BrowserListDirectory extends StatefulWidget {
 
   Directory directory;
   List<String> extensions;
+  int index;
+  void Function(int) onScroll;
   void Function(File) onLoadFile;
   ValueNotifier<List<Directory>> subDirectories = ValueNotifier([]);
   ValueNotifier<List<File>> files = ValueNotifier([]);
@@ -604,7 +688,7 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
             return Row(
               children: [
                 Container(
-                  width: 200,
+                  width: 275,
                   decoration: const BoxDecoration(
                     border: Border(
                       left: BorderSide(
@@ -630,6 +714,7 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                       const SizedBox(height: 4),
                       Expanded(
                         child: ListView(
+                          shrinkWrap: true,
                           children: <Widget>[] +
                               subDirectories
                                   .map(
@@ -639,6 +724,7 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                                       onTap: () {
                                         setState(() {
                                           if (selected != d) {
+                                            widget.onScroll(widget.index + 1);
                                             selected = d;
                                           } else {
                                             selected = null;
@@ -677,6 +763,8 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                       return BrowserListDirectory(
                         directory: selected!,
                         extensions: widget.extensions,
+                        index: widget.index + 1,
+                        onScroll: widget.onScroll,
                         onLoadFile: (f) => widget.onLoadFile(f),
                       );
                     } else {
@@ -810,7 +898,7 @@ class _BrowserListFileElement extends State<BrowserListFileElement> {
                 ),
                 const SizedBox(width: 5),
                 SizedBox(
-                  width: 200 - 20 - 10 - 6,
+                  width: 275 - 20 - 10 - 6,
                   child: Text(
                     widget.file.name,
                     maxLines: 1,
@@ -1576,4 +1664,3 @@ class WavetablePainter extends CustomPainter {
     return wavetable != oldDelegate.wavetable;
   }
 }
-*/
