@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
 import 'package:metasampler/ui/code_editor/code_text_field.dart';
+import 'package:metasampler/views/newTopBar.dart';
 
 import 'dart:math';
 
@@ -74,7 +75,7 @@ class App extends StatefulWidget {
 }
 
 class _App extends State<App> {
-  bool uiVisible = true;
+  bool uiVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,33 +94,9 @@ class _App extends State<App> {
               child: ValueListenableBuilder<Project>(
                 valueListenable: widget.project,
                 builder: (context, project, child) {
-                  return Stack(
+                  return Column(
                     children: [
-                      Visibility(
-                        visible: uiVisible,
-                        maintainState: true,
-                        child: ValueListenableBuilder<UserInterface?>(
-                          valueListenable: project.ui,
-                          builder: (context, ui, child) {
-                            if (ui != null) {
-                              return ui;
-                            } else {
-                              return Container();
-                            }
-                          },
-                        ),
-                      ),
-                      Visibility(
-                        visible: !uiVisible,
-                        maintainState: true,
-                        child: ValueListenableBuilder<Patch>(
-                          valueListenable: project.patch,
-                          builder: (context, patch, child) {
-                            return patch;
-                          },
-                        ),
-                      ),
-                      Bar(
+                      NewTopBar(
                         app: widget,
                         instViewVisible: uiVisible,
                         onViewSwitch: () {
@@ -130,7 +107,44 @@ class _App extends State<App> {
                         onUserInterfaceEdit: () {
                           widget.project.value.ui.value?.toggleEditing();
                         },
-                      )
+                      ),
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            if (uiVisible) {
+                              return ValueListenableBuilder<UserInterface?>(
+                                valueListenable: project.ui,
+                                builder: (context, ui, child) {
+                                  if (ui != null) {
+                                    return ui;
+                                  } else {
+                                    return Container();
+                                  }
+                                },
+                              );
+                            } else {
+                              return ValueListenableBuilder<Patch>(
+                                valueListenable: project.patch,
+                                builder: (context, patch, child) {
+                                  return patch;
+                                },
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      /*Bar(
+                        app: widget,
+                        instViewVisible: uiVisible,
+                        onViewSwitch: () {
+                          setState(() {
+                            uiVisible = !uiVisible;
+                          });
+                        },
+                        onUserInterfaceEdit: () {
+                          widget.project.value.ui.value?.toggleEditing();
+                        },
+                      )*/
                     ],
                   );
                 },

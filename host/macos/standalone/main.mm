@@ -5,7 +5,6 @@
 class GuiAppApplication  : public juce::JUCEApplication, public juce::AudioIODeviceCallback, public juce::MidiInputCallback {
 public:
     GuiAppApplication() {
-
     }
 
     const juce::String getApplicationName() override       { return "Procedural Audio Workstation"; }
@@ -76,6 +75,9 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
+            // setUsingNativeTitleBar(false);
+            // setTitleBarHeight(0);
+
             setContentOwned(new NodusEditor(processor), true);
             setBackgroundColour(juce::Colour::fromRGB(90, 90, 90));
 

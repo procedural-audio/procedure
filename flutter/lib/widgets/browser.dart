@@ -1,13 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:ffi/ffi.dart';
+
+import 'dart:ui' as ui;
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
+import 'widget.dart';
+
 import '../common.dart';
 import '../patch.dart';
-import 'widget.dart';
-import 'dart:ui' as ui;
-import 'dart:ffi';
 import '../core.dart';
 import '../module.dart';
 

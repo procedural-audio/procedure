@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/ui/ui.dart';
-import 'package:file_picker/file_picker.dart';
 
 import '../patch.dart';
 import '../views/variables.dart';
@@ -2026,13 +2025,13 @@ class FileField extends StatefulWidget {
 
 class _FileField extends State<FileField> {
   void pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    //FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    if (result != null) {
+    /*if (result != null) {
       widget.onChanged(result.files.single.path);
     } else {
       // User canceled the picker
-    }
+    }*/
   }
 
   @override
