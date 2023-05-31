@@ -32,7 +32,7 @@ impl Loadable for Wavetable {
     }
 
     fn path(&self) -> String {
-        todo!()
+        String::from("Some test path")
     }
 }
 

@@ -180,36 +180,10 @@ class _BrowserOverlay extends State<BrowserOverlay> {
         color: Color.fromRGBO(20, 20, 20, 1.0),
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: widget.child,
-          ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.all(5),
-              child: SizedBox(
-                height: 30,
-                child: BrowserBarElement(
-                  icon: const Icon(
-                    Icons.folder,
-                    color: Colors.blueAccent,
-                  ),
-                  onPressed: () {
-                    print("Pressed here");
-                  },
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      /*child: Column(
+      child: Column(
         children: [
           BrowserWidgetBar(
-            name: widget.loaded.split("/").last.split(".").first,
+            name: widget.loaded.split("/").last,
             onPressed: () {
               _toggleDropdown();
             },
@@ -224,7 +198,7 @@ class _BrowserOverlay extends State<BrowserOverlay> {
             ),
           ),
         ],
-      ),*/
+      ),
     );
   }
 }
@@ -249,7 +223,7 @@ class BrowserWidgetBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          /*Expanded(
+          Expanded(
             child: BrowserBarElement(
               onPressed: () {
                 onPressed();
@@ -259,17 +233,28 @@ class BrowserWidgetBar extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.all(5),
                     child: Icon(
-                      Icons.list,
-                      size: 20,
-                      color: Colors.grey,
+                      Icons.folder,
+                      size: 16,
+                      color: Colors.blue,
                     ),
                   ),
-                  const SizedBox(height: 30, width: 4),
+                  const SizedBox(width: 4),
                   Text(
                     name,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.white,
+                    ),
+                  ),
+                  const Expanded(
+                    child: SizedBox(),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Icon(
+                      Icons.arrow_downward,
+                      size: 16,
+                      color: Colors.blue,
                     ),
                   ),
                   /*Text(
@@ -282,37 +267,7 @@ class BrowserWidgetBar extends StatelessWidget {
                 ],
               ),
             ),
-          ),*/
-          /*const SizedBox(width: 5),
-          BrowserBarElement(
-            icon: const Icon(
-              Icons.chevron_left,
-              color: Colors.grey,
-            ),
-            onPressed: () {
-              print("Pressed here");
-            },
           ),
-          const SizedBox(width: 5),
-          BrowserBarElement(
-            icon: const Icon(
-              Icons.chevron_right,
-              color: Colors.grey,
-            ),
-            onPressed: () {
-              print("Pressed here");
-            },
-          ),*/
-          const SizedBox(width: 5),
-          BrowserBarElement(
-            icon: const Icon(
-              Icons.folder,
-              color: Colors.blueAccent,
-            ),
-            onPressed: () {
-              print("Pressed here");
-            },
-          )
         ],
       ),
     );
@@ -331,6 +286,7 @@ class BrowserList extends StatefulWidget {
 
 class _BrowserList extends State<BrowserList> {
   ScrollController controller = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -340,12 +296,15 @@ class _BrowserList extends State<BrowserList> {
           child: Scrollbar(
             thumbVisibility: true,
             controller: controller,
-            child: SingleChildScrollView(
-              controller: controller,
-              scrollDirection: Axis.horizontal,
-              child: BrowserListDirectory(
-                directory: widget.rootDir,
-                onLoadFile: (f) => widget.onLoadFile(f),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SingleChildScrollView(
+                controller: controller,
+                scrollDirection: Axis.horizontal,
+                child: BrowserListDirectory(
+                  directory: widget.rootDir,
+                  onLoadFile: (f) => widget.onLoadFile(f),
+                ),
               ),
             ),
           ),
@@ -467,7 +426,7 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                         child: Text(
                           widget.directory.name + "/",
                           maxLines: 1,
-                          overflow: TextOverflow.clip,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
                             color: Colors.blue,
@@ -584,7 +543,7 @@ class _BrowserListDirectoryElement extends State<BrowserListDirectoryElement> {
           child: Text(
             widget.directory.name,
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            overflow: TextOverflow.clip,
             style: const TextStyle(
               fontSize: 13,
               color: Colors.grey,
@@ -656,10 +615,11 @@ class _BrowserListFileElement extends State<BrowserListFileElement> {
                 ),
                 const SizedBox(width: 5),
                 SizedBox(
-                  width: 200 - 20 - 60 - 6,
+                  width: 200 - 20 - 10 - 6,
                   child: Text(
                     widget.file.name,
                     maxLines: 1,
+                    textAlign: TextAlign.left,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,
