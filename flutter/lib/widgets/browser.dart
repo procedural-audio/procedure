@@ -23,6 +23,10 @@ Pointer<Utf8> Function(RawWidgetTrait) ffiBrowserGetLoadedPath = core
     .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
         "ffi_browser_get_loaded_path")
     .asFunction();
+Pointer<Utf8> Function(RawWidgetTrait) ffiBrowserGetExtensions = core
+    .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetTrait)>>(
+        "ffi_browser_get_extensions")
+    .asFunction();
 
 List<List<double>> getWavetable() {
   List<List<double>> wavetable = [];
@@ -58,8 +62,14 @@ class BrowserWidget extends ModuleWidget {
     var loaded = rawLoaded.toDartString();
     calloc.free(rawLoaded);
 
+    var rawExtensions = ffiBrowserGetExtensions(widgetRaw.getTrait());
+    var extensions = rawExtensions.toDartString().split(",");
+    extensions.remove("");
+    calloc.free(rawExtensions);
+
     return BrowserOverlay(
       loaded: loaded,
+      extensions: extensions,
       rootDirectory: root,
       onLoadFile: (file) {
         var rawPath = file.path.toNativeUtf8();
@@ -77,14 +87,16 @@ class BrowserWidget extends ModuleWidget {
 class BrowserOverlay extends StatefulWidget {
   BrowserOverlay({
     required this.loaded,
+    required this.extensions,
     required this.rootDirectory,
     required this.onLoadFile,
     required this.child,
     Key? key,
   }) : super(key: key);
 
-  Directory rootDirectory;
   String loaded;
+  List<String> extensions;
+  Directory rootDirectory;
   void Function(File) onLoadFile;
   Widget child;
 
@@ -92,13 +104,40 @@ class BrowserOverlay extends StatefulWidget {
   _BrowserOverlay createState() => _BrowserOverlay();
 }
 
-class _BrowserOverlay extends State<BrowserOverlay> {
+class _BrowserOverlay extends State<BrowserOverlay>
+    with TickerProviderStateMixin {
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
+  late AnimationController _animationController;
+  late Animation<double> _expandAnimation;
+  late Animation<double> _rotateAnimation;
   final FocusScopeNode _focusScopeNode = FocusScopeNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+
+    _rotateAnimation = Tween<double>(begin: 0, end: 0.5).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
 
   void _toggleDropdown({bool close = false}) async {
     if (_isOpen || close) {
+      await _animationController.reverse();
       _overlayEntry?.remove();
       setState(() {
         _isOpen = false;
@@ -107,6 +146,7 @@ class _BrowserOverlay extends State<BrowserOverlay> {
       _overlayEntry = _createOverlayEntry();
       Overlay.of(context).insert(_overlayEntry!);
       setState(() => _isOpen = true);
+      _animationController.forward();
     }
   }
 
@@ -144,21 +184,16 @@ class _BrowserOverlay extends State<BrowserOverlay> {
                       child: GestureDetector(
                         onTap: () {},
                         onPanStart: (e) {},
-                        child: Container(
-                          width: 600,
-                          height: 400,
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(20, 20, 20, 1.0),
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(5),
+                        child: SizeTransition(
+                          axisAlignment: 1,
+                          sizeFactor: _expandAnimation,
+                          child: SizedBox(
+                            width: 275,
+                            child: BrowserDropdownList(
+                              rootDir: widget.rootDirectory,
+                              extensions: widget.extensions,
+                              onLoadFile: (f) => widget.onLoadFile(f),
                             ),
-                            border: Border.all(
-                              color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            ),
-                          ),
-                          child: BrowserList(
-                            rootDir: widget.rootDirectory,
-                            onLoadFile: widget.onLoadFile,
                           ),
                         ),
                       ),
@@ -224,7 +259,7 @@ class BrowserWidgetBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: BrowserBarElement(
+            child: BrowserBarButton(
               onPressed: () {
                 onPressed();
               },
@@ -233,7 +268,7 @@ class BrowserWidgetBar extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.all(5),
                     child: Icon(
-                      Icons.folder,
+                      Icons.list,
                       size: 16,
                       color: Colors.blue,
                     ),
@@ -257,13 +292,6 @@ class BrowserWidgetBar extends StatelessWidget {
                       color: Colors.blue,
                     ),
                   ),
-                  /*Text(
-                    " - " + author,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),*/
                 ],
               ),
             ),
@@ -274,10 +302,167 @@ class BrowserWidgetBar extends StatelessWidget {
   }
 }
 
-class BrowserList extends StatefulWidget {
-  BrowserList({required this.rootDir, required this.onLoadFile});
+class BrowserBarButton extends StatefulWidget {
+  BrowserBarButton({required this.icon, required this.onPressed});
+
+  Widget icon;
+  void Function() onPressed;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserBarButton();
+}
+
+class _BrowserBarButton extends State<BrowserBarButton> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) => setState(() {
+        hovering = true;
+      }),
+      onExit: (e) => setState(() {
+        hovering = false;
+      }),
+      child: Container(
+        width: 30,
+        decoration: BoxDecoration(
+          color: hovering
+              ? const Color.fromRGBO(50, 50, 50, 1.0)
+              : const Color.fromRGBO(40, 40, 40, 1.0),
+          borderRadius: const BorderRadius.all(Radius.circular(5)),
+        ),
+        child: IconButton(
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          icon: widget.icon,
+          onPressed: () {
+            widget.onPressed();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class BrowserDropdownList extends StatefulWidget {
+  BrowserDropdownList({
+    required this.rootDir,
+    required this.extensions,
+    required this.onLoadFile,
+  });
 
   Directory rootDir;
+  List<String> extensions;
+  void Function(File) onLoadFile;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserDropdownList();
+}
+
+class _BrowserDropdownList extends State<BrowserDropdownList> {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(
+        Radius.circular(5),
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(40, 40, 40, 1.0),
+          borderRadius: BorderRadius.all(
+            Radius.circular(5),
+          ),
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          children: const [
+            "Item 1",
+            "Item 2",
+            "Item 3",
+            "Item 4",
+            "Item 5",
+            "Item 6",
+            "Item 7",
+          ].map((e) => BrowserDropdownListItem(name: e, onTap: () {})).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class BrowserDropdownListItem extends StatefulWidget {
+  BrowserDropdownListItem({
+    required this.name,
+    required this.onTap,
+  });
+
+  String name;
+  void Function() onTap;
+
+  @override
+  State<StatefulWidget> createState() => _BrowserDropdownListItem();
+}
+
+class _BrowserDropdownListItem extends State<BrowserDropdownListItem> {
+  bool hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) => setState(() {
+        hovering = true;
+      }),
+      onExit: (e) => setState(() {
+        hovering = false;
+      }),
+      child: GestureDetector(
+        onTap: () {
+          widget.onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          color: hovering
+              ? const Color.fromRGBO(50, 50, 50, 1.0)
+              : const Color.fromRGBO(40, 40, 40, 1.0),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.equalizer,
+                size: 14,
+                color: Colors.blue,
+              ),
+              const SizedBox(width: 5),
+              SizedBox(
+                child: Text(
+                  widget.name,
+                  maxLines: 1,
+                  textAlign: TextAlign.left,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/*class BrowserList extends StatefulWidget {
+  BrowserList({
+    required this.rootDir,
+    required this.extensions,
+    required this.onLoadFile,
+  });
+
+  Directory rootDir;
+  List<String> extensions;
   void Function(File) onLoadFile;
 
   @override
@@ -303,6 +488,7 @@ class _BrowserList extends State<BrowserList> {
                 scrollDirection: Axis.horizontal,
                 child: BrowserListDirectory(
                   directory: widget.rootDir,
+                  extensions: widget.extensions,
                   onLoadFile: (f) => widget.onLoadFile(f),
                 ),
               ),
@@ -368,12 +554,14 @@ class _BrowserListBar extends State<BrowserListBar> {
 class BrowserListDirectory extends StatefulWidget {
   BrowserListDirectory({
     required this.directory,
+    required this.extensions,
     required this.onLoadFile,
   }) : super(key: UniqueKey()) {
     scan();
   }
 
   Directory directory;
+  List<String> extensions;
   void Function(File) onLoadFile;
   ValueNotifier<List<Directory>> subDirectories = ValueNotifier([]);
   ValueNotifier<List<File>> files = ValueNotifier([]);
@@ -386,8 +574,14 @@ class BrowserListDirectory extends StatefulWidget {
         subDirs.add(entity);
         subDirectories.value = subDirs;
       } else if (entity is File) {
-        fs.add(entity);
-        files.value = fs;
+        for (var e in extensions) {
+          if (entity.path.endsWith(e)) {
+            print("Adding " + entity.name);
+            fs.add(entity);
+            files.value = fs;
+            break;
+          }
+        }
       }
     }
   }
@@ -482,6 +676,7 @@ class _BrowserListDirectory extends State<BrowserListDirectory> {
                     if (selected != null && selected is Directory) {
                       return BrowserListDirectory(
                         directory: selected!,
+                        extensions: widget.extensions,
                         onLoadFile: (f) => widget.onLoadFile(f),
                       );
                     } else {
@@ -1381,3 +1576,4 @@ class WavetablePainter extends CustomPainter {
     return wavetable != oldDelegate.wavetable;
   }
 }
+*/

@@ -367,6 +367,7 @@ pub trait BrowserTrait {
     fn load(&mut self, path: &str);
     fn get_root_path(&self) -> &str;
     fn get_loaded_path(&self) -> String;
+    fn get_extensions(&self) -> String;
 }
 
 impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
@@ -388,6 +389,17 @@ impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
     fn get_loaded_path(&self) -> String {
         (*self.loadable.read()).path()
     }
+
+    fn get_extensions(&self) -> String {
+        let mut s = String::new();
+
+        for extension in self.extensions {
+            s.push_str(extension);
+            s.push_str(",");
+        }
+
+        s
+    }
 }
 
 #[no_mangle]
@@ -406,6 +418,20 @@ pub unsafe extern "C" fn ffi_browser_load(widget: &mut dyn BrowserTrait, path: *
 #[no_mangle]
 pub unsafe extern "C" fn ffi_browser_get_loaded_path(widget: &mut dyn BrowserTrait) -> *const i8 {
     let s = match CString::new(widget.get_loaded_path()) {
+        Ok(s) => s,
+        Err(_) => {
+            CString::new("Error").unwrap()
+        }
+    };
+
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_browser_get_extensions(widget: &mut dyn BrowserTrait) -> *const i8 {
+    let s = match CString::new(widget.get_extensions()) {
         Ok(s) => s,
         Err(_) => {
             CString::new("Error").unwrap()
