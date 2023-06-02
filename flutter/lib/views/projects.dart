@@ -76,6 +76,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
+                      mainAxisExtent: 300,
                       maxCrossAxisExtent: 300,
                       childAspectRatio: 1.0,
                       crossAxisSpacing: 10,
@@ -225,59 +226,83 @@ class _BrowserViewElement extends State<BrowserViewElement>
         onTap: () => widget.onTap(widget.project),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-            color: mouseOver
-                ? const Color.fromRGBO(30, 30, 30, 1.0)
-                : const Color.fromRGBO(20, 20, 20, 1.0),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 3,
-                spreadRadius: 3,
-                offset: const Offset(0, 3),
-                color: Color.fromRGBO(0, 0, 0, mouseOver ? 0.3 : 0.0),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.all(5),
           child: Column(
             children: [
               Expanded(
                 child: Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: Image.file(File(widget.project.background),
-                          width: 290, fit: BoxFit.cover),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      child: Image.file(
+                        File(widget.project.background),
+                        width: 290,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    Center(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: mouseOver ? 1.0 : 0.0,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (playing) {
-                              controller.reverse();
-                            } else {
-                              controller.forward();
-                            }
-
-                            playing = !playing;
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(
-                                color: Color.fromRGBO(150, 150, 150, 0.5),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(25))),
-                            child: AnimatedIcon(
-                              progress: controller,
-                              icon: AnimatedIcons.play_pause,
-                              color: const Color.fromRGBO(220, 220, 220, 1.0),
-                            ),
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: mouseOver ? 1.0 : 0.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
                           ),
+                        ),
+                        child: Stack(
+                          children: [
+                            /*BrowserViewElementOverlay(
+                              icon: const Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: Color.fromRGBO(200, 200, 200, 1.0),
+                              ),
+                              alignment: Alignment.bottomLeft,
+                              padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
+                              onTap: () {
+                                print("Play/pause");
+                              },
+                            ),
+                            BrowserViewElementOverlay(
+                              icon: const Icon(
+                                Icons.play_arrow,
+                                size: 20,
+                                color: Color.fromRGBO(200, 200, 200, 1.0),
+                              ),
+                              alignment: Alignment.bottomCenter,
+                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                              onTap: () {
+                                print("Second button");
+                              },
+                            ),
+                            BrowserViewElementOverlay(
+                              icon: const Icon(
+                                Icons.open_in_new,
+                                size: 16,
+                                color: Color.fromRGBO(200, 200, 200, 1.0),
+                              ),
+                              alignment: Alignment.bottomRight,
+                              padding: const EdgeInsets.fromLTRB(0, 0, 15, 10),
+                              onTap: () {
+                                print("Other button");
+                              },
+                            ),*/
+                            Center(
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.open_in_new,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
+                                onPressed: () {
+                                  print("Play/pause");
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -285,7 +310,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
                 ),
               ),
               Container(
-                height: 60,
+                height: 80,
                 alignment: Alignment.topLeft,
                 padding: const EdgeInsets.all(4),
                 child: Column(
@@ -295,9 +320,54 @@ class _BrowserViewElement extends State<BrowserViewElement>
                     Text(
                       widget.project.name.value,
                       style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromRGBO(220, 220, 220, 1.0)),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(220, 220, 220, 1.0),
+                      ),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                            color: Color.fromRGBO(60, 60, 60, 1.0),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "32",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: const BoxDecoration(
+                            color: Color.fromRGBO(60, 60, 60, 1.0),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "64",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Expanded(
@@ -320,6 +390,48 @@ class _BrowserViewElement extends State<BrowserViewElement>
     );
   }
 }
+
+/*class BrowserViewElementOverlay extends StatelessWidget {
+  BrowserViewElementOverlay({
+    required this.icon,
+    required this.alignment,
+    required this.onTap,
+    this.padding = EdgeInsets.zero,
+  });
+
+  final Widget icon;
+  final Alignment alignment;
+  final EdgeInsets padding;
+  final Function() onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: alignment,
+      child: Padding(
+        padding: padding,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(30, 30, 30, 1.0),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(20),
+              ),
+              border: Border.all(
+                color: const Color.fromRGBO(40, 40, 40, 1.0),
+                width: 1.0,
+              ),
+            ),
+            child: icon,
+          ),
+        ),
+      ),
+    );
+  }
+}*/
 
 class TagDropdown extends StatefulWidget {
   TagDropdown({
