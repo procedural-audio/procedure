@@ -187,6 +187,20 @@ abstract class ModuleWidget extends StatefulWidget {
     }
   }
 
+  /*static ModuleWidget preview(RawNode moduleRaw, RawWidget widgetRaw) {
+    List<Widget> children = [];
+    int childCount = ffiWidgetGetChildCount(widgetRaw);
+
+    for (int i = 0; i < childCount; i++) {
+      var childRaw = ffiWidgetGetChild(widgetRaw, i);
+      ModuleWidget? widget = createWidget(moduleRaw, childRaw);
+
+      if (widget != null) {
+        children.add(widget);
+      }
+    }
+  }*/
+
   ValueNotifier<Var?> assignedVar = ValueNotifier(null);
 
   Widget createEditor(BuildContext context) {
@@ -194,6 +208,11 @@ abstract class ModuleWidget extends StatefulWidget {
   }
 
   Widget build(BuildContext context);
+  /*Widget buildPreview(BuildContext context) {
+    return Container(
+      color: Colors.blue,
+    );
+  }*/
 
   void setState(void Function() f) {
     if (state.mounted) {

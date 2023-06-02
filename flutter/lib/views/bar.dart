@@ -35,9 +35,10 @@ class _Bar extends State<Bar> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Project>(
+    return ValueListenableBuilder<Project?>(
       valueListenable: widget.app.project,
       builder: (context, project, child) {
+        var project = widget.app.project.value!;
         return Stack(
           children: [
             Align(

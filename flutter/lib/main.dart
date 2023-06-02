@@ -14,6 +14,7 @@ import 'views/settings.dart';
 import 'views/bar.dart';
 
 import 'ui/ui.dart';
+import 'views/projects.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,8 @@ void main(List<String> args) {
       App(
         core: Core.create(),
         assets: Assets.platformDefault(),
-        project: ValueNotifier(Project.blank()),
+        project: ValueNotifier(null),
+        // project: ValueNotifier(Project.blank()),
       ),
     );
   } else {
@@ -33,7 +35,8 @@ void main(List<String> args) {
       App(
         core: Core.from(addr),
         assets: Assets.platformDefault(),
-        project: ValueNotifier(Project.blank()),
+        project: ValueNotifier(null),
+        // project: ValueNotifier(Project.blank()),
       ),
     );
   }
@@ -41,26 +44,30 @@ void main(List<String> args) {
 
 class App extends StatefulWidget {
   App({required this.core, required this.assets, required this.project}) {
-    core.setPatch(project.value.patch.value);
+    print("Should set patch here???");
+    // core.setPatch(project.value.patch.value);
     PLUGINS.addListener(
       () {
         print("Regenerating patch");
-        project.value.patch.value.disableTick();
-        var oldPatch = project.value.patch.value;
-        var newPatch = Patch.from(oldPatch.info);
+        var currentProject = project.value;
+        if (currentProject != null) {
+          currentProject.patch.value.disableTick();
 
-        var state = oldPatch.rawPatch.getState();
-        newPatch.rawPatch.setState(state);
+          var oldPatch = currentProject.patch.value;
+          var newPatch = Patch.from(oldPatch.info);
+          var state = oldPatch.rawPatch.getState();
 
-        project.value.patch.value = newPatch;
-        core.setPatch(newPatch);
+          newPatch.rawPatch.setState(state);
+          currentProject.patch.value = newPatch;
+          core.setPatch(newPatch);
+        }
       },
     );
   }
 
   final Core core;
   final Assets assets;
-  final ValueNotifier<Project> project;
+  final ValueNotifier<Project?> project;
 
   void loadProject(ProjectInfo info) async {
     var project = await Project.load(info, core);
@@ -91,25 +98,20 @@ class _App extends State<App> {
           children: <Widget>[
             Container(
               color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: ValueListenableBuilder<Project>(
+              child: ValueListenableBuilder<Project?>(
                 valueListenable: widget.project,
                 builder: (context, project, child) {
-                  return Column(
-                    children: [
-                      NewTopBar(
-                        app: widget,
-                        instViewVisible: uiVisible,
-                        onViewSwitch: () {
-                          setState(() {
-                            uiVisible = !uiVisible;
-                          });
-                        },
-                        onUserInterfaceEdit: () {
-                          widget.project.value.ui.value?.toggleEditing();
-                        },
-                      ),
-                      Expanded(
-                        child: Builder(
+                  if (project == null) {
+                    return ProjectsBrowser(
+                      app: widget,
+                      onLoadProject: (info) {
+                        widget.loadProject(info);
+                      },
+                    );
+                  } else {
+                    return Stack(
+                      children: [
+                        Builder(
                           builder: (context) {
                             if (uiVisible) {
                               return ValueListenableBuilder<UserInterface?>(
@@ -132,8 +134,19 @@ class _App extends State<App> {
                             }
                           },
                         ),
-                      ),
-                      /*Bar(
+                        NewTopBar(
+                          app: widget,
+                          instViewVisible: uiVisible,
+                          onViewSwitch: () {
+                            setState(() {
+                              uiVisible = !uiVisible;
+                            });
+                          },
+                          onUserInterfaceEdit: () {
+                            project.ui.value?.toggleEditing();
+                          },
+                        ),
+                        /*Bar(
                         app: widget,
                         instViewVisible: uiVisible,
                         onViewSwitch: () {
@@ -145,8 +158,9 @@ class _App extends State<App> {
                           widget.project.value.ui.value?.toggleEditing();
                         },
                       )*/
-                    ],
-                  );
+                      ],
+                    );
+                  }
                 },
               ),
             ),
