@@ -88,8 +88,12 @@ class Core {
     return _ffiCoreGetNode(raw, a);
   }
 
-  void setPatch(Patch patch) {
-    _ffiCoreSetPatch(raw, patch.rawPatch);
+  void setPatch(Patch? patch) {
+    if (patch != null) {
+      _ffiCoreSetPatch(raw, patch.rawPatch);
+    } else {
+      _ffiCoreSetPatchNull(raw, Pointer.fromAddress(0));
+    }
   }
 
   /*int getModuleSpecCount() {
@@ -138,6 +142,10 @@ bool Function(RawCore, Pointer<Utf8>) _ffiCoreSave = core
     .asFunction();
 void Function(RawCore, RawPatch) _ffiCoreSetPatch = core
     .lookup<NativeFunction<Void Function(RawCore, RawPatch)>>(
+        "ffi_core_set_patch")
+    .asFunction();
+void Function(RawCore, Pointer<NativeType>) _ffiCoreSetPatchNull = core
+    .lookup<NativeFunction<Void Function(RawCore, Pointer<NativeType>)>>(
         "ffi_core_set_patch")
     .asFunction();
 void Function(RawCore) _ffiCoreRefresh = core

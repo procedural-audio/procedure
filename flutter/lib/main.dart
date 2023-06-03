@@ -145,19 +145,11 @@ class _App extends State<App> {
                           onUserInterfaceEdit: () {
                             project.ui.value?.toggleEditing();
                           },
+                          onProjectClose: () {
+                            widget.project.value = null;
+                            widget.core.setPatch(null);
+                          },
                         ),
-                        /*Bar(
-                        app: widget,
-                        instViewVisible: uiVisible,
-                        onViewSwitch: () {
-                          setState(() {
-                            uiVisible = !uiVisible;
-                          });
-                        },
-                        onUserInterfaceEdit: () {
-                          widget.project.value.ui.value?.toggleEditing();
-                        },
-                      )*/
                       ],
                     );
                   }

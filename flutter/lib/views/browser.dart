@@ -74,10 +74,11 @@ class _BrowserView extends State<BrowserView> {
                     controller: controller,
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 200,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 15),
+                      maxCrossAxisExtent: 200,
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 15,
+                    ),
                     itemCount: filteredProjects.length,
                     itemBuilder: (BuildContext ctx, index) {
                       return BrowserViewElement(

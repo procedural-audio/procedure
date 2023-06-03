@@ -14,6 +14,7 @@ class NewTopBar extends StatefulWidget {
     required this.instViewVisible,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
+    required this.onProjectClose,
   });
 
   String projectName = "New Project 1";
@@ -22,6 +23,7 @@ class NewTopBar extends StatefulWidget {
   bool instViewVisible;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
+  void Function() onProjectClose;
 
   @override
   _NewTopBar createState() => _NewTopBar();
@@ -73,9 +75,7 @@ class _NewTopBar extends State<NewTopBar> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
                         child: IconButton(
-                          onPressed: () {
-                            print("Pressed back button");
-                          },
+                          onPressed: widget.onProjectClose,
                           icon: const Icon(
                             Icons.arrow_back_ios,
                             color: Colors.white,
@@ -98,12 +98,13 @@ class _NewTopBar extends State<NewTopBar> {
                         padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                         child: Container(
                           decoration: BoxDecoration(
-                              color: timeBarVisible
-                                  ? const Color.fromRGBO(40, 40, 40, 1.0)
-                                  : const Color.fromRGBO(30, 30, 30, 1.0),
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(5),
-                              )),
+                            color: timeBarVisible
+                                ? const Color.fromRGBO(40, 40, 40, 1.0)
+                                : const Color.fromRGBO(30, 30, 30, 1.0),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(5),
+                            ),
+                          ),
                           child: IconButton(
                             onPressed: () {
                               setState(() {

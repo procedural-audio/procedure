@@ -5,7 +5,7 @@ use crate::graph::*;
 use std::sync::Arc;
 
 pub struct Host {
-    pub graph: Box<Graph>,
+    pub graph: Option<Box<Graph>>,
     pub sample_rate: u32,
     pub block_size: usize,
     pub time: TimeMessage,
@@ -17,7 +17,7 @@ pub struct Host {
 impl Host {
     pub fn new() -> Self {
         Host {
-            graph: Box::new(Graph::new()),
+            graph: None,
             block_size: 128,
             sample_rate: 44100,
             time: TimeMessage::from(0.0, 0.0),
@@ -37,11 +37,10 @@ impl Host {
             Ok(graph) => {
                 let mut graph: Graph = graph;
                 graph.refresh();
-                self.graph = Box::new(graph);
+                self.graph = Some(Box::new(graph));
             }
             Err(e) => {
-                self.graph.nodes.clear();
-                self.graph.refresh();
+                self.graph = None;
                 println!("Failed to decode graph {}", e);
             }
         }
@@ -58,14 +57,20 @@ impl Host {
     pub fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         self.sample_rate = sample_rate;
         self.block_size = block_size as usize;
-        self.graph.prepare(sample_rate, block_size);
+
+        if let Some(graph) = &mut self.graph {
+            graph.prepare(sample_rate, block_size);
+        }
 
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = TimeMessage::from(0.0, delta_beats);
     }
 
     pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
-        self.graph.process(&self.time, audio, midi);
+        if let Some(graph) = &mut self.graph {
+            graph.process(&self.time, audio, midi);
+        }
+
         let delta_beats = self.bpm / 60.0 / self.sample_rate as f64 * self.block_size as f64;
         self.time = self.time.shift(delta_beats);
     }

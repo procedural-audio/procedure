@@ -5,13 +5,10 @@ import 'package:metasampler/settings.dart';
 import 'dart:async';
 import 'dart:io';
 
-import 'main.dart';
-import 'patch.dart';
 import 'core.dart';
+import 'patch.dart';
 
 import 'views/info.dart';
-import 'views/presets.dart';
-
 import 'ui/ui.dart';
 
 /* Projects */

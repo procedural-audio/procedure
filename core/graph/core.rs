@@ -121,22 +121,32 @@ pub unsafe extern "C" fn api_host_process(
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_core_set_patch(host: &mut Host, patch: *mut Graph) {
-    let mut patch = Box::from_raw(patch);
-    patch.prepare(host.sample_rate, host.block_size);
-    host.graph = patch;
+    if patch != std::ptr::null_mut() {
+        let mut patch = Box::from_raw(patch);
+        patch.prepare(host.sample_rate, host.block_size);
+        host.graph = Some(patch);
+    } else {
+        host.graph = None;
+    }
 }
 
 /* Host Graph */
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_refresh(host: &mut Host) {
-    host.graph.refresh();
+    if let Some(graph) = &mut host.graph {
+        graph.refresh();
+    }
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &Node {
-    host.graph.nodes[index].as_ref()
-}
+    if let Some(graph) = &mut host.graph {
+        graph.nodes[index].as_ref()
+    } else {
+        panic!("Got nodes from empty graph")
+    }
+}*/
 
 /*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) -> AudioPlugin {
@@ -148,7 +158,7 @@ pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) ->
 
 /* Some other stuff */
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe extern "C" fn ffi_host_add_connector(
     host: &mut Host,
     start_module: i32,
@@ -196,7 +206,7 @@ pub unsafe extern "C" fn ffi_host_get_connector_start_index(host: &mut Host, ind
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_get_connector_end_index(host: &mut Host, index: usize) -> i32 {
     host.graph.connectors[index].end.pin_index
-}
+}*/
 
 /* Patch */
 

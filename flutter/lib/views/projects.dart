@@ -252,57 +252,12 @@ class _BrowserViewElement extends State<BrowserViewElement>
                             Radius.circular(10),
                           ),
                         ),
-                        child: Stack(
-                          children: [
-                            /*BrowserViewElementOverlay(
-                              icon: const Icon(
-                                Icons.edit,
-                                size: 16,
-                                color: Color.fromRGBO(200, 200, 200, 1.0),
-                              ),
-                              alignment: Alignment.bottomLeft,
-                              padding: const EdgeInsets.fromLTRB(15, 0, 0, 10),
-                              onTap: () {
-                                print("Play/pause");
-                              },
-                            ),
-                            BrowserViewElementOverlay(
-                              icon: const Icon(
-                                Icons.play_arrow,
-                                size: 20,
-                                color: Color.fromRGBO(200, 200, 200, 1.0),
-                              ),
-                              alignment: Alignment.bottomCenter,
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                              onTap: () {
-                                print("Second button");
-                              },
-                            ),
-                            BrowserViewElementOverlay(
-                              icon: const Icon(
-                                Icons.open_in_new,
-                                size: 16,
-                                color: Color.fromRGBO(200, 200, 200, 1.0),
-                              ),
-                              alignment: Alignment.bottomRight,
-                              padding: const EdgeInsets.fromLTRB(0, 0, 15, 10),
-                              onTap: () {
-                                print("Other button");
-                              },
-                            ),*/
-                            Center(
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.open_in_new,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                                onPressed: () {
-                                  print("Play/pause");
-                                },
-                              ),
-                            ),
-                          ],
+                        child: const Center(
+                          child: Icon(
+                            Icons.open_in_new,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
                     ),
