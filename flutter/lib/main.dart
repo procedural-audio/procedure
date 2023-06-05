@@ -44,8 +44,6 @@ void main(List<String> args) {
 
 class App extends StatefulWidget {
   App({required this.core, required this.assets, required this.project}) {
-    print("Should set patch here???");
-    // core.setPatch(project.value.patch.value);
     PLUGINS.addListener(
       () {
         print("Regenerating patch");
@@ -73,6 +71,7 @@ class App extends StatefulWidget {
     var project = await Project.load(info, core);
     if (project != null) {
       core.setPatch(project.patch.value);
+      this.project.value?.patch.value.disableTick();
       this.project.value = project;
     }
   }
@@ -146,6 +145,7 @@ class _App extends State<App> {
                             project.ui.value?.toggleEditing();
                           },
                           onProjectClose: () {
+                            widget.project.value?.patch.value.disableTick();
                             widget.project.value = null;
                             widget.core.setPatch(null);
                           },

@@ -41,6 +41,8 @@ class Projects {
         _projects.value = projects;
       }
     }
+
+    _projects.notifyListeners();
   }
 }
 
