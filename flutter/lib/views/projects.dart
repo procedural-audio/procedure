@@ -9,6 +9,14 @@ import 'info.dart';
 import '../projects.dart';
 import '../main.dart';
 
+/*
+
+Type: Instrument, effect, sequencer, song, utility
+Instrument: Synth, bass, soundscape, piano, voice, guitar, sound effects, mallets, keyboard...
+Instrument Type: 
+
+*/
+
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser({
     required this.app,
@@ -36,8 +44,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
         constraints: const BoxConstraints(maxWidth: 300 * 5),
         child: Column(
           children: [
-            const SizedBox(height: 10),
             Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: BigTags(),
+            ),
+            /*Padding(
               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
               child: BrowserSearchBar(
                 onFilter: (s) {
@@ -47,7 +58,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                 },
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 10),*/
             Expanded(
               child: ValueListenableBuilder<List<ProjectInfo>>(
                 valueListenable: widget.app.assets.projects.list(),
@@ -103,6 +114,143 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 }
 
+class BigTags extends StatelessWidget {
+  BigTags();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SearchBar(onFilter: (s) {}),
+        Expanded(
+          child: Container(),
+        ),
+        BigTag(
+          active: true,
+          text: "Instrument",
+          color: Colors.white,
+          iconData: Icons.piano,
+        ),
+        const SizedBox(width: 10),
+        BigTag(
+          active: false,
+          text: "Effect",
+          color: Colors.white,
+          iconData: Icons.waves,
+        ),
+        const SizedBox(width: 10),
+        BigTag(
+          active: false,
+          text: "Sequencer",
+          color: Colors.white,
+          iconData: Icons.music_note,
+        ),
+        const SizedBox(width: 10),
+        BigTag(
+          active: false,
+          text: "Song",
+          color: Colors.white,
+          iconData: Icons.equalizer,
+        ),
+        const SizedBox(width: 10),
+        BigTag(
+          active: false,
+          text: "Utility",
+          color: Colors.white,
+          iconData: Icons.developer_board,
+        ),
+      ],
+    );
+  }
+}
+
+class SearchBar extends StatelessWidget {
+  SearchBar({required this.onFilter});
+
+  void Function(String) onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 250,
+      height: 30,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(30, 30, 30, 1.0),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
+      child: TextField(
+        textAlignVertical: TextAlignVertical.center,
+        maxLines: 1,
+        style: const TextStyle(
+          color: Color.fromRGBO(220, 220, 220, 1.0),
+          fontSize: 14,
+        ),
+        decoration: const InputDecoration(
+          isDense: true,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.all(8),
+          prefixIconColor: Colors.grey,
+          prefixIcon: Icon(
+            Icons.search,
+          ),
+        ),
+        onChanged: (text) {
+          onFilter(text);
+        },
+      ),
+    );
+  }
+}
+
+class BigTag extends StatelessWidget {
+  BigTag({
+    required this.active,
+    required this.text,
+    required this.color,
+    required this.iconData,
+  });
+
+  String text;
+  Color color;
+  IconData iconData;
+  bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(40, 40, 40, 1.0),
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+        border: Border.all(
+          color: active ? Colors.white : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            iconData,
+            size: 18,
+            color: active ? Colors.white : Colors.grey,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: TextStyle(
+              color: active ? Colors.white : Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class BrowserSearchBar extends StatelessWidget {
   BrowserSearchBar({required this.onFilter});
 
@@ -112,63 +260,39 @@ class BrowserSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 200,
-          height: 26,
-          decoration: const BoxDecoration(
-            color: Color.fromRGBO(30, 30, 30, 1.0),
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
-          child: TextField(
-            maxLines: 1,
-            style: const TextStyle(
-              color: Color.fromRGBO(220, 220, 220, 1.0),
-              fontSize: 14,
-            ),
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(8),
-              prefixIconColor: Colors.grey,
-              prefixIcon: Icon(
-                Icons.search,
-              ),
-            ),
-            onChanged: (text) {
-              onFilter(text);
-            },
-          ),
-        ),
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 TagDropdown(
-                    value: "Type",
-                    tags: const [
-                      "Synthesizer",
-                      "Sampler",
-                      "Effect",
-                      "Sequencer",
-                      "Song",
-                      "Application",
-                    ],
-                    onSelect: (s) {}),
+                  value: "Type",
+                  tags: const [
+                    "Synthesizer",
+                    "Sampler",
+                    "Effect",
+                    "Sequencer",
+                    "Song",
+                    "Application",
+                  ],
+                  onSelect: (s) {},
+                ),
                 TagDropdown(
-                    value: "Attributes",
-                    tags: const [
-                      "Analog",
-                      "Generative",
-                    ],
-                    onSelect: (s) {}),
+                  value: "Attributes",
+                  tags: const [
+                    "Analog",
+                    "Generative",
+                  ],
+                  onSelect: (s) {},
+                ),
                 TagDropdown(
-                    value: "Other",
-                    tags: const [
-                      "Analog",
-                      "Generative",
-                    ],
-                    onSelect: (s) {}),
+                  value: "Other",
+                  tags: const [
+                    "Analog",
+                    "Generative",
+                  ],
+                  onSelect: (s) {},
+                ),
               ],
             ),
           ),
