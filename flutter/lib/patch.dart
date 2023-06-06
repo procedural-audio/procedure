@@ -236,6 +236,7 @@ class PatchInfo {
   }
 
   void save() async {
+    print("Saving patch info");
     File file = File(directory.path + "/info.json");
     await file.writeAsString(jsonEncode({
       "name": name.value,

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/common.dart';
 
 import 'dart:math';
 
@@ -32,6 +33,7 @@ class ProjectsBrowser extends StatefulWidget {
 
 class _ProjectsBrowser extends State<ProjectsBrowser> {
   String searchText = "";
+  bool editing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +48,36 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: BigTags(),
+              child: BigTags(
+                onEditPressed: () {
+                  setState(() {
+                    editing = !editing;
+                  });
+                },
+                onNewPressed: () {
+                  setState(() {
+                    print("New instrument");
+                  });
+                },
+                onSearch: (s) {
+                  setState(() {
+                    searchText = s;
+                  });
+                },
+              ),
             ),
+            /*Selector(
+              elements: const [
+                "Instrument",
+                "Effect",
+                "Sequencer",
+                "Song",
+                "Utility"
+              ],
+              onSelect: (e) {
+                print("Selected " + e);
+              },
+            ),*/
             /*Padding(
               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
               child: BrowserSearchBar(
@@ -97,6 +127,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     itemBuilder: (BuildContext ctx, index) {
                       return BrowserViewElement(
                         index: index,
+                        editing: editing,
                         project: filteredProjects[index],
                         onTap: (info) {
                           widget.onLoadProject(info);
@@ -114,14 +145,114 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 }
 
+class NewInstrumentButton extends StatelessWidget {
+  NewInstrumentButton({required this.onPressed});
+
+  void Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(50, 100, 50, 1.0),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.add),
+        color: Colors.green,
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+class EditButton extends StatelessWidget {
+  EditButton({required this.onPressed});
+
+  void Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(30, 30, 30, 1.0),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.edit),
+        iconSize: 18,
+        color: Colors.grey,
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+/*class Selector extends StatelessWidget {
+  Selector({required this.elements, required this.onSelect});
+
+  List<String> elements;
+  void Function(String) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(10, 10, 10, 1.0),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color.fromRGBO(40, 40, 40, 1.0),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        children: elements
+            .map((e) => Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: SizedBox(
+                    width: 100,
+                    child: Text(
+                      e,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+}*/
+
 class BigTags extends StatelessWidget {
-  BigTags();
+  BigTags({
+    required this.onEditPressed,
+    required this.onNewPressed,
+    required this.onSearch,
+  });
+
+  void Function() onEditPressed;
+  void Function() onNewPressed;
+  void Function(String) onSearch;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SearchBar(onFilter: (s) {}),
+        SearchBar(onFilter: onSearch),
+        /*Dropdown( // Sort by recent, name, etc.
+          value: "Item 1",
+          items: const ["Item 1", "Item 2", "Item 3"],
+          onChanged: (s) {},
+          color: Colors.blue,
+        ),*/
         Expanded(
           child: Container(),
         ),
@@ -158,6 +289,18 @@ class BigTags extends StatelessWidget {
           text: "Utility",
           color: Colors.white,
           iconData: Icons.developer_board,
+        ),
+        const SizedBox(width: 10),
+        EditButton(
+          onPressed: () {
+            print("Edit");
+          },
+        ),
+        const SizedBox(width: 10),
+        NewInstrumentButton(
+          onPressed: () {
+            print("New instrument");
+          },
         ),
       ],
     );
@@ -305,11 +448,13 @@ class BrowserSearchBar extends StatelessWidget {
 class BrowserViewElement extends StatefulWidget {
   BrowserViewElement({
     required this.index,
+    required this.editing,
     required this.project,
     required this.onTap,
   });
 
   int index;
+  bool editing;
   ProjectInfo project;
   void Function(ProjectInfo) onTap;
 
@@ -334,26 +479,26 @@ class _BrowserViewElement extends State<BrowserViewElement>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (details) {
-        setState(() {
-          mouseOver = true;
-        });
-      },
-      onExit: (details) {
-        setState(() {
-          mouseOver = false;
-        });
-      },
-      child: GestureDetector(
-        onTap: () => widget.onTap(widget.project),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(5),
-          child: Column(
-            children: [
-              Expanded(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.all(5),
+      child: Column(
+        children: [
+          Expanded(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              onEnter: (details) {
+                setState(() {
+                  mouseOver = true;
+                });
+              },
+              onExit: (details) {
+                setState(() {
+                  mouseOver = false;
+                });
+              },
+              child: GestureDetector(
+                onTap: () => widget.onTap(widget.project),
                 child: Stack(
                   children: [
                     ClipRRect(
@@ -388,83 +533,156 @@ class _BrowserViewElement extends State<BrowserViewElement>
                   ],
                 ),
               ),
-              Container(
-                height: 80,
-                alignment: Alignment.topLeft,
-                padding: const EdgeInsets.all(4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          Container(
+            height: 80,
+            alignment: Alignment.topLeft,
+            padding: const EdgeInsets.all(4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  widget.project.name.value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromRGBO(220, 220, 220, 1.0),
+                  ),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.project.name.value,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(220, 220, 220, 1.0),
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: Icon(
+                        Icons.cable,
+                        size: 11,
+                        color: Colors.grey,
                       ),
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            color: Color.fromRGBO(60, 60, 60, 1.0),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(5),
+                    const SizedBox(width: 4),
+                    FutureBuilder<int>(
+                      future: widget.project.getPatchCount(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Text(
+                            snapshot.data.toString(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          "32",
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: const BoxDecoration(
-                            color: Color.fromRGBO(60, 60, 60, 1.0),
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(5),
+                          );
+                        } else {
+                          return const Text(
+                            "...",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          "64",
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: Icon(
+                        Icons.widgets,
+                        size: 11,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    FutureBuilder<int>(
+                      future: widget.project.getInterfaceCount(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Text(
+                            snapshot.data.toString(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
+                            ),
+                          );
+                        } else {
+                          return const Text(
+                            "...",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: Icon(
+                        Icons.arrow_right,
+                        size: 11,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: Icon(
+                        Icons.cable,
+                        size: 11,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    FutureBuilder<int>(
+                      future: widget.project.getSubPatchCount(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return Text(
+                            snapshot.data.toString(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
+                            ),
+                          );
+                        } else {
+                          return const Text(
+                            "...",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
+                      },
                     ),
                     const SizedBox(height: 4),
-                    Expanded(
-                      child: Text(
-                        widget.project.description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Text(
+                    widget.project.description,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

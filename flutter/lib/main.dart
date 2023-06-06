@@ -145,6 +145,10 @@ class _App extends State<App> {
                             project.ui.value?.toggleEditing();
                           },
                           onProjectClose: () {
+                            // Save
+                            widget.project.value?.info.save();
+                            widget.project.value?.patch.value.info.save();
+
                             widget.project.value?.patch.value.disableTick();
                             widget.project.value = null;
                             widget.core.setPatch(null);
