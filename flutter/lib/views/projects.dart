@@ -580,8 +580,6 @@ class _BrowserViewElement extends State<BrowserViewElement>
             onAction: (action) {
               if (action == "Open Project") {
                 widget.onOpen(widget.project);
-              } else if (action == "Rename Project") {
-              } else if (action == "Edit Description") {
               } else if (action == "Replace Image") {
                 replaceImage();
               } else if (action == "Duplicate Project") {
@@ -614,13 +612,20 @@ class BrowserViewElementDescription extends StatefulWidget {
 class _BrowserViewElementDescription
     extends State<BrowserViewElementDescription> {
   bool barHovering = false;
+  bool editingName = false;
+  bool editingDescription = false;
+
+  FocusNode nameFocus = FocusNode();
+  TextEditingController nameController = TextEditingController();
+
+  bool nameSubmitHovering = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 80,
       alignment: Alignment.topLeft,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -639,43 +644,101 @@ class _BrowserViewElementDescription
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    widget.project.name.value,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color.fromRGBO(220, 220, 220, 1.0),
-                    ),
+                  child: Builder(
+                    builder: (context) {
+                      if (editingName) {
+                        return Container(
+                          height: 26,
+                          padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  focusNode: nameFocus,
+                                  controller: nameController,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(220, 220, 220, 1.0),
+                                  ),
+                                  decoration: const InputDecoration(
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        width: 1,
+                                        color: Color.fromRGBO(40, 40, 40, 1.0),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        width: 1,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(5, 0, 0, 0),
+                                  ),
+                                  onSubmitted: (value) {
+                                    widget.project.name.value = value;
+                                    setState(() {
+                                      editingName = false;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+                                child: CircleButton(
+                                  icon: const Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: Colors.green,
+                                  ),
+                                  onTap: () {
+                                    widget.project.name.value =
+                                        nameController.text;
+                                    widget.project.save();
+                                    setState(() {
+                                      editingName = false;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+                                child: CircleButton(
+                                  icon: const Icon(
+                                    Icons.close,
+                                    size: 16,
+                                    color: Colors.red,
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      editingName = false;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        return ValueListenableBuilder<String>(
+                          valueListenable: widget.project.name,
+                          builder: (context, name, child) {
+                            return Text(
+                              widget.project.name.value,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(220, 220, 220, 1.0),
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    },
                   ),
                 ),
-                /*AnimatedOpacity(
-                  opacity: barHovering ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 100),
-                  child: GestureDetector(
-                    onTap: () {
-                      print("more");
-                    },
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromRGBO(30, 30, 30, 1.0),
-                          width: 2,
-                        ),
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                        color: const Color.fromRGBO(30, 30, 30, 1.0),
-                      ),
-                      child: const Icon(
-                        Icons.more_horiz_outlined,
-                        color: Colors.grey,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-                ),*/
                 MoreDropdown(
                   items: const [
                     "Open Project",
@@ -685,7 +748,20 @@ class _BrowserViewElementDescription
                     "Duplicate Project",
                     "Delete Project"
                   ],
-                  onAction: widget.onAction,
+                  onAction: (s) {
+                    if (s == "Rename Project") {
+                      setState(() {
+                        nameController.text = widget.project.name.value;
+                        editingName = true;
+                      });
+                    } else if (s == "Edit Description") {
+                      setState(() {
+                        editingDescription = true;
+                      });
+                    } else {
+                      widget.onAction(s);
+                    }
+                  },
                 )
               ],
             ),
@@ -712,6 +788,55 @@ class _BrowserViewElementDescription
   }
 }
 
+class CircleButton extends StatefulWidget {
+  CircleButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final Icon icon;
+  final void Function() onTap;
+
+  @override
+  State<CircleButton> createState() => _CircleButton();
+}
+
+class _CircleButton extends State<CircleButton> {
+  bool hovering = false;
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          width: 20,
+          height: 20,
+          duration: const Duration(milliseconds: 100),
+          decoration: BoxDecoration(
+            color: hovering
+                ? const Color.fromRGBO(40, 40, 40, 1.0)
+                : const Color.fromRGBO(30, 30, 30, 1.0),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            ),
+          ),
+          child: widget.icon,
+        ),
+      ),
+    );
+  }
+}
+
 class MoreDropdown extends StatefulWidget {
   MoreDropdown({
     required this.items,
@@ -729,6 +854,8 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
+
+  bool hovering = false;
 
   final FocusScopeNode _focusScopeNode = FocusScopeNode();
 
@@ -755,27 +882,44 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: _layerLink,
-      child: GestureDetector(
-        onTap: () {
-          toggleDropdown();
+      child: MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
         },
-        child: Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: const Color.fromRGBO(30, 30, 30, 1.0),
-              width: 2,
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: GestureDetector(
+          onTap: () {
+            toggleDropdown();
+          },
+          child: AnimatedContainer(
+            width: 20,
+            height: 20,
+            duration: const Duration(milliseconds: 100),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: hovering
+                    ? const Color.fromRGBO(40, 40, 40, 1.0)
+                    : const Color.fromRGBO(30, 30, 30, 1.0),
+                width: 2,
+              ),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
+              color: hovering
+                  ? const Color.fromRGBO(40, 40, 40, 1.0)
+                  : const Color.fromRGBO(30, 30, 30, 1.0),
             ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10),
+            child: const Icon(
+              Icons.more_horiz_outlined,
+              color: Colors.grey,
+              size: 14,
             ),
-            color: const Color.fromRGBO(30, 30, 30, 1.0),
-          ),
-          child: const Icon(
-            Icons.more_horiz_outlined,
-            color: Colors.grey,
-            size: 14,
           ),
         ),
       ),
