@@ -113,7 +113,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     return Container();
                   }
 
-                  print("Sorting projects");
                   filteredProjects.sort((a, b) {
                     return b.date.value.compareTo(a.date.value);
                   });
@@ -612,13 +611,35 @@ class BrowserViewElementDescription extends StatefulWidget {
 class _BrowserViewElementDescription
     extends State<BrowserViewElementDescription> {
   bool barHovering = false;
-  bool editingName = false;
-  bool editingDescription = false;
+  bool editing = false;
 
-  FocusNode nameFocus = FocusNode();
   TextEditingController nameController = TextEditingController();
+  TextEditingController descController = TextEditingController();
 
   bool nameSubmitHovering = false;
+
+  void startEditingProject() {
+    setState(() {
+      nameController.text = widget.project.name.value;
+      descController.text = widget.project.description.value;
+      editing = true;
+    });
+  }
+
+  void cancelEditingProject() {
+    setState(() {
+      editing = false;
+    });
+  }
+
+  void doneEditingProject() {
+    widget.project.name.value = nameController.text;
+    widget.project.description.value = descController.text;
+    widget.project.save();
+    setState(() {
+      editing = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -646,15 +667,15 @@ class _BrowserViewElementDescription
                 Expanded(
                   child: Builder(
                     builder: (context) {
-                      if (editingName) {
+                      if (editing) {
                         return Container(
-                          height: 26,
+                          height: 24,
                           padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                           child: Row(
                             children: [
                               Expanded(
                                 child: TextField(
-                                  focusNode: nameFocus,
+                                  textAlignVertical: TextAlignVertical.center,
                                   controller: nameController,
                                   style: const TextStyle(
                                     fontSize: 16,
@@ -678,10 +699,7 @@ class _BrowserViewElementDescription
                                         EdgeInsets.fromLTRB(5, 0, 0, 0),
                                   ),
                                   onSubmitted: (value) {
-                                    widget.project.name.value = value;
-                                    setState(() {
-                                      editingName = false;
-                                    });
+                                    doneEditingProject();
                                   },
                                 ),
                               ),
@@ -694,12 +712,7 @@ class _BrowserViewElementDescription
                                     color: Colors.green,
                                   ),
                                   onTap: () {
-                                    widget.project.name.value =
-                                        nameController.text;
-                                    widget.project.save();
-                                    setState(() {
-                                      editingName = false;
-                                    });
+                                    doneEditingProject();
                                   },
                                 ),
                               ),
@@ -712,9 +725,7 @@ class _BrowserViewElementDescription
                                     color: Colors.red,
                                   ),
                                   onTap: () {
-                                    setState(() {
-                                      editingName = false;
-                                    });
+                                    cancelEditingProject();
                                   },
                                 ),
                               ),
@@ -742,22 +753,14 @@ class _BrowserViewElementDescription
                 MoreDropdown(
                   items: const [
                     "Open Project",
-                    "Rename Project",
-                    "Edit Description",
+                    "Edit Project",
                     "Replace Image",
                     "Duplicate Project",
                     "Delete Project"
                   ],
                   onAction: (s) {
-                    if (s == "Rename Project") {
-                      setState(() {
-                        nameController.text = widget.project.name.value;
-                        editingName = true;
-                      });
-                    } else if (s == "Edit Description") {
-                      setState(() {
-                        editingDescription = true;
-                      });
+                    if (s == "Edit Project") {
+                      startEditingProject();
                     } else {
                       widget.onAction(s);
                     }
@@ -768,20 +771,55 @@ class _BrowserViewElementDescription
           ),
           const SizedBox(height: 4),
           Expanded(
-            child: ValueListenableBuilder<String>(
-              valueListenable: widget.project.description,
-              builder: (context, description, child) {
-                return Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey,
-                  ),
-                );
+            child: Builder(
+              builder: (context) {
+                if (editing) {
+                  return TextField(
+                    maxLines: 2,
+                    controller: descController,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey,
+                    ),
+                    decoration: const InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          width: 1,
+                          color: Color.fromRGBO(40, 40, 40, 1.0),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          width: 1,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                    ),
+                    onSubmitted: (value) {
+                      doneEditingProject();
+                    },
+                  );
+                } else {
+                  return ValueListenableBuilder<String>(
+                    valueListenable: widget.project.description,
+                    builder: (context, description, child) {
+                      return Text(
+                        description,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                  );
+                }
               },
             ),
-          ),
+          )
         ],
       ),
     );
@@ -878,54 +916,6 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-          onTap: () {
-            toggleDropdown();
-          },
-          child: AnimatedContainer(
-            width: 20,
-            height: 20,
-            duration: const Duration(milliseconds: 100),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: hovering
-                    ? const Color.fromRGBO(40, 40, 40, 1.0)
-                    : const Color.fromRGBO(30, 30, 30, 1.0),
-                width: 2,
-              ),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              color: hovering
-                  ? const Color.fromRGBO(40, 40, 40, 1.0)
-                  : const Color.fromRGBO(30, 30, 30, 1.0),
-            ),
-            child: const Icon(
-              Icons.more_horiz_outlined,
-              color: Colors.grey,
-              size: 14,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   OverlayEntry _createOverlayEntry() {
     RenderBox renderBox = context.findRenderObject() as RenderBox;
 
@@ -1003,6 +993,23 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: CircleButton(
+        icon: const Icon(
+          Icons.more_horiz_outlined,
+          color: Colors.grey,
+          size: 14,
+        ),
+        onTap: () {
+          toggleDropdown();
+        },
+      ),
     );
   }
 }
