@@ -200,30 +200,6 @@ class NewInstrumentButton extends StatelessWidget {
   }
 }
 
-class EditButton extends StatelessWidget {
-  EditButton({required this.onPressed});
-
-  void Function() onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(30, 30, 30, 1.0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: IconButton(
-        icon: const Icon(Icons.edit),
-        iconSize: 18,
-        color: Colors.grey,
-        onPressed: onPressed,
-      ),
-    );
-  }
-}
-
 /*class Selector extends StatelessWidget {
   Selector({required this.elements, required this.onSelect});
 
@@ -321,12 +297,6 @@ class BigTags extends StatelessWidget {
           text: "Utility",
           color: Colors.white,
           iconData: Icons.developer_board,
-        ),
-        const SizedBox(width: 10),
-        EditButton(
-          onPressed: () {
-            print("Edit");
-          },
         ),
         const SizedBox(width: 10),
         NewInstrumentButton(
