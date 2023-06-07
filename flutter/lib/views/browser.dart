@@ -8,7 +8,7 @@ import 'settings.dart';
 
 import '../main.dart';
 
-class BrowserView extends StatefulWidget {
+/*class BrowserView extends StatefulWidget {
   BrowserView(this.app);
 
   App app;
@@ -57,7 +57,7 @@ class _BrowserView extends State<BrowserView> {
                       if (project.name.value
                               .toLowerCase()
                               .contains(searchText.toLowerCase()) ||
-                          project.description
+                          project.description.value
                               .toLowerCase()
                               .contains(searchText.toLowerCase())) {
                         filteredProjects.add(project);
@@ -339,7 +339,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(5)),
-                      child: Image.file(File(widget.project.background),
+                      child: Image.file(widget.project.image.value,
                           width: 290, fit: BoxFit.cover),
                     ),
                     Center(
@@ -394,9 +394,11 @@ class _BrowserViewElement extends State<BrowserViewElement>
                     const SizedBox(height: 4),
                     Expanded(
                       child: Text(
-                        widget.project.description.substring(
-                                0, min(40, widget.project.description.length)) +
-                            (widget.project.description.length < 40
+                        widget.project.description.value.substring(
+                                0,
+                                min(40,
+                                    widget.project.description.value.length)) +
+                            (widget.project.description.value.length < 40
                                 ? ""
                                 : "..."),
                         style: const TextStyle(
@@ -691,3 +693,4 @@ class _TagDropdownElement extends State<TagDropdownElement> {
                         ]))))));
   }
 }
+*/

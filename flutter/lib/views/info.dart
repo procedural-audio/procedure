@@ -21,7 +21,7 @@ class InterfaceInfo {
   });
 
   static Future<InterfaceInfo?> load(Directory directory) async {
-    File file = File(directory.path + "/info.json");
+    File file = File(directory.path + "/project.json");
     if (file.existsSync()) {
       var contents = file.readAsStringSync();
       var json = jsonDecode(contents);
@@ -58,14 +58,16 @@ class ProjectInfo {
     required this.directory,
     required this.name,
     required this.description,
-    required this.background,
+    required this.image,
+    required this.date,
     required this.tags,
   });
 
   final Directory directory;
   final ValueNotifier<String> name;
-  final String description;
-  final String background;
+  final ValueNotifier<String> description;
+  final ValueNotifier<File?> image;
+  final ValueNotifier<DateTime> date;
   final List<String> tags;
 
   static ProjectInfo blank() {
@@ -74,8 +76,9 @@ class ProjectInfo {
         "/Users/chasekanipe/Github/assets/projects/NewProject",
       ),
       name: ValueNotifier("New Project"),
-      description: "Description for a new project",
-      background: "",
+      description: ValueNotifier("Description for a new project"),
+      image: ValueNotifier(null),
+      date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
       tags: [],
     );
   }
@@ -93,8 +96,8 @@ class ProjectInfo {
   }
 
   void save() async {
-    print("Saving project info");
-    File file = File(directory.path + "/info.json");
+    print("Saving project info " + toJson().toString());
+    File file = File(directory.path + "/project.json");
     await file.writeAsString(
       jsonEncode(
         toJson(),
@@ -142,43 +145,50 @@ class ProjectInfo {
   }
 
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
-    String background =
-        "/Users/chasekanipe/Github/assets/images/backgrounds/background_01.png";
+    File? image;
 
     File file1 = File(path + "/background.jpg");
     if (file1.existsSync()) {
-      background = file1.path;
+      image = file1;
     }
 
     File file2 = File(path + "/background.png");
     if (file2.existsSync()) {
-      background = file2.path;
+      image = file2;
     }
 
     File file3 = File(path + "/background.jpeg");
     if (file3.existsSync()) {
-      background = file3.path;
+      image = file3;
     }
 
     String? tags = json['tags'];
 
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(0);
+    String? dateString = json['date'];
+    if (dateString != null) {
+      date = DateTime.parse(dateString);
+    }
+
     return ProjectInfo(
       directory: Directory(path),
       name: ValueNotifier(json['name']),
-      description: json['description'],
-      background: background,
+      description: ValueNotifier(json['description']),
+      image: ValueNotifier(image),
+      date: ValueNotifier(date),
       tags: tags != null ? tags.split(",") : [],
     );
   }
 
   Map<String, dynamic> toJson() => {
         'name': name.value,
-        'description': description,
+        'description': description.value,
+        'date': date.value.toIso8601String(),
         'tags': tags.join(","),
       };
 }
 
-class InfoContentsWidget extends StatefulWidget {
+/*class InfoContentsWidget extends StatefulWidget {
   InfoContentsWidget(
     this.app, {
     required this.project,
@@ -356,7 +366,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
                         children: [
                           TextButton(
                             onPressed: () {
-                              widget.app.loadProject(widget.project);
+                              // widget.app.loadProject(widget.project);
                             },
                             child: const Text("Load"),
                           ),
@@ -427,7 +437,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
       },
     );
   }
-}
+}*/
 
 class InfoViewTitle extends StatelessWidget {
   InfoViewTitle(

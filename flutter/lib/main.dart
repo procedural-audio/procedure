@@ -42,7 +42,7 @@ void main(List<String> args) {
   }
 }
 
-class App extends StatefulWidget {
+class App extends StatelessWidget {
   App({required this.core, required this.assets, required this.project}) {
     PLUGINS.addListener(
       () {
@@ -67,102 +67,124 @@ class App extends StatefulWidget {
   final Assets assets;
   final ValueNotifier<Project?> project;
 
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
+      ),
+      home: Scaffold(
+        backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+        body: Window(this),
+      ),
+    );
+  }
+}
+
+class Window extends StatefulWidget {
+  Window(this.app);
+
+  App app;
+
+  @override
+  State<Window> createState() => _Window();
+}
+
+class _Window extends State<Window> {
+  bool uiVisible = false;
+
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info, core);
+    var project = await Project.load(info, widget.app.core);
     if (project != null) {
-      core.setPatch(project.patch.value);
-      this.project.value?.patch.value.disableTick();
-      this.project.value = project;
+      widget.app.core.setPatch(project.patch.value);
+      widget.app.project.value?.patch.value.disableTick();
+      widget.app.project.value = project;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Material(
+            color: const Color.fromRGBO(10, 10, 10, 1.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 40,
+                  child: NewTopBar(
+                    app: widget.app,
+                    instViewVisible: uiVisible,
+                    onViewSwitch: () {
+                      setState(() {
+                        uiVisible = !uiVisible;
+                      });
+                    },
+                    onUserInterfaceEdit: () {
+                      project.ui.value?.toggleEditing();
+                    },
+                    onProjectClose: unloadProject,
+                  ),
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (uiVisible) {
+                        return ValueListenableBuilder<UserInterface?>(
+                          valueListenable: project.ui,
+                          builder: (context, ui, child) {
+                            if (ui != null) {
+                              return ui;
+                            } else {
+                              return Container();
+                            }
+                          },
+                        );
+                      } else {
+                        return ValueListenableBuilder<Patch>(
+                          valueListenable: project.patch,
+                          builder: (context, patch, child) {
+                            return patch;
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
   }
 
-  @override
-  State<App> createState() => _App();
-}
+  void unloadProject() {
+    Navigator.pop(context);
 
-class _App extends State<App> {
-  bool uiVisible = false;
+    widget.app.project.value?.info.date.value = DateTime.now();
+    widget.app.project.value?.info.save();
+    widget.app.project.value?.patch.value.info.save();
+
+    widget.app.project.value?.patch.value.disableTick();
+    widget.app.project.value = null;
+    widget.app.core.setPatch(null);
+  }
 
   @override
   Widget build(BuildContext context) {
-    /*if (widget.project.value.ui.value == null) {
-      uiVisible = false;
-    }*/
-
-    return MaterialApp(
-      theme: ThemeData(splashColor: const Color.fromRGBO(20, 20, 20, 1.0)),
-      home: Scaffold(
-        backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-        body: Stack(
-          children: <Widget>[
-            Container(
-              color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: ValueListenableBuilder<Project?>(
-                valueListenable: widget.project,
-                builder: (context, project, child) {
-                  if (project == null) {
-                    return ProjectsBrowser(
-                      app: widget,
-                      onLoadProject: (info) {
-                        widget.loadProject(info);
-                      },
-                    );
-                  } else {
-                    return Stack(
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            if (uiVisible) {
-                              return ValueListenableBuilder<UserInterface?>(
-                                valueListenable: project.ui,
-                                builder: (context, ui, child) {
-                                  if (ui != null) {
-                                    return ui;
-                                  } else {
-                                    return Container();
-                                  }
-                                },
-                              );
-                            } else {
-                              return ValueListenableBuilder<Patch>(
-                                valueListenable: project.patch,
-                                builder: (context, patch, child) {
-                                  return patch;
-                                },
-                              );
-                            }
-                          },
-                        ),
-                        NewTopBar(
-                          app: widget,
-                          instViewVisible: uiVisible,
-                          onViewSwitch: () {
-                            setState(() {
-                              uiVisible = !uiVisible;
-                            });
-                          },
-                          onUserInterfaceEdit: () {
-                            project.ui.value?.toggleEditing();
-                          },
-                          onProjectClose: () {
-                            // Save
-                            widget.project.value?.info.save();
-                            widget.project.value?.patch.value.info.save();
-
-                            widget.project.value?.patch.value.disableTick();
-                            widget.project.value = null;
-                            widget.core.setPatch(null);
-                          },
-                        ),
-                      ],
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+    return Stack(
+      children: <Widget>[
+        Container(
+          color: const Color.fromRGBO(10, 10, 10, 1.0),
+          child: ValueListenableBuilder<Project?>(
+            valueListenable: widget.app.project,
+            builder: (context, project, child) {
+              return ProjectsBrowser(
+                app: widget.app,
+                onLoadProject: loadProject,
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }

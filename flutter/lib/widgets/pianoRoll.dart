@@ -797,7 +797,7 @@ class NoteWidget extends StatefulWidget {
     required this.selectedRegion,
     required this.refreshNotes,
     required this.widgetRaw,
-  }) : super(key: UniqueKey());
+  }) : super(key: UniqueKey()) {}
 
   int id;
   RawWidget widgetRaw;

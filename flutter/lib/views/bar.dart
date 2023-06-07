@@ -9,7 +9,7 @@ import '../projects.dart';
 import 'browser.dart';
 import 'presets.dart';
 
-class Bar extends StatefulWidget {
+/*class Bar extends StatefulWidget {
   Bar({
     required this.app,
     required this.instViewVisible,
@@ -341,3 +341,4 @@ class OtherView extends StatelessWidget {
     );
   }
 }
+*/

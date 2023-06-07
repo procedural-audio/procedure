@@ -737,10 +737,10 @@ class _Bar extends State<Bar> {
                     ),
                     child: Stack(
                       children: [
-                        Visibility(
+                        /*Visibility(
                           visible: showInstrumentView,
                           child: BrowserView(widget.app),
-                        ),
+                        ),*/
                         Visibility(
                           visible: showPresetView,
                           child: PresetsView(

@@ -1,13 +1,13 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:metasampler/common.dart';
+import 'package:metasampler/patch.dart';
 
 import 'dart:math';
 
 import 'info.dart';
-
-import '../projects.dart';
 import '../main.dart';
 
 /*
@@ -101,7 +101,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                       if (project.name.value
                               .toLowerCase()
                               .contains(searchText.toLowerCase()) ||
-                          project.description
+                          project.description.value
                               .toLowerCase()
                               .contains(searchText.toLowerCase())) {
                         filteredProjects.add(project);
@@ -112,6 +112,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                   if (filteredProjects.isEmpty) {
                     return Container();
                   }
+
+                  print("Sorting projects");
+                  filteredProjects.sort((a, b) {
+                    return b.date.value.compareTo(a.date.value);
+                  });
 
                   return GridView.builder(
                     padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
@@ -129,9 +134,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                         index: index,
                         editing: editing,
                         project: filteredProjects[index],
-                        onTap: (info) {
+                        onOpen: (info) {
                           widget.onLoadProject(info);
                         },
+                        onDuplicate: (info) {},
+                        onDelete: (info) {},
                       );
                     },
                   );
@@ -141,6 +148,31 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class InstrumentEditor extends StatefulWidget {
+  InstrumentEditor({
+    required this.app,
+    required this.onSave,
+    required this.onCancel,
+  });
+
+  App app;
+  void Function() onSave;
+  void Function() onCancel;
+
+  @override
+  State<InstrumentEditor> createState() => _InstrumentEditor();
+}
+
+class _InstrumentEditor extends State<InstrumentEditor> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 400,
+      height: 400,
     );
   }
 }
@@ -450,13 +482,17 @@ class BrowserViewElement extends StatefulWidget {
     required this.index,
     required this.editing,
     required this.project,
-    required this.onTap,
+    required this.onOpen,
+    required this.onDuplicate,
+    required this.onDelete,
   });
 
   int index;
   bool editing;
   ProjectInfo project;
-  void Function(ProjectInfo) onTap;
+  void Function(ProjectInfo) onOpen;
+  void Function(ProjectInfo) onDuplicate;
+  void Function(ProjectInfo) onDelete;
 
   @override
   State<BrowserViewElement> createState() => _BrowserViewElement();
@@ -467,6 +503,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
   bool mouseOver = false;
   bool playing = false;
   late AnimationController controller;
+  int updateCount = 0;
 
   @override
   void initState() {
@@ -475,6 +512,27 @@ class _BrowserViewElement extends State<BrowserViewElement>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
+  }
+
+  void replaceImage() async {
+    var result = await FilePicker.platform.pickFiles(
+      dialogTitle: "Select a project image",
+      type: FileType.image,
+      allowMultiple: false,
+      allowedExtensions: ["jpg", "png", "jpeg"],
+    );
+
+    if (result != null) {
+      var file = File(result.files.first.path!);
+      String dest = widget.project.directory.path +
+          "/background." +
+          file.path.split(".").last;
+
+      await widget.project.image.value?.delete();
+      await file.copy(dest);
+      updateCount += 1;
+      widget.project.image.value = File(dest);
+    }
   }
 
   @override
@@ -498,17 +556,29 @@ class _BrowserViewElement extends State<BrowserViewElement>
                 });
               },
               child: GestureDetector(
-                onTap: () => widget.onTap(widget.project),
+                onTap: () => widget.onOpen(widget.project),
                 child: Stack(
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.all(
                         Radius.circular(10),
                       ),
-                      child: Image.file(
-                        File(widget.project.background),
-                        width: 290,
-                        fit: BoxFit.cover,
+                      child: ValueListenableBuilder<File?>(
+                        valueListenable: widget.project.image,
+                        builder: (context, file, child) {
+                          if (file != null) {
+                            return Image.file(
+                              file,
+                              key: ValueKey(updateCount),
+                              width: 290,
+                              fit: BoxFit.cover,
+                            );
+                          } else {
+                            return Container(
+                              color: const Color.fromRGBO(40, 40, 40, 1.0),
+                            );
+                          }
+                        },
                       ),
                     ),
                     AnimatedOpacity(
@@ -535,154 +605,337 @@ class _BrowserViewElement extends State<BrowserViewElement>
               ),
             ),
           ),
-          Container(
-            height: 80,
-            alignment: Alignment.topLeft,
-            padding: const EdgeInsets.all(4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          BrowserViewElementDescription(
+            project: widget.project,
+            onAction: (action) {
+              if (action == "Open Project") {
+                widget.onOpen(widget.project);
+              } else if (action == "Rename Project") {
+              } else if (action == "Edit Description") {
+              } else if (action == "Replace Image") {
+                replaceImage();
+              } else if (action == "Duplicate Project") {
+                widget.onDuplicate(widget.project);
+              } else if (action == "Delete Project") {
+                widget.onDelete(widget.project);
+              }
+            },
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class BrowserViewElementDescription extends StatefulWidget {
+  BrowserViewElementDescription({
+    required this.project,
+    required this.onAction,
+  });
+
+  ProjectInfo project;
+  void Function(String) onAction;
+
+  @override
+  State<BrowserViewElementDescription> createState() =>
+      _BrowserViewElementDescription();
+}
+
+class _BrowserViewElementDescription
+    extends State<BrowserViewElementDescription> {
+  bool barHovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      alignment: Alignment.topLeft,
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 4),
+          MouseRegion(
+            onEnter: (e) {
+              setState(() {
+                barHovering = true;
+              });
+            },
+            onExit: (e) {
+              setState(() {
+                barHovering = false;
+              });
+            },
+            child: Row(
               children: [
-                const SizedBox(height: 4),
-                Text(
-                  widget.project.name.value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromRGBO(220, 220, 220, 1.0),
-                  ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: Icon(
-                        Icons.cable,
-                        size: 11,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    FutureBuilder<int>(
-                      future: widget.project.getPatchCount(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Text(
-                            snapshot.data.toString(),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        } else {
-                          return const Text(
-                            "...",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: Icon(
-                        Icons.widgets,
-                        size: 11,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    FutureBuilder<int>(
-                      future: widget.project.getInterfaceCount(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Text(
-                            snapshot.data.toString(),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        } else {
-                          return const Text(
-                            "...",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: Icon(
-                        Icons.arrow_right,
-                        size: 11,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                      child: Icon(
-                        Icons.cable,
-                        size: 11,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    FutureBuilder<int>(
-                      future: widget.project.getSubPatchCount(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Text(
-                            snapshot.data.toString(),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        } else {
-                          return const Text(
-                            "...",
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-                ),
                 Expanded(
                   child: Text(
-                    widget.project.description,
+                    widget.project.name.value,
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromRGBO(220, 220, 220, 1.0),
                     ),
                   ),
                 ),
+                /*AnimatedOpacity(
+                  opacity: barHovering ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 100),
+                  child: GestureDetector(
+                    onTap: () {
+                      print("more");
+                    },
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color.fromRGBO(30, 30, 30, 1.0),
+                          width: 2,
+                        ),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                        color: const Color.fromRGBO(30, 30, 30, 1.0),
+                      ),
+                      child: const Icon(
+                        Icons.more_horiz_outlined,
+                        color: Colors.grey,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ),*/
+                MoreDropdown(
+                  items: const [
+                    "Open Project",
+                    "Rename Project",
+                    "Edit Description",
+                    "Replace Image",
+                    "Duplicate Project",
+                    "Delete Project"
+                  ],
+                  onAction: widget.onAction,
+                )
               ],
             ),
           ),
+          const SizedBox(height: 4),
+          Expanded(
+            child: ValueListenableBuilder<String>(
+              valueListenable: widget.project.description,
+              builder: (context, description, child) {
+                return Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class MoreDropdown extends StatefulWidget {
+  MoreDropdown({
+    required this.items,
+    required this.onAction,
+  });
+
+  List<String> items;
+  void Function(String) onAction;
+
+  @override
+  State<MoreDropdown> createState() => _MoreDropdown();
+}
+
+class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+
+  void toggleDropdown({bool? open}) async {
+    if (_isOpen || open == false) {
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    } else if (!_isOpen || open == true) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusScopeNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: GestureDetector(
+        onTap: () {
+          toggleDropdown();
+        },
+        child: Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: const Color.fromRGBO(30, 30, 30, 1.0),
+              width: 2,
+            ),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10),
+            ),
+            color: const Color.fromRGBO(30, 30, 30, 1.0),
+          ),
+          child: const Icon(
+            Icons.more_horiz_outlined,
+            color: Colors.grey,
+            size: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+      maintainState: false,
+      opaque: false,
+      builder: (entryContext) {
+        return FocusScope(
+          node: _focusScopeNode,
+          child: GestureDetector(
+            onTap: () {
+              toggleDropdown(open: false);
+            },
+            onSecondaryTap: () {
+              toggleDropdown(open: false);
+            },
+            onPanStart: (e) {
+              toggleDropdown(open: false);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: offset.dx - 50,
+                    top: offset.dy + size.height + 5,
+                    child: CompositedTransformFollower(
+                      offset: Offset(0, size.height),
+                      link: _layerLink,
+                      showWhenUnlinked: false,
+                      child: Material(
+                        elevation: 0,
+                        borderRadius: BorderRadius.zero,
+                        color: Colors.transparent,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                          child: Container(
+                            width: 120,
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(30, 30, 30, 1.0),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: const Color.fromRGBO(50, 50, 50, 1.0),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: widget.items.map(
+                                (text) {
+                                  return MoreElement(
+                                    name: text,
+                                    onTap: (n) {
+                                      widget.onAction(n);
+                                      toggleDropdown(open: false);
+                                    },
+                                  );
+                                },
+                              ).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class MoreElement extends StatefulWidget {
+  MoreElement({required this.name, required this.onTap});
+
+  String name;
+  void Function(String) onTap;
+
+  @override
+  State<MoreElement> createState() => _MoreElement();
+}
+
+class _MoreElement extends State<MoreElement> {
+  bool hovering = false;
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          widget.onTap(widget.name);
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          color: hovering
+              ? const Color.fromRGBO(40, 40, 40, 1.0)
+              : const Color.fromRGBO(30, 30, 30, 1.0),
+          child: Text(
+            widget.name,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey,
+            ),
+          ),
+        ),
       ),
     );
   }
