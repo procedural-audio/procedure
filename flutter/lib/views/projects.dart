@@ -2,21 +2,9 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:metasampler/common.dart';
-import 'package:metasampler/patch.dart';
-
-import 'dart:math';
 
 import 'info.dart';
 import '../main.dart';
-
-/*
-
-Type: Instrument, effect, sequencer, song, utility
-Instrument: Synth, bass, soundscape, piano, voice, guitar, sound effects, mallets, keyboard...
-Instrument Type: 
-
-*/
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser({
@@ -66,29 +54,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                 },
               ),
             ),
-            /*Selector(
-              elements: const [
-                "Instrument",
-                "Effect",
-                "Sequencer",
-                "Song",
-                "Utility"
-              ],
-              onSelect: (e) {
-                print("Selected " + e);
-              },
-            ),*/
-            /*Padding(
-              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-              child: BrowserSearchBar(
-                onFilter: (s) {
-                  setState(() {
-                    searchText = s;
-                  });
-                },
-              ),
-            ),
-            const SizedBox(height: 10),*/
             Expanded(
               child: ValueListenableBuilder<List<ProjectInfo>>(
                 valueListenable: widget.app.assets.projects.list(),
@@ -199,115 +164,6 @@ class NewInstrumentButton extends StatelessWidget {
   }
 }
 
-/*class Selector extends StatelessWidget {
-  Selector({required this.elements, required this.onSelect});
-
-  List<String> elements;
-  void Function(String) onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(10, 10, 10, 1.0),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color.fromRGBO(40, 40, 40, 1.0),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        children: elements
-            .map((e) => Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: SizedBox(
-                    width: 100,
-                    child: Text(
-                      e,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ))
-            .toList(),
-      ),
-    );
-  }
-}*/
-
-class BigTags extends StatelessWidget {
-  BigTags({
-    required this.onEditPressed,
-    required this.onNewPressed,
-    required this.onSearch,
-  });
-
-  void Function() onEditPressed;
-  void Function() onNewPressed;
-  void Function(String) onSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SearchBar(onFilter: onSearch),
-        /*Dropdown( // Sort by recent, name, etc.
-          value: "Item 1",
-          items: const ["Item 1", "Item 2", "Item 3"],
-          onChanged: (s) {},
-          color: Colors.blue,
-        ),*/
-        Expanded(
-          child: Container(),
-        ),
-        BigTag(
-          active: true,
-          text: "Instrument",
-          color: Colors.white,
-          iconData: Icons.piano,
-        ),
-        const SizedBox(width: 10),
-        BigTag(
-          active: false,
-          text: "Effect",
-          color: Colors.white,
-          iconData: Icons.waves,
-        ),
-        const SizedBox(width: 10),
-        BigTag(
-          active: false,
-          text: "Sequencer",
-          color: Colors.white,
-          iconData: Icons.music_note,
-        ),
-        const SizedBox(width: 10),
-        BigTag(
-          active: false,
-          text: "Song",
-          color: Colors.white,
-          iconData: Icons.equalizer,
-        ),
-        const SizedBox(width: 10),
-        BigTag(
-          active: false,
-          text: "Utility",
-          color: Colors.white,
-          iconData: Icons.developer_board,
-        ),
-        const SizedBox(width: 10),
-        NewInstrumentButton(
-          onPressed: () {
-            print("New instrument");
-          },
-        ),
-      ],
-    );
-  }
-}
-
 class SearchBar extends StatelessWidget {
   SearchBar({required this.onFilter});
 
@@ -346,6 +202,273 @@ class SearchBar extends StatelessWidget {
   }
 }
 
+class BigTags extends StatelessWidget {
+  BigTags({
+    required this.onEditPressed,
+    required this.onNewPressed,
+    required this.onSearch,
+  });
+
+  void Function() onEditPressed;
+  void Function() onNewPressed;
+  void Function(String) onSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SearchBar(onFilter: onSearch),
+        Expanded(
+          child: Container(),
+        ),
+        const SizedBox(width: 10),
+        BigTagDropdown(
+          text: "Instrument",
+          color: Colors.white,
+          iconData: Icons.piano,
+          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+        ),
+        const SizedBox(width: 10),
+        BigTagDropdown(
+          text: "Effect",
+          color: Colors.white,
+          iconData: Icons.waves,
+          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+        ),
+        const SizedBox(width: 10),
+        BigTagDropdown(
+          text: "Sequencer",
+          color: Colors.white,
+          iconData: Icons.music_note,
+          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+        ),
+        const SizedBox(width: 10),
+        BigTagDropdown(
+          text: "Song",
+          color: Colors.white,
+          iconData: Icons.equalizer,
+          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+        ),
+        const SizedBox(width: 10),
+        BigTagDropdown(
+          text: "Utility",
+          color: Colors.white,
+          iconData: Icons.developer_board,
+          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+        ),
+        const SizedBox(width: 10),
+        NewInstrumentButton(
+          onPressed: () {
+            print("New instrument");
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class BigTagDropdown extends StatefulWidget {
+  BigTagDropdown({
+    required this.text,
+    required this.color,
+    required this.iconData,
+    required this.items,
+  });
+
+  String text;
+  Color color;
+  IconData iconData;
+  List<String> items;
+
+  @override
+  State<BigTagDropdown> createState() => _BigTagDropdown();
+}
+
+class _BigTagDropdown extends State<BigTagDropdown>
+    with TickerProviderStateMixin {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+
+  bool hovering = false;
+  bool active = false;
+
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+
+  void toggleDropdown({bool? open}) async {
+    if (_isOpen || open == false) {
+      _overlayEntry?.remove();
+      setState(() {
+        _isOpen = false;
+      });
+    } else if (!_isOpen || open == true) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+      setState(() => _isOpen = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusScopeNode.dispose();
+    super.dispose();
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+
+    var size = renderBox.size;
+    var offset = renderBox.localToGlobal(Offset.zero);
+
+    return OverlayEntry(
+      maintainState: false,
+      opaque: false,
+      builder: (entryContext) {
+        return FocusScope(
+          node: _focusScopeNode,
+          child: GestureDetector(
+            onTap: () {
+              toggleDropdown(open: false);
+            },
+            onSecondaryTap: () {
+              toggleDropdown(open: false);
+            },
+            onPanStart: (e) {
+              toggleDropdown(open: false);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: offset.dx - 50,
+                    top: offset.dy + size.height + 5,
+                    child: CompositedTransformFollower(
+                      offset: Offset(0, size.height),
+                      link: _layerLink,
+                      showWhenUnlinked: false,
+                      child: Material(
+                        elevation: 0,
+                        borderRadius: BorderRadius.zero,
+                        color: Colors.transparent,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                          child: Container(
+                            width: 400,
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(40, 40, 40, 1.0),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: const Color.fromRGBO(50, 50, 50, 1.0),
+                                width: 2.0,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: widget.items.map(
+                                (text) {
+                                  return MoreElement(
+                                    name: text,
+                                    onTap: (n) {
+                                      // widget.onAction(n);
+                                      toggleDropdown(open: false);
+                                    },
+                                  );
+                                },
+                              ).toList(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            hovering = true;
+          });
+        },
+        onExit: (e) {
+          setState(() {
+            hovering = false;
+          });
+        },
+        child: GestureDetector(
+          onTap: () {
+            toggleDropdown();
+          },
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+            decoration: BoxDecoration(
+              color: (hovering || _isOpen)
+                  ? const Color.fromRGBO(40, 40, 40, 1.0)
+                  : const Color.fromRGBO(30, 30, 30, 1.0),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(5),
+              ),
+              border: Border.all(
+                color: active ? Colors.white : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      widget.iconData,
+                      size: 18,
+                      color: active ? Colors.white : Colors.grey,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      widget.text,
+                      style: TextStyle(
+                        color: active ? Colors.white : Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: 30,
+                  height: 40,
+                  child: Icon(
+                    Icons.arrow_drop_down,
+                    color: active ? Colors.white : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class BigTag extends StatelessWidget {
   BigTag({
     required this.active,
@@ -366,7 +489,9 @@ class BigTag extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(40, 40, 40, 1.0),
-        borderRadius: const BorderRadius.all(Radius.circular(5)),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(5),
+        ),
         border: Border.all(
           color: active ? Colors.white : Colors.transparent,
           width: 2,
