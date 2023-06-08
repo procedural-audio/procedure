@@ -235,13 +235,15 @@ class PatchInfo {
     return null;
   }
 
-  void save() async {
+  Future<bool> save() async {
     print("Saving patch info");
     File file = File(directory.path + "/info.json");
     await file.writeAsString(jsonEncode({
       "name": name.value,
       "description": description.value,
     }));
+
+    return true;
   }
 
   final Directory directory;

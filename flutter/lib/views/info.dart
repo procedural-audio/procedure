@@ -95,7 +95,7 @@ class ProjectInfo {
     return null;
   }
 
-  void save() async {
+  Future<bool> save() async {
     print("Saving project info " + toJson().toString());
     File file = File(directory.path + "/project.json");
     await file.writeAsString(
@@ -103,6 +103,8 @@ class ProjectInfo {
         toJson(),
       ),
     );
+
+    return true;
   }
 
   Future<int> getPatchCount() async {

@@ -156,12 +156,12 @@ class _Window extends State<Window> {
     }
   }
 
-  void unloadProject() {
+  void unloadProject() async {
     Navigator.pop(context);
 
     widget.app.project.value?.info.date.value = DateTime.now();
-    widget.app.project.value?.info.save();
-    widget.app.project.value?.patch.value.info.save();
+    await widget.app.project.value?.info.save();
+    await widget.app.project.value?.patch.value.info.save();
 
     widget.app.project.value?.patch.value.disableTick();
     widget.app.project.value = null;
