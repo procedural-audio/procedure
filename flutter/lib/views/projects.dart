@@ -23,6 +23,33 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   String searchText = "";
   bool editing = false;
 
+  void newProject() async {
+    print("Calling new project");
+    var newName = "New Project";
+    var newPath = widget.app.assets.projects.directory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = "New Project " + i.toString();
+      newPath = widget.app.assets.projects.directory.path + "/" + newName;
+      i++;
+    }
+
+    var newInfo = ProjectInfo(
+      directory: Directory(newPath),
+      name: ValueNotifier(newName),
+      description: ValueNotifier("A new project description"),
+      image: ValueNotifier(null),
+      date: ValueNotifier(DateTime.now()),
+      tags: [],
+    );
+
+    await newInfo.save();
+
+    widget.app.assets.projects.list().value.add(newInfo);
+    widget.app.assets.projects.list().notifyListeners();
+  }
+
   void duplicateProject(ProjectInfo info) async {
     var newName = info.name.value + " (copy)";
     var newPath = widget.app.assets.projects.directory.path + "/" + newName;
@@ -74,9 +101,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                   });
                 },
                 onNewPressed: () {
-                  setState(() {
-                    print("New instrument");
-                  });
+                  newProject();
                 },
                 onSearch: (s) {
                   setState(() {
@@ -368,7 +393,7 @@ class BigTags extends StatelessWidget {
         const SizedBox(width: 10),
         NewInstrumentButton(
           onPressed: () {
-            print("New instrument");
+            onNewPressed();
           },
         ),
       ],

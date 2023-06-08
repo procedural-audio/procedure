@@ -72,7 +72,7 @@ class Project {
   }
 
   void loadPatch(PatchInfo patchInfo, Core core) async {
-    var newPatch = Patch.load(patchInfo, PLUGINS);
+    var newPatch = await Patch.load(patchInfo, PLUGINS);
     if (newPatch != null) {
       core.setPatch(newPatch);
       patch.value = newPatch;
@@ -86,11 +86,15 @@ class Project {
   static Future<Project?> load(ProjectInfo info, Core core) async {
     var directory = Directory(info.directory.path + "/patches");
 
+    if (!await directory.exists()) {
+      await directory.create();
+    }
+
     await for (var item in directory.list()) {
       var patchDirectory = Directory(item.path);
       var patchInfo = await PatchInfo.load(patchDirectory);
       if (patchInfo != null) {
-        var patch = Patch.load(patchInfo, PLUGINS);
+        var patch = await Patch.load(patchInfo, PLUGINS);
         if (patch != null) {
           print("Loaded new project and patch");
           return Project(
@@ -124,28 +128,35 @@ class Project {
 
   void scanPatches() async {
     List<PatchInfo> infos = [];
-    var patchesDir = Directory(info.directory.path + "/patches").list();
-    await for (var patch in patchesDir) {
-      var patchDirectory = Directory(patch.path);
-      var info = await PatchInfo.load(patchDirectory);
-      if (info != null) {
-        infos.add(info);
-        infos.sort((a, b) => a.name.value.compareTo(b.name.value));
-        patches.value = infos;
+    var patchesDir = Directory(info.directory.path + "/patches");
+
+    if (await patchesDir.exists()) {
+      var items = patchesDir.list();
+      await for (var item in items) {
+        var dir = Directory(item.path);
+        var info = await PatchInfo.load(dir);
+        if (info != null) {
+          infos.add(info);
+          infos.sort((a, b) => a.name.value.compareTo(b.name.value));
+          patches.value = infos;
+        }
       }
     }
   }
 
   void scanInterfaces() async {
     List<InterfaceInfo> infos = [];
-    var interfacesDir = Directory(info.directory.path + "/interfaces").list();
+    var interfacesDir = Directory(info.directory.path + "/interfaces");
 
-    await for (var interfaceItem in interfacesDir) {
-      var interfaceDirectory = Directory(interfaceItem.path);
-      var info = await InterfaceInfo.load(interfaceDirectory);
-      if (info != null) {
-        infos.add(info);
-        interfaces.value = infos;
+    if (await interfacesDir.exists()) {
+      var items = interfacesDir.list();
+      await for (var item in items) {
+        var dir = Directory(item.path);
+        var info = await InterfaceInfo.load(dir);
+        if (info != null) {
+          infos.add(info);
+          interfaces.value = infos;
+        }
       }
     }
   }

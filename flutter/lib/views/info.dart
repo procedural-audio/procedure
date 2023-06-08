@@ -97,7 +97,13 @@ class ProjectInfo {
 
   Future<bool> save() async {
     print("Saving project info " + toJson().toString());
+
+    if (!await directory.exists()) {
+      await directory.create();
+    }
+
     File file = File(directory.path + "/project.json");
+
     await file.writeAsString(
       jsonEncode(
         toJson(),
@@ -107,7 +113,7 @@ class ProjectInfo {
     return true;
   }
 
-  Future<int> getPatchCount() async {
+  /*Future<int> getPatchCount() async {
     Directory presetsDirectory = Directory(directory.path + "/patches");
     if (await presetsDirectory.exists()) {
       return presetsDirectory.list().length;
@@ -144,7 +150,7 @@ class ProjectInfo {
     }
 
     return count;
-  }
+  }*/
 
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
     File? image;

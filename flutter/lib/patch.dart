@@ -211,9 +211,9 @@ class PatchInfo {
 
   static PatchInfo blank(Directory directory) {
     return PatchInfo(
-      directory: Directory(directory.path + "New Patch.json"),
+      directory: Directory(directory.path + "/New Patch"),
       name: ValueNotifier("New Patch"),
-      description: ValueNotifier("Blank patch description"),
+      description: ValueNotifier("New patch description"),
     );
   }
 
@@ -236,7 +236,12 @@ class PatchInfo {
   }
 
   Future<bool> save() async {
+    if (!await directory.exists()) {
+      await directory.create();
+    }
+
     print("Saving patch info");
+
     File file = File(directory.path + "/info.json");
     await file.writeAsString(jsonEncode({
       "name": name.value,
@@ -269,9 +274,13 @@ class Patch extends StatefulWidget {
     );
   }
 
-  static Patch? load(PatchInfo info, Plugins plugins) {
+  static Future<Patch?> load(PatchInfo info, Plugins plugins) async {
     var rawPatch = RawPatch.create();
     var file = File(info.directory.path + "/patch.json");
+
+    if (!file.existsSync()) {
+      return null;
+    }
 
     if (rawPatch.load(file, plugins)) {
       return Patch(
