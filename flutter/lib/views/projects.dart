@@ -23,6 +23,37 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   String searchText = "";
   bool editing = false;
 
+  void duplicateProject(ProjectInfo info) async {
+    var newName = info.name.value + " (copy)";
+    var newPath = widget.app.assets.projects.directory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = info.name.value + " (copy " + i.toString() + ")";
+      newPath = widget.app.assets.projects.directory.path + "/" + newName;
+      i++;
+    }
+
+    await Process.run("cp", ["-r", info.directory.path, newPath]);
+    var newInfo = await ProjectInfo.load(newPath);
+
+    if (newInfo != null) {
+      newInfo.name.value = newName;
+      newInfo.date.value = DateTime.now();
+      await newInfo.save();
+
+      widget.app.assets.projects.list().value.add(newInfo);
+      widget.app.assets.projects.list().notifyListeners();
+    }
+  }
+
+  void removeProject(ProjectInfo info) async {
+    print("Removing project");
+    await info.directory.delete(recursive: true);
+    widget.app.assets.projects.list().value.remove(info);
+    widget.app.assets.projects.list().notifyListeners();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -101,8 +132,12 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                         onOpen: (info) {
                           widget.onLoadProject(info);
                         },
-                        onDuplicate: (info) {},
-                        onDelete: (info) {},
+                        onDuplicate: (info) {
+                          duplicateProject(info);
+                        },
+                        onDelete: (info) {
+                          removeProject(info);
+                        },
                       );
                     },
                   );

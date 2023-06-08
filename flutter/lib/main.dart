@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
-import 'package:metasampler/ui/code_editor/code_text_field.dart';
 import 'package:metasampler/views/newTopBar.dart';
 
 import 'dart:math';
 
-import 'projects.dart';
 import 'core.dart';
+import 'projects.dart';
 import 'plugins.dart';
 
 import 'views/info.dart';
+import 'views/projects.dart';
 import 'views/settings.dart';
-import 'views/bar.dart';
 
 import 'ui/ui.dart';
-import 'views/projects.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +24,6 @@ void main(List<String> args) {
         core: Core.create(),
         assets: Assets.platformDefault(),
         project: ValueNotifier(null),
-        // project: ValueNotifier(Project.blank()),
       ),
     );
   } else {
@@ -36,7 +33,6 @@ void main(List<String> args) {
         core: Core.from(addr),
         assets: Assets.platformDefault(),
         project: ValueNotifier(null),
-        // project: ValueNotifier(Project.blank()),
       ),
     );
   }
@@ -185,181 +181,6 @@ class _Window extends State<Window> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class CodeEditor extends StatefulWidget {
-  @override
-  _CodeEditor createState() => _CodeEditor();
-}
-
-class _CodeEditor extends State<CodeEditor> {
-  final codeController = CodeController(
-    modifiers: [const IndentModifier(handleBrackets: true)],
-    stringMap: const {
-      'function': TextStyle(color: Color(0xfffb7b72)),
-      'if': TextStyle(color: Color(0xfffb7b72)),
-      'then': TextStyle(color: Color(0xfffb7b72)),
-      'else': TextStyle(color: Color(0xfffb7b72)),
-      'end': TextStyle(color: Color(0xfffb7b72)),
-      'return': TextStyle(color: Color(0xfffb7b72)),
-      'print': TextStyle(color: Color(0xff74b8f4)),
-      '"': TextStyle(color: Color(0xffa5d6ff)),
-    },
-    text: """function fact (n)
-      if n == 0 then
-        return 1
-      else
-        return n * fact(n-1)
-      end
-    end
-    
-    print("enter a number:")
-    a = io.read("*number")        -- read a number
-    print(fact(a))""",
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Column(
-          children: [
-            Container(
-              width: 400,
-              height: 30,
-              decoration: const BoxDecoration(color: Colors.grey),
-            ),
-            SizedBox(
-              width: 400,
-              height: constraints.maxHeight - 30,
-              child: CodeField(
-                isDense: true,
-                controller: codeController,
-                lineNumberStyle: const LineNumberStyle(
-                  width: 30,
-                  textStyle: TextStyle(
-                    color: Color.fromRGBO(100, 100, 100, 1.0),
-                    fontSize: 10,
-                  ),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xffc9d1d9),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class ModuleMenu extends StatefulWidget {
-  @override
-  _ModuleMenu createState() => _ModuleMenu();
-}
-
-class _ModuleMenu extends State<ModuleMenu> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 150,
-      decoration: BoxDecoration(
-        color: MyTheme.grey20,
-        border: Border.all(color: MyTheme.grey40),
-      ),
-      child: Column(
-        children: [
-          ModuleMenuItem(
-            text: "Presets",
-            iconData: Icons.view_agenda,
-            onTap: () {
-              print("Tapped item");
-            },
-          ),
-          ModuleMenuItem(
-            text: "Tutorial",
-            iconData: Icons.description,
-            onTap: () {
-              print("Tapped item");
-            },
-          ),
-          ModuleMenuItem(
-            text: "Duplicate",
-            iconData: Icons.copy,
-            onTap: () {
-              print("Tapped item");
-            },
-          ),
-          ModuleMenuItem(
-            text: "Delete",
-            iconData: Icons.delete,
-            onTap: () {
-              print("Tapped item");
-            },
-          ),
-          const SizedBox(
-            height: 5,
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class ModuleMenuItem extends StatefulWidget {
-  ModuleMenuItem({
-    required this.text,
-    required this.iconData,
-    required this.onTap,
-  });
-
-  String text;
-  IconData iconData;
-  void Function() onTap;
-
-  @override
-  _ModuleMenuItem createState() => _ModuleMenuItem();
-}
-
-class _ModuleMenuItem extends State<ModuleMenuItem> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 30,
-      decoration: BoxDecoration(
-        color: MyTheme.grey20,
-      ),
-      child: GestureDetector(
-        child: Row(
-          children: [
-            SizedBox(
-              width: 40,
-              child: Icon(
-                widget.iconData,
-                color: Colors.white,
-                size: 14,
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: Text(
-                  widget.text,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 }

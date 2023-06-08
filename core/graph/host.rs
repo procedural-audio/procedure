@@ -2,8 +2,6 @@ use pa_dsp::*;
 
 use crate::graph::*;
 
-use std::sync::Arc;
-
 pub struct Host {
     pub graph: Option<Box<Graph>>,
     pub sample_rate: u32,
