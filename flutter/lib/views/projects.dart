@@ -94,7 +94,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     ),
                     itemCount: filteredProjects.length,
                     itemBuilder: (BuildContext ctx, index) {
-                      return BrowserViewElement(
+                      return ProjectPreview(
                         index: index,
                         editing: editing,
                         project: filteredProjects[index],
@@ -112,31 +112,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class InstrumentEditor extends StatefulWidget {
-  InstrumentEditor({
-    required this.app,
-    required this.onSave,
-    required this.onCancel,
-  });
-
-  App app;
-  void Function() onSave;
-  void Function() onCancel;
-
-  @override
-  State<InstrumentEditor> createState() => _InstrumentEditor();
-}
-
-class _InstrumentEditor extends State<InstrumentEditor> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 400,
-      height: 400,
     );
   }
 }
@@ -202,6 +177,14 @@ class SearchBar extends StatelessWidget {
   }
 }
 
+class TagRow {
+  const TagRow({required this.name, required this.color, required this.tags});
+
+  final String name;
+  final Color color;
+  final List<String> tags;
+}
+
 class BigTags extends StatelessWidget {
   BigTags({
     required this.onEditPressed,
@@ -226,35 +209,126 @@ class BigTags extends StatelessWidget {
           text: "Instrument",
           color: Colors.white,
           iconData: Icons.piano,
-          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+          rows: const [
+            TagRow(
+              name: "Sources",
+              color: Colors.red,
+              tags: [
+                "Sampled",
+                "Multi-sampled",
+                "Physical Modelling",
+              ],
+            ),
+            TagRow(
+              name: "Keyboards",
+              color: Colors.red,
+              tags: [
+                "Acoustic Piano",
+                "Electric Piano",
+                "Harpsichord",
+                "Clavichord",
+              ],
+            ),
+            TagRow(
+              name: "Guitars",
+              color: Colors.red,
+              tags: [
+                "Acoustic Guitar",
+                "Electric Guitar",
+                "Mandolin",
+                "Bass Guitar",
+              ],
+            ),
+            TagRow(
+              name: "Synthesizer",
+              color: Colors.red,
+              tags: [
+                "Synth Lead",
+                "Synth Pluck",
+                "Synth Pad",
+                "Synth Bass",
+                "Digital",
+                "Virtual Analog",
+              ],
+            ),
+            TagRow(
+              name: "Orchestral",
+              color: Colors.red,
+              tags: [
+                "Strings",
+                "Woodwinds",
+                "Brass",
+                "Percussion",
+              ],
+            ),
+            TagRow(
+              name: "Orchestral",
+              color: Colors.red,
+              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
+            ),
+            TagRow(
+              name: "Orchestral",
+              color: Colors.red,
+              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
+            ),
+            TagRow(
+              name: "Orchestral",
+              color: Colors.red,
+              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
+            ),
+          ],
         ),
         const SizedBox(width: 10),
         BigTagDropdown(
           text: "Effect",
           color: Colors.white,
           iconData: Icons.waves,
-          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+          rows: const [
+            TagRow(
+              name: "Row",
+              color: Colors.red,
+              tags: ["Item 1", "Item 2"],
+            ),
+          ],
         ),
         const SizedBox(width: 10),
         BigTagDropdown(
           text: "Sequencer",
           color: Colors.white,
           iconData: Icons.music_note,
-          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+          rows: const [
+            TagRow(
+              name: "Row",
+              color: Colors.red,
+              tags: ["Item 1", "Item 2"],
+            ),
+          ],
         ),
         const SizedBox(width: 10),
         BigTagDropdown(
           text: "Song",
           color: Colors.white,
           iconData: Icons.equalizer,
-          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+          rows: const [
+            TagRow(
+              name: "Row",
+              color: Colors.red,
+              tags: ["Item 1", "Item 2"],
+            ),
+          ],
         ),
         const SizedBox(width: 10),
         BigTagDropdown(
           text: "Utility",
           color: Colors.white,
           iconData: Icons.developer_board,
-          items: const ["Item 1", "Item 2", "Item 3", "Item 4"],
+          rows: const [
+            TagRow(
+              name: "Row",
+              color: Colors.red,
+              tags: ["Item 1", "Item 2"],
+            ),
+          ],
         ),
         const SizedBox(width: 10),
         NewInstrumentButton(
@@ -272,13 +346,13 @@ class BigTagDropdown extends StatefulWidget {
     required this.text,
     required this.color,
     required this.iconData,
-    required this.items,
+    required this.rows,
   });
 
   String text;
   Color color;
   IconData iconData;
-  List<String> items;
+  List<TagRow> rows;
 
   @override
   State<BigTagDropdown> createState() => _BigTagDropdown();
@@ -294,6 +368,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
   bool active = false;
 
   final FocusScopeNode _focusScopeNode = FocusScopeNode();
+  ScrollController _scrollController = ScrollController();
 
   void toggleDropdown({bool? open}) async {
     if (_isOpen || open == false) {
@@ -355,30 +430,47 @@ class _BigTagDropdown extends State<BigTagDropdown>
                         color: Colors.transparent,
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-                          child: Container(
-                            width: 400,
-                            decoration: BoxDecoration(
-                              color: const Color.fromRGBO(40, 40, 40, 1.0),
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: const Color.fromRGBO(50, 50, 50, 1.0),
-                                width: 2.0,
+                          child: GestureDetector(
+                            onTap: () {},
+                            onSecondaryTap: () {},
+                            onPanStart: (e) {},
+                            child: Container(
+                              width: 500,
+                              decoration: BoxDecoration(
+                                color: const Color.fromRGBO(40, 40, 40, 1.0),
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: const Color.fromRGBO(60, 60, 60, 1.0),
+                                  width: 1.0,
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: widget.items.map(
-                                (text) {
-                                  return MoreElement(
-                                    name: text,
-                                    onTap: (n) {
-                                      // widget.onAction(n);
-                                      toggleDropdown(open: false);
-                                    },
-                                  );
-                                },
-                              ).toList(),
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: _scrollController,
+                                child: SingleChildScrollView(
+                                  controller: _scrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: widget.rows.map(
+                                        (e) {
+                                          return TagDropdownRow(
+                                            name: e.name,
+                                            tags: e.tags,
+                                            onTap: (n) {
+                                              // widget.onAction(n);
+                                              toggleDropdown(open: false);
+                                            },
+                                          );
+                                        },
+                                      ).toList(),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -469,110 +561,8 @@ class _BigTagDropdown extends State<BigTagDropdown>
   }
 }
 
-class BigTag extends StatelessWidget {
-  BigTag({
-    required this.active,
-    required this.text,
-    required this.color,
-    required this.iconData,
-  });
-
-  String text;
-  Color color;
-  IconData iconData;
-  bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.fromLTRB(10, 10, 15, 10),
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(40, 40, 40, 1.0),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(5),
-        ),
-        border: Border.all(
-          color: active ? Colors.white : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            iconData,
-            size: 18,
-            color: active ? Colors.white : Colors.grey,
-          ),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: TextStyle(
-              color: active ? Colors.white : Colors.grey,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BrowserSearchBar extends StatelessWidget {
-  BrowserSearchBar({required this.onFilter});
-
-  void Function(String) onFilter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                TagDropdown(
-                  value: "Type",
-                  tags: const [
-                    "Synthesizer",
-                    "Sampler",
-                    "Effect",
-                    "Sequencer",
-                    "Song",
-                    "Application",
-                  ],
-                  onSelect: (s) {},
-                ),
-                TagDropdown(
-                  value: "Attributes",
-                  tags: const [
-                    "Analog",
-                    "Generative",
-                  ],
-                  onSelect: (s) {},
-                ),
-                TagDropdown(
-                  value: "Other",
-                  tags: const [
-                    "Analog",
-                    "Generative",
-                  ],
-                  onSelect: (s) {},
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class BrowserViewElement extends StatefulWidget {
-  BrowserViewElement({
+class ProjectPreview extends StatefulWidget {
+  ProjectPreview({
     required this.index,
     required this.editing,
     required this.project,
@@ -589,10 +579,10 @@ class BrowserViewElement extends StatefulWidget {
   void Function(ProjectInfo) onDelete;
 
   @override
-  State<BrowserViewElement> createState() => _BrowserViewElement();
+  State<ProjectPreview> createState() => _ProjectPreview();
 }
 
-class _BrowserViewElement extends State<BrowserViewElement>
+class _ProjectPreview extends State<ProjectPreview>
     with TickerProviderStateMixin {
   bool mouseOver = false;
   bool playing = false;
@@ -699,7 +689,7 @@ class _BrowserViewElement extends State<BrowserViewElement>
               ),
             ),
           ),
-          BrowserViewElementDescription(
+          ProjectPreviewDescription(
             project: widget.project,
             onAction: (action) {
               if (action == "Open Project") {
@@ -719,8 +709,8 @@ class _BrowserViewElement extends State<BrowserViewElement>
   }
 }
 
-class BrowserViewElementDescription extends StatefulWidget {
-  BrowserViewElementDescription({
+class ProjectPreviewDescription extends StatefulWidget {
+  ProjectPreviewDescription({
     required this.project,
     required this.onAction,
   });
@@ -729,12 +719,11 @@ class BrowserViewElementDescription extends StatefulWidget {
   void Function(String) onAction;
 
   @override
-  State<BrowserViewElementDescription> createState() =>
-      _BrowserViewElementDescription();
+  State<ProjectPreviewDescription> createState() =>
+      _ProjectPreviewDescription();
 }
 
-class _BrowserViewElementDescription
-    extends State<BrowserViewElementDescription> {
+class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
   bool barHovering = false;
   bool editing = false;
 
@@ -1187,277 +1176,99 @@ class _MoreElement extends State<MoreElement> {
   }
 }
 
-/*class BrowserViewElementOverlay extends StatelessWidget {
-  BrowserViewElementOverlay({
-    required this.icon,
-    required this.alignment,
-    required this.onTap,
-    this.padding = EdgeInsets.zero,
-  });
+class TagDropdownRow extends StatefulWidget {
+  TagDropdownRow({required this.name, required this.tags, required this.onTap});
 
-  final Widget icon;
-  final Alignment alignment;
-  final EdgeInsets padding;
-  final Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: padding,
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(30, 30, 30, 1.0),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(20),
-              ),
-              border: Border.all(
-                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                width: 1.0,
-              ),
-            ),
-            child: icon,
-          ),
-        ),
-      ),
-    );
-  }
-}*/
-
-class TagDropdown extends StatefulWidget {
-  TagDropdown({
-    required this.value,
-    required this.tags,
-    required this.onSelect,
-    this.width,
-    this.height = 24,
-    this.decoration = const BoxDecoration(
-      color: Color.fromRGBO(20, 20, 20, 1.0),
-      borderRadius: BorderRadius.all(
-        Radius.circular(3),
-      ),
-    ),
-  });
-
-  String? value;
+  String name;
   List<String> tags;
-  void Function(String?) onSelect;
-  double? width;
-  double? height;
-  BoxDecoration decoration;
+  void Function(String) onTap;
 
   @override
-  State<TagDropdown> createState() => _TagDropdown();
+  State<TagDropdownRow> createState() => _TagDropdownRow();
 }
 
-class _TagDropdown extends State<TagDropdown> with TickerProviderStateMixin {
-  final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
-  bool _isOpen = false;
-  AnimationController? _animationController;
-
-  final FocusScopeNode _focusScopeNode = FocusScopeNode();
-  TextEditingController searchController = TextEditingController(text: "");
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 0));
-  }
-
-  void toggleDropdown({bool? open}) async {
-    if (_isOpen || open == false) {
-      await _animationController?.reverse();
-      _overlayEntry?.remove();
-      setState(() {
-        _isOpen = false;
-      });
-    } else if (!_isOpen || open == true) {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_overlayEntry!);
-      setState(() => _isOpen = true);
-      _animationController?.forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusScopeNode.dispose();
-    super.dispose();
-  }
-
+class _TagDropdownRow extends State<TagDropdownRow> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-      child: CompositedTransformTarget(
-        link: _layerLink,
-        child: GestureDetector(
-          onTap: () {
-            toggleDropdown();
-          },
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            decoration: BoxDecoration(
-                color: _isOpen
-                    ? const Color.fromRGBO(100, 100, 100, 1.0)
-                    : const Color.fromRGBO(50, 50, 50, 1.0),
-                borderRadius: const BorderRadius.all(Radius.circular(12))),
-            child: Text(
-              widget.value ?? "",
-              style: TextStyle(
-                fontSize: 12,
-                color: _isOpen
-                    ? const Color.fromRGBO(20, 20, 20, 1.0)
-                    : Colors.grey,
+    return SizedBox(
+      height: 30,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+              SizedBox(
+                width: 100,
+                child: Text(
+                  widget.name,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
+            ] +
+            widget.tags
+                .map(
+                  (e) => Tag(
+                    name: e,
+                    color: Colors.red,
+                    onTap: () {
+                      print("Tapped " + e);
+                    },
+                  ),
+                )
+                .toList(),
       ),
     );
   }
-
-  OverlayEntry _createOverlayEntry() {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-
-    var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
-
-    return OverlayEntry(
-      maintainState: false,
-      opaque: false,
-      builder: (entryContext) {
-        return FocusScope(
-          node: _focusScopeNode,
-          child: GestureDetector(
-            onTap: () {
-              toggleDropdown(open: false);
-            },
-            onSecondaryTap: () {
-              toggleDropdown(open: false);
-            },
-            onPanStart: (e) {
-              toggleDropdown(open: false);
-            },
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: offset.dx - 50,
-                    top: offset.dy + size.height + 5,
-                    child: CompositedTransformFollower(
-                      offset: Offset(0, size.height),
-                      link: _layerLink,
-                      showWhenUnlinked: false,
-                      child: Material(
-                        elevation: 0,
-                        borderRadius: BorderRadius.zero,
-                        color: Colors.transparent,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                              color: const Color.fromRGBO(30, 30, 30, 1.0),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color: const Color.fromRGBO(40, 40, 40, 1.0),
-                                  width: 1.0)),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: widget.tags.map((name) {
-                              return TagDropdownElement(
-                                name: name,
-                                onSelect: widget.onSelect,
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
-class TagDropdownElement extends StatefulWidget {
-  const TagDropdownElement({required this.name, required this.onSelect});
+class Tag extends StatefulWidget {
+  Tag({required this.name, required this.color, required this.onTap});
 
   final String name;
-  final void Function(String) onSelect;
+  final Color color;
+  final void Function() onTap;
 
   @override
-  State<TagDropdownElement> createState() => _TagDropdownElement();
+  State<Tag> createState() => _Tag();
 }
 
-class _TagDropdownElement extends State<TagDropdownElement> {
+class _Tag extends State<Tag> {
   bool hovering = false;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
+      padding: const EdgeInsets.only(right: 5),
       child: MouseRegion(
-        onEnter: (event) {
+        onEnter: (e) {
           setState(() {
             hovering = true;
           });
         },
-        onExit: (event) {
+        onExit: (e) {
           setState(() {
             hovering = false;
           });
         },
         child: GestureDetector(
-          onTap: () {
-            widget.onSelect(widget.name);
-          },
-          child: Container(
-            height: 22,
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              border: Border.all(
-                width: 1.0,
-                color: !hovering
-                    ? const Color.fromRGBO(60, 60, 60, 1.0)
-                    : const Color.fromRGBO(100, 100, 100, 1.0),
-              ),
+              borderRadius: BorderRadius.circular(5),
+              color: hovering
+                  ? const Color.fromRGBO(30, 30, 30, 1.0)
+                  : const Color.fromRGBO(20, 20, 20, 1.0),
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Row(
-                children: [
-                  Text(
-                    widget.name,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
+            child: Text(
+              widget.name,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: widget.color,
               ),
             ),
           ),
