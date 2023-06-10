@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
-import 'package:metasampler/views/newTopBar.dart';
 
 import 'dart:math';
 
@@ -10,9 +9,6 @@ import 'plugins.dart';
 
 import 'views/info.dart';
 import 'views/projects.dart';
-import 'views/settings.dart';
-
-import 'ui/ui.dart';
 
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();

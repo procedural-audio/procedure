@@ -30,7 +30,7 @@ class Assets {
     if (Platform.isMacOS) {
       return Assets("/Users/chasekanipe/Github/assets/");
     } else if (Platform.isLinux) {
-      return Assets("/home/chase/github/content/");
+      return Assets("/home/chase/github/assets/");
     }
 
     print("Assets not found in default platform location");

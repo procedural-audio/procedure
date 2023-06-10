@@ -187,8 +187,81 @@ class _Project extends State<Project> {
   @override
   Widget build(BuildContext context) {
     bool uiVisible = false;
+    return NewTopBar(
+      projectName: widget.info.name,
+      instViewVisible: uiVisible,
+      onViewSwitch: () {
+        setState(() {
+          uiVisible = !uiVisible;
+        });
+      },
+      onUserInterfaceEdit: () {
+        widget.ui.value?.toggleEditing();
+      },
+      onProjectClose: onProjectClose,
+      child: Builder(
+        builder: (context) {
+          if (uiVisible) {
+            return ValueListenableBuilder<UserInterface?>(
+              valueListenable: widget.ui,
+              builder: (context, ui, child) {
+                if (ui != null) {
+                  return ui;
+                } else {
+                  return Container();
+                }
+              },
+            );
+          } else {
+            return ValueListenableBuilder<Patch>(
+              valueListenable: widget.patch,
+              builder: (context, patch, child) {
+                return patch;
+              },
+            );
+          }
+        },
+      ),
+    );
 
-    return Column(
+    /*return NewTopBar(
+      projectName: widget.info.name,
+      instViewVisible: uiVisible,
+      onViewSwitch: () {
+        setState(() {
+          uiVisible = !uiVisible;
+        });
+      },
+      onUserInterfaceEdit: () {
+        widget.ui.value?.toggleEditing();
+      },
+      onProjectClose: onProjectClose,
+      child: Builder(
+        builder: (context) {
+          if (uiVisible) {
+            return ValueListenableBuilder<UserInterface?>(
+              valueListenable: widget.ui,
+              builder: (context, ui, child) {
+                if (ui != null) {
+                  return ui;
+                } else {
+                  return Container();
+                }
+              },
+            );
+          } else {
+            return ValueListenableBuilder<Patch>(
+              valueListenable: widget.patch,
+              builder: (context, patch, child) {
+                return patch;
+              },
+            );
+          }
+        },
+      ),
+    );*/
+
+    /*return Column(
       children: [
         SizedBox(
           height: 40,
@@ -232,6 +305,7 @@ class _Project extends State<Project> {
           ),
         ),
       ],
-    );
+    );*/
   }
 }
+

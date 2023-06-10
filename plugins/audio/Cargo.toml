@@ -10,7 +10,7 @@ xml-rs = "0.8"
 rand = "0.8"
 rlua = "*"
 signalsmith-stretch-sys = { git = "https://github.com/0xchase/signalsmith-stretch-sys" }
-daisysp-rs = { path = "../../../daisysp-rs/" }
+daisysp-rs = { git = "https://github.com/0xchase/daisysp-rs" }
 
 [lib]
 crate-type = ["cdylib"]

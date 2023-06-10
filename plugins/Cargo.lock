@@ -112,6 +112,7 @@ dependencies = [
 [[package]]
 name = "daisysp-rs"
 version = "0.1.0"
+source = "git+https://github.com/0xchase/daisysp-rs#0e9067b0b35309b52831c0ac45756274e41a0ec2"
 dependencies = [
  "daisysp-sys",
 ]
@@ -119,6 +120,7 @@ dependencies = [
 [[package]]
 name = "daisysp-sys"
 version = "0.1.0"
+source = "git+https://github.com/0xchase/daisysp-rs#0e9067b0b35309b52831c0ac45756274e41a0ec2"
 dependencies = [
  "bindgen",
  "cc",
