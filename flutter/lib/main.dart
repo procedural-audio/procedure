@@ -90,62 +90,18 @@ class _Window extends State<Window> {
   bool uiVisible = false;
 
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info, widget.app.core);
+    var project = await Project.load(info, widget.app.core, unloadProject);
     if (project != null) {
       widget.app.core.setPatch(project.patch.value);
-      widget.app.project.value?.patch.value.disableTick();
       widget.app.project.value = project;
 
       Navigator.push(
         context,
         MaterialPageRoute(
+          settings: const RouteSettings(name: "/project"),
           builder: (context) => Material(
             color: const Color.fromRGBO(10, 10, 10, 1.0),
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                  child: NewTopBar(
-                    app: widget.app,
-                    instViewVisible: uiVisible,
-                    onViewSwitch: () {
-                      setState(() {
-                        uiVisible = !uiVisible;
-                      });
-                    },
-                    onUserInterfaceEdit: () {
-                      project.ui.value?.toggleEditing();
-                    },
-                    onProjectClose: unloadProject,
-                  ),
-                ),
-                Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      if (uiVisible) {
-                        return ValueListenableBuilder<UserInterface?>(
-                          valueListenable: project.ui,
-                          builder: (context, ui, child) {
-                            if (ui != null) {
-                              return ui;
-                            } else {
-                              return Container();
-                            }
-                          },
-                        );
-                      } else {
-                        return ValueListenableBuilder<Patch>(
-                          valueListenable: project.patch,
-                          builder: (context, patch, child) {
-                            return patch;
-                          },
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
+            child: project,
           ),
         ),
       );
@@ -155,32 +111,17 @@ class _Window extends State<Window> {
   void unloadProject() async {
     Navigator.pop(context);
 
-    widget.app.project.value?.info.date.value = DateTime.now();
-    await widget.app.project.value?.info.save();
-    await widget.app.project.value?.patch.value.info.save();
-
-    widget.app.project.value?.patch.value.disableTick();
     widget.app.project.value = null;
     widget.app.core.setPatch(null);
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Container(
-          color: const Color.fromRGBO(10, 10, 10, 1.0),
-          child: ValueListenableBuilder<Project?>(
-            valueListenable: widget.app.project,
-            builder: (context, project, child) {
-              return ProjectsBrowser(
-                app: widget.app,
-                onLoadProject: loadProject,
-              );
-            },
-          ),
-        ),
-      ],
+    return ProjectsBrowser(
+      app: widget.app,
+      onLoadProject: loadProject,
     );
   }
 }

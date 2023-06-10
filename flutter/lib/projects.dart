@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
+import 'package:metasampler/views/newTopBar.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -48,17 +49,20 @@ class Projects {
 
 /* Project */
 
-class Project {
+class Project extends StatefulWidget {
   Project({
     required this.info,
     required this.patch,
     required this.ui,
+    required this.onUnload,
   }) {
     scanPatches();
     scanInterfaces();
   }
 
-  static Project blank() {
+  void Function() onUnload;
+
+  static Project blank(void Function() onUnload) {
     var projectDirectory =
         Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
@@ -68,6 +72,7 @@ class Project {
       info: info,
       patch: ValueNotifier(patch),
       ui: ValueNotifier(null),
+      onUnload: onUnload,
     );
   }
 
@@ -83,7 +88,8 @@ class Project {
     }
   }
 
-  static Future<Project?> load(ProjectInfo info, Core core) async {
+  static Future<Project?> load(
+      ProjectInfo info, Core core, void Function() onUnload) async {
     var directory = Directory(info.directory.path + "/patches");
 
     if (!await directory.exists()) {
@@ -101,6 +107,7 @@ class Project {
             info: info,
             patch: ValueNotifier(patch),
             ui: ValueNotifier(null),
+            onUnload: onUnload,
           );
         }
       }
@@ -111,6 +118,7 @@ class Project {
       info: info,
       patch: ValueNotifier(Patch.from(PatchInfo.blank(directory))),
       ui: ValueNotifier(null),
+      onUnload: onUnload,
     );
   }
 
@@ -159,5 +167,71 @@ class Project {
         }
       }
     }
+  }
+
+  @override
+  _Project createState() => _Project();
+}
+
+class _Project extends State<Project> {
+  void onProjectClose() async {
+    widget.info.date.value = DateTime.now();
+
+    await widget.info.save();
+    await widget.info.save();
+
+    widget.patch.value.disableTick();
+    widget.onUnload();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool uiVisible = false;
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 40,
+          child: NewTopBar(
+            projectName: widget.info.name,
+            instViewVisible: uiVisible,
+            onViewSwitch: () {
+              setState(() {
+                uiVisible = !uiVisible;
+              });
+            },
+            onUserInterfaceEdit: () {
+              widget.ui.value?.toggleEditing();
+            },
+            onProjectClose: onProjectClose,
+          ),
+        ),
+        Expanded(
+          child: Builder(
+            builder: (context) {
+              if (uiVisible) {
+                return ValueListenableBuilder<UserInterface?>(
+                  valueListenable: widget.ui,
+                  builder: (context, ui, child) {
+                    if (ui != null) {
+                      return ui;
+                    } else {
+                      return Container();
+                    }
+                  },
+                );
+              } else {
+                return ValueListenableBuilder<Patch>(
+                  valueListenable: widget.patch,
+                  builder: (context, patch, child) {
+                    return patch;
+                  },
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

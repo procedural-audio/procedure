@@ -10,16 +10,15 @@ import 'presets.dart';
 
 class NewTopBar extends StatefulWidget {
   NewTopBar({
-    required this.app,
+    required this.projectName,
     required this.instViewVisible,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
     required this.onProjectClose,
   });
 
-  String projectName = "New Project 1";
+  ValueNotifier<String> projectName;
 
-  App app;
   bool instViewVisible;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
@@ -85,12 +84,17 @@ class _NewTopBar extends State<NewTopBar> {
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                        child: Text(
-                          widget.projectName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: widget.projectName,
+                          builder: (context, projectName, child) {
+                            return Text(
+                              projectName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       Expanded(child: Container()),
