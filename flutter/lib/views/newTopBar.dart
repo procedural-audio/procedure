@@ -75,18 +75,18 @@ class _NewTopBar extends State<NewTopBar> {
                   child: Row(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                        padding: const EdgeInsets.only(left: 5),
                         child: IconButton(
                           onPressed: widget.onProjectClose,
                           icon: const Icon(
                             Icons.arrow_back_ios,
                             color: Colors.white,
-                            size: 16,
+                            size: 15,
                           ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                        padding: const EdgeInsets.only(bottom: 2),
                         child: ValueListenableBuilder<String>(
                           valueListenable: widget.projectName,
                           builder: (context, projectName, child) {
