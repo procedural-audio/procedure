@@ -1,3 +1,5 @@
+extern crate daisysp_rs;
+
 mod sampling;
 mod synthesis;
 mod distortion;
@@ -38,7 +40,7 @@ static PLUGIN: Plugin = Plugin {
         module::<AnalogOscillator>(),
         module::<WavetableOscillator>(),
         module::<synthesis::Noise>(),
-        module::<synthesis::Pluck>(),
+        module::<synthesis::PluckModule>(),
         // module::<AdditiveOscillator>(),
         // module::<HarmonicOscillator>(),
         // module::<modules::Noise>(),

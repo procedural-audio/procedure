@@ -2,7 +2,7 @@ use modules::conv::freq_to_note;
 
 use crate::*;
 
-pub struct Pluck {
+pub struct PluckModule {
     wave_index: u32,
     unison: f32,
     detune: f32,
@@ -14,10 +14,10 @@ pub struct Pluck {
 pub struct PluckVoice {
 	index: u32,
     string: daisysp_rs::KarplusString,
-	pluck: daisysp_rs::Pluck,
+	// pluck: daisysp_rs::Pluck,
 }
 
-impl Module for Pluck {
+impl Module for PluckModule {
     type Voice = PluckVoice;
 
     const INFO: Info = Info {
@@ -53,7 +53,7 @@ impl Module for Pluck {
         Self::Voice {
 			index,
             string: daisysp_rs::KarplusString::new(),
-			pluck: daisysp_rs::Pluck::new()
+			// pluck: daisysp_rs::Pluck::new()
         }
     }
 
@@ -213,7 +213,7 @@ impl Module for Pluck {
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
         voice.string.init(sample_rate as f32);
-		voice.pluck.init(sample_rate as f32, block_size);
+		// voice.pluck.init(sample_rate as f32, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -229,11 +229,11 @@ impl Module for Pluck {
 							voice.string.set_nonlinearity(self.detune);
 						}
 						1 => {
-							voice.pluck.trig();
+							/*voice.pluck.trig();
 							voice.pluck.set_freq(pitch);
 							voice.pluck.set_damp(self.unison);
 							voice.pluck.set_amp(self.detune);
-							voice.pluck.set_decay(self.spread);
+							voice.pluck.set_decay(self.spread);*/
 						}
 						_ => ()
 					}
@@ -242,7 +242,7 @@ impl Module for Pluck {
 				},
 				Event::Pitch(pitch) => {
 					voice.string.set_freq(pitch);
-					voice.pluck.set_freq(pitch);
+					// voice.pluck.set_freq(pitch);
 				},
 				Event::Pressure(pressure) => {
 					voice.string.set_brightness(pressure);
@@ -260,8 +260,8 @@ impl Module for Pluck {
 			}
 			1 => {
 				for o in outputs.audio[0].as_slice_mut().iter_mut() {
-					o.left = voice.pluck.gen();
-					o.right = o.left;
+					// o.left = voice.pluck.gen();
+					// o.right = o.left;
 				}
 			}
 			_ => ()
