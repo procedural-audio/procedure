@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
+import 'package:metasampler/views/presets.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -50,6 +51,7 @@ class Projects {
 
 class Project extends StatefulWidget {
   Project({
+    required this.core,
     required this.info,
     required this.patch,
     required this.ui,
@@ -59,15 +61,14 @@ class Project extends StatefulWidget {
     scanInterfaces();
   }
 
-  void Function() onUnload;
-
-  static Project blank(void Function() onUnload) {
+  static Project blank(Core core, void Function() onUnload) {
     var projectDirectory =
         Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
     var patch = Patch.from(PatchInfo.blank(patchDirectory));
     return Project(
+      core: core,
       info: info,
       patch: ValueNotifier(patch),
       ui: ValueNotifier(null),
@@ -75,7 +76,7 @@ class Project extends StatefulWidget {
     );
   }
 
-  void loadPatch(PatchInfo patchInfo, Core core) async {
+  void loadPatch(PatchInfo patchInfo) async {
     var newPatch = await Patch.load(patchInfo, PLUGINS);
     if (newPatch != null) {
       core.setPatch(newPatch);
@@ -88,7 +89,7 @@ class Project extends StatefulWidget {
   }
 
   static Future<Project?> load(
-      ProjectInfo info, Core core, void Function() onUnload) async {
+      Core core, ProjectInfo info, void Function() onUnload) async {
     var directory = Directory(info.directory.path + "/patches");
 
     if (!await directory.exists()) {
@@ -103,6 +104,7 @@ class Project extends StatefulWidget {
         if (patch != null) {
           print("Loaded new project and patch");
           return Project(
+            core: core,
             info: info,
             patch: ValueNotifier(patch),
             ui: ValueNotifier(null),
@@ -114,6 +116,7 @@ class Project extends StatefulWidget {
 
     print("Loaded blank patch");
     return Project(
+      core: core,
       info: info,
       patch: ValueNotifier(Patch.from(PatchInfo.blank(directory))),
       ui: ValueNotifier(null),
@@ -126,9 +129,11 @@ class Project extends StatefulWidget {
     await patch.value.save();
   }
 
+  Core core;
   final ProjectInfo info;
   final ValueNotifier<Patch> patch;
   final ValueNotifier<UserInterface?> ui;
+  void Function() onUnload;
 
   final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
   final ValueNotifier<List<InterfaceInfo>> interfaces = ValueNotifier([]);
@@ -177,6 +182,7 @@ const double sidebarWidth = 300;
 class _Project extends State<Project> {
   ProjectSidebarDisplay display = ProjectSidebarDisplay.None;
   bool uiVisible = false;
+  bool presetsVisible = false;
 
   void onProjectClose() async {
     widget.info.date.value = DateTime.now();
@@ -192,30 +198,6 @@ class _Project extends State<Project> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned(
-          // Project top bar
-          left: 0,
-          right: 0,
-          top: 0,
-          child: NewTopBar(
-            projectInfo: widget.info,
-            sidebarDisplay: display,
-            onSidebarChange: (ProjectSidebarDisplay newDisplay) {
-              setState(() {
-                display = newDisplay;
-              });
-            },
-            onViewSwitch: () {
-              setState(() {
-                uiVisible = !uiVisible;
-              });
-            },
-            onUserInterfaceEdit: () {
-              widget.ui.value?.toggleEditing();
-            },
-            onProjectClose: onProjectClose,
-          ),
-        ),
         Positioned(
           // Patch or user interface
           left: 0,
@@ -251,6 +233,62 @@ class _Project extends State<Project> {
                 }
               },
             ),
+          ),
+        ),
+        AnimatedPositioned(
+          left: 0,
+          right: 0,
+          top: presetsVisible ? 41 : -450,
+          bottom: 0,
+          curve: Curves.linearToEaseOut,
+          duration: const Duration(milliseconds: 300),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                presetsVisible = false;
+              });
+            },
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: PresetsView(
+                patches: widget.patches,
+                interfaces: widget.interfaces,
+                onLoadPatch: (info) {
+                  widget.loadPatch(info);
+                  print("Load patch");
+                },
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          // Project top bar
+          left: 0,
+          right: 0,
+          top: 0,
+          child: NewTopBar(
+            loadedPatch: widget.patch,
+            projectInfo: widget.info,
+            sidebarDisplay: display,
+            onPresetsButtonTap: () {
+              setState(() {
+                presetsVisible = !presetsVisible;
+              });
+            },
+            onSidebarChange: (ProjectSidebarDisplay newDisplay) {
+              setState(() {
+                display = newDisplay;
+              });
+            },
+            onViewSwitch: () {
+              setState(() {
+                uiVisible = !uiVisible;
+              });
+            },
+            onUserInterfaceEdit: () {
+              widget.ui.value?.toggleEditing();
+            },
+            onProjectClose: onProjectClose,
           ),
         ),
         AnimatedPositioned(

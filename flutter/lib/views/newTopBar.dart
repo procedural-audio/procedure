@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/views/presets.dart';
 
+import '../patch.dart';
 import '../projects.dart';
 import 'info.dart';
 
 class NewTopBar extends StatefulWidget {
   NewTopBar({
+    required this.loadedPatch,
     required this.projectInfo,
     required this.sidebarDisplay,
+    required this.onPresetsButtonTap,
     required this.onSidebarChange,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
@@ -15,9 +18,11 @@ class NewTopBar extends StatefulWidget {
   });
 
   ProjectInfo projectInfo;
+  ValueNotifier<Patch> loadedPatch;
   final ProjectSidebarDisplay sidebarDisplay;
 
   void Function(ProjectSidebarDisplay) onSidebarChange;
+  void Function() onPresetsButtonTap;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
   void Function() onProjectClose;
@@ -104,7 +109,10 @@ class _NewTopBar extends State<NewTopBar> {
               ],
             ),
           ),
-          PresetsButton(),
+          PresetsButton(
+            loadedPatch: widget.loadedPatch,
+            onTap: widget.onPresetsButtonTap,
+          ),
           Expanded(
             child: Row(
               children: [
@@ -545,7 +553,14 @@ class _NewTopBar extends State<NewTopBar> {
 }
 
 class PresetsButton extends StatefulWidget {
-  const PresetsButton({Key? key}) : super(key: key);
+  const PresetsButton({
+    required this.loadedPatch,
+    required this.onTap,
+    Key? key,
+  }) : super(key: key);
+
+  final ValueNotifier<Patch> loadedPatch;
+  final void Function() onTap;
 
   @override
   _PresetsButton createState() => _PresetsButton();
@@ -568,11 +583,9 @@ class _PresetsButton extends State<PresetsButton> {
         });
       },
       child: GestureDetector(
-        onTap: () {
-          print("Presets");
-        },
+        onTap: widget.onTap,
         child: Container(
-          width: 400,
+          width: 450,
           height: 30,
           decoration: BoxDecoration(
             color: (hovering || expanded)
@@ -581,6 +594,25 @@ class _PresetsButton extends State<PresetsButton> {
             borderRadius: const BorderRadius.all(
               Radius.circular(5),
             ),
+          ),
+          child: ValueListenableBuilder<Patch>(
+            valueListenable: widget.loadedPatch,
+            builder: (context, patch, child) {
+              return ValueListenableBuilder<String>(
+                valueListenable: patch.info.name,
+                builder: (context, name, child) {
+                  return Center(
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ),

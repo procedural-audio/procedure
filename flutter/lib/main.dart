@@ -64,7 +64,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(splashColor: Colors.transparent),
       home: Scaffold(
-        backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+        backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
         body: Window(this),
       ),
     );
@@ -84,7 +84,7 @@ class _Window extends State<Window> {
   bool uiVisible = false;
 
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info, widget.app.core, unloadProject);
+    var project = await Project.load(widget.app.core, info, unloadProject);
     if (project != null) {
       widget.app.core.setPatch(project.patch.value);
       widget.app.project.value = project;

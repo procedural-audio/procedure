@@ -23,47 +23,57 @@ class PresetsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<PatchInfo>>(
-      valueListenable: patches,
-      builder: (context, patches, child) {
-        List<Widget> items = <Widget>[] +
-            interfaces.value
-                .map((e) => InterfaceItem(
-                      info: e,
-                      selectedItem: selectedItem,
-                    ))
-                .toList() +
-            patches
-                .map((info) => GraphItem(
-                      info,
-                      selectedItem,
-                    ))
-                .toList();
+    return Container(
+      width: 450,
+      height: 450,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(30, 30, 30, 1.0),
+        borderRadius: BorderRadius.all(
+          Radius.circular(5),
+        ),
+      ),
+      child: ValueListenableBuilder<List<PatchInfo>>(
+        valueListenable: patches,
+        builder: (context, patches, child) {
+          List<Widget> items = <Widget>[] +
+              interfaces.value
+                  .map((e) => InterfaceItem(
+                        info: e,
+                        selectedItem: selectedItem,
+                      ))
+                  .toList() +
+              patches
+                  .map((info) => GraphItem(
+                        info,
+                        selectedItem,
+                      ))
+                  .toList();
 
-        return Row(
-          children: [
-            Expanded(
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Column(
-                      children: items,
+          return Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                        children: items,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: PresetsViewItemEditor(
-                selectedItem: selectedItem,
-                onLoadPatch: onLoadPatch,
-              ),
-            )
-          ],
-        );
-      },
+              Expanded(
+                child: PresetsViewItemEditor(
+                  selectedItem: selectedItem,
+                  onLoadPatch: onLoadPatch,
+                ),
+              )
+            ],
+          );
+        },
+      ),
     );
   }
 }
