@@ -20,7 +20,6 @@ class Projects {
   }
 
   final Directory directory;
-
   final ValueNotifier<List<ProjectInfo>> _projects = ValueNotifier([]);
 
   Future<Project?> load(String name) async {
@@ -123,8 +122,8 @@ class Project extends StatefulWidget {
   }
 
   void save() async {
-    info.save();
-    patch.value.save();
+    await info.save();
+    await patch.value.save();
   }
 
   final ProjectInfo info;
@@ -173,7 +172,12 @@ class Project extends StatefulWidget {
   _Project createState() => _Project();
 }
 
+const double sidebarWidth = 300;
+
 class _Project extends State<Project> {
+  ProjectSidebarDisplay display = ProjectSidebarDisplay.None;
+  bool uiVisible = false;
+
   void onProjectClose() async {
     widget.info.date.value = DateTime.now();
 
@@ -186,88 +190,21 @@ class _Project extends State<Project> {
 
   @override
   Widget build(BuildContext context) {
-    bool uiVisible = false;
-    return NewTopBar(
-      projectName: widget.info.name,
-      instViewVisible: uiVisible,
-      onViewSwitch: () {
-        setState(() {
-          uiVisible = !uiVisible;
-        });
-      },
-      onUserInterfaceEdit: () {
-        widget.ui.value?.toggleEditing();
-      },
-      onProjectClose: onProjectClose,
-      child: Builder(
-        builder: (context) {
-          if (uiVisible) {
-            return ValueListenableBuilder<UserInterface?>(
-              valueListenable: widget.ui,
-              builder: (context, ui, child) {
-                if (ui != null) {
-                  return ui;
-                } else {
-                  return Container();
-                }
-              },
-            );
-          } else {
-            return ValueListenableBuilder<Patch>(
-              valueListenable: widget.patch,
-              builder: (context, patch, child) {
-                return patch;
-              },
-            );
-          }
-        },
-      ),
-    );
-
-    /*return NewTopBar(
-      projectName: widget.info.name,
-      instViewVisible: uiVisible,
-      onViewSwitch: () {
-        setState(() {
-          uiVisible = !uiVisible;
-        });
-      },
-      onUserInterfaceEdit: () {
-        widget.ui.value?.toggleEditing();
-      },
-      onProjectClose: onProjectClose,
-      child: Builder(
-        builder: (context) {
-          if (uiVisible) {
-            return ValueListenableBuilder<UserInterface?>(
-              valueListenable: widget.ui,
-              builder: (context, ui, child) {
-                if (ui != null) {
-                  return ui;
-                } else {
-                  return Container();
-                }
-              },
-            );
-          } else {
-            return ValueListenableBuilder<Patch>(
-              valueListenable: widget.patch,
-              builder: (context, patch, child) {
-                return patch;
-              },
-            );
-          }
-        },
-      ),
-    );*/
-
-    /*return Column(
+    return Stack(
       children: [
-        SizedBox(
-          height: 40,
+        Positioned(
+          // Project top bar
+          left: 0,
+          right: 0,
+          top: 0,
           child: NewTopBar(
-            projectName: widget.info.name,
-            instViewVisible: uiVisible,
+            projectInfo: widget.info,
+            sidebarDisplay: display,
+            onSidebarChange: (ProjectSidebarDisplay newDisplay) {
+              setState(() {
+                display = newDisplay;
+              });
+            },
             onViewSwitch: () {
               setState(() {
                 uiVisible = !uiVisible;
@@ -279,33 +216,110 @@ class _Project extends State<Project> {
             onProjectClose: onProjectClose,
           ),
         ),
-        Expanded(
-          child: Builder(
-            builder: (context) {
-              if (uiVisible) {
-                return ValueListenableBuilder<UserInterface?>(
-                  valueListenable: widget.ui,
-                  builder: (context, ui, child) {
-                    if (ui != null) {
-                      return ui;
-                    } else {
-                      return Container();
-                    }
-                  },
-                );
-              } else {
-                return ValueListenableBuilder<Patch>(
-                  valueListenable: widget.patch,
-                  builder: (context, patch, child) {
-                    return patch;
-                  },
-                );
-              }
-            },
+        Positioned(
+          // Patch or user interface
+          left: 0,
+          right: 0,
+          top: 40,
+          bottom: 0,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Builder(
+              builder: (context) {
+                if (uiVisible) {
+                  return ValueListenableBuilder<UserInterface?>(
+                    valueListenable: widget.ui,
+                    builder: (context, ui, child) {
+                      if (ui != null) {
+                        return ui;
+                      } else {
+                        return Container();
+                      }
+                    },
+                  );
+                } else {
+                  return ValueListenableBuilder<Patch?>(
+                    valueListenable: widget.patch,
+                    builder: (context, patch, child) {
+                      if (patch != null) {
+                        return patch;
+                      } else {
+                        return Container();
+                      }
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+        ),
+        AnimatedPositioned(
+          // Project sidebar
+          top: 40,
+          bottom: 0,
+          right: display != ProjectSidebarDisplay.None ? 0 : -sidebarWidth,
+          curve: Curves.linearToEaseOut,
+          duration: const Duration(milliseconds: 300),
+          child: ProjectSidebar(
+            display: display,
           ),
         ),
       ],
-    );*/
+    );
   }
 }
 
+enum ProjectSidebarDisplay {
+  None,
+  Samples,
+  Notes,
+  Modules,
+  Widgets,
+  Settings,
+}
+
+class ProjectSidebar extends StatelessWidget {
+  ProjectSidebar({required this.display});
+
+  final ProjectSidebarDisplay display;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: sidebarWidth,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(20, 20, 20, 1.0),
+        border: Border(
+          left: BorderSide(
+            color: Colors.black,
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          Visibility(
+            visible: display == ProjectSidebarDisplay.Samples,
+            child: SamplesBrowser(),
+          ),
+          Visibility(
+            visible: display == ProjectSidebarDisplay.Notes,
+            child: NotesBrowser(),
+          ),
+          Visibility(
+            visible: display == ProjectSidebarDisplay.Modules,
+            child: ModulesBrowser(),
+          ),
+          Visibility(
+            visible: display == ProjectSidebarDisplay.Widgets,
+            child: WidgetsBrowser(),
+          ),
+          Visibility(
+            visible: display == ProjectSidebarDisplay.Settings,
+            child: Settings(),
+          ),
+        ],
+      ),
+    );
+  }
+}

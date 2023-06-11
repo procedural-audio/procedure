@@ -292,10 +292,11 @@ class Patch extends StatefulWidget {
     return null;
   }
 
-  void save() async {
+  Future<bool> save() async {
     var file = File(info.directory.path + "/patch.json");
     rawPatch.save(file);
-    info.save();
+    await info.save();
+    return true;
   }
 
   void disableTick() {

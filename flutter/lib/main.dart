@@ -62,9 +62,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        splashColor: const Color.fromRGBO(20, 20, 20, 1.0),
-      ),
+      theme: ThemeData(splashColor: Colors.transparent),
       home: Scaffold(
         backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
         body: Window(this),
@@ -95,9 +93,15 @@ class _Window extends State<Window> {
         context,
         MaterialPageRoute(
           settings: const RouteSettings(name: "/project"),
-          builder: (context) => Material(
-            color: const Color.fromRGBO(10, 10, 10, 1.0),
-            child: project,
+          builder: (context) => Theme(
+            data: ThemeData(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+            ),
+            child: Material(
+              color: const Color.fromRGBO(10, 10, 10, 1.0),
+              child: project,
+            ),
           ),
         ),
       );
