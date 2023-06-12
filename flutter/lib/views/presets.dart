@@ -91,7 +91,7 @@ class PresetsViewItemEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromRGBO(50, 50, 50, 1.0),
+        color: Color.fromRGBO(40, 40, 40, 1.0),
         borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
       child: ValueListenableBuilder<Widget?>(
@@ -339,11 +339,15 @@ class GraphItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return PresetsViewItem(
       name: info.name,
-      height: isDense ? 30 : 35,
+      height: isDense ? 25 : 30,
       expandable: false,
       padding:
-          isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 4),
-      icon: const Icon(Icons.cable, size: 18, color: Colors.blue),
+          isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 0),
+      icon: const Icon(
+        Icons.cable,
+        size: 16,
+        color: Colors.blue,
+      ),
       onTap: () {
         if (selectedItem.value == this) {
           selectedItem.value = null;
@@ -459,11 +463,11 @@ class _PresetsViewItem extends State<PresetsViewItem> {
           padding: widget.padding,
           child: Container(
             height: expanded ? null : widget.height,
-            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+            padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
             decoration: BoxDecoration(
               color: ((hovering && !expanded)
-                  ? const Color.fromRGBO(60, 60, 60, 1.0)
-                  : const Color.fromRGBO(50, 50, 50, 1.0)),
+                  ? const Color.fromRGBO(40, 40, 40, 1.0)
+                  : const Color.fromRGBO(30, 30, 30, 1.0)),
               borderRadius: const BorderRadius.all(Radius.circular(5)),
             ),
             child: Column(

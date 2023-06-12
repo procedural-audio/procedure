@@ -202,7 +202,7 @@ class _Project extends State<Project> {
           // Patch or user interface
           left: 0,
           right: 0,
-          top: 40,
+          top: 0,
           bottom: 0,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -235,28 +235,35 @@ class _Project extends State<Project> {
             ),
           ),
         ),
-        AnimatedPositioned(
+        Positioned(
           left: 0,
           right: 0,
-          top: presetsVisible ? 41 : -450,
+          top: 41,
           bottom: 0,
-          curve: Curves.linearToEaseOut,
-          duration: const Duration(milliseconds: 300),
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                presetsVisible = false;
-              });
-            },
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: PresetsView(
-                patches: widget.patches,
-                interfaces: widget.interfaces,
-                onLoadPatch: (info) {
-                  widget.loadPatch(info);
-                  print("Load patch");
-                },
+          child: Visibility(
+            visible: presetsVisible,
+            child: GestureDetector(
+              behavior: presetsVisible
+                  ? HitTestBehavior.opaque
+                  : HitTestBehavior.deferToChild,
+              onTap: () {
+                setState(() {
+                  presetsVisible = false;
+                });
+              },
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: PresetsView(
+                    patches: widget.patches,
+                    interfaces: widget.interfaces,
+                    onLoadPatch: (info) {
+                      widget.loadPatch(info);
+                      print("Load patch");
+                    },
+                  ),
+                ),
               ),
             ),
           ),
