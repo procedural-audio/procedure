@@ -196,7 +196,6 @@ class _NewTopBar extends State<NewTopBar> {
         ],
       ),
     );
-<<<<<<< HEAD
   }
 }
 
@@ -324,8 +323,6 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
         ),
       ),
     );
-=======
->>>>>>> 0adb44f5269fdef9039c3d6cd2550d0266e6be77
   }
 }
 
