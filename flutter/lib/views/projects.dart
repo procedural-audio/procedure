@@ -139,7 +139,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                   });
 
                   return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
                       mainAxisExtent: 300,
@@ -184,14 +184,16 @@ class NewInstrumentButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 35,
+      height: 35,
       decoration: BoxDecoration(
         color: const Color.fromRGBO(50, 100, 50, 1.0),
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(
-        icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add,
+          size: 20,
+        ),
         color: Colors.green,
         onPressed: onPressed,
       ),
@@ -208,7 +210,7 @@ class SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 250,
-      height: 30,
+      height: 35,
       decoration: const BoxDecoration(
         color: Color.fromRGBO(30, 30, 30, 1.0),
         borderRadius: BorderRadius.all(Radius.circular(5)),
@@ -566,7 +568,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
             toggleDropdown();
           },
           child: Container(
-            height: 40,
+            height: 35,
             padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
             decoration: BoxDecoration(
               color: (hovering || _isOpen)
@@ -606,7 +608,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
                 ),
                 SizedBox(
                   width: 30,
-                  height: 40,
+                  height: 35,
                   child: Icon(
                     Icons.arrow_drop_down,
                     color: active ? Colors.white : Colors.grey,

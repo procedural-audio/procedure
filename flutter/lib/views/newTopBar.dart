@@ -5,6 +5,8 @@ import '../patch.dart';
 import '../projects.dart';
 import 'info.dart';
 
+const double barHeight = 35;
+
 class NewTopBar extends StatefulWidget {
   NewTopBar({
     required this.loadedPatch,
@@ -32,14 +34,12 @@ class NewTopBar extends StatefulWidget {
 }
 
 class _NewTopBar extends State<NewTopBar> {
-  final double timeBarHeight = 35;
-
   bool timeBarVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
       child: Row(
         children: [
           Expanded(
@@ -233,7 +233,8 @@ class _BarButton extends State<BarButton> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          height: 30,
+          width: 40,
+          height: barHeight,
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           decoration: BoxDecoration(
             color: hovering
@@ -282,7 +283,7 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          height: 30,
+          height: barHeight,
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           decoration: BoxDecoration(
             color: hovering
@@ -360,7 +361,7 @@ class _PresetsButton extends State<PresetsButton> {
         onTap: widget.onTap,
         child: Container(
           width: 450,
-          height: 30,
+          height: barHeight,
           decoration: BoxDecoration(
             color: (hovering || expanded)
                 ? const Color.fromRGBO(40, 40, 40, 1.0)
@@ -374,7 +375,7 @@ class _PresetsButton extends State<PresetsButton> {
               BarButton(
                 icon: const Icon(
                   Icons.cable,
-                  size: 15,
+                  size: 17,
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
@@ -383,7 +384,7 @@ class _PresetsButton extends State<PresetsButton> {
               BarButton(
                 icon: const Icon(
                   Icons.alarm,
-                  size: 16,
+                  size: 18,
                   color: Colors.deepPurpleAccent,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
@@ -413,7 +414,7 @@ class _PresetsButton extends State<PresetsButton> {
               BarButton(
                 icon: const Icon(
                   Icons.save,
-                  size: 16,
+                  size: 17,
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
@@ -422,7 +423,7 @@ class _PresetsButton extends State<PresetsButton> {
               BarButton(
                 icon: const Icon(
                   Icons.arrow_downward,
-                  size: 16,
+                  size: 18,
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
@@ -658,38 +659,5 @@ class TimelinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
-  }
-}
-
-class MainBarButton extends StatefulWidget {
-  const MainBarButton({
-    required this.icon,
-    required this.color,
-    required this.onPressed,
-    this.size = 18,
-  });
-
-  final IconData icon;
-  final Color color;
-  final Function onPressed;
-  final double? size;
-
-  @override
-  _MainBarButton createState() => _MainBarButton();
-}
-
-class _MainBarButton extends State<MainBarButton> {
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        widget.onPressed();
-      },
-      icon: Icon(
-        widget.icon,
-        color: widget.color,
-        size: widget.size,
-      ),
-    );
   }
 }
