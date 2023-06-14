@@ -238,7 +238,7 @@ class _Project extends State<Project> {
         Positioned(
           left: 0,
           right: 0,
-          top: 41,
+          top: 46,
           bottom: 0,
           child: Visibility(
             visible: presetsVisible,
