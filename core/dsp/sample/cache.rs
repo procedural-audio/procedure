@@ -26,17 +26,23 @@ impl Loadable for SampleFile<Stereo2<f32>> {
         }
 
         /* Load sample from files asynchronously */
-        // println!("Loading {}", path);
+        println!("Loading sample {}", path);
 
-        let reader = hound::WavReader::open(path.to_string()).unwrap();
-        let spec = reader.spec();
+        match hound::WavReader::open(path.to_string()) {
+            Ok(reader) => {
+                let spec = reader.spec();
 
-        if spec.bits_per_sample == 16 {
-            Ok(load_sample_file_i16(path, reader, spec.channels))
-        } else if spec.bits_per_sample == 24 {
-            Ok(load_sample_file_i24(path, reader, spec.channels))
-        } else {
-            Err("Unsupported WAV bit depth".to_string())
+                if spec.bits_per_sample == 16 {
+                    Ok(load_sample_file_i16(path, reader, spec.channels))
+                } else if spec.bits_per_sample == 24 {
+                    Ok(load_sample_file_i24(path, reader, spec.channels))
+                } else {
+                    Err("Unsupported WAV bit depth".to_string())
+                }
+            }
+            Err(e) => {
+                Err(e.to_string())
+            }
         }
     }
 

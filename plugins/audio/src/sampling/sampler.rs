@@ -56,7 +56,14 @@ impl Module for Sampler {
 
     fn load(&mut self, _version: &str, state: &State) {
         let path: String = state.load("sample");
-        *self.sample.write() = SampleFile::load(&path).unwrap();
+        match SampleFile::load(&path) {
+            Ok(sample) => {
+                *self.sample.write() = sample;
+            }
+            Err(e) => {
+                println!("Failed to load sample: {}", e);
+            }
+        }
     }
 
     fn save(&self, state: &mut State) {
