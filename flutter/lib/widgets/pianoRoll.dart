@@ -115,7 +115,7 @@ class NoteEvent {
 }
 
 class PianoRollWidget extends ModuleWidget {
-  PianoRollWidget(RawNode m, RawWidget w) : super(m, w);
+  PianoRollWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
   ValueNotifier<Rectangle?> selectedRegion = ValueNotifier(null);
   Offset selectedStart = const Offset(0.0, 0.0);
 

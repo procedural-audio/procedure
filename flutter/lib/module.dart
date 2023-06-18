@@ -181,10 +181,6 @@ class ModuleInfo extends StatelessWidget {
   List<String> path;
   Color color;
 
-  /*RawModule create() {
-    return ffiModuleInfoCreate(rawInfo);
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -276,7 +272,7 @@ class Node extends StatelessWidget {
     }
 
     var widgetRaw = rawNode.getWidgetRoot();
-    var widget = createWidget(rawNode, widgetRaw);
+    var widget = createWidget(this, rawNode, widgetRaw);
     if (widget != null) {
       widgets.add(widget);
     } else {

@@ -26,7 +26,7 @@ double Function(RawWidgetTrait, double) ffiPainter2Paint = core
 const int pointsCount = 50;
 
 class Painter2Widget extends ModuleWidget {
-  Painter2Widget(RawNode m, RawWidget w) : super(m, w);
+  Painter2Widget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   double width = 100;
   double height = 100;

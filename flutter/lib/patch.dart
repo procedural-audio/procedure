@@ -265,6 +265,7 @@ class Patch extends StatefulWidget {
   final RawPatch rawPatch;
   final PatchInfo info;
   final NewConnector newConnector = NewConnector();
+  final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
   bool shouldTick = true;
 
   static Patch from(PatchInfo info) {
@@ -307,16 +308,24 @@ class Patch extends StatefulWidget {
     shouldTick = true;
   }
 
+  void moveTo(double x, double y) {
+    print("MOVE TO IN PATCH");
+    moveToValue.value = Offset(x, y);
+  }
+
   @override
   _Patch createState() => _Patch();
 }
 
-class _Patch extends State<Patch> {
+class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   final List<Node> nodes = [];
   final List<Connector> connectors = [];
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
 
-  TransformationController controller = TransformationController();
+  final TransformationController controller = TransformationController();
+  late AnimationController animationController;
+  Animation<Matrix4> animation = AlwaysStoppedAnimation(Matrix4.identity());
+
   Offset rightClickOffset = Offset.zero;
   Offset moduleAddPosition = Offset.zero;
   bool showRightClickMenu = false;
@@ -333,9 +342,36 @@ class _Patch extends State<Patch> {
     }
   }
 
+  void moveTo(Offset offset) {
+    print("LAST MOVING");
+    animation = Matrix4Tween(
+      begin: controller.value,
+      end: Matrix4.translationValues(
+        -offset.dx + MediaQuery.of(context).size.width / 2,
+        -offset.dy + MediaQuery.of(context).size.height / 2,
+        0,
+      ),
+    ).chain(CurveTween(curve: Curves.decelerate)).animate(animationController);
+
+    animationController.forward(from: 0);
+  }
+
   @override
   void initState() {
     super.initState();
+
+    widget.moveToValue.addListener(() {
+      print("MOVE VALUE LISTENER");
+      moveTo(widget.moveToValue.value);
+    });
+
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    )..addListener(() {
+        print("Moving 3");
+        controller.value = animation.value;
+      });
 
     timer = Timer.periodic(
       const Duration(milliseconds: 20),
@@ -391,6 +427,7 @@ class _Patch extends State<Patch> {
   @override
   void dispose() {
     super.dispose();
+    controller.dispose();
     nodes.clear();
     connectors.clear();
     timer.cancel();
@@ -484,6 +521,9 @@ class _Patch extends State<Patch> {
 
     return GestureDetector(
       onSecondaryTapDown: (details) {
+        // Offset offset = controller.toScene(details.localPosition);
+        // moveTo(offset);
+
         setState(() {
           rightClickOffset = details.localPosition;
           showRightClickMenu = true;

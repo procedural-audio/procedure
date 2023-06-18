@@ -27,7 +27,7 @@ void Function(RawWidgetPointer, int) ffiDropdownSetIndex = core
     .asFunction();
 
 class DropdownWidget extends ModuleWidget {
-  DropdownWidget(RawNode m, RawWidget w) : super(m, w) {
+  DropdownWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     int widgetCount = ffiDropdownGetElementCount(widgetRaw.pointer);
     for (int i = 0; i < widgetCount; i++) {
       Pointer<Utf8> nameRaw = ffiDropdownGetElement(widgetRaw.pointer, i);

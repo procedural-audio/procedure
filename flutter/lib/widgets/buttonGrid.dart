@@ -37,7 +37,7 @@ Pointer<Utf8> Function(RawWidgetPointer, int) ffiButtonGridIconGetPath = core
     .asFunction();
 
 class ButtonGridWidget extends ModuleWidget {
-  ButtonGridWidget(RawNode m, RawWidget w) : super(m, w) {
+  ButtonGridWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     color = intToColor(ffiButtonGridGetColor(widgetRaw.pointer));
     rowCount = ffiButtonGridGetRowCount(widgetRaw.pointer);
 

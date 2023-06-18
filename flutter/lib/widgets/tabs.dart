@@ -18,11 +18,12 @@ int Function(RawWidgetTrait) ffiTabsGetTabCount = core
     .asFunction();
 
 class TabsWidget extends ModuleWidget {
-  TabsWidget(RawNode m, RawWidget w) : super(m, w) {
+  TabsWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     int count = ffiTabsGetTabCount(w.getTrait());
 
     for (int i = 0; i < count; i++) {
       ModuleWidget? widget = createWidget(
+        node,
         m,
         ffiTabsGetTabChild(w.getTrait(), i),
       );

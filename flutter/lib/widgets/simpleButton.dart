@@ -31,7 +31,7 @@ bool Function(RawWidgetPointer) ffiSimpleButtonGetToggle = core
     .asFunction();
 
 class SimpleButtonWidget extends ModuleWidget {
-  SimpleButtonWidget(RawNode m, RawWidget w) : super(m, w);
+  SimpleButtonWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   Color color = Colors.blue;
   bool value = false;

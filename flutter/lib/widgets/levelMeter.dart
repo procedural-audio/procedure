@@ -30,7 +30,7 @@ int Function(RawWidgetPointer) ffiLevelMeterGetColor2 = core
     .asFunction();
 
 class LevelMeterWidget extends ModuleWidget {
-  LevelMeterWidget(RawNode m, RawWidget w) : super(m, w) {
+  LevelMeterWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     color1 = Color(ffiLevelMeterGetColor1(widgetRaw.pointer));
     color2 = Color(ffiLevelMeterGetColor2(widgetRaw.pointer));
   }

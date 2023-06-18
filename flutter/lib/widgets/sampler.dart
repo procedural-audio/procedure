@@ -125,7 +125,7 @@ class _SampleAreaItem extends State<SampleAreaItem> {
 }
 
 /*class SampleEditorWidget extends ModuleWidget {
-  SampleEditorWidget(RawNode m, RawWidget w) : super(m, w);
+  SampleEditorWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +151,7 @@ class _SampleAreaItem extends State<SampleAreaItem> {
 }*/
 
 class SampleMapperWidget extends ModuleWidget {
-  SampleMapperWidget(RawNode m, RawWidget w) : super(m, w) {
+  SampleMapperWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     refreshMap();
   }
 

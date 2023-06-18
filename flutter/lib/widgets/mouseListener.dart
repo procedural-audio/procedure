@@ -21,7 +21,7 @@ void Function(RawWidgetTrait, double, double) ffiMouseListenerOnDrag = core
     .asFunction();
 
 class MouseListenerWidget extends ModuleWidget {
-  MouseListenerWidget(RawNode m, RawWidget w) : super(m, w);
+  MouseListenerWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {

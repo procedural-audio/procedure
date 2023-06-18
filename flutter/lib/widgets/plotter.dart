@@ -26,7 +26,7 @@ double Function(RawWidgetPointer) ffiPlotterGetThickness = core
 const int pointsCount = 50;
 
 class PlotterWidget extends ModuleWidget {
-  PlotterWidget(RawNode m, RawWidget w) : super(m, w);
+  PlotterWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   double width = 100;
   double height = 100;

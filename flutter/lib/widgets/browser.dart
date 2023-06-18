@@ -50,7 +50,7 @@ List<List<double>> getWavetable() {
 // https://www.didierboelens.com/2019/01/futures-isolates-event-loop/
 
 class BrowserWidget extends ModuleWidget {
-  BrowserWidget(RawNode m, RawWidget w) : super(m, w) {
+  BrowserWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     var path = ffiBrowserGetRootPath(w.getTrait());
     root = pathToDirectory(path.toDartString());
     calloc.free(path);
@@ -73,6 +73,10 @@ class BrowserWidget extends ModuleWidget {
       loaded: loaded,
       extensions: extensions,
       rootDirectory: root,
+      onToggle: () {
+        print("MOVE");
+        node.patch.moveTo(0.0, 0.0);
+      },
       onLoadFile: (file) {
         var rawPath = file.path.toNativeUtf8();
         ffiBrowserLoad(widgetRaw.getTrait(), rawPath);
@@ -92,6 +96,7 @@ class BrowserOverlay extends StatefulWidget {
     required this.extensions,
     required this.rootDirectory,
     required this.onLoadFile,
+    required this.onToggle,
     required this.child,
     Key? key,
   }) : super(key: key);
@@ -100,6 +105,7 @@ class BrowserOverlay extends StatefulWidget {
   List<String> extensions;
   Directory rootDirectory;
   void Function(File) onLoadFile;
+  final Function() onToggle;
   Widget child;
 
   @override
@@ -225,6 +231,7 @@ class _BrowserOverlay extends State<BrowserOverlay>
           BrowserWidgetBar(
             name: widget.loaded.split("/").last,
             onPressed: () {
+              widget.onToggle();
               _toggleDropdown();
             },
           ),
@@ -922,7 +929,7 @@ class _BrowserListFileElement extends State<BrowserListFileElement> {
 }
 
 class BrowserWidget2 extends ModuleWidget {
-  BrowserWidget2(RawNode m, RawWidget w) : super(m, w);
+  BrowserWidget2(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   String name = "Tempered Felt Piano";
   String author = "Chase Kanipe";
@@ -1319,7 +1326,7 @@ class BrowserListElement extends StatelessWidget {
 }
 
 class BrowserWidget3 extends ModuleWidget {
-  BrowserWidget3(RawNode m, RawWidget w) : super(m, w);
+  BrowserWidget3(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   bool showPresets = false;
   bool presetsHovering = false;

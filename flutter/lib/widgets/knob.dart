@@ -33,7 +33,7 @@ int Function(RawWidgetPointer) ffiKnobGetColor = core
     .asFunction();
 
 class KnobWidget extends ModuleWidget {
-  KnobWidget(RawNode m, RawWidget w) : super(m, w);
+  KnobWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   Color color = Colors.blue;
   String labelText = "";

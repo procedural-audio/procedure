@@ -24,7 +24,7 @@ void Function(RawWidgetTrait, int) ffiKeyboardKeyRelease = core
     .asFunction();
 
 class KeyboardWidget extends ModuleWidget {
-  KeyboardWidget(RawNode m, RawWidget w) : super(m, w);
+  KeyboardWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   ScrollController controller = ScrollController();
 

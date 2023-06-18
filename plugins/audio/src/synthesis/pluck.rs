@@ -1,5 +1,3 @@
-use modules::conv::freq_to_note;
-
 use crate::*;
 
 pub struct PluckModule {

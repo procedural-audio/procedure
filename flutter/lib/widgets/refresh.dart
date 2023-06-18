@@ -18,7 +18,7 @@ void Function(RawWidgetTrait, bool) ffiRefreshSetShouldRefresh = core
     .asFunction();
 
 class RefreshWidget extends ModuleWidget {
-  RefreshWidget(RawNode m, RawWidget w) : super(m, w);
+  RefreshWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   void refreshCallback() {
     children[0].refreshRecursive();
@@ -49,7 +49,7 @@ void Function(RawWidgetTrait, bool) ffiRebuildSetShouldRefresh = core
     .asFunction();
 
 class RebuildWidget extends ModuleWidget {
-  RebuildWidget(RawNode m, RawWidget w) : super(m, w);
+  RebuildWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   void rebuildCallback() {
     var newChild = RebuildWidget(moduleRaw, widgetRaw);
@@ -77,7 +77,7 @@ int Function(RawWidgetPointer) ffiIndicatorGetColor = core
     .asFunction();
 
 class IndicatorWidget extends ModuleWidget {
-  IndicatorWidget(RawNode m, RawWidget w) : super(m, w);
+  IndicatorWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {

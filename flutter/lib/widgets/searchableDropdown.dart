@@ -16,7 +16,7 @@ void Function(RawWidgetTrait, Pointer<Utf8>) ffiSearchableDropdownOnSelect =
         .asFunction();
 
 class SearchableDropdownWidget extends ModuleWidget {
-  SearchableDropdownWidget(RawNode m, RawWidget w) : super(m, w) {
+  SearchableDropdownWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     /*int widgetCount = ffiDropdownGetElementCount(widgetRaw.pointer);
     for (int i = 0; i < widgetCount; i++) {
       Pointer<Utf8> nameRaw = ffiDropdownGetElement(widgetRaw.pointer, i);

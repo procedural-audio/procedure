@@ -17,7 +17,7 @@ void Function(RawWidgetTrait, bool) ffiButtonOnPressed = core
     .asFunction();
 
 class ButtonWidget extends ModuleWidget {
-  ButtonWidget(RawNode m, RawWidget w) : super(m, w) {
+  ButtonWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     color = intToColor(ffiButtonGetColor(widgetRaw.getTrait()));
   }
 

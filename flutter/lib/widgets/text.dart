@@ -26,7 +26,7 @@ int Function(RawWidgetPointer) ffiTextGetSize = core
     .asFunction();
 
 class TextWidget extends ModuleWidget {
-  TextWidget(RawNode m, RawWidget w) : super(m, w);
+  TextWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {

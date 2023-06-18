@@ -14,10 +14,10 @@ import 'dart:async';
 import '../core.dart';
 import '../module.dart';
 
+import '../patch.dart';
 import '../views/variables.dart';
 import 'background.dart';
 import 'knob.dart';
-import 'nodeSequencer.dart';
 import 'stack.dart';
 import 'buttonSVG.dart';
 import 'dropdown.dart';
@@ -47,7 +47,8 @@ import 'painter.dart';
 import 'mouseListener.dart';
 import 'xyPad.dart';
 
-ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
+ModuleWidget? createWidget(Node node, RawNode moduleRaw, RawWidget widgetRaw,
+    {Patch? patch}) {
   var nameRaw = ffiWidgetGetName(widgetRaw);
   var name = nameRaw.toDartString();
   calloc.free(nameRaw);
@@ -55,103 +56,103 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
   print("Creating " + name);
 
   if (name == "Knob") {
-    return KnobWidget(moduleRaw, widgetRaw);
+    return KnobWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Stack") {
-    return StackWidget(moduleRaw, widgetRaw);
+    return StackWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Row") {
-    return RowWidget(moduleRaw, widgetRaw);
+    return RowWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Column") {
-    return ColumnWidget(moduleRaw, widgetRaw);
+    return ColumnWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Transform") {
-    return TransformWidget(moduleRaw, widgetRaw);
+    return TransformWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Positioned") {
-    return PositionedWidget(moduleRaw, widgetRaw);
+    return PositionedWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Padding") {
-    return PaddingWidget(moduleRaw, widgetRaw);
+    return PaddingWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SizedBox") {
-    return SizedBoxWidget(moduleRaw, widgetRaw);
+    return SizedBoxWidget(node, moduleRaw, widgetRaw);
   } else if (name == "IconButton") {
-    return IconButtonWidget(moduleRaw, widgetRaw);
+    return IconButtonWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SvgButton") {
-    return ButtonSVG(moduleRaw, widgetRaw);
+    return ButtonSVG(node, moduleRaw, widgetRaw);
   } else if (name == "Svg") {
-    return SvgWidget(moduleRaw, widgetRaw);
+    return SvgWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Background") {
-    return BackgroundWidget(moduleRaw, widgetRaw);
+    return BackgroundWidget(node, moduleRaw, widgetRaw);
   } else if (name == "ButtonGrid") {
-    return ButtonGridWidget(moduleRaw, widgetRaw);
+    return ButtonGridWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Dropdown") {
-    return DropdownWidget(moduleRaw, widgetRaw);
+    return DropdownWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Slider") {
-    return SliderWidget(moduleRaw, widgetRaw);
+    return SliderWidget(node, moduleRaw, widgetRaw);
   } else if (name == "RangeSlider") {
-    return RangeSliderWidget(moduleRaw, widgetRaw);
+    return RangeSliderWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SimpleButton") {
-    return SimpleButtonWidget(moduleRaw, widgetRaw);
+    return SimpleButtonWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SimpleSwitch") {
-    return SimpleSwitchWidget(moduleRaw, widgetRaw);
+    return SimpleSwitchWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SimplePad") {
-    return SimplePadWidget(moduleRaw, widgetRaw);
+    return SimplePadWidget(node, moduleRaw, widgetRaw);
   } else if (name == "XYPad") {
-    return XYPadWidget(moduleRaw, widgetRaw);
+    return XYPadWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Text") {
-    return TextWidget(moduleRaw, widgetRaw);
+    return TextWidget(node, moduleRaw, widgetRaw);
   } else if (name == "NotesTrack") {
-    return PianoRollWidget(moduleRaw, widgetRaw);
+    return PianoRollWidget(node, moduleRaw, widgetRaw);
   } else if (name == "StepSequencer") {
-    return StepSequencerWidget(moduleRaw, widgetRaw);
+    return StepSequencerWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Envelope") {
-    return EnvelopeWidget(moduleRaw, widgetRaw);
+    return EnvelopeWidget(node, moduleRaw, widgetRaw);
   } else if (name == "LevelMeter") {
-    return LevelMeterWidget(moduleRaw, widgetRaw);
+    return LevelMeterWidget(node, moduleRaw, widgetRaw);
   } else if (name == "MouseListener") {
-    return MouseListenerWidget(moduleRaw, widgetRaw);
+    return MouseListenerWidget(node, moduleRaw, widgetRaw);
   } else if (name == "DynamicLine") {
-    return DynamicLineWidget(moduleRaw, widgetRaw);
+    return DynamicLineWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Keyboard") {
-    return KeyboardWidget(moduleRaw, widgetRaw);
+    return KeyboardWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SampleMapper") {
-    return SampleMapperWidget(moduleRaw, widgetRaw);
+    return SampleMapperWidget(node, moduleRaw, widgetRaw);
   } else if (name == "LuaEditor") {
-    return LuaEditorWidget(moduleRaw, widgetRaw);
+    return LuaEditorWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Tabs") {
-    return TabsWidget(moduleRaw, widgetRaw);
-  } else if (name == "NodeSequencer") {
-    return NodeSequencerWidget(moduleRaw, widgetRaw);
+    return TabsWidget(node, moduleRaw, widgetRaw);
+    /*} else if (name == "NodeSequencer") {
+    return NodeSequencerWidget(node, moduleRaw, widgetRaw);*/
   } else if (name == "SampleEditor") {
-    return SampleEditorWidget(moduleRaw, widgetRaw);
+    return SampleEditorWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Painter2") {
-    return Painter2Widget(moduleRaw, widgetRaw);
+    return Painter2Widget(node, moduleRaw, widgetRaw);
   } else if (name == "Refresh") {
-    return RefreshWidget(moduleRaw, widgetRaw);
+    return RefreshWidget(node, moduleRaw, widgetRaw);
     // } else if (name == "Rebuild") {
-    // return RebuildWidget(moduleRaw, widgetRaw);
+    // return RebuildWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Button") {
-    return ButtonWidget(moduleRaw, widgetRaw);
+    return ButtonWidget(node, moduleRaw, widgetRaw);
   } else if (name == "GridBuilder") {
-    return GridBuilderWidget(moduleRaw, widgetRaw);
+    return GridBuilderWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Grid") {
-    return GridWidget(moduleRaw, widgetRaw);
+    return GridWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Fader") {
-    return FaderWidget(moduleRaw, widgetRaw);
+    return FaderWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Input") {
-    return InputWidget(moduleRaw, widgetRaw);
+    return InputWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Indicator") {
-    return IndicatorWidget(moduleRaw, widgetRaw);
+    return IndicatorWidget(node, moduleRaw, widgetRaw);
   } else if (name == "WavetablePicker") {
-    return WavetableWidget(moduleRaw, widgetRaw);
+    return WavetableWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Display") {
-    return DisplayWidget(moduleRaw, widgetRaw);
+    return DisplayWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SearchableDropdown") {
-    return SearchableDropdownWidget(moduleRaw, widgetRaw);
+    return SearchableDropdownWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Browser") {
-    return BrowserWidget(moduleRaw, widgetRaw);
+    return BrowserWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Painter") {
-    return PainterWidget(moduleRaw, widgetRaw);
+    return PainterWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Plotter") {
-    return PlotterWidget(moduleRaw, widgetRaw);
+    return PlotterWidget(node, moduleRaw, widgetRaw);
   } else if (name == "EmptyWidget") {
-    return EmptyWidget(moduleRaw, widgetRaw);
+    return EmptyWidget(node, moduleRaw, widgetRaw);
   } else {
     print("Unknown widget " + name);
     return null;
@@ -159,7 +160,7 @@ ModuleWidget? createWidget(RawNode moduleRaw, RawWidget widgetRaw) {
 }
 
 class EmptyWidget extends ModuleWidget {
-  EmptyWidget(RawNode m, RawWidget w) : super(m, w);
+  EmptyWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -168,38 +169,25 @@ class EmptyWidget extends ModuleWidget {
 }
 
 abstract class ModuleWidget extends StatefulWidget {
+  final Node node;
   final RawNode moduleRaw;
   final RawWidget widgetRaw;
 
   late List<ModuleWidget> children = [];
   _ModuleWidgetState state = _ModuleWidgetState();
 
-  ModuleWidget(this.moduleRaw, this.widgetRaw) {
+  ModuleWidget(this.node, this.moduleRaw, this.widgetRaw) {
     int childCount = ffiWidgetGetChildCount(widgetRaw);
 
     for (int i = 0; i < childCount; i++) {
       var childRaw = ffiWidgetGetChild(widgetRaw, i);
-      ModuleWidget? widget = createWidget(moduleRaw, childRaw);
+      ModuleWidget? widget = createWidget(node, moduleRaw, childRaw);
 
       if (widget != null) {
         children.add(widget);
       }
     }
   }
-
-  /*static ModuleWidget preview(RawNode moduleRaw, RawWidget widgetRaw) {
-    List<Widget> children = [];
-    int childCount = ffiWidgetGetChildCount(widgetRaw);
-
-    for (int i = 0; i < childCount; i++) {
-      var childRaw = ffiWidgetGetChild(widgetRaw, i);
-      ModuleWidget? widget = createWidget(moduleRaw, childRaw);
-
-      if (widget != null) {
-        children.add(widget);
-      }
-    }
-  }*/
 
   ValueNotifier<Var?> assignedVar = ValueNotifier(null);
 
@@ -208,11 +196,6 @@ abstract class ModuleWidget extends StatefulWidget {
   }
 
   Widget build(BuildContext context);
-  /*Widget buildPreview(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-    );
-  }*/
 
   void setState(void Function() f) {
     if (state.mounted) {

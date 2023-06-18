@@ -14,7 +14,7 @@ void Function(RawWidgetTrait, bool) ffiIconButtonPressed = core
     .asFunction();
 
 class IconButtonWidget extends ModuleWidget {
-  IconButtonWidget(RawNode m, RawWidget w) : super(m, w);
+  IconButtonWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   bool mouseOver = false;
 

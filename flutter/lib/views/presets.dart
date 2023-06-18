@@ -15,11 +15,11 @@ class PresetsView extends StatelessWidget {
     required this.onLoadPatch,
   });
 
-  ValueNotifier<List<PatchInfo>> patches;
-  ValueNotifier<List<InterfaceInfo>> interfaces;
+  final ValueNotifier<List<PatchInfo>> patches;
+  final ValueNotifier<List<InterfaceInfo>> interfaces;
 
-  ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
-  void Function(PatchInfo) onLoadPatch;
+  final ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
+  final void Function(PatchInfo) onLoadPatch;
 
   @override
   Widget build(BuildContext context) {
@@ -49,28 +49,13 @@ class PresetsView extends StatelessWidget {
                       ))
                   .toList();
 
-          return Row(
-            children: [
-              Expanded(
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        children: items,
-                      ),
-                    ),
-                  ),
-                ),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Column(
+                children: items,
               ),
-              Expanded(
-                child: PresetsViewItemEditor(
-                  selectedItem: selectedItem,
-                  onLoadPatch: onLoadPatch,
-                ),
-              )
-            ],
+            ),
           );
         },
       ),

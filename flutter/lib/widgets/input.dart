@@ -18,7 +18,7 @@ void Function(RawWidgetPointer, double) ffiInputSetValue = core
     .asFunction();
 
 class InputWidget extends ModuleWidget {
-  InputWidget(RawNode m, RawWidget w) : super(m, w) {
+  InputWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     knobValue = ffiInputGetValue(widgetRaw.pointer);
   }
 

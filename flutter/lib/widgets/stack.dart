@@ -8,7 +8,7 @@ import '../module.dart';
 import '../main.dart';
 
 class StackWidget extends ModuleWidget {
-  StackWidget(RawNode m, RawWidget w) : super(m, w);
+  StackWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class StackWidget extends ModuleWidget {
 }
 
 class RowWidget extends ModuleWidget {
-  RowWidget(RawNode m, RawWidget w) : super(m, w);
+  RowWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class RowWidget extends ModuleWidget {
 }
 
 class ColumnWidget extends ModuleWidget {
-  ColumnWidget(RawNode m, RawWidget w) : super(m, w);
+  ColumnWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ int Function(RawWidget) ffiPositionedGetY = core
     .asFunction();
 
 class PositionedWidget extends ModuleWidget {
-  PositionedWidget(RawNode m, RawWidget w) : super(m, w);
+  PositionedWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ int Function(RawWidget) ffiSizedBoxGetHeight = core
     .asFunction();
 
 class SizedBoxWidget extends ModuleWidget {
-  SizedBoxWidget(RawNode m, RawWidget w) : super(m, w);
+  SizedBoxWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ int Function(RawWidgetPointer) ffiTransformGetHeight = core
     .asFunction();
 
 class TransformWidget extends ModuleWidget {
-  TransformWidget(RawNode m, RawWidget w) : super(m, w);
+  TransformWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +134,7 @@ int Function(RawWidgetPointer) ffiPaddingGetBottom = core
     .asFunction();
 
 class PaddingWidget extends ModuleWidget {
-  PaddingWidget(RawNode m, RawWidget w) : super(m, w);
+  PaddingWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {

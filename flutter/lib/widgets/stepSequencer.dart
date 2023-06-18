@@ -34,7 +34,7 @@ int Function(RawWidgetTrait) ffiStepSequencerGetCols = core
     .asFunction();
 
 class StepSequencerWidget extends ModuleWidget {
-  StepSequencerWidget(RawNode m, RawWidget w) : super(m, w);
+  StepSequencerWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   final ScrollController horizontal = ScrollController();
   final ScrollController vertical = ScrollController();

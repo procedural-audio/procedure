@@ -22,7 +22,7 @@ int Function(RawWidgetPointer) ffiDynamicLineGetColor = core
     .asFunction();
 
 class DynamicLineWidget extends ModuleWidget {
-  DynamicLineWidget(RawNode m, RawWidget w) : super(m, w) {
+  DynamicLineWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     color = Color(ffiDynamicLineGetColor(w.pointer));
   }
 

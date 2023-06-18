@@ -13,7 +13,7 @@ int Function(RawWidgetPointer) ffiGridGetColumns = core
     .asFunction();
 
 class GridWidget extends ModuleWidget {
-  GridWidget(RawNode m, RawWidget w) : super(m, w);
+  GridWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ void Function(RawWidget) ffiGridBuilderDestroyChild = core
     .asFunction();
 
 class GridBuilderWidget extends ModuleWidget {
-  GridBuilderWidget(RawNode m, RawWidget w) : super(m, w);
+  GridBuilderWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   List<ModuleWidget> childWidgets = [];
 
@@ -65,6 +65,7 @@ class GridBuilderWidget extends ModuleWidget {
 
     for (int i = 0; i < count; i++) {
       var widget = createWidget(
+        node,
         moduleRaw,
         ffiGridBuilderCreateChild(widgetRaw.getTrait(), i),
       );

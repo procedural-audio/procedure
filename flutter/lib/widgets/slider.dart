@@ -30,7 +30,7 @@ int Function(RawWidgetPointer) ffiSliderGetColor = core
     .asFunction();*/
 
 class SliderWidget extends ModuleWidget {
-  SliderWidget(RawNode m, RawWidget w) : super(m, w);
+  SliderWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   Color color = Colors.blue;
   double value = 0.5;
@@ -96,7 +96,7 @@ int Function(RawWidgetPointer) ffiRangeSliderGetColor = core
     .asFunction();
 
 class RangeSliderWidget extends ModuleWidget {
-  RangeSliderWidget(RawNode m, RawWidget w) : super(m, w);
+  RangeSliderWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   Color color = Colors.blue;
   double value = 0.5;

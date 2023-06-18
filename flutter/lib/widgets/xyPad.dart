@@ -26,7 +26,7 @@ double Function(RawWidgetPointer, double) ffiXYPadSetY = core
     .asFunction();
 
 class XYPadWidget extends ModuleWidget {
-  XYPadWidget(RawNode m, RawWidget w) : super(m, w);
+  XYPadWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   void update(double x, double y) {
     setState(() {

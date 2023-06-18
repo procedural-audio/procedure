@@ -9,7 +9,7 @@ import 'dart:ffi';
 import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
-import '../module.dart';
+import '../module.dart' as module;
 import '../main.dart';
 
 var knobValue = "value".toNativeUtf8();
@@ -51,7 +51,8 @@ void Function(RawWidgetPointer, int, int) RawNodeSequencerAddNode = core
 const double spacing = 50.0;
 
 class NodeSequencerWidget extends ModuleWidget {
-  NodeSequencerWidget(RawNode m, RawWidget w) : super(m, w) {}
+  NodeSequencerWidget(module.Node n, module.RawNode m, RawWidget w)
+      : super(n, m, w);
 
   var controller = TransformationController();
 

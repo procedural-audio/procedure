@@ -26,7 +26,7 @@ double Function(RawWidgetPointer, int) ffiSampleEditorGetSampleRight = core
     .asFunction();
 
 class SampleEditorWidget extends ModuleWidget {
-  SampleEditorWidget(RawNode m, RawWidget w) : super(m, w) {
+  SampleEditorWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     refreshBuffer();
   }
 

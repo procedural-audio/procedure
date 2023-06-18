@@ -40,7 +40,7 @@ int Function(Pointer<CanvasFFI>) ffiCanvasGetActionsCount = core
     .asFunction();
 
 class PainterWidget extends ModuleWidget {
-  PainterWidget(RawNode m, RawWidget w) : super(m, w);
+  PainterWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   late Pointer<CanvasFFI> canvasRaw;
 

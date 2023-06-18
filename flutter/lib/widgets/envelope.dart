@@ -49,7 +49,7 @@ void Function(RawWidgetPointer, double) ffiEnvelopeSetMult = core
     .asFunction();
 
 class EnvelopeWidget extends ModuleWidget {
-  EnvelopeWidget(RawNode m, RawWidget w) : super(m, w) {}
+  EnvelopeWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {}
 
   double attack = 0.0;
   double mult = 1.0;

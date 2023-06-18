@@ -26,7 +26,7 @@ int Function(RawWidgetTrait) ffiBackgroundGetBorderColor = core
     .asFunction();
 
 class BackgroundWidget extends ModuleWidget {
-  BackgroundWidget(RawNode m, RawWidget w) : super(m, w);
+  BackgroundWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
