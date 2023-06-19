@@ -76,16 +76,25 @@ class Project extends StatefulWidget {
     );
   }
 
-  void loadPatch(PatchInfo patchInfo) async {
+  Future<bool> loadPatch(PatchInfo patchInfo) async {
     var newPatch = await Patch.load(patchInfo, PLUGINS);
     if (newPatch != null) {
       core.setPatch(newPatch);
       patch.value = newPatch;
-    } else {
-      var newPatch = Patch(rawPatch: patch.value.rawPatch, info: patchInfo);
-      core.setPatch(newPatch);
-      patch.value = newPatch;
+      return true;
     }
+
+    return false;
+  }
+
+  Future<bool> loadInterface(InterfaceInfo interfaceInfo) async {
+    var newPatch = await UserInterface.load(interfaceInfo);
+    if (newPatch != null) {
+      ui.value = newPatch;
+      return true;
+    }
+
+    return false;
   }
 
   static Future<Project?> load(
@@ -127,6 +136,7 @@ class Project extends StatefulWidget {
   void save() async {
     await info.save();
     await patch.value.save();
+    await ui.value?.save();
   }
 
   Core core;
@@ -258,9 +268,12 @@ class _Project extends State<Project> {
                   child: PresetsView(
                     patches: widget.patches,
                     interfaces: widget.interfaces,
-                    onLoadPatch: (info) {
-                      widget.loadPatch(info);
-                      print("Load patch");
+                    onLoad: (patchInfo, interfaceInfo) async {
+                      if (await widget.loadPatch(patchInfo)) {
+                        if (interfaceInfo != null) {
+                          await widget.loadInterface(interfaceInfo);
+                        }
+                      }
                     },
                   ),
                 ),

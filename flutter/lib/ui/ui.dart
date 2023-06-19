@@ -1,23 +1,42 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/ui/layout.dart';
 
-import '../main.dart';
-
+import '../views/info.dart';
 import 'decoration.dart';
 import 'interactive.dart';
-import '../projects.dart';
 
 class UserInterface extends StatelessWidget {
-  UserInterface();
+  UserInterface({required this.info});
 
   late final RootWidget root;
+  final InterfaceInfo info;
   final ValueNotifier<UIWidget?> selected = ValueNotifier(null);
   final ValueNotifier<bool> editing = ValueNotifier(false);
 
-  static UserInterface platformDefault() {
-    var ui = UserInterface();
-    ui.root = RootWidget(ui);
-    return ui;
+  static Future<UserInterface?> load(InterfaceInfo info) async {
+    File file = File(info.directory.path + "/interface.json");
+    if (await file.exists()) {
+      var contents = await file.readAsString();
+      // var json = jsonDecode(contents);
+      print("TODO: Decode widget tree");
+
+      return UserInterface(
+        info: info,
+      );
+
+    }
+
+    return null;
+  }
+
+  Future<bool> save() async {
+    await info.save();
+
+    print("TODO: Save json of widget tree");
+
+    return true;
   }
 
   void toggleEditing() {
@@ -28,8 +47,6 @@ class UserInterface extends StatelessWidget {
     print("TODO: Delete widget");
     return false;
   }
-
-  // void deleteChild() {}
 
   @override
   Widget build(BuildContext context) {

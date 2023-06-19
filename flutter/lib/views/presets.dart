@@ -12,14 +12,14 @@ class PresetsView extends StatelessWidget {
   PresetsView({
     required this.patches,
     required this.interfaces,
-    required this.onLoadPatch,
+    required this.onLoad,
   });
 
   final ValueNotifier<List<PatchInfo>> patches;
   final ValueNotifier<List<InterfaceInfo>> interfaces;
 
   final ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
-  final void Function(PatchInfo) onLoadPatch;
+  final void Function(PatchInfo, InterfaceInfo?) onLoad;
 
   @override
   Widget build(BuildContext context) {
@@ -35,216 +35,65 @@ class PresetsView extends StatelessWidget {
       child: ValueListenableBuilder<List<PatchInfo>>(
         valueListenable: patches,
         builder: (context, patches, child) {
-          List<Widget> items = <Widget>[] +
-              interfaces.value
-                  .map((e) => InterfaceItem(
-                        info: e,
-                        selectedItem: selectedItem,
-                      ))
-                  .toList() +
-              patches
-                  .map((info) => GraphItem(
-                        info,
-                        selectedItem,
-                      ))
-                  .toList();
+          return ValueListenableBuilder<List<InterfaceInfo>>(
+            valueListenable: interfaces,
+            builder: (context, interfaces, child) {
+              List<Widget> items = <Widget>[] +
+                  interfaces
+                      .map((e) => InterfaceItem(
+                            info: e,
+                            selectedItem: selectedItem,
+                          ))
+                      .toList() +
+                  patches
+                      .map((info) => GraphItem(
+                            info,
+                            selectedItem,
+                          ))
+                      .toList();
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Column(
-                children: items,
-              ),
-            ),
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          children: items,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.add,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          print("Stuff");
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.create_new_folder,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          print("Stuff");
+                        },
+                      ),
+                    ],
+                  )
+                ]
+              );
+            }
           );
         },
       ),
-    );
-  }
-}
-
-class PresetsViewItemEditor extends StatelessWidget {
-  PresetsViewItemEditor({
-    required this.selectedItem,
-    required this.onLoadPatch,
-  });
-
-  ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
-  void Function(PatchInfo) onLoadPatch;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color.fromRGBO(40, 40, 40, 1.0),
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
-      child: ValueListenableBuilder<Widget?>(
-        valueListenable: selectedItem,
-        builder: (context, item, child) {
-          if (item == null) {
-            return const Center(
-              child: Text(
-                "Select an item",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            );
-          } else if (item is InterfaceItem) {
-            return InterfaceItemEditor(item);
-          } else if (item is GraphItem) {
-            return GraphItemEditor(
-              item: item,
-              onLoadPatch: onLoadPatch,
-            );
-          } else {
-            return Container();
-          }
-        },
-      ),
-    );
-  }
-}
-
-class InterfaceItemEditor extends StatelessWidget {
-  InterfaceItemEditor(this.item);
-
-  InterfaceItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: item.info.name,
-      builder: (context, name, child) {
-        return ValueListenableBuilder<String>(
-          valueListenable: item.info.description,
-          builder: (context, description, child) {
-            return Column(
-              children: [
-                EditorTitle("User Interface"),
-                Section(
-                  title: "Name",
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Field(
-                          width: null,
-                          label: "",
-                          initialValue: name,
-                          onChanged: (newName) {
-                            item.info.name.value = newName;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Section(
-                  title: "Description",
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Field(
-                          width: null,
-                          height: 150,
-                          multiLine: true,
-                          label: "",
-                          initialValue: description,
-                          onChanged: (newDescription) {
-                            item.info.description.value = newDescription;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class GraphItemEditor extends StatelessWidget {
-  GraphItemEditor({required this.item, required this.onLoadPatch});
-
-  GraphItem item;
-  void Function(PatchInfo) onLoadPatch;
-  String text1 = "Some Stuff";
-  EdgeInsets padding = EdgeInsets.zero;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: item.info.name,
-      builder: (context, name, child) {
-        return ValueListenableBuilder<String>(
-          valueListenable: item.info.description,
-          builder: (context, description, child) {
-            return Column(
-              children: [
-                EditorTitle("Graph"),
-                Section(
-                  title: "Name",
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Field(
-                          width: null,
-                          label: "",
-                          initialValue: name,
-                          onChanged: (newName) {
-                            item.info.name.value = newName;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Section(
-                  title: "Description",
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Field(
-                          label: "",
-                          width: null,
-                          multiLine: true,
-                          height: 150,
-                          initialValue: description,
-                          onChanged: (newDescription) {
-                            item.info.description.value = newDescription;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Section(
-                  title: "Patch",
-                  child: Row(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          onLoadPatch(item.info);
-                        },
-                        child: const Text("Load"),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          print("TODO: Delete patch");
-                        },
-                        child: const Text("Delete"),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }
@@ -280,10 +129,26 @@ class InterfaceItem extends StatelessWidget {
           },
           children: patches
               .map(
-                (info) => GraphItem(
-                  info,
-                  selectedItem,
-                  isDense: true,
+                (info) => Padding(
+                  padding: const EdgeInsets.only(left: 9),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 1,
+                        height: 30,
+                        color: const Color.fromRGBO(60, 60, 60, 1.0),
+                      ),
+                      Expanded(
+                        child: Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                          child: GraphItem(
+                          info,
+                          selectedItem,
+                        ),
+                      ),
+                      ),
+                    ]
+                  ),
                 ),
               )
               .toList(),
@@ -314,20 +179,17 @@ class InterfaceItem extends StatelessWidget {
 }*/
 
 class GraphItem extends StatelessWidget {
-  GraphItem(this.info, this.selectedItem, {this.isDense = false});
+  GraphItem(this.info, this.selectedItem);
 
   final PatchInfo info;
-  final bool isDense;
   final ValueNotifier<Widget?> selectedItem;
 
   @override
   Widget build(BuildContext context) {
     return PresetsViewItem(
       name: info.name,
-      height: isDense ? 25 : 30,
+      height: 30,
       expandable: false,
-      padding:
-          isDense ? EdgeInsets.zero : const EdgeInsets.fromLTRB(0, 0, 0, 0),
       icon: const Icon(
         Icons.cable,
         size: 16,
@@ -404,10 +266,9 @@ class GraphItem extends StatelessWidget {
 class PresetsViewItem extends StatefulWidget {
   PresetsViewItem(
       {required this.name,
-      this.height = 35,
+      this.height = 30,
       required this.icon,
       required this.expandable,
-      this.padding = const EdgeInsets.fromLTRB(0, 0, 0, 4),
       required this.onTap,
       required this.children});
 
@@ -415,7 +276,6 @@ class PresetsViewItem extends StatefulWidget {
   final Icon icon;
   final double height;
   final bool expandable;
-  final EdgeInsets padding;
   final void Function() onTap;
   final List<Widget> children;
 
@@ -445,7 +305,7 @@ class _PresetsViewItem extends State<PresetsViewItem> {
           widget.onTap();
         },
         child: Padding(
-          padding: widget.padding,
+          padding: EdgeInsets.zero,
           child: Container(
             height: expanded ? null : widget.height,
             padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),

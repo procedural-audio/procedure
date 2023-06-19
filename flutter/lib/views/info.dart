@@ -5,12 +5,9 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../patch.dart';
-import '../main.dart';
-import '../projects.dart';
-
-import '../ui/ui.dart';
 import 'settings.dart';
+
+import '../patch.dart';
 
 class InterfaceInfo {
   InterfaceInfo({
@@ -20,8 +17,13 @@ class InterfaceInfo {
     required this.patches,
   });
 
+  final Directory directory;
+  final ValueNotifier<String> name;
+  final ValueNotifier<String> description;
+  final ValueNotifier<List<PatchInfo>> patches;
+
   static Future<InterfaceInfo?> load(Directory directory) async {
-    File file = File(directory.path + "/project.json");
+    File file = File(directory.path + "/info.json");
     if (file.existsSync()) {
       var contents = file.readAsStringSync();
       var json = jsonDecode(contents);
@@ -47,10 +49,22 @@ class InterfaceInfo {
     return null;
   }
 
-  final Directory directory;
-  final ValueNotifier<String> name;
-  final ValueNotifier<String> description;
-  final ValueNotifier<List<PatchInfo>> patches;
+  Future<bool> save() async {
+    if (!await directory.exists()) {
+      await directory.create();
+    }
+
+    File file = File(directory.path + "/info.json");
+
+    var map = {
+      'name': name.value,
+      'description': description.value,
+    };
+
+    var contents = jsonEncode(map);
+    await file.writeAsString(contents);
+    return true;
+  }
 }
 
 class ProjectInfo {
