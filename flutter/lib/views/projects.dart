@@ -1006,9 +1006,13 @@ class CircleButton extends StatefulWidget {
   CircleButton({
     required this.icon,
     required this.onTap,
+    this.color = const Color.fromRGBO(40, 40, 40, 1.0),
+    this.hoverColor = const Color.fromRGBO(30, 30, 30, 1.0),
   });
 
   final Icon icon;
+  final Color color;
+  final Color hoverColor;
   final void Function() onTap;
 
   @override
@@ -1037,9 +1041,7 @@ class _CircleButton extends State<CircleButton> {
           height: 20,
           duration: const Duration(milliseconds: 100),
           decoration: BoxDecoration(
-            color: hovering
-                ? const Color.fromRGBO(40, 40, 40, 1.0)
-                : const Color.fromRGBO(30, 30, 30, 1.0),
+            color: hovering ? widget.hoverColor : widget.color,
             borderRadius: const BorderRadius.all(
               Radius.circular(10),
             ),
@@ -1055,10 +1057,14 @@ class MoreDropdown extends StatefulWidget {
   MoreDropdown({
     required this.items,
     required this.onAction,
+    this.color = const Color.fromRGBO(40, 40, 40, 1.0),
+    this.hoverColor = const Color.fromRGBO(30, 30, 30, 1.0),
   });
 
-  List<String> items;
-  void Function(String) onAction;
+  final List<String> items;
+  final Color color;
+  final Color hoverColor;
+  final void Function(String) onAction;
 
   @override
   State<MoreDropdown> createState() => _MoreDropdown();
@@ -1185,6 +1191,8 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
         onTap: () {
           toggleDropdown();
         },
+        color: widget.color,
+        hoverColor: widget.hoverColor,
       ),
     );
   }

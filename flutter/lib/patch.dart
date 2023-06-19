@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
+import 'package:metasampler/views/presets.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -202,60 +203,6 @@ class RawConnector extends Struct {
   external int endIndex;
 }
 
-class PatchInfo {
-  PatchInfo({
-    required this.directory,
-    required this.name,
-    required this.description,
-  });
-
-  static PatchInfo blank(Directory directory) {
-    return PatchInfo(
-      directory: Directory(directory.path + "/New Patch"),
-      name: ValueNotifier("New Patch"),
-      description: ValueNotifier("New patch description"),
-    );
-  }
-
-  static Future<PatchInfo?> load(Directory directory) async {
-    if (await directory.exists()) {
-      File file = File(directory.path + "/info.json");
-      if (await file.exists()) {
-        var contents = await file.readAsString();
-        var json = jsonDecode(contents);
-
-        return PatchInfo(
-          directory: directory,
-          name: ValueNotifier(json["name"] ?? "Some Name"),
-          description: ValueNotifier(json["description"] ?? "Some Description"),
-        );
-      }
-    }
-
-    return null;
-  }
-
-  Future<bool> save() async {
-    if (!await directory.exists()) {
-      await directory.create();
-    }
-
-    print("Saving patch info");
-
-    File file = File(directory.path + "/info.json");
-    await file.writeAsString(jsonEncode({
-      "name": name.value,
-      "description": description.value,
-    }));
-
-    return true;
-  }
-
-  final Directory directory;
-  final ValueNotifier<String> name;
-  final ValueNotifier<String> description;
-}
-
 class Patch extends StatefulWidget {
   Patch({
     required this.rawPatch,
@@ -263,19 +210,19 @@ class Patch extends StatefulWidget {
   }) : super(key: UniqueKey());
 
   final RawPatch rawPatch;
-  final PatchInfo info;
+  final PresetInfo info;
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
   bool shouldTick = true;
 
-  static Patch from(PatchInfo info) {
+  static Patch from(PresetInfo info) {
     return Patch(
       info: info,
       rawPatch: RawPatch.create(),
     );
   }
 
-  static Future<Patch?> load(PatchInfo info, Plugins plugins) async {
+  static Future<Patch?> load(PresetInfo info, Plugins plugins) async {
     var rawPatch = RawPatch.create();
     var file = File(info.directory.path + "/patch.json");
 

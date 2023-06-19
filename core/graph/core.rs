@@ -139,75 +139,6 @@ pub unsafe extern "C" fn ffi_host_refresh(host: &mut Host) {
     }
 }
 
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_node(host: &mut Host, index: usize) -> &Node {
-    if let Some(graph) = &mut host.graph {
-        graph.nodes[index].as_ref()
-    } else {
-        panic!("Got nodes from empty graph")
-    }
-}*/
-
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_host_create_plugin(host: &mut Host, buffer: &i8) -> AudioPlugin {
-    match host.plugin_manager.create_plugin(str_from_char(buffer)) {
-        Some(plugin) => plugin,
-        None => panic!("Failed to create plugin")
-    }
-}*/
-
-/* Some other stuff */
-
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_host_add_connector(
-    host: &mut Host,
-    start_module: i32,
-    start_index: i32,
-    end_module: i32,
-    end_index: i32,
-) -> bool {
-    host.graph.add_connector(Connector {
-        start: Connection {
-            module_id: start_module,
-            pin_index: start_index,
-        },
-        end: Connection {
-            module_id: end_module,
-            pin_index: end_index,
-        },
-    })
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_remove_connector(host: &mut Host, id: i32, index: i32) {
-    host.graph.remove_connector(id, index)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_connector_count(host: &mut Host) -> usize {
-    host.graph.connectors.len()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_connector_start_id(host: &mut Host, index: usize) -> i32 {
-    host.graph.connectors[index].start.module_id
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_connector_end_id(host: &mut Host, index: usize) -> i32 {
-    host.graph.connectors[index].end.module_id
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_connector_start_index(host: &mut Host, index: usize) -> i32 {
-    host.graph.connectors[index].start.pin_index
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ffi_host_get_connector_end_index(host: &mut Host, index: usize) -> i32 {
-    host.graph.connectors[index].end.pin_index
-}*/
-
 /* Patch */
 
 #[no_mangle]
@@ -246,9 +177,9 @@ pub unsafe extern "C" fn ffi_patch_save(graph: &Graph, path: &i8) -> bool {
     let path = str_from_char(path);
     let path = path.to_string();
     let json = serde_json::to_string(&graph).unwrap();
-    println!("Saving graph to {}", path);
+    println!("Saving graph");
+    // println!("{}", json);
     std::fs::write(path.clone(), &json).unwrap();
-    println!("{}", json);
     return true;
 }
 
@@ -711,11 +642,6 @@ pub unsafe extern "C" fn ffi_module_info_get_path_element(info: &ModuleSpec, ind
 pub unsafe extern "C" fn ffi_module_info_get_color(info: &ModuleSpec) -> Color {
     info.color
 }
-
-/*#[no_mangle]
-pub unsafe extern "C" fn ffi_module_info_create(info: &ModuleSpec) -> *const dyn PolyphonicModule {
-    Box::into_raw(info.create())
-}*/
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_module_info_destroy(info: &ModuleSpec) {

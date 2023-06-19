@@ -3,19 +3,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:metasampler/ui/layout.dart';
 
-import '../views/info.dart';
 import 'decoration.dart';
 import 'interactive.dart';
 
+import '../views/presets.dart';
+
 class UserInterface extends StatelessWidget {
-  UserInterface({required this.info});
+  UserInterface({super.key, required this.info});
 
   late final RootWidget root;
-  final InterfaceInfo info;
+  final PresetInfo info;
   final ValueNotifier<UIWidget?> selected = ValueNotifier(null);
   final ValueNotifier<bool> editing = ValueNotifier(false);
 
-  static Future<UserInterface?> load(InterfaceInfo info) async {
+  static Future<UserInterface?> load(PresetInfo info) async {
     File file = File(info.directory.path + "/interface.json");
     if (await file.exists()) {
       var contents = await file.readAsString();
@@ -97,35 +98,6 @@ UIWidget? createUIWidget(String name, UserInterface ui) {
     return null;
   }
 }
-
-/*class UITree {
-  UITree();
-
-  // App app;
-
-  ValueNotifier<bool> editing = ValueNotifier(false);
-  ValueNotifier<UIWidget?> selected = ValueNotifier(null);
-
-  void refresh() {
-    editing.notifyListeners();
-  }
-
-  void deleteChild(UIWidget widget) {
-    // var root = app.project.value.ui.value;
-    print("Todo: Delete child recursive");
-    /*if (root != null) {
-      if (!root.deleteChildRecursive(widget)) {
-        print("Failed to delete item");
-      }
-    }*/
-
-    if (selected.value == widget) {
-      selected.value = null;
-    }
-
-    editing.notifyListeners();
-  }
-}*/
 
 abstract class UIWidget extends StatelessWidget {
   UIWidget(this.ui);

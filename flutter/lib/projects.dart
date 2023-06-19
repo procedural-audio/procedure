@@ -54,69 +54,78 @@ class Project extends StatefulWidget {
     required this.core,
     required this.info,
     required this.patch,
-    required this.ui,
+    required this.interface,
     required this.onUnload,
   }) {
-    scanPatches();
-    scanInterfaces();
+    scan();
   }
+
+  final Core core;
+  final ProjectInfo info;
+  final ValueNotifier<Patch> patch;
+  final ValueNotifier<UserInterface?> interface;
+  void Function() onUnload;
+
+  final ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
+
 
   static Project blank(Core core, void Function() onUnload) {
     var projectDirectory =
         Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
-    var patch = Patch.from(PatchInfo.blank(patchDirectory));
+    var patch = Patch.from(PresetInfo.blank(patchDirectory));
     return Project(
       core: core,
       info: info,
       patch: ValueNotifier(patch),
-      ui: ValueNotifier(null),
+      interface: ValueNotifier(null),
       onUnload: onUnload,
     );
   }
 
-  Future<bool> loadPatch(PatchInfo patchInfo) async {
-    var newPatch = await Patch.load(patchInfo, PLUGINS);
+  Future<bool> loadPreset(PresetInfo info) async {
+    var newPatch = await Patch.load(info, PLUGINS);
     if (newPatch != null) {
       core.setPatch(newPatch);
       patch.value = newPatch;
+
+      var newInterface = await UserInterface.load(info);
+      if (newInterface != null) {
+        interface.value = newInterface;
+        return true;
+      }
+
       return true;
     }
 
     return false;
   }
 
-  Future<bool> loadInterface(InterfaceInfo interfaceInfo) async {
-    var newPatch = await UserInterface.load(interfaceInfo);
-    if (newPatch != null) {
-      ui.value = newPatch;
-      return true;
-    }
-
+  Future<bool> loadInterface(PresetInfo info) async {
     return false;
   }
 
   static Future<Project?> load(
       Core core, ProjectInfo info, void Function() onUnload) async {
-    var directory = Directory(info.directory.path + "/patches");
+    var directory = Directory(info.directory.path + "/presets");
 
     if (!await directory.exists()) {
       await directory.create();
     }
 
     await for (var item in directory.list()) {
-      var patchDirectory = Directory(item.path);
-      var patchInfo = await PatchInfo.load(patchDirectory);
-      if (patchInfo != null) {
-        var patch = await Patch.load(patchInfo, PLUGINS);
+      var presetsDirectory = Directory(item.path);
+      var presetInfo = await PresetInfo.load(presetsDirectory);
+      if (presetInfo != null) {
+        var patch = await Patch.load(presetInfo, PLUGINS);
         if (patch != null) {
           print("Loaded new project and patch");
           return Project(
             core: core,
             info: info,
             patch: ValueNotifier(patch),
-            ui: ValueNotifier(null),
+            interface: ValueNotifier(null),
             onUnload: onUnload,
           );
         }
@@ -127,8 +136,8 @@ class Project extends StatefulWidget {
     return Project(
       core: core,
       info: info,
-      patch: ValueNotifier(Patch.from(PatchInfo.blank(directory))),
-      ui: ValueNotifier(null),
+      patch: ValueNotifier(Patch.from(PresetInfo.blank(directory))),
+      interface: ValueNotifier(null),
       onUnload: onUnload,
     );
   }
@@ -136,48 +145,22 @@ class Project extends StatefulWidget {
   void save() async {
     await info.save();
     await patch.value.save();
-    await ui.value?.save();
+    await interface.value?.save();
   }
 
-  Core core;
-  final ProjectInfo info;
-  final ValueNotifier<Patch> patch;
-  final ValueNotifier<UserInterface?> ui;
-  void Function() onUnload;
-
-  final ValueNotifier<List<PatchInfo>> patches = ValueNotifier([]);
-  final ValueNotifier<List<InterfaceInfo>> interfaces = ValueNotifier([]);
-
-  void scanPatches() async {
-    List<PatchInfo> infos = [];
-    var patchesDir = Directory(info.directory.path + "/patches");
+  void scan() async {
+    List<PresetInfo> infos = [];
+    var patchesDir = Directory(info.directory.path + "/presets");
 
     if (await patchesDir.exists()) {
       var items = patchesDir.list();
       await for (var item in items) {
         var dir = Directory(item.path);
-        var info = await PatchInfo.load(dir);
+        var info = await PresetInfo.load(dir);
         if (info != null) {
           infos.add(info);
           infos.sort((a, b) => a.name.value.compareTo(b.name.value));
-          patches.value = infos;
-        }
-      }
-    }
-  }
-
-  void scanInterfaces() async {
-    List<InterfaceInfo> infos = [];
-    var interfacesDir = Directory(info.directory.path + "/interfaces");
-
-    if (await interfacesDir.exists()) {
-      var items = interfacesDir.list();
-      await for (var item in items) {
-        var dir = Directory(item.path);
-        var info = await InterfaceInfo.load(dir);
-        if (info != null) {
-          infos.add(info);
-          interfaces.value = infos;
+          presets.value = infos;
         }
       }
     }
@@ -220,7 +203,7 @@ class _Project extends State<Project> {
               builder: (context) {
                 if (uiVisible) {
                   return ValueListenableBuilder<UserInterface?>(
-                    valueListenable: widget.ui,
+                    valueListenable: widget.interface,
                     builder: (context, ui, child) {
                       if (ui != null) {
                         return ui;
@@ -266,14 +249,9 @@ class _Project extends State<Project> {
                 child: GestureDetector(
                   onTap: () {},
                   child: PresetsView(
-                    patches: widget.patches,
-                    interfaces: widget.interfaces,
-                    onLoad: (patchInfo, interfaceInfo) async {
-                      if (await widget.loadPatch(patchInfo)) {
-                        if (interfaceInfo != null) {
-                          await widget.loadInterface(interfaceInfo);
-                        }
-                      }
+                    presets: widget.presets,
+                    onLoad: (info) {
+                      widget.loadPreset(info);
                     },
                   ),
                 ),
@@ -306,7 +284,10 @@ class _Project extends State<Project> {
               });
             },
             onUserInterfaceEdit: () {
-              widget.ui.value?.toggleEditing();
+              widget.interface.value?.toggleEditing();
+            },
+            onSave: () {
+              widget.save();
             },
             onProjectClose: onProjectClose,
           ),

@@ -9,7 +9,7 @@ import 'settings.dart';
 
 import '../patch.dart';
 
-class InterfaceInfo {
+/*class InterfaceInfo {
   InterfaceInfo({
     required this.directory,
     required this.name,
@@ -20,21 +20,21 @@ class InterfaceInfo {
   final Directory directory;
   final ValueNotifier<String> name;
   final ValueNotifier<String> description;
-  final ValueNotifier<List<PatchInfo>> patches;
+  final ValueNotifier<List<PresetInfo>> patches;
 
   static Future<InterfaceInfo?> load(Directory directory) async {
     File file = File(directory.path + "/info.json");
     if (file.existsSync()) {
       var contents = file.readAsStringSync();
       var json = jsonDecode(contents);
-      List<PatchInfo> patches = [];
+      List<PresetInfo> patches = [];
 
       Directory patchesDirectory = Directory(directory.path + "/patches");
       await for (var item in patchesDirectory.list()) {
         var patchDirectory = Directory(item.path);
-        var patchInfo = await PatchInfo.load(patchDirectory);
-        if (patchInfo != null) {
-          patches.add(patchInfo);
+        var PresetInfo = await PresetInfo.load(patchDirectory);
+        if (PresetInfo != null) {
+          patches.add(PresetInfo);
         }
       }
 
@@ -50,6 +50,7 @@ class InterfaceInfo {
   }
 
   Future<bool> save() async {
+    print("Saving interface info");
     if (!await directory.exists()) {
       await directory.create();
     }
@@ -65,7 +66,7 @@ class InterfaceInfo {
     await file.writeAsString(contents);
     return true;
   }
-}
+}*/
 
 class ProjectInfo {
   ProjectInfo({
@@ -110,7 +111,7 @@ class ProjectInfo {
   }
 
   Future<bool> save() async {
-    print("Saving project info " + toJson().toString());
+    print("Saving project info");
 
     if (!await directory.exists()) {
       await directory.create();

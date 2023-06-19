@@ -16,6 +16,7 @@ class NewTopBar extends StatefulWidget {
     required this.onSidebarChange,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
+    required this.onSave,
     required this.onProjectClose,
   });
 
@@ -27,6 +28,7 @@ class NewTopBar extends StatefulWidget {
   void Function() onPresetsButtonTap;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
+  void Function() onSave;
   void Function() onProjectClose;
 
   @override
@@ -59,6 +61,7 @@ class _NewTopBar extends State<NewTopBar> {
           PresetsButton(
             loadedPatch: widget.loadedPatch,
             onTap: widget.onPresetsButtonTap,
+            onSave: widget.onSave,
           ),
           Expanded(
             child: Row(
@@ -331,11 +334,13 @@ class PresetsButton extends StatefulWidget {
   const PresetsButton({
     required this.loadedPatch,
     required this.onTap,
+    required this.onSave,
     Key? key,
   }) : super(key: key);
 
   final ValueNotifier<Patch> loadedPatch;
   final void Function() onTap;
+  final void Function() onSave;
 
   @override
   _PresetsButton createState() => _PresetsButton();
@@ -418,7 +423,9 @@ class _PresetsButton extends State<PresetsButton> {
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
-                onTap: () {},
+                onTap: () {
+                  widget.onSave();
+                },
               ),
               BarButton(
                 icon: const Icon(
