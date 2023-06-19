@@ -191,7 +191,8 @@ class NewInstrumentButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: IconButton(
-          icon: const Icon(Icons.add,
+        icon: const Icon(
+          Icons.add,
           size: 20,
         ),
         color: Colors.green,
@@ -593,7 +594,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
                   children: [
                     Icon(
                       widget.iconData,
-                      size: 18,
+                      size: 16,
                       color: active ? Colors.white : Colors.grey,
                     ),
                     const SizedBox(width: 10),
