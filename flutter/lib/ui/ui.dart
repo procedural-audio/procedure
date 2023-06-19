@@ -9,7 +9,7 @@ import 'interactive.dart';
 import '../views/presets.dart';
 
 class UserInterface extends StatelessWidget {
-  UserInterface({super.key, required this.info});
+  UserInterface(this.info, {super.key});
 
   late final RootWidget root;
   final PresetInfo info;
@@ -23,9 +23,7 @@ class UserInterface extends StatelessWidget {
       // var json = jsonDecode(contents);
       print("TODO: Decode widget tree");
 
-      return UserInterface(
-        info: info,
-      );
+      return UserInterface(info);
 
     }
 
@@ -33,7 +31,11 @@ class UserInterface extends StatelessWidget {
   }
 
   Future<bool> save() async {
-    await info.save();
+    var file = File(info.directory.path + "/interface.json");
+
+    if (!await file.exists()) {
+      await file.create();
+    }
 
     print("TODO: Save json of widget tree");
 

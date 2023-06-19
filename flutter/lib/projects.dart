@@ -249,6 +249,7 @@ class _Project extends State<Project> {
                 child: GestureDetector(
                   onTap: () {},
                   child: PresetsView(
+                    directory: Directory(widget.info.directory.path + "/presets"),
                     presets: widget.presets,
                     onLoad: (info) {
                       widget.loadPreset(info);

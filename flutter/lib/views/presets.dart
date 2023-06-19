@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/ui/ui.dart';
 import 'package:metasampler/views/projects.dart';
 
 import '../config.dart';
@@ -70,13 +71,83 @@ class PresetInfo {
 
 class PresetsView extends StatelessWidget {
   PresetsView({
+    required this.directory,
     required this.presets,
     required this.onLoad,
   });
 
+  final Directory directory;
   final ValueNotifier<List<PresetInfo>> presets;
   final ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
   final void Function(PresetInfo) onLoad;
+
+  void newPreset() async {
+    print("New preset");
+    var newName = "New Preset";
+    var newPath = directory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = "New Preset" + i.toString();
+      newPath = directory.path + "/" + newName;
+      i++;
+    }
+
+    var newInfo = PresetInfo(
+      directory: Directory(newPath),
+      name: ValueNotifier(newName),
+      description: ValueNotifier("A new project description"),
+      hasInterface: ValueNotifier(false),
+    );
+
+    await newInfo.save();
+
+    presets.value.add(newInfo);
+    presets.notifyListeners();
+  }
+
+  void duplicatePreset(PresetInfo info) async {
+    print("Duplicate preset");
+    var newName = info.name.value + " (copy)";
+    var newPath = info.directory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = info.name.value + " (copy " + i.toString() + ")";
+      newPath = info.directory.path + "/" + newName;
+      i++;
+    }
+
+    await Process.run("cp", ["-r", info.directory.path, newPath]);
+    var newInfo = await PresetInfo.load(Directory(newPath));
+
+    if (newInfo != null) {
+      newInfo.name.value = newName;
+      await newInfo.save();
+
+      presets.value.add(newInfo);
+      presets.notifyListeners();
+    }
+  }
+
+  void addInterface(PresetInfo info) async {
+    var newInterface = UserInterface(info);
+    await newInterface.save();
+    print("Should actually load interface within project here");
+    info.hasInterface.value = true;
+  }
+
+  void removeInterface(PresetInfo info) async {
+    info.hasInterface.value = false;
+    File(info.directory.path + "/interface.json").delete();
+  }
+
+  void deletePreset(PresetInfo info) async {
+    print("Removing project");
+    await info.directory.delete(recursive: true);
+    presets.value.remove(info);
+    presets.notifyListeners();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,8 +167,20 @@ class PresetsView extends StatelessWidget {
                  presets 
                     .map((info) => PresetItem(
                           info: info,
-                          onTap: () {
-                            print("Preset tapped");
+                          onLoad: () {
+                            onLoad(info);
+                          },
+                          onDuplicate: () {
+                            duplicatePreset(info);
+                          },
+                          onAddInterface: () {
+                            addInterface(info);
+                          },
+                          onRemoveInterface: () {
+                            removeInterface(info);
+                          },
+                          onDelete: () {
+                            deletePreset(info);
                           },
                         ))
                     .toList();
@@ -117,23 +200,13 @@ class PresetsView extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.add,
                           size: 14,
                           color: Colors.grey,
                         ),
                         onPressed: () {
-                          print("Stuff");
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.create_new_folder,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          print("Stuff");
+                          newPreset();
                         },
                       ),
                     ],
@@ -229,11 +302,19 @@ class PresetsView extends StatelessWidget {
 class PresetItem extends StatefulWidget {
   PresetItem({
     required this.info,
-    required this.onTap,
+    required this.onLoad,
+    required this.onDuplicate,
+    required this.onAddInterface,
+    required this.onRemoveInterface,
+    required this.onDelete,
   });
 
   final PresetInfo info;
-  final void Function() onTap;
+  final void Function() onLoad;
+  final void Function() onDuplicate;
+  final void Function() onAddInterface;
+  final void Function() onRemoveInterface;
+  final void Function() onDelete;
 
   @override
   State<PresetItem> createState() => _PresetItem();
@@ -256,8 +337,8 @@ class _PresetItem extends State<PresetItem> {
         });
       },
       child: GestureDetector(
-        onTap: () {
-          widget.onTap();
+        onDoubleTap: () {
+          widget.onLoad();
         },
         child: Padding(
           padding: EdgeInsets.zero,
@@ -310,22 +391,36 @@ class _PresetItem extends State<PresetItem> {
                           },
                         ),
                       ),
-                      MoreDropdown(
-                        items: const [
-                          "Load Preset",
-                          "Rename Preset",
-                          "Duplicate Preset",
-                          "Delete Project"
-                        ],
-                        onAction: (s) {
-                          if (s == "Load Preset") {
-                          } else if (s == "Rename Preset") {
-                          } else if (s == "Duplicate Preset") {
-                          } else if (s == "Delete Preset") {
-                          }
+                      ValueListenableBuilder<bool>(
+                        valueListenable: widget.info.hasInterface,
+                        builder: (context, hasInterface, child) {
+                          return MoreDropdown(
+                            items: [
+                              "Load Preset",
+                              "Rename Preset",
+                              "Duplicate Preset",
+                              hasInterface ? "Remove Interface" : "Add Interface",
+                              "Delete Preset"
+                            ],
+                            onAction: (s) {
+                              if (s == "Load Preset") {
+                                widget.onLoad();
+                              } else if (s == "Rename Preset") {
+                                print("Should rename here");
+                              } else if (s == "Duplicate Preset") {
+                                widget.onDuplicate();
+                              } else if (s == "Add Interface") {
+                                widget.onAddInterface();
+                              } else if (s == "Remove Interface") {
+                                widget.onRemoveInterface();
+                              } else if (s == "Delete Preset") {
+                                widget.onDelete();
+                              }
+                            },
+                            color: const Color.fromRGBO(40, 40, 40, 1.0),
+                            hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
+                          );
                         },
-                        color: const Color.fromRGBO(40, 40, 40, 1.0),
-                        hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
                       ),
                       const SizedBox(width: 5),
                     ],
