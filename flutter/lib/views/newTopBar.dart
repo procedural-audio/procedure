@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/views/presets.dart';
 
-import '../patch.dart';
 import '../projects.dart';
 import 'info.dart';
 
@@ -70,132 +69,6 @@ class _NewTopBar extends State<NewTopBar> {
             child: Row(
               children: [
                 Expanded(child: Container()),
-                /*Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: Container(
-                    height: 30,
-                    decoration: const BoxDecoration(
-                      color: Color.fromRGBO(35, 35, 35, 1.0),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        MainBarButton(
-                          icon: Icons.graphic_eq,
-                          color: widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Samples
-                              ? Colors.blue
-                              : Colors.white,
-                          size: 14,
-                          onPressed: () {
-                            setState(() {
-                              if (widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Samples) {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.None,
-                                );
-                              } else {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.Samples,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                        MainBarButton(
-                          icon: Icons.music_note,
-                          color: widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Notes
-                              ? Colors.blue
-                              : Colors.white,
-                          size: 14,
-                          onPressed: () {
-                            setState(() {
-                              if (widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Notes) {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.None,
-                                );
-                              } else {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.Notes,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                        MainBarButton(
-                          icon: Icons.cable,
-                          color: widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Modules
-                              ? Colors.blue
-                              : Colors.white,
-                          size: 14,
-                          onPressed: () {
-                            setState(() {
-                              if (widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Modules) {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.None,
-                                );
-                              } else {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.Modules,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                        MainBarButton(
-                          icon: Icons.widgets,
-                          color: widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Widgets
-                              ? Colors.blue
-                              : Colors.white,
-                          size: 14,
-                          onPressed: () {
-                            setState(() {
-                              if (widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Widgets) {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.None,
-                                );
-                              } else {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.Widgets,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                        MainBarButton(
-                          icon: Icons.widgets,
-                          color: widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Settings
-                              ? Colors.blue
-                              : Colors.white,
-                          size: 14,
-                          onPressed: () {
-                            setState(() {
-                              if (widget.sidebarDisplay ==
-                                  ProjectSidebarDisplay.Settings) {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.None,
-                                );
-                              } else {
-                                widget.onSidebarChange(
-                                  ProjectSidebarDisplay.Settings,
-                                );
-                              }
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),*/
               ],
             ),
           ),
@@ -423,6 +296,15 @@ class _PresetsButton extends State<PresetsButton> {
               ),
               BarButton(
                 icon: const Icon(
+                  Icons.functions,
+                  size: 18,
+                  color: Colors.grey,
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(0)),
+                onTap: () {},
+              ),
+              BarButton(
+                icon: const Icon(
                   Icons.save,
                   size: 17,
                   color: Colors.grey,
@@ -431,15 +313,6 @@ class _PresetsButton extends State<PresetsButton> {
                 onTap: () {
                   widget.onSave();
                 },
-              ),
-              BarButton(
-                icon: const Icon(
-                  Icons.arrow_downward,
-                  size: 18,
-                  color: Colors.grey,
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(0)),
-                onTap: () {},
               ),
             ],
           ),
