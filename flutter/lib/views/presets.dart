@@ -38,7 +38,8 @@ class PresetInfo {
         var contents = await file.readAsString();
         var json = jsonDecode(contents);
 
-        bool interfaceExists = await File(directory.path + "/interface.json").exists();
+        bool interfaceExists =
+            await File(directory.path + "/interface.json").exists();
 
         return PresetInfo(
           directory: directory,
@@ -163,56 +164,53 @@ class PresetsView extends StatelessWidget {
       child: ValueListenableBuilder<List<PresetInfo>>(
         valueListenable: presets,
         builder: (context, presets, child) {
-              List<PresetItem> items = 
-                 presets 
-                    .map((info) => PresetItem(
-                          info: info,
-                          onLoad: () {
-                            onLoad(info);
-                          },
-                          onDuplicate: () {
-                            duplicatePreset(info);
-                          },
-                          onAddInterface: () {
-                            addInterface(info);
-                          },
-                          onRemoveInterface: () {
-                            removeInterface(info);
-                          },
-                          onDelete: () {
-                            deletePreset(info);
-                          },
-                        ))
-                    .toList();
+          List<PresetItem> items = presets
+              .map((info) => PresetItem(
+                    info: info,
+                    onLoad: () {
+                      onLoad(info);
+                    },
+                    onDuplicate: () {
+                      duplicatePreset(info);
+                    },
+                    onAddInterface: () {
+                      addInterface(info);
+                    },
+                    onRemoveInterface: () {
+                      removeInterface(info);
+                    },
+                    onDelete: () {
+                      deletePreset(info);
+                    },
+                  ))
+              .toList();
 
-              return Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Column(
-                          children: items,
-                        ),
-                      ),
-                    ),
+          return Column(children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                    children: items,
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () {
-                          newPreset();
-                        },
-                      ),
-                    ],
-                  )
-                ]
-              );
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.add,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    newPreset();
+                  },
+                ),
+              ],
+            )
+          ]);
         },
       ),
     );
@@ -337,9 +335,9 @@ class _PresetItem extends State<PresetItem> {
         });
       },
       child: GestureDetector(
-        onDoubleTap: () {
+        /*onDoubleTap: () {
           widget.onLoad();
-        },
+        },*/
         child: Padding(
           padding: EdgeInsets.zero,
           child: Container(
@@ -351,13 +349,12 @@ class _PresetItem extends State<PresetItem> {
                   : const Color.fromRGBO(30, 30, 30, 1.0),
               borderRadius: const BorderRadius.all(Radius.circular(5)),
             ),
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 30,
-                  child: Row(
-                    children: [
-                      ValueListenableBuilder<bool>(
+            child: Column(children: <Widget>[
+              SizedBox(
+                height: 30,
+                child: Row(
+                  children: [
+                    ValueListenableBuilder<bool>(
                         valueListenable: widget.info.hasInterface,
                         builder: (context, hasInterface, child) {
                           if (hasInterface) {
@@ -373,61 +370,59 @@ class _PresetItem extends State<PresetItem> {
                               color: Colors.blue,
                             );
                           }
-                        }
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ValueListenableBuilder<String>(
-                          valueListenable: widget.info.name,
-                          builder: (context, name, child) {
-                            return Text(
-                              name,
-                              style: TextStyle(
-                                color: hovering
+                        }),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: widget.info.name,
+                        builder: (context, name, child) {
+                          return Text(
+                            name,
+                            style: TextStyle(
+                              color: hovering
                                   ? Colors.white
                                   : const Color.fromRGBO(200, 200, 200, 1.0),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: widget.info.hasInterface,
-                        builder: (context, hasInterface, child) {
-                          return MoreDropdown(
-                            items: [
-                              "Load Preset",
-                              "Rename Preset",
-                              "Duplicate Preset",
-                              hasInterface ? "Remove Interface" : "Add Interface",
-                              "Delete Preset"
-                            ],
-                            onAction: (s) {
-                              if (s == "Load Preset") {
-                                widget.onLoad();
-                              } else if (s == "Rename Preset") {
-                                print("Should rename here");
-                              } else if (s == "Duplicate Preset") {
-                                widget.onDuplicate();
-                              } else if (s == "Add Interface") {
-                                widget.onAddInterface();
-                              } else if (s == "Remove Interface") {
-                                widget.onRemoveInterface();
-                              } else if (s == "Delete Preset") {
-                                widget.onDelete();
-                              }
-                            },
-                            color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
+                            ),
                           );
                         },
                       ),
-                      const SizedBox(width: 5),
-                    ],
-                  ),
+                    ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: widget.info.hasInterface,
+                      builder: (context, hasInterface, child) {
+                        return MoreDropdown(
+                          items: [
+                            "Load Preset",
+                            "Rename Preset",
+                            "Duplicate Preset",
+                            hasInterface ? "Remove Interface" : "Add Interface",
+                            "Delete Preset"
+                          ],
+                          onAction: (s) {
+                            if (s == "Load Preset") {
+                              widget.onLoad();
+                            } else if (s == "Rename Preset") {
+                              print("Should rename here");
+                            } else if (s == "Duplicate Preset") {
+                              widget.onDuplicate();
+                            } else if (s == "Add Interface") {
+                              widget.onAddInterface();
+                            } else if (s == "Remove Interface") {
+                              widget.onRemoveInterface();
+                            } else if (s == "Delete Preset") {
+                              widget.onDelete();
+                            }
+                          },
+                          color: const Color.fromRGBO(40, 40, 40, 1.0),
+                          hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                  ],
                 ),
-              ]
-            ),
+              ),
+            ]),
           ),
         ),
       ),
