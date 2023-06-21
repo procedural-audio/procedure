@@ -148,7 +148,7 @@ class _Bar extends State<Bar> {
                         ),
                         Visibility(
                           visible: showPresetView,
-                          child: PresetsView(
+                          child: PresetsBrowser(
                             patches: project.patches,
                             interfaces: project.interfaces,
                             onLoadPatch: (info) {

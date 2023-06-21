@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
+import 'package:metasampler/views/presets.dart';
 
 import 'dart:math';
 
@@ -41,15 +42,15 @@ class App extends StatelessWidget {
         print("Regenerating patch");
         var currentProject = project.value;
         if (currentProject != null) {
-          currentProject.patch.value.disableTick();
+          currentProject.preset.value.patch.disableTick();
 
-          var oldPatch = currentProject.patch.value;
-          var newPatch = Patch.from(oldPatch.info);
-          var state = oldPatch.rawPatch.getState();
+          var oldPreset = currentProject.preset.value;
+          var newPreset = Preset.from(oldPreset.info);
+          var state = oldPreset.patch.rawPatch.getState();
 
-          newPatch.rawPatch.setState(state);
-          currentProject.patch.value = newPatch;
-          core.setPatch(newPatch);
+          newPreset.patch.rawPatch.setState(state);
+          currentProject.preset.value = newPreset;
+          core.setPatch(newPreset.patch);
         }
       },
     );
@@ -97,7 +98,7 @@ class _Window extends State<Window> {
   void loadProject(ProjectInfo info) async {
     var project = await Project.load(widget.app.core, info, unloadProject);
     if (project != null) {
-      widget.app.core.setPatch(project.patch.value);
+      widget.app.core.setPatch(project.preset.value.patch);
       widget.app.project.value = project;
 
       Navigator.push(

@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/ui/ui.dart';
 import 'package:metasampler/views/projects.dart';
 
-import '../config.dart';
 import '../patch.dart';
-import '../views/info.dart';
+import '../plugins.dart';
+import '../ui/ui.dart';
 
 class PresetInfo {
   PresetInfo({
@@ -70,17 +69,60 @@ class PresetInfo {
   }
 }
 
-class PresetsView extends StatelessWidget {
-  PresetsView({
+class Preset {
+  Preset({required this.info, required this.patch, required this.interface});
+
+  final PresetInfo info;
+  final Patch patch;
+  final ValueNotifier<UserInterface?> interface;
+  // final ValueNotifier<List<Variable>> variables;
+
+  static Preset from(PresetInfo info) {
+    return Preset(
+      info: info,
+      patch: Patch.from(info),
+      interface: ValueNotifier(null),
+    );
+  }
+
+  static Future<Preset?> load(PresetInfo info, Plugins plugins) async {
+    var patch = await Patch.load(info, plugins);
+    if (patch != null) {
+      var interface = await UserInterface.load(info);
+
+      return Preset(
+        info: info,
+        patch: patch,
+        interface: ValueNotifier(interface),
+      );
+    }
+
+    return null;
+  }
+
+  Future<bool> save() async {
+    await info.save();
+    await patch.save();
+    await interface.value?.save();
+    return true;
+  }
+}
+
+class PresetsBrowser extends StatelessWidget {
+  PresetsBrowser({
     required this.directory,
     required this.presets,
     required this.onLoad,
+    required this.onAddInterface,
+    required this.onRemoveInterface,
   });
 
   final Directory directory;
   final ValueNotifier<List<PresetInfo>> presets;
   final ValueNotifier<Widget?> selectedItem = ValueNotifier(null);
   final void Function(PresetInfo) onLoad;
+  final void Function(PresetInfo) onAddInterface;
+  final void Function(PresetInfo) onRemoveInterface;
 
   void newPreset() async {
     print("New preset");
@@ -131,16 +173,12 @@ class PresetsView extends StatelessWidget {
     }
   }
 
-  void addInterface(PresetInfo info) async {
-    var newInterface = UserInterface(info);
-    await newInterface.save();
-    print("Should actually load interface within project here");
-    info.hasInterface.value = true;
+  void addInterface(PresetInfo info) {
+    onAddInterface(info);
   }
 
-  void removeInterface(PresetInfo info) async {
-    info.hasInterface.value = false;
-    File(info.directory.path + "/interface.json").delete();
+  void removeInterface(PresetInfo info) {
+    onRemoveInterface(info);
   }
 
   void deletePreset(PresetInfo info) async {
@@ -210,92 +248,12 @@ class PresetsView extends StatelessWidget {
                 ),
               ],
             )
-          ]);
+          ],);
         },
       ),
     );
   }
 }
-
-/*class InterfaceItem extends StatelessWidget {
-  InterfaceItem({
-    required this.info,
-    required this.selectedItem,
-  });
-
-  final InterfaceInfo info;
-  final ValueNotifier<Widget?> selectedItem;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<PresetInfo>>(
-      valueListenable: info.patches,
-      builder: (context, patches, child) {
-        return PresetsViewItem(
-          name: info.name,
-          expandable: true,
-          icon: const Icon(
-            Icons.display_settings,
-            size: 18,
-            color: Colors.green,
-          ),
-          onTap: () {
-            if (selectedItem.value == this) {
-              selectedItem.value = null;
-            } else {
-              selectedItem.value = this;
-            }
-          },
-          children: patches
-              .map(
-                (info) => Padding(
-                  padding: const EdgeInsets.only(left: 9),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 1,
-                        height: 30,
-                        color: const Color.fromRGBO(60, 60, 60, 1.0),
-                      ),
-                      Expanded(
-                        child: Padding(
-                        padding: const EdgeInsets.only(left: 5),
-                          child: GraphItem(
-                          info,
-                          selectedItem,
-                        ),
-                      ),
-                      ),
-                    ]
-                  ),
-                ),
-              )
-              .toList(),
-        );
-      },
-    );
-  }
-}*/
-
-/*class ItemAdd extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 30,
-      height: 24,
-      child: GestureDetector(
-        onTap: () {
-          print("Add");
-        },
-        child: const Icon(
-          Icons.add,
-          size: 18,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-}*/
 
 class PresetItem extends StatefulWidget {
   PresetItem({
@@ -431,10 +389,13 @@ class _PresetItem extends State<PresetItem> {
 }
 
 class PresetDirectory {
+  PresetDirectory({
+    required this.name,
+    required this.path,
+    required this.presets,
+  });
+
   final String name;
   final String path;
   final List<PresetInfo> presets;
-
-  PresetDirectory(
-      {required this.name, required this.path, required this.presets});
 }

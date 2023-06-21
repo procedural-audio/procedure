@@ -1,11 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
 import 'package:metasampler/views/presets.dart';
-
-import 'dart:async';
-import 'dart:io';
 
 import 'core.dart';
 import 'patch.dart';
@@ -53,8 +53,9 @@ class Project extends StatefulWidget {
   Project({
     required this.core,
     required this.info,
-    required this.patch,
-    required this.interface,
+    required this.preset,
+    // required this.patch,
+    // required this.interface,
     required this.onUnload,
   }) {
     scan();
@@ -62,40 +63,42 @@ class Project extends StatefulWidget {
 
   final Core core;
   final ProjectInfo info;
-  final ValueNotifier<Patch> patch;
-  final ValueNotifier<UserInterface?> interface;
+  final ValueNotifier<Preset> preset;
+  // final ValueNotifier<Patch> patch;
+  // final ValueNotifier<UserInterface?> interface;
+
   void Function() onUnload;
 
   final ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
-
 
   static Project blank(Core core, void Function() onUnload) {
     var projectDirectory =
         Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
-    var patch = Patch.from(PresetInfo.blank(patchDirectory));
+    var presetInfo = PresetInfo.blank(patchDirectory);
+
+    var preset = Preset(
+      info: PresetInfo.blank(patchDirectory),
+      patch: Patch.from(presetInfo),
+      interface: ValueNotifier(null),
+    );
+
     return Project(
       core: core,
       info: info,
-      patch: ValueNotifier(patch),
-      interface: ValueNotifier(null),
+      preset: ValueNotifier(preset),
+      // patch: ValueNotifier(patch),
+      // interface: ValueNotifier(null),
       onUnload: onUnload,
     );
   }
 
   Future<bool> loadPreset(PresetInfo info) async {
-    var newPatch = await Patch.load(info, PLUGINS);
-    if (newPatch != null) {
-      core.setPatch(newPatch);
-      patch.value = newPatch;
+    var newPreset = await Preset.load(info, PLUGINS);
 
-      var newInterface = await UserInterface.load(info);
-      if (newInterface != null) {
-        interface.value = newInterface;
-        return true;
-      }
-
+    if (newPreset != null) {
+      preset.value = newPreset;
       return true;
     }
 
@@ -118,34 +121,26 @@ class Project extends StatefulWidget {
       var presetsDirectory = Directory(item.path);
       var presetInfo = await PresetInfo.load(presetsDirectory);
       if (presetInfo != null) {
-        var patch = await Patch.load(presetInfo, PLUGINS);
-        if (patch != null) {
-          print("Loaded new project and patch");
+        var preset = await Preset.load(presetInfo, PLUGINS);
+        if (preset != null) {
           return Project(
             core: core,
             info: info,
-            patch: ValueNotifier(patch),
-            interface: ValueNotifier(null),
+            preset: ValueNotifier(preset),
+            // patch: ValueNotifier(patch),
+            // interface: ValueNotifier(null),
             onUnload: onUnload,
           );
         }
       }
     }
 
-    print("Loaded blank patch");
-    return Project(
-      core: core,
-      info: info,
-      patch: ValueNotifier(Patch.from(PresetInfo.blank(directory))),
-      interface: ValueNotifier(null),
-      onUnload: onUnload,
-    );
+    return null;
   }
 
   void save() async {
     await info.save();
-    await patch.value.save();
-    await interface.value?.save();
+    await preset.value.save();
   }
 
   void scan() async {
@@ -183,12 +178,16 @@ class _Project extends State<Project> {
     await widget.info.save();
     await widget.info.save();
 
-    widget.patch.value.disableTick();
+    widget.preset.value.patch.disableTick();
     widget.onUnload();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.preset.value.interface.value == null) {
+      uiVisible = false;
+    }
+
     return Stack(
       children: [
         Positioned(
@@ -201,29 +200,25 @@ class _Project extends State<Project> {
             duration: const Duration(milliseconds: 300),
             child: Builder(
               builder: (context) {
-                if (uiVisible) {
-                  return ValueListenableBuilder<UserInterface?>(
-                    valueListenable: widget.interface,
-                    builder: (context, ui, child) {
-                      if (ui != null) {
-                        return ui;
-                      } else {
-                        return Container();
-                      }
-                    },
-                  );
-                } else {
-                  return ValueListenableBuilder<Patch?>(
-                    valueListenable: widget.patch,
-                    builder: (context, patch, child) {
-                      if (patch != null) {
-                        return patch;
-                      } else {
-                        return Container();
-                      }
-                    },
-                  );
-                }
+                return ValueListenableBuilder<Preset>(
+                  valueListenable: widget.preset,
+                  builder: (context, preset, child) {
+                    if (!uiVisible) {
+                      return preset.patch;
+                    } else {
+                      return ValueListenableBuilder<UserInterface?>(
+                        valueListenable: preset.interface,
+                        builder: (context, ui, child) {
+                          if (ui != null) {
+                            return ui;
+                          } else {
+                            return Container();
+                          }
+                        },
+                      );
+                    }
+                  }
+                );
               },
             ),
           ),
@@ -248,11 +243,20 @@ class _Project extends State<Project> {
                 alignment: Alignment.topCenter,
                 child: GestureDetector(
                   onTap: () {},
-                  child: PresetsView(
+                  child: PresetsBrowser(
                     directory: Directory(widget.info.directory.path + "/presets"),
                     presets: widget.presets,
                     onLoad: (info) {
                       widget.loadPreset(info);
+                    },
+                    onAddInterface: (info) async {
+                      var newInterface = UserInterface(info);
+                      await newInterface.save();
+                      info.hasInterface.value = true;
+                    },
+                    onRemoveInterface: (info) async {
+                      info.hasInterface.value = false;
+                      await File(info.directory.path + "/interface.json").delete();
                     },
                   ),
                 ),
@@ -266,7 +270,7 @@ class _Project extends State<Project> {
           right: 0,
           top: 0,
           child: NewTopBar(
-            loadedPatch: widget.patch,
+            loadedPreset: widget.preset,
             projectInfo: widget.info,
             sidebarDisplay: display,
             onPresetsButtonTap: () {
@@ -285,10 +289,16 @@ class _Project extends State<Project> {
               });
             },
             onUserInterfaceEdit: () {
-              widget.interface.value?.toggleEditing();
+              widget.preset.value.interface.value?.toggleEditing();
             },
             onSave: () {
               widget.save();
+            },
+            onUiSwitch: () {
+              print("switch");
+              setState(() {
+                uiVisible = !uiVisible;
+              });
             },
             onProjectClose: onProjectClose,
           ),

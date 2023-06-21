@@ -9,7 +9,7 @@ const double barHeight = 35;
 
 class NewTopBar extends StatefulWidget {
   NewTopBar({
-    required this.loadedPatch,
+    required this.loadedPreset,
     required this.projectInfo,
     required this.sidebarDisplay,
     required this.onPresetsButtonTap,
@@ -17,11 +17,12 @@ class NewTopBar extends StatefulWidget {
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
     required this.onSave,
+    required this.onUiSwitch,
     required this.onProjectClose,
   });
 
   ProjectInfo projectInfo;
-  ValueNotifier<Patch> loadedPatch;
+  ValueNotifier<Preset> loadedPreset;
   final ProjectSidebarDisplay sidebarDisplay;
 
   void Function(ProjectSidebarDisplay) onSidebarChange;
@@ -29,6 +30,7 @@ class NewTopBar extends StatefulWidget {
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
   void Function() onSave;
+  void Function() onUiSwitch;
   void Function() onProjectClose;
 
   @override
@@ -59,9 +61,10 @@ class _NewTopBar extends State<NewTopBar> {
             ),
           ),
           PresetsButton(
-            loadedPatch: widget.loadedPatch,
+            loadedPreset: widget.loadedPreset,
             onTap: widget.onPresetsButtonTap,
             onSave: widget.onSave,
+            onSwitch: widget.onUiSwitch,
           ),
           Expanded(
             child: Row(
@@ -332,15 +335,17 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
 
 class PresetsButton extends StatefulWidget {
   const PresetsButton({
-    required this.loadedPatch,
+    required this.loadedPreset,
     required this.onTap,
     required this.onSave,
+    required this.onSwitch,
     Key? key,
   }) : super(key: key);
 
-  final ValueNotifier<Patch> loadedPatch;
+  final ValueNotifier<Preset> loadedPreset;
   final void Function() onTap;
   final void Function() onSave;
+  final void Function() onSwitch;
 
   @override
   _PresetsButton createState() => _PresetsButton();
@@ -384,7 +389,7 @@ class _PresetsButton extends State<PresetsButton> {
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
-                onTap: () {},
+                onTap: widget.onSwitch,
               ),
               BarButton(
                 icon: const Icon(
@@ -396,11 +401,11 @@ class _PresetsButton extends State<PresetsButton> {
                 onTap: () {},
               ),
               Expanded(
-                child: ValueListenableBuilder<Patch>(
-                  valueListenable: widget.loadedPatch,
-                  builder: (context, patch, child) {
+                child: ValueListenableBuilder<Preset>(
+                  valueListenable: widget.loadedPreset,
+                  builder: (context, preset, child) {
                     return ValueListenableBuilder<String>(
-                      valueListenable: patch.info.name,
+                      valueListenable: preset.info.name,
                       builder: (context, name, child) {
                         return Center(
                           child: Text(
