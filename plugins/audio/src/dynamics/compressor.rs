@@ -175,7 +175,7 @@ impl Module for Compressor {
         voice.compressor.set_ratio(ratio);
         voice.compressor.set_attack(attack);
         voice.compressor.set_release(release);
-        voice.compressor.process_block(&inputs.audio[0], &mut outputs.audio[0]);
+        // voice.compressor.process_block(&inputs.audio[0], &mut outputs.audio[0]);
 
         self.input_rms = f32::max(inputs.audio[0].rms().mono() * 2.0, self.input_rms);
         self.output_rms = f32::max(outputs.audio[0].rms().mono() * 2.0 + 0.1, self.output_rms);

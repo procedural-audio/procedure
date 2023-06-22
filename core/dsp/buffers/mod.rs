@@ -6,6 +6,7 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 pub mod event;
 pub mod time;
 
+use crate::Pitched;
 pub use crate::buffers::event::*;
 pub use crate::buffers::time::*;
 
@@ -290,12 +291,23 @@ pub trait MultiChannel {
 }
 
 pub trait Processor2 {
-    type Input: Copy + Clone;
-    type Output: Copy + Clone;
+    type Input;
+    type Output;
 
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
-
     fn process(&mut self, input: Self::Input) -> Self::Output;
+}
+
+pub trait BlockProcessor {
+    type Input: Copy;
+    type Output: Copy;
+
+    fn process_block(&mut self, input: &Buffer<Self::Input>, output: &mut Buffer<Self::Output>);
+}
+
+impl<In: Copy, Out: Copy, P: Processor2<Input = In, Output = Out>> BlockProcessor for P {
+    type Input = In;
+    type Output = Out;
 
     fn process_block(&mut self, input: &Buffer<Self::Input>, output: &mut Buffer<Self::Output>) {
         for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
@@ -307,6 +319,125 @@ pub trait Processor2 {
 // TODO: Implement deref for all Processor2's to return AudioNode<T>
 // TODO: Create functions for each node that take all arguments
 // TODO: Make it so AudioNodes can be used as references also
+
+/*
+
+Faust Syntax
+ - Parallel composition: dsp,dsp,dsp,dsp
+ - Sequential composition: dsp:dsp:dsp:dsp
+ - Split composition: dsp <: dsp
+ - Combine composition: dsp :> dsp
+
+FunDSP Syntax
+ - -A (negate any number of outputs)
+ - !A (passes through extra inputs)
+ - A * B (multiply each signal)
+ - A * constant (multiply by constant)
+ - A + B (mix the buffers)
+ - A + constant (add to constant)
+ - A - B (subtract)
+ - A - constant (subtract constant)
+ - A >> B (pipe A to B)
+ - A & B (sum A and B)
+ - A ^ B (branch input to A and B in parallel)
+ - A | B (stack A and B in parallel)
+
+Final syntax
+ - >> series
+ - <= split
+ - => merge
+ - | parallel
+ - Ops: +, -, *, /
+
+Examples
+ - delay(100) >> delay(100) >> delay(100) <= (delay(100), delay(100)) => delay(100);
+
+*/
+
+pub fn input2<F: Frame>() -> AudioNode<Passthrough<F>> {
+    AudioNode(Passthrough { data: PhantomData::<F> })
+}
+
+pub fn output2<F: Frame>() -> AudioNode<Passthrough<F>> {
+    AudioNode(Passthrough { data: PhantomData::<F> })
+}
+
+pub struct Passthrough<F: Frame> {
+    data: PhantomData<F>
+}
+
+impl<F: Frame> Processor2 for Passthrough<F> {
+    type Input = F;
+    type Output = F;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        input
+    }
+}
+
+pub fn testdsp() -> AudioNode<TestDsp> {
+    AudioNode(TestDsp)
+}
+
+pub fn pitcheddsp() -> AudioNode<PitchedDsp> {
+    AudioNode(PitchedDsp)
+}
+
+pub fn gain<F: Frame>(db: f32) -> AudioNode<Gain2<F>> {
+    AudioNode(Gain2 { db , data: PhantomData })
+}
+
+pub struct Gain2<F: Frame> {
+    db: f32,
+    data: PhantomData<F>
+}
+
+impl<F: Frame> Processor2 for Gain2<F> {
+    type Input = F;
+    type Output = F;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        todo!()
+    }
+}
+
+pub trait Pitched2 {
+    fn get_pitch(&self) -> f32;
+    fn set_pitch(&mut self, hz: f32);
+}
+
+pub trait Drive {
+    fn get_drive(&self) -> f32;
+    fn set_drive(&mut self, amount: f32);
+}
+
+pub struct TestDsp;
+
+impl Processor2 for TestDsp {
+    type Input = f32;
+    type Output = f32;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        input + 1.0
+    }
+}
+
+pub struct PitchedDsp;
+
+impl PitchedDsp {
+    pub fn set_pitch(&mut self, pitch: f32) {
+        println!("Set pitch");
+    }
+}
+
+impl Processor2 for PitchedDsp {
+    type Input = f32;
+    type Output = f32;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        input + 1.0
+    }
+}
 
 pub struct AudioNode<P: Processor2>(pub P);
 
@@ -324,21 +455,62 @@ impl<P: Processor2> std::ops::DerefMut for AudioNode<P> {
     }
 }
 
-impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
-    type Output = AudioNode<Chain<F, A, B>>;
+impl<In, Out, P> Processor2 for AudioNode<P>
+    where
+        P: Processor2<Input = In, Output = Out> {
 
-    fn shr(self, rhs: AudioNode<B>) -> Self::Output {
+    type Input = In;
+    type Output = Out;
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        self.0.process(input)
+    }
+}
+
+impl<In, InOut, Out, P1, P2> std::ops::Shr<AudioNode<P2>> for AudioNode<P1> 
+    where
+        P1: Processor2<Input = In, Output = InOut>,
+        P2: Processor2<Input = InOut, Output = Out> {
+
+    type Output = AudioNode<Chain<In, InOut, Out, P1, P2>>;
+
+    fn shr(self, rhs: AudioNode<P2>) -> Self::Output {
         AudioNode(Chain(self.0, rhs.0))
     }
 }
 
-impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> std::ops::Shl<AudioNode<B>> for AudioNode<A> {
-    type Output = AudioNode<Chain<F, B, A>>;
+impl<In1, Out1, In2, Out2, P1, P2> std::ops::BitOr<AudioNode<P2>> for AudioNode<P1> 
+    where
+        P1: Processor2<Input = In1, Output = Out1>,
+        P2: Processor2<Input = In2, Output = Out2> {
+
+    type Output = AudioNode<Parallel<In1, Out1, In2, Out2, P1, P2>>;
+
+    fn bitor(self, rhs: AudioNode<P2>) -> Self::Output {
+        AudioNode(Parallel(self.0, rhs.0))
+    }
+}
+
+impl<In1, Out1, Merged, Out2, P1, P2> std::ops::BitAnd<AudioNode<P2>> for AudioNode<P1> 
+    where
+        Out1: TupleMerge<Output = Merged>,
+        P1: Processor2<Input = In1, Output = Out1>,
+        P2: Processor2<Input = Merged, Output = Out2> {
+
+    type Output = AudioNode<Chain<In1, Merged, Out2, Merge<In1, Out1, Merged, P1>, P2>>;
+
+    fn bitand(self, rhs: AudioNode<P2>) -> Self::Output {
+        AudioNode(Chain(Merge(self.0), rhs.0))
+    }
+}
+
+/*impl<F: Frame, G: Frame, H: Frame, B: Processor2<Input = F, Output = G>, A: Processor2<Input = G, Output = H>> std::ops::Shl<AudioNode<B>> for AudioNode<A> {
+    type Output = AudioNode<Chain<F, G, H, B, A>>;
 
     fn shl(self, rhs: AudioNode<B>) -> Self::Output {
         AudioNode(Chain(rhs.0, self.0))
     }
-}
+}*/
 
 pub struct Series<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize>(pub [A; C]);
 
@@ -356,109 +528,136 @@ impl<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize> Processor2 
     }
 }
 
-pub struct Chain<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>>(pub A, pub B);
+// Replace letters with useful names
+pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<F, G, H, A, B>> {
+    AudioNode(Chain(first, second))
+}
 
-impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> Processor2 for Chain<F, A, B> {
+pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<F, G, H, J, A, B>> {
+    AudioNode(Parallel(first, second))
+}
+
+pub fn split<In, Out, P>(processor: P) -> AudioNode<Split<In, Out, P>>
+    where
+        In: Frame,
+        Out: Frame,
+        P: Processor2<Input = In, Output = Out>
+{
+    AudioNode(Split(processor))
+}
+
+pub fn merge<In, Out: TupleMerge<Output = Merged>, Merged, P>(processor: P) -> AudioNode<Merge<In, Out, Merged, P>>
+    where
+        P: Processor2<Input = In, Output = Out>
+{
+    AudioNode(Merge(processor))
+}
+
+pub struct Chain<In, InOut, Out, P1, P2>(pub P1, pub P2)
+    where
+        P1: Processor2<Input = In, Output = InOut>,
+        P2: Processor2<Input = InOut, Output = Out>;
+
+impl<F, G, H, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>> Processor2 for Chain<F, G, H, A, B> {
     type Input = F;
-    type Output = F;
+    type Output = H;
 
-    fn process(&mut self, input: F) -> F {
+    fn process(&mut self, input: Self::Input) -> Self::Output {
         self.1.process(self.0.process(input))
     }
 }
 
-pub struct Split<I, O, X, Y, A: Processor2<Input = I, Output = O>, B: Processor2<Input = X, Output = Y>>(pub A, pub B);
+// TODO: Only works on one side of the chain
+impl<In, InOut, Out, P1, P2> Pitched2 for Chain<In, InOut, Out, P1, P2> 
+    where
+        P1: Processor2<Input = In, Output = InOut> + Pitched,
+        P2: Processor2<Input = InOut, Output = Out> {
 
-impl<F: Frame, A: Processor2<Input = F, Output = F>, B: Processor2<Input = F, Output = F>> Processor2 for Split<F, F, F, F, A, B> {
-    type Input = F;
-    type Output = (F, F);
+    fn get_pitch(&self) -> f32 {
+        self.0.get_pitch()
+    }
 
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        let v = self.0.process(input);
-        (v, v)
+    fn set_pitch(&mut self, hz: f32) {
+       self.0.set_pitch(hz);
     }
 }
 
-impl<F: Frame, const C: usize, A: Processor2<Input = F, Output = F>, B: Processor2<Input = [F; C], Output = [F; C]>> Processor2 for Split<F, F, [F; C], [F; C], A, B> {
-    type Input = F;
-    type Output = [F; C];
+pub struct Parallel<F, G, H, J, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(pub A, pub B);
+
+impl<F, G, H, J, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>> Processor2 for Parallel<F, G, H, J, A, B> {
+    type Input = (F, H);
+    type Output = (G, J);
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
-        let mut arr = [F::from(0.0); C];
-        let v = self.0.process(input);
-        for i in 0..C {
-            arr[i] = v;
-        }
-        return arr;
+        (self.0.process(input.0), self.1.process(input.1))
     }
 }
 
-pub struct Merge<I, O, A: Processor2<Input = I, Output = O>>(pub A);
+pub struct Split<In, Out, P>(pub P)
+    where
+        P: Processor2<Input = In, Output = Out>;
 
-impl<F: Frame, A: Processor2<Input = F, Output = (F, F)>> Processor2 for Merge<F, (F, F), A> {
-    type Input = F;
+impl<In, Out, P> Processor2 for Split<In, Out, P> 
+    where
+        Out: Copy,
+        P: Processor2<Input = In, Output = Out> {
+
+    type Input = In;
+    type Output = (Out, Out);
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        let output = self.0.process(input);
+        (output, output)
+    }
+}
+
+pub trait TupleMerge {
+    type Output;
+
+    fn merge(self) -> Self::Output;
+}
+
+impl<F: Add<Output = F>> TupleMerge for (F, F) {
     type Output = F;
 
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        let v = self.0.process(input);
-        v.0 + v.1
+    fn merge(self) -> Self::Output {
+        self.0 + self.1
     }
 }
 
-impl<F: Frame, const C: usize, A: Processor2<Input = [F; C], Output = [F; C]>> Processor2 for Merge<[F; C], [F; C], A> {
-    type Input = [F; C];
+impl<F: Add<Output = F>> TupleMerge for (F, F, F) {
     type Output = F;
 
+    fn merge(self) -> Self::Output {
+        self.0 + self.1 + self.2
+    }
+}
+
+impl<F: Add<Output = F>> TupleMerge for (F, F, F, F) {
+    type Output = F;
+
+    fn merge(self) -> Self::Output {
+        self.0 + self.1 + self.2 + self.3
+    }
+}
+
+pub struct Merge<In, Out, Merged, P>(pub P)
+    where
+        Out: TupleMerge<Output = Merged>,
+        P: Processor2<Input = In, Output = Out>;
+
+impl<In, Out, Merged, P> Processor2 for Merge<In, Out, Merged, P> 
+    where
+        Out: TupleMerge<Output = Merged>,
+        P: Processor2<Input = In, Output = Out> {
+
+    type Input = In;
+    type Output = Merged;
+
     fn process(&mut self, input: Self::Input) -> Self::Output {
-        self.0.process(input).iter().fold(F::from(0.0), | v, a| v + *a)
+        self.0.process(input).merge()
     }
 }
-
-pub struct Parallel<const C: usize, I, O, P: Processor2<Input = I, Output = O>>(pub [P; C]);
-
-impl<F: Frame, const C: usize, P: Processor2<Input = F, Output = F>> Processor2 for Parallel<C, F, F, P> {
-    type Input = [F; C];
-    type Output = [F; C];
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        let mut output = [F::from(0.0); C];
-
-        for i in 0..C {
-            output[i] = self.0[i].process(input[i]);
-        }
-
-        output
-    }
-}
-
-/*pub struct Adder<A: Processor2, B: Processor2>(pub A, pub B);
-
-impl<A: Processor2, B: Processor2<Input = A::Output>> std::ops::Add<B> for B {
-    type Output = Adder<A, B>;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Adder(self, rhs)
-    }
-}*/
-
-/*pub struct Multi<T, const C: usize> {
-    channels: [T; C]
-}
-
-impl<P: Processor, const C: usize> Multi<P, C> {
-    fn process(&mut self, input: &[P::Item; C], output: &mut Multi<P, C>) {
-        todo!()
-    }
-
-    fn process_block(&mut self, inputs: &Multi<Buffer<P::Item>, C>, outputs: &mut Multi<Buffer<P::Item>, C>) {
-        for i in 0..C {
-            let input = &inputs.channels[i];
-            let output = &mut outputs.channels[i];
-            let dsp = &mut self.channels[i];
-            dsp.process_block(input, output);
-        }
-    }
-}*/
 
 /* Buffer Type */
 
@@ -698,20 +897,6 @@ impl<T> Bus<T> {
         self.channels.len()
     }
 }
-
-/*impl Index<usize> for Bus<StereoBuffer> {
-    type Output = StereoBuffer;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        self.channel(index).deref()
-    }
-}
-
-impl IndexMut<usize> for Bus<StereoBuffer> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.channel_mut(index).deref_mut()
-    }
-}*/
 
 impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
     type Output = Buffer<T>;

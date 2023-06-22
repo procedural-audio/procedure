@@ -174,50 +174,31 @@ fn temp() {
     let input = Buffer::init(0.0, 512);
     let mut output = Buffer::init(0.0, 512);
 
-    /* Graph construction from audio nodes */
+    let mut dsp1 = split(Delay::new(100));
+    let out = dsp1.process(0.0);
+    let mut dsp2 = merge(dsp1);
+    let out = dsp2.process(0.0);
 
-    let node_1 = AudioNode(Delay::new(512*100));
-    let node_2 = AudioNode(Delay::new(512*100));
-    let node_3 = AudioNode(Delay::new(512*100));
-    let node_4 = AudioNode(Delay::new(512*100));
+    let mut dsp1 = testdsp() >> testdsp();
+    let out = dsp1.process(0.0);
 
-    let mut chain = (node_1 << node_2 << node_3) >> node_4;
-    chain.process_block(&input, &mut output);
+    let mut dsp2 = (testdsp() | testdsp()) & testdsp() >> testdsp();
+    let out = dsp2.process((0.0, 0.0));
 
-    /* Declarative graph construction */
+    let mut dsp = testdsp() | testdsp() | pitcheddsp();
+    let out = dsp.process(((0.0, 0.0), 0.0));
 
-    let mut chain = Chain(
-        Delay::new(512 * 100),
+    let mut dsp = input2() >> gain(5.0) >> testdsp() >> pitcheddsp();
+
+    let temp = AudioNode(
         Chain(
             Chain(
-                Delay::new(512*100),
-                Merge(
-                    Split(
-                        Merge(
-                            Split(
-                                Chain(
-                                    Delay::new(512*100),
-                                    Delay::new(512*100),
-                                ),
-                                Chain(
-                                    Delay::new(512*100),
-                                    Delay::new(512*100),
-                                ),
-                            ),
-                        ),
-                        Delay::new(512*100),
-                    )
-                )
+                TestDsp,
+                TestDsp
             ),
-            Series([
-                Delay::new(512*100),
-                Delay::new(512*100),
-                Delay::new(512*100),
-            ])
+            TestDsp
         )
     );
-
-    chain.process_block(&input, &mut output);
 }
 
 struct MultiChannel<P: Processor, const C: usize> {
