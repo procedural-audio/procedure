@@ -298,21 +298,62 @@ pub trait Processor2 {
     fn process(&mut self, input: Self::Input) -> Self::Output;
 }
 
-pub trait BlockProcessor {
-    type Input: Copy;
-    type Output: Copy;
-
-    fn process_block(&mut self, input: &Buffer<Self::Input>, output: &mut Buffer<Self::Output>);
+pub trait BlockProcessor: Processor2 {
+    fn process_block<InBuffer: Block<Item = Self::Input>, OutBuffer: BlockMut<Item = Self::Output>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
+        todo!()
+    }
 }
 
 impl<In: Copy, Out: Copy, P: Processor2<Input = In, Output = Out>> BlockProcessor for P {
-    type Input = In;
-    type Output = Out;
-
-    fn process_block(&mut self, input: &Buffer<Self::Input>, output: &mut Buffer<Self::Output>) {
+    fn process_block<InBuffer: Block<Item = In>, OutBuffer: BlockMut<Item = Out>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
         for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
             *dest = self.process(*src);
         }
+    }
+}
+
+pub trait Block {
+    type Item;
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item];
+}
+
+pub trait BlockMut: Block {
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
+}
+
+impl<T: Copy> Block for Buffer<T> {
+    type Item = T;
+
+    fn as_slice<'a>(&'a self) -> &'a [T] {
+        self.items.as_slice()
+    }
+}
+
+impl<T: Copy> BlockMut for Buffer<T> {
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
+        self.items.as_mut_slice()
+    }
+}
+
+impl<F: Copy> Block for &[F] {
+    type Item = F;
+
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
+        self
+    }
+}
+
+impl<F: Copy> Block for &mut [F] {
+    type Item = F;
+
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
+        self
+    }
+}
+
+impl<F: Copy> BlockMut for &mut [F] {
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
+        self
     }
 }
 
@@ -504,14 +545,6 @@ impl<In1, Out1, Merged, Out2, P1, P2> std::ops::BitAnd<AudioNode<P2>> for AudioN
     }
 }
 
-/*impl<F: Frame, G: Frame, H: Frame, B: Processor2<Input = F, Output = G>, A: Processor2<Input = G, Output = H>> std::ops::Shl<AudioNode<B>> for AudioNode<A> {
-    type Output = AudioNode<Chain<F, G, H, B, A>>;
-
-    fn shl(self, rhs: AudioNode<B>) -> Self::Output {
-        AudioNode(Chain(rhs.0, self.0))
-    }
-}*/
-
 pub struct Series<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize>(pub [A; C]);
 
 impl<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize> Processor2 for Series<F, A, C> {
@@ -661,36 +694,11 @@ impl<In, Out, Merged, P> Processor2 for Merge<In, Out, Merged, P>
 
 /* Buffer Type */
 
-pub struct Buffer<T: Clone> {
+pub struct Buffer<T> {
     items: Vec<T>,
 }
 
-impl<T: Frame + Copy> Buffer<T> {
-    pub fn init(value: T, size: usize) -> Self {
-        let mut items = Vec::with_capacity(size);
-
-        for _ in 0..size {
-            items.push(value);
-        }
-
-        Self { items }
-    }
-
-    pub fn copy_from(&mut self, src: &Buffer<T>) {
-        // self.items.as_mut_slice().copy_from_slice(src.as_slice())
-
-        if self.len() == src.len() {
-            for (dest, src) in self.into_iter().zip(src.into_iter()) {
-                *dest = *src;
-            }
-        } else {
-            panic!("Copying from buffers of different sizes, self: {}, src: {}", self.len(), src.len());
-        }
-
-    }
-}
-
-impl<T: Clone> Buffer<T> {
+impl<T> Buffer<T> {
     pub fn from(items: Vec<T>) -> Self {
         Self { items }
     }
@@ -707,22 +715,6 @@ impl<T: Clone> Buffer<T> {
 
     pub fn capacity(&self) -> usize {
         self.items.capacity()
-    }
-
-    pub fn as_ref(&self) -> &[T] {
-        self.items.as_ref()
-    }
-
-    pub fn as_mut(&mut self) -> &mut [T] {
-        self.items.as_mut()
-    }
-
-    pub fn as_slice<'a>(&'a self) -> &'a [T] {
-        self.items.as_slice()
-    }
-
-    pub fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
-        self.items.as_mut_slice()
     }
 
     pub fn as_ptr(&self) -> *const T {
@@ -764,6 +756,30 @@ impl<T: Clone> Buffer<T> {
     pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [T]; 1] {
         [self.as_slice_mut()]
     }*/
+}
+
+impl<T: Copy> Buffer<T> {
+    pub fn init(value: T, size: usize) -> Self {
+        let mut items = Vec::with_capacity(size);
+
+        for _ in 0..size {
+            items.push(value);
+        }
+
+        Self { items }
+    }
+
+    pub fn copy_from<B: Block<Item = T>>(&mut self, src: &B) {
+        self.as_slice_mut().copy_from_slice(src.as_slice());
+    }
+}
+
+impl<T: Frame> Buffer<T> {
+    pub fn add_from<B: Block<Item = T>>(&mut self, src: &B) {
+        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
+            *dest += *src;
+        }
+    }
 }
 
 impl NoteBuffer {
@@ -822,13 +838,13 @@ impl NoteBuffer {
     }
 }*/
 
-impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
+/*impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
     pub fn add_from(&mut self, src: &Buffer<T>) {
         for (d, s) in self.items.iter_mut().zip(src.as_slice()) {
             *d = *d + *s;
         }
     }
-}
+}*/
 
 impl<T: Copy + Clone> Index<usize> for Buffer<T> {
     type Output = T;

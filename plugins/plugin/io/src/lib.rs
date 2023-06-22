@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, c_void};
-use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer, NoteMessage};
+use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer, NoteMessage, Block, BlockMut};
 
 pub trait IOCallback {
     fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);

@@ -12,6 +12,8 @@ pub use envelopes::*;
 pub use oscillator::*;
 pub use wavetable::*;
 
+use crate::Block;
+use crate::BlockMut;
 use crate::buffers::Buffer;
 
 use crate::Frame;
