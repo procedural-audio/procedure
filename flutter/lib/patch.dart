@@ -241,8 +241,8 @@ class Patch extends StatefulWidget {
   }
 
   Future<bool> save() async {
+    print("Saving patch");
     var file = File(info.directory.path + "/patch.json");
-    await info.save();
     rawPatch.save(file);
     return true;
   }

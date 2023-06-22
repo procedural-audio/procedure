@@ -53,11 +53,10 @@ class PresetInfo {
   }
 
   Future<bool> save() async {
+    print("Saving preset info");
     if (!await directory.exists()) {
       await directory.create();
     }
-
-    print("Saving patch info");
 
     File file = File(directory.path + "/preset.json");
     await file.writeAsString(jsonEncode({
@@ -101,9 +100,10 @@ class Preset {
   }
 
   Future<bool> save() async {
+    print("Saving preset");
     await info.save();
-    await patch.save();
     await interface.value?.save();
+    await patch.save();
     return true;
   }
 }

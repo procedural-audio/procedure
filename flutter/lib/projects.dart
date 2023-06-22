@@ -169,14 +169,14 @@ const double sidebarWidth = 300;
 
 class _Project extends State<Project> {
   ProjectSidebarDisplay display = ProjectSidebarDisplay.None;
-  bool uiVisible = false;
+  bool uiVisible = true;
   bool presetsVisible = false;
 
   void onProjectClose() async {
     widget.info.date.value = DateTime.now();
 
     await widget.info.save();
-    await widget.info.save();
+    await widget.preset.value.save();
 
     widget.preset.value.patch.disableTick();
     widget.onUnload();
@@ -252,6 +252,7 @@ class _Project extends State<Project> {
                     onAddInterface: (info) async {
                       var newInterface = UserInterface(info);
                       await newInterface.save();
+                      widget.preset.value.interface.value = newInterface;
                       info.hasInterface.value = true;
                     },
                     onRemoveInterface: (info) async {

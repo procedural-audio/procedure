@@ -13,7 +13,7 @@ class RootWidget extends UIWidget {
 
   double? width;
   double? height;
-  Color color = const Color.fromRGBO(40, 40, 40, 1.0);
+  Color color = const Color.fromRGBO(20, 20, 20, 1.0);
   List<UIWidget> children = [];
 
   @override

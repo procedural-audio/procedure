@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ import '../views/presets.dart';
 class UserInterface extends StatelessWidget {
   UserInterface(this.info, {super.key});
 
-  late final RootWidget root;
+  late final RootWidget root = RootWidget(this);
   final PresetInfo info;
   final ValueNotifier<UIWidget?> selected = ValueNotifier(null);
   final ValueNotifier<bool> editing = ValueNotifier(false);
@@ -19,25 +20,29 @@ class UserInterface extends StatelessWidget {
   static Future<UserInterface?> load(PresetInfo info) async {
     File file = File(info.directory.path + "/interface.json");
     if (await file.exists()) {
+      var interface = UserInterface(info);
+
       var contents = await file.readAsString();
-      // var json = jsonDecode(contents);
-      print("TODO: Decode widget tree");
+      print("Loaded " + contents);
+      Map<String, dynamic> json = jsonDecode(contents);
+      interface.root.setJson(json);
 
-      return UserInterface(info);
-
+      return interface;
     }
 
     return null;
   }
 
   Future<bool> save() async {
+    print("Saving interface");
     var file = File(info.directory.path + "/interface.json");
 
     if (!await file.exists()) {
       await file.create();
     }
 
-    print("TODO: Save json of widget tree");
+    String treeJson = jsonEncode(root.getJson());
+    await file.writeAsString(treeJson);
 
     return true;
   }
