@@ -740,22 +740,6 @@ impl<T> Buffer<T> {
             *d = src.gen();
         }
     }
-
-    /*pub fn process<P: Processor<Item = T>>(&mut self, src: &mut P) {
-        for d in &mut self.items {
-            *d = src.process(*d);
-        }
-    }*/
-
-    /*// REMOVE THIS METHOD
-    pub fn as_array<'a>(&'a self) -> [&'a [T]; 1] {
-        [self.as_slice()]
-    }
-
-    // REMOVE THIS METHOD
-    pub fn as_array_mut<'a>(&'a mut self) -> [&'a mut [T]; 1] {
-        [self.as_slice_mut()]
-    }*/
 }
 
 impl<T: Copy> Buffer<T> {
@@ -809,42 +793,6 @@ impl NoteBuffer {
         }
     }
 }
-
-/*impl<T: Frame> Frame for Buffer<T> {
-    type Output = Buffer<T>;
-
-    fn zero(&mut self) {
-        for sample in &mut self.items {
-            sample.zero();
-        }
-    }
-
-    fn gain(&mut self, db: f32) {
-        for sample in &mut self.items {
-            sample.gain(db);
-        }
-    }
-}*/
-
-/*impl<T: Sample> Buffer<T> {
-    pub fn zero(&mut self) {
-        self.fill(&mut 0.0);
-    }
-
-    pub fn gain(&mut self, db: f32) {
-        for v in &mut self.items {
-            *v = *v * db;
-        }
-    }
-}*/
-
-/*impl<T: Copy + Clone + std::ops::Add<Output = T>> Buffer<T> {
-    pub fn add_from(&mut self, src: &Buffer<T>) {
-        for (d, s) in self.items.iter_mut().zip(src.as_slice()) {
-            *d = *d + *s;
-        }
-    }
-}*/
 
 impl<T: Copy + Clone> Index<usize> for Buffer<T> {
     type Output = T;
