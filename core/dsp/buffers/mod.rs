@@ -299,15 +299,25 @@ pub trait Processor2 {
 }
 
 pub trait BlockProcessor: Processor2 {
-    fn process_block<InBuffer: Block<Item = Self::Input>, OutBuffer: BlockMut<Item = Self::Output>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
-        todo!()
-    }
+    fn process_block<InBuffer: Block<Item = Self::Input>, OutBuffer: BlockMut<Item = Self::Output>>(&mut self, input: &InBuffer, output: &mut OutBuffer);
 }
 
 impl<In: Copy, Out: Copy, P: Processor2<Input = In, Output = Out>> BlockProcessor for P {
     fn process_block<InBuffer: Block<Item = In>, OutBuffer: BlockMut<Item = Out>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
         for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
             *dest = self.process(*src);
+        }
+    }
+}
+
+pub trait BlockGenerator: Generator {
+    fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer);
+}
+
+impl<Out, G: Generator<Output = Out>> BlockGenerator for G {
+    fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer) {
+        for dest in output.as_slice_mut().iter_mut() {
+            *dest = self.gen();
         }
     }
 }
@@ -428,6 +438,7 @@ pub fn gain<F: Frame>(db: f32) -> AudioNode<Gain2<F>> {
     AudioNode(Gain2 { db , data: PhantomData })
 }
 
+#[derive(Copy, Clone)]
 pub struct Gain2<F: Frame> {
     db: f32,
     data: PhantomData<F>
@@ -452,6 +463,7 @@ pub trait Drive {
     fn set_drive(&mut self, amount: f32);
 }
 
+#[derive(Copy, Clone)]
 pub struct TestDsp;
 
 impl Processor2 for TestDsp {
@@ -463,6 +475,7 @@ impl Processor2 for TestDsp {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct PitchedDsp;
 
 impl PitchedDsp {
@@ -480,9 +493,10 @@ impl Processor2 for PitchedDsp {
     }
 }
 
-pub struct AudioNode<P: Processor2>(pub P);
+#[derive(Copy, Clone)]
+pub struct AudioNode<P>(pub P);
 
-impl<P: Processor2> std::ops::Deref for AudioNode<P> {
+impl<P> std::ops::Deref for AudioNode<P> {
     type Target = P;
 
     fn deref(&self) -> &Self::Target {
@@ -490,9 +504,23 @@ impl<P: Processor2> std::ops::Deref for AudioNode<P> {
     }
 }
 
-impl<P: Processor2> std::ops::DerefMut for AudioNode<P> {
+impl<P> std::ops::DerefMut for AudioNode<P> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl<Out, G> Generator for AudioNode<G>
+    where
+        G: Generator<Output = Out> {
+
+    type Output = Out;
+
+    fn reset(&mut self) {}
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
+
+    fn gen(&mut self) -> Self::Output {
+        self.0.gen()
     }
 }
 
@@ -508,26 +536,18 @@ impl<In, Out, P> Processor2 for AudioNode<P>
     }
 }
 
-impl<In, InOut, Out, P1, P2> std::ops::Shr<AudioNode<P2>> for AudioNode<P1> 
-    where
-        P1: Processor2<Input = In, Output = InOut>,
-        P2: Processor2<Input = InOut, Output = Out> {
+impl<A, B> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
+    type Output = AudioNode<Chain<A, B>>;
 
-    type Output = AudioNode<Chain<In, InOut, Out, P1, P2>>;
-
-    fn shr(self, rhs: AudioNode<P2>) -> Self::Output {
+    fn shr(self, rhs: AudioNode<B>) -> Self::Output {
         AudioNode(Chain(self.0, rhs.0))
     }
 }
 
-impl<In1, Out1, In2, Out2, P1, P2> std::ops::BitOr<AudioNode<P2>> for AudioNode<P1> 
-    where
-        P1: Processor2<Input = In1, Output = Out1>,
-        P2: Processor2<Input = In2, Output = Out2> {
+impl<A, B> std::ops::BitOr<AudioNode<B>> for AudioNode<A> {
+    type Output = AudioNode<Parallel<A, B>>;
 
-    type Output = AudioNode<Parallel<In1, Out1, In2, Out2, P1, P2>>;
-
-    fn bitor(self, rhs: AudioNode<P2>) -> Self::Output {
+    fn bitor(self, rhs: AudioNode<B>) -> Self::Output {
         AudioNode(Parallel(self.0, rhs.0))
     }
 }
@@ -538,7 +558,7 @@ impl<In1, Out1, Merged, Out2, P1, P2> std::ops::BitAnd<AudioNode<P2>> for AudioN
         P1: Processor2<Input = In1, Output = Out1>,
         P2: Processor2<Input = Merged, Output = Out2> {
 
-    type Output = AudioNode<Chain<In1, Merged, Out2, Merge<In1, Out1, Merged, P1>, P2>>;
+    type Output = AudioNode<Chain<Merge<In1, Out1, Merged, P1>, P2>>;
 
     fn bitand(self, rhs: AudioNode<P2>) -> Self::Output {
         AudioNode(Chain(Merge(self.0), rhs.0))
@@ -562,11 +582,11 @@ impl<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize> Processor2 
 }
 
 // Replace letters with useful names
-pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<F, G, H, A, B>> {
+pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<A, B>> {
     AudioNode(Chain(first, second))
 }
 
-pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<F, G, H, J, A, B>> {
+pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
     AudioNode(Parallel(first, second))
 }
 
@@ -586,22 +606,39 @@ pub fn merge<In, Out: TupleMerge<Output = Merged>, Merged, P>(processor: P) -> A
     AudioNode(Merge(processor))
 }
 
-pub struct Chain<In, InOut, Out, P1, P2>(pub P1, pub P2)
-    where
-        P1: Processor2<Input = In, Output = InOut>,
-        P2: Processor2<Input = InOut, Output = Out>;
+#[derive(Copy, Clone)]
+pub struct Chain<P1, P2>(pub P1, pub P2);
 
-impl<F, G, H, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>> Processor2 for Chain<F, G, H, A, B> {
-    type Input = F;
-    type Output = H;
+impl<In, Between, Out, P1, P2> Processor2 for Chain<P1, P2> 
+    where
+        P1: Processor2<Input = In, Output = Between>,
+        P2: Processor2<Input = Between, Output = Out> {
+
+    type Input = In;
+    type Output = Out;
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
         self.1.process(self.0.process(input))
     }
 }
 
+impl<Between, Out, P1, P2> Generator for Chain<P1, P2> 
+    where
+        P1: Generator<Output = Between>,
+        P2: Processor2<Input = Between, Output = Out> {
+
+    type Output = Out;
+
+    fn reset(&mut self) {}
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
+
+    fn gen(&mut self) -> Self::Output {
+        self.1.process(self.0.gen())
+    }
+}
+
 // TODO: Only works on one side of the chain
-impl<In, InOut, Out, P1, P2> Pitched2 for Chain<In, InOut, Out, P1, P2> 
+impl<In, InOut, Out, P1, P2> Pitched2 for Chain<P1, P2> 
     where
         P1: Processor2<Input = In, Output = InOut> + Pitched,
         P2: Processor2<Input = InOut, Output = Out> {
@@ -615,9 +652,13 @@ impl<In, InOut, Out, P1, P2> Pitched2 for Chain<In, InOut, Out, P1, P2>
     }
 }
 
-pub struct Parallel<F, G, H, J, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(pub A, pub B);
+pub struct Parallel<A, B>(pub A, pub B);
 
-impl<F, G, H, J, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>> Processor2 for Parallel<F, G, H, J, A, B> {
+impl<F, G, H, J, A, B> Processor2 for Parallel<A, B>
+    where
+        A: Processor2<Input = F, Output = G>,
+        B: Processor2<Input = H, Output = J> {
+
     type Input = (F, H);
     type Output = (G, J);
 

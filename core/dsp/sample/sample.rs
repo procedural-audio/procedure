@@ -1,12 +1,11 @@
-use crate::buffers::*;
-use crate::loadable::Loadable;
-
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
+use rand::{rngs::ThreadRng, Rng};
+
+use crate::buffers::*;
 use crate::Generator;
 use crate::Pitched;
-use std::ops::{Deref, DerefMut};
-use rand::{rngs::ThreadRng, Rng};
 
 #[derive(Clone)]
 pub struct SampleFile<T: Frame> {
@@ -271,21 +270,21 @@ impl<T: Frame> SamplePlayer<T> {
 
     pub fn position(&self) -> usize {
         match &self.sample {
-            Some(sample) => self.index - self.start,
+            Some(_sample) => self.index - self.start,
             None => self.index
         }
     }
 
     pub fn set_position(&mut self, position: usize) {
         match &self.sample {
-            Some(sample) => self.index = position + self.start,
+            Some(_sample) => self.index = position + self.start,
             None => self.index = position
         }
     }
 
     pub fn progress(&self) -> f32 {
         match &self.sample {
-            Some(sample) => {
+            Some(_sample) => {
                 (self.index - self.start) as f32 / (self.end - self.start) as f32
             },
             None => {
@@ -323,7 +322,6 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn gen(&mut self) -> Self::Output {
-
         if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
                 if self.should_loop {
@@ -342,7 +340,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
         Self::Output::from(0.0)
     }
 
-    fn generate_block(&mut self, output: &mut Buffer<T>) {
+    /*fn generate_block(&mut self, output: &mut Buffer<T>) {
         if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
                 if self.should_loop {
@@ -362,7 +360,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
                 }
             }
         }
-    }
+    }*/
 }
 
 pub struct PitchedSamplePlayer<S: Frame> {
@@ -396,10 +394,6 @@ impl<T: Frame> Generator for PitchedSamplePlayer<T> {
 
     fn gen(&mut self) -> Self::Output {
         self.player.gen()
-    }
-
-    fn generate_block(&mut self, output: &mut Buffer<T>) {
-        self.player.generate_block(output);
     }
 }
 
@@ -520,10 +514,6 @@ impl<T: Frame> Generator for GranularSamplePlayer<T> {
 
     fn gen(&mut self) -> Self::Output {
         self.player.gen()
-    }
-
-    fn generate_block(&mut self, output: &mut Buffer<T>) {
-        self.player.generate_block(output);
     }
 }
 

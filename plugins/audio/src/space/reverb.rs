@@ -170,6 +170,21 @@ impl Module for Reverb {
     }
 }
 
+#[derive(Clone)]
+struct TestOsc;
+
+impl Generator for TestOsc {
+   type Output = f32;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
+
+    fn gen(&mut self) -> Self::Output {
+        0.0
+    } 
+}
+
 fn temp() {
     let input = Buffer::init(0.0, 512);
     let mut output = Buffer::init(0.0, 512);
@@ -188,29 +203,15 @@ fn temp() {
     let mut dsp = testdsp() | testdsp() | pitcheddsp();
     let out = dsp.process(((0.0, 0.0), 0.0));
 
-    let mut dsp = input2() >> gain(5.0) >> testdsp() >> pitcheddsp();
+    let mut source = AudioNode(TestOsc);
+    let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(10.0);
 
-    let temp = AudioNode(
-        Chain(
-            Chain(
-                TestDsp,
-                TestDsp
-            ),
-            TestDsp
-        )
-    );
+    let out = source.gen();
+    let out = effects.process(0.0);
+    (source >> effects >> effects >> effects).generate_block(&mut output);
 }
 
-struct MultiChannel<P: Processor, const C: usize> {
-    channels: [P; C],
-}
-
-impl<P: Processor, const C: usize> MultiChannel<P, C> {
-}
-
-struct Diffuser<const C: usize> {
-
-}
+struct Diffuser<const C: usize> {}
 
 impl<const C: usize> Processor2 for Diffuser<C> {
     type Input = Stereo2<f32>;

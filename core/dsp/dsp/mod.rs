@@ -86,17 +86,11 @@ impl Frame for f32 {
 */
 
 pub trait Generator {
-    type Output: Clone + Copy;
+    type Output;
 
     fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn gen(&mut self) -> Self::Output;
-
-    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
-        for item in output.as_slice_mut().iter_mut() {
-            *item = self.gen();
-        }
-    }
 }
 
 pub trait Processor {
@@ -183,9 +177,9 @@ impl<T: Generator> Generator for Player<T> {
         self.source.gen()
     }
 
-    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
+    /*fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
         self.source.generate_block(output);
-    }
+    }*/
 }
 
 pub struct Playhead<T: Frame> {
@@ -212,14 +206,14 @@ impl<T: Frame> Generator for Playhead<T> {
         return item;
     }
 
-    fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
+    /*fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
         if self.index + output.len() < self.src.len() {
             let end = usize::min(self.index + output.len(), self.src.len());
             for (buf, out) in self.src.into_iter().zip(&mut output.as_slice_mut()[self.index..end]) {
                 *out = *buf;
             }
         } // WON'T GET LAST BLOCK OF THE SAMPLE
-    }
+    }*/
 }
 
 /* ========== Pitch ========== */
