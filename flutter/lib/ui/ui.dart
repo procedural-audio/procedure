@@ -21,7 +21,6 @@ class UserInterface extends StatelessWidget {
     File file = File(info.directory.path + "/interface.json");
     if (await file.exists()) {
       var interface = UserInterface(info);
-
       var contents = await file.readAsString();
       print("Loaded " + contents);
       Map<String, dynamic> json = jsonDecode(contents);

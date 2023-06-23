@@ -15,6 +15,7 @@ class NewTopBar extends StatefulWidget {
     required this.onSidebarChange,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
+    required this.onEdit,
     required this.onSave,
     required this.onUiSwitch,
     required this.onProjectClose,
@@ -28,6 +29,7 @@ class NewTopBar extends StatefulWidget {
   void Function() onPresetsButtonTap;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
+  void Function() onEdit;
   void Function() onSave;
   void Function() onUiSwitch;
   void Function() onProjectClose;
@@ -62,6 +64,7 @@ class _NewTopBar extends State<NewTopBar> {
           PresetsButton(
             loadedPreset: widget.loadedPreset,
             onTap: widget.onPresetsButtonTap,
+            onEdit: widget.onEdit,
             onSave: widget.onSave,
             onSwitch: widget.onUiSwitch,
           ),
@@ -210,6 +213,7 @@ class PresetsButton extends StatefulWidget {
   const PresetsButton({
     required this.loadedPreset,
     required this.onTap,
+    required this.onEdit,
     required this.onSave,
     required this.onSwitch,
     Key? key,
@@ -217,6 +221,7 @@ class PresetsButton extends StatefulWidget {
 
   final ValueNotifier<Preset> loadedPreset;
   final void Function() onTap;
+  final void Function() onEdit;
   final void Function() onSave;
   final void Function() onSwitch;
 
@@ -296,12 +301,23 @@ class _PresetsButton extends State<PresetsButton> {
               ),
               BarButton(
                 icon: const Icon(
+                  Icons.edit,
+                  size: 18,
+                  color: Colors.grey,
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(0)),
+                onTap: widget.onEdit,
+              ),
+              BarButton(
+                icon: const Icon(
                   Icons.functions,
                   size: 18,
                   color: Colors.grey,
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
-                onTap: () {},
+                onTap: () {
+                  print("View variables");
+                },
               ),
               BarButton(
                 icon: const Icon(

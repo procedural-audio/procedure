@@ -201,24 +201,23 @@ class _Project extends State<Project> {
             child: Builder(
               builder: (context) {
                 return ValueListenableBuilder<Preset>(
-                  valueListenable: widget.preset,
-                  builder: (context, preset, child) {
-                    if (!uiVisible) {
-                      return preset.patch;
-                    } else {
-                      return ValueListenableBuilder<UserInterface?>(
-                        valueListenable: preset.interface,
-                        builder: (context, ui, child) {
-                          if (ui != null) {
-                            return ui;
-                          } else {
-                            return Container();
-                          }
-                        },
-                      );
-                    }
-                  }
-                );
+                    valueListenable: widget.preset,
+                    builder: (context, preset, child) {
+                      if (!uiVisible) {
+                        return preset.patch;
+                      } else {
+                        return ValueListenableBuilder<UserInterface?>(
+                          valueListenable: preset.interface,
+                          builder: (context, ui, child) {
+                            if (ui != null) {
+                              return ui;
+                            } else {
+                              return Container();
+                            }
+                          },
+                        );
+                      }
+                    });
               },
             ),
           ),
@@ -244,7 +243,8 @@ class _Project extends State<Project> {
                 child: GestureDetector(
                   onTap: () {},
                   child: PresetsBrowser(
-                    directory: Directory(widget.info.directory.path + "/presets"),
+                    directory:
+                        Directory(widget.info.directory.path + "/presets"),
                     presets: widget.presets,
                     onLoad: (info) {
                       widget.loadPreset(info);
@@ -257,7 +257,8 @@ class _Project extends State<Project> {
                     },
                     onRemoveInterface: (info) async {
                       info.hasInterface.value = false;
-                      await File(info.directory.path + "/interface.json").delete();
+                      await File(info.directory.path + "/interface.json")
+                          .delete();
                     },
                   ),
                 ),
@@ -274,6 +275,9 @@ class _Project extends State<Project> {
             loadedPreset: widget.preset,
             projectInfo: widget.info,
             sidebarDisplay: display,
+            onEdit: () {
+              widget.preset.value.interface.value?.toggleEditing();
+            },
             onPresetsButtonTap: () {
               setState(() {
                 presetsVisible = !presetsVisible;
