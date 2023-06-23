@@ -74,7 +74,6 @@ class Preset {
   final PresetInfo info;
   final Patch patch;
   final ValueNotifier<UserInterface?> interface;
-  // final ValueNotifier<List<Variable>> variables;
 
   static Preset from(PresetInfo info) {
     return Preset(
@@ -223,34 +222,32 @@ class PresetsBrowser extends StatelessWidget {
                   ))
               .toList();
 
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Column(
-                      children: items,
-                    ),
+          return Column(children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Column(
+                    children: items,
                   ),
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.add,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      newPreset();
-                    },
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.add,
+                    size: 14,
+                    color: Colors.grey,
                   ),
-                ],
-              )
-            ],
-          );
+                  onPressed: () {
+                    newPreset();
+                  },
+                ),
+              ],
+            )
+          ],);
         },
       ),
     );

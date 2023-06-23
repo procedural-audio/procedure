@@ -57,7 +57,78 @@ class UserInterface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return root;
+    return ValueListenableBuilder<bool>(
+      valueListenable: editing,
+      builder: (context, editing, child) {
+        if (!editing) {
+          return root;
+        } else {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(200, 80, 200, 80),
+            child: Container(
+              decoration: const BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    spreadRadius: 10,
+                    offset: Offset(5, 5),
+                    color: Color.fromRGBO(0, 0, 0, 0.3),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 30,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+                        color: Color.fromRGBO(60, 60, 60, 1.0)),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: Colors.yellow,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 1,
+                    color: const Color.fromRGBO(20, 20, 20, 1.0),
+                  ),
+                  Expanded(
+                    child: root
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    );
   }
 }
 
@@ -108,10 +179,8 @@ UIWidget? createUIWidget(String name, UserInterface ui) {
 abstract class UIWidget extends StatelessWidget {
   UIWidget(this.ui);
 
-  final UserInterface ui;
-
   abstract final String name;
-
+  final UserInterface ui;
   final ValueNotifier<int> notifier = ValueNotifier(0);
 
   void setState(VoidCallback function) {
