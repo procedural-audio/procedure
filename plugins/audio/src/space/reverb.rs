@@ -170,7 +170,7 @@ impl Module for Reverb {
     }
 }
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 struct TestOsc;
 
 impl Generator for TestOsc {
@@ -204,11 +204,13 @@ fn temp() {
     let out = dsp.process(((0.0, 0.0), 0.0));
 
     let mut source = AudioNode(TestOsc);
-    let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(10.0);
+    let modulator = AudioNode(TestOsc) >> gain(-20.0);
+    let x = modulator >> gain(10.0);
+    let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(x);
 
     let out = source.gen();
     let out = effects.process(0.0);
-    (source >> effects >> effects >> effects).generate_block(&mut output);
+    (source >> effects).generate_block(&mut output);
 }
 
 struct Diffuser<const C: usize> {}

@@ -434,22 +434,22 @@ pub fn pitcheddsp() -> AudioNode<PitchedDsp> {
     AudioNode(PitchedDsp)
 }
 
-pub fn gain<F: Frame>(db: f32) -> AudioNode<Gain2<F>> {
+pub fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
     AudioNode(Gain2 { db , data: PhantomData })
 }
 
 #[derive(Copy, Clone)]
-pub struct Gain2<F: Frame> {
-    db: f32,
+pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
+    db: DB,
     data: PhantomData<F>
 }
 
-impl<F: Frame> Processor2 for Gain2<F> {
+impl<F: Frame, DB: Generator<Output = f32>> Processor2 for Gain2<F, DB> {
     type Input = F;
     type Output = F;
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
-        todo!()
+        input
     }
 }
 
