@@ -101,7 +101,7 @@ class UserInterface extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(260, 80, 260, 80),
+                padding: const EdgeInsets.fromLTRB(240, 80, 240, 80),
                 child: FakeWindow(
                   child: root,
                 ),
