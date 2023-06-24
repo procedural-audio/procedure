@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/ui/layout.dart';
+import 'package:metasampler/ui/tree.dart';
 
 import 'decoration.dart';
 import 'interactive.dart';
@@ -63,71 +64,120 @@ class UserInterface extends StatelessWidget {
         if (!editing) {
           return root;
         } else {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(200, 80, 200, 80),
-            child: Container(
-              decoration: const BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    spreadRadius: 10,
-                    offset: Offset(5, 5),
-                    color: Color.fromRGBO(0, 0, 0, 0.3),
-                  )
-                ],
+          return Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: WidgetMenu(),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 30,
-                    decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
-                        color: Color.fromRGBO(60, 60, 60, 1.0)),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 12,
-                          height: 12,
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: SizedBox(
+                  width: 200,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          alignment: Alignment.topLeft,
                           decoration: const BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            color: Color.fromRGBO(30, 30, 30, 1.0),
+                          ),
+                          child: WidgetTreeElement(
+                            widget: root,
+                            ui: this,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Colors.yellow,
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                        child: WidgetEditorMenu(this),
+                      ),
+                    ],
                   ),
-                  Container(
-                    height: 1,
-                    color: const Color.fromRGBO(20, 20, 20, 1.0),
-                  ),
-                  Expanded(
-                    child: root
-                  ),
-                ],
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(260, 80, 260, 80),
+                child: FakeWindow(
+                  child: root,
+                ),
+              ),
+            ],
           );
         }
-      }
+      },
+    );
+  }
+}
+
+class FakeWindow extends StatelessWidget {
+  FakeWindow({required this.child});
+
+  Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            spreadRadius: 10,
+            offset: Offset(5, 5),
+            color: Color.fromRGBO(0, 0, 0, 0.3),
+          )
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 30,
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+                color: Color.fromRGBO(60, 60, 60, 1.0)),
+            child: Row(
+              children: [
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.yellow,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 1,
+            color: const Color.fromRGBO(20, 20, 20, 1.0),
+          ),
+          Expanded(child: child),
+        ],
+      ),
     );
   }
 }

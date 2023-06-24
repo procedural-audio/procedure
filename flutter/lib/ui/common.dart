@@ -339,135 +339,150 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
   }
 
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      // constrain(constraints);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // constrain(constraints);
 
-      double left = 0;
-      double top = 0;
+        double left = 0;
+        double top = 0;
 
-      if (widget.data.width != null) {
-        // Left horizontal alignment
-        if (widget.data.alignment == Alignment.topLeft ||
-            widget.data.alignment == Alignment.centerLeft ||
-            widget.data.alignment == Alignment.bottomLeft) {
-          left = widget.data.left;
+        if (widget.data.width != null) {
+          // Left horizontal alignment
+          if (widget.data.alignment == Alignment.topLeft ||
+              widget.data.alignment == Alignment.centerLeft ||
+              widget.data.alignment == Alignment.bottomLeft) {
+            left = widget.data.left;
+          }
+
+          // Center horizontal alignment
+          if (widget.data.alignment == Alignment.topCenter ||
+              widget.data.alignment == Alignment.center ||
+              widget.data.alignment == Alignment.bottomCenter) {
+            left = constraints.maxWidth / 2 -
+                widget.data.width! / 2 +
+                widget.data.left;
+          }
+
+          // Right horizontal alignment
+          if (widget.data.alignment == Alignment.topRight ||
+              widget.data.alignment == Alignment.centerRight ||
+              widget.data.alignment == Alignment.bottomRight) {
+            left = constraints.maxWidth - widget.data.width! + widget.data.left;
+          }
         }
 
-        // Center horizontal alignment
-        if (widget.data.alignment == Alignment.topCenter ||
-            widget.data.alignment == Alignment.center ||
-            widget.data.alignment == Alignment.bottomCenter) {
-          left = constraints.maxWidth / 2 -
-              widget.data.width! / 2 +
-              widget.data.left;
+        if (widget.data.height != null) {
+          // Top vertical alignment
+          if (widget.data.alignment == Alignment.topLeft ||
+              widget.data.alignment == Alignment.topCenter ||
+              widget.data.alignment == Alignment.topRight) {
+            top = widget.data.top;
+          }
+
+          // Center vertical alignment
+          if (widget.data.alignment == Alignment.centerLeft ||
+              widget.data.alignment == Alignment.center ||
+              widget.data.alignment == Alignment.centerRight) {
+            top = constraints.maxHeight / 2 -
+                widget.data.height! / 2 +
+                widget.data.top;
+          }
+
+          // Bottom vertical alignment
+          if (widget.data.alignment == Alignment.bottomLeft ||
+              widget.data.alignment == Alignment.bottomCenter ||
+              widget.data.alignment == Alignment.bottomRight) {
+            top = constraints.maxHeight - widget.data.height! + widget.data.top;
+          }
         }
 
-        // Right horizontal alignment
-        if (widget.data.alignment == Alignment.topRight ||
-            widget.data.alignment == Alignment.centerRight ||
-            widget.data.alignment == Alignment.bottomRight) {
-          left = constraints.maxWidth - widget.data.width! + widget.data.left;
-        }
-      }
-
-      if (widget.data.height != null) {
-        // Top vertical alignment
-        if (widget.data.alignment == Alignment.topLeft ||
-            widget.data.alignment == Alignment.topCenter ||
-            widget.data.alignment == Alignment.topRight) {
-          top = widget.data.top;
-        }
-
-        // Center vertical alignment
-        if (widget.data.alignment == Alignment.centerLeft ||
-            widget.data.alignment == Alignment.center ||
-            widget.data.alignment == Alignment.centerRight) {
-          top = constraints.maxHeight / 2 -
-              widget.data.height! / 2 +
-              widget.data.top;
-        }
-
-        // Bottom vertical alignment
-        if (widget.data.alignment == Alignment.bottomLeft ||
-            widget.data.alignment == Alignment.bottomCenter ||
-            widget.data.alignment == Alignment.bottomRight) {
-          top = constraints.maxHeight - widget.data.height! + widget.data.top;
-        }
-      }
-
-      return SizedBox(
+        return SizedBox(
           width: constraints.maxWidth,
           height: constraints.maxHeight,
           child: Padding(
-              padding: widget.data.padding,
-              child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                      padding: EdgeInsets.fromLTRB(left, top, 0, 0),
-                      child: SizedBox(
-                          width: widget.data.width,
-                          height: widget.data.height,
-                          child: Resizer(
-                              data: widget.data,
-                              dragging: dragging,
-                              onUpdate: (data) {
+            padding: widget.data.padding,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(left, top, 0, 0),
+                child: SizedBox(
+                  width: widget.data.width,
+                  height: widget.data.height,
+                  child: Resizer(
+                    data: widget.data,
+                    dragging: dragging,
+                    onUpdate: (data) {
+                      setState(() {
+                        widget.data = data;
+                        constrain(constraints);
+                      });
+                    },
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        MouseRegion(
+                            opaque: true,
+                            hitTestBehavior: HitTestBehavior.deferToChild,
+                            onEnter: (e) {
+                              setState(() {
+                                hovering = true;
+                              });
+                            },
+                            onExit: (e) {
+                              setState(() {
+                                hovering = false;
+                              });
+                            },
+                            child: GestureDetector(
+                              onTap: () {
+                                widget.onTap();
+                              },
+                              onPanStart: (e) {
                                 setState(() {
-                                  widget.data = data;
-                                  constrain(constraints);
+                                  dragging = true;
                                 });
                               },
-                              child: Stack(fit: StackFit.expand, children: [
-                                MouseRegion(
-                                    opaque: true,
-                                    hitTestBehavior:
-                                        HitTestBehavior.deferToChild,
-                                    onEnter: (e) {
-                                      setState(() {
-                                        hovering = true;
-                                      });
-                                    },
-                                    onExit: (e) {
-                                      setState(() {
-                                        hovering = false;
-                                      });
-                                    },
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        widget.onTap();
-                                      },
-                                      onPanStart: (e) {
-                                        setState(() {
-                                          dragging = true;
-                                        });
-                                      },
-                                      onPanUpdate: (details) {
-                                        widget.data.left += details.delta.dx;
-                                        widget.data.top += details.delta.dy;
+                              onPanUpdate: (details) {
+                                widget.data.left += details.delta.dx;
+                                widget.data.top += details.delta.dy;
 
-                                        constrain(constraints);
+                                constrain(constraints);
 
-                                        widget.onUpdate(widget.data);
-                                      },
-                                      onPanEnd: (details) {
-                                        setState(() {
-                                          dragging = false;
-                                        });
-                                        widget.ui.selected.notifyListeners();
-                                      },
-                                      child: widget.child,
-                                    )),
-                                IgnorePointer(
-                                    child: Visibility(
-                                        visible: hovering,
-                                        child: Container(
-                                            width: widget.data.width,
-                                            height: widget.data.height,
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: Colors.blue,
-                                                    width: 2.0)))))
-                              ])))))));
-    });
+                                widget.onUpdate(widget.data);
+                              },
+                              onPanEnd: (details) {
+                                setState(() {
+                                  dragging = false;
+                                });
+                                widget.ui.selected.notifyListeners();
+                              },
+                              child: widget.child,
+                            )),
+                        IgnorePointer(
+                          child: Visibility(
+                            visible: hovering,
+                            child: Container(
+                              width: widget.data.width,
+                              height: widget.data.height,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.blue,
+                                  width: 2.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -495,17 +510,18 @@ class _Resizer extends State<Resizer> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: Stack(children: [
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: Stack(
+        children: [
           Padding(
             padding: (hovering || panning)
                 ? const EdgeInsets.all(0)
@@ -513,351 +529,385 @@ class _Resizer extends State<Resizer> {
             child: widget.child,
           ),
           Visibility(
-              visible: hovering || panning,
+            visible: hovering || panning,
+            child: Padding(
+              padding: (hovering || panning) && !widget.dragging
+                  ? const EdgeInsets.all(0)
+                  : const EdgeInsets.all(0),
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey,
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.selected ? Colors.blue : Colors.white,
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.centerRight,
               child: Padding(
-                  padding: (hovering || panning) && !widget.dragging
-                      ? const EdgeInsets.all(0)
-                      : const EdgeInsets.all(0),
-                  child: IgnorePointer(
-                      child: Container(
-                          decoration: BoxDecoration(
-                              border:
-                                  Border.all(color: Colors.grey, width: 1.0)),
-                          child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: widget.selected
-                                          ? Colors.blue
-                                          : Colors.white,
-                                      width: 1.0)),
-                              child: Container(
-                                  decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.grey,
-                                          width: 1.0)))))))),
+                padding: const EdgeInsets.fromLTRB(0, 0, 2, 0),
+                child: GestureDetector(
+                  child: Container(
+                      width: 8,
+                      height: 25,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey, width: 1.0),
+                        borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(10.0)),
+                      )),
+                  onPanStart: (e) {
+                    setState(() {
+                      panning = true;
+                    });
+                  },
+                  onPanEnd: (e) {
+                    setState(() {
+                      panning = false;
+                    });
+                  },
+                  onPanUpdate: (e) {
+                    if (widget.data.width != null) {
+                      widget.data.width = widget.data.width! + e.delta.dx;
+                    }
+
+                    widget.onUpdate(widget.data);
+                  },
+                ),
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 2, 0),
-                      child: GestureDetector(
-                          child: Container(
-                              width: 8,
-                              height: 25,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border:
-                                    Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: const BorderRadius.horizontal(
-                                    left: Radius.circular(10.0)),
-                              )),
-                          onPanStart: (e) {
-                            setState(() {
-                              panning = true;
-                            });
-                          },
-                          onPanEnd: (e) {
-                            setState(() {
-                              panning = false;
-                            });
-                          },
-                          onPanUpdate: (e) {
-                            if (widget.data.width != null) {
-                              widget.data.width =
-                                  widget.data.width! + e.delta.dx;
-                            }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                child: GestureDetector(
+                  child: Container(
+                    width: 25,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 1.0,
+                      ),
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  onPanStart: (e) {
+                    setState(() {
+                      panning = true;
+                    });
+                  },
+                  onPanEnd: (e) {
+                    setState(() {
+                      panning = false;
+                    });
+                  },
+                  onPanUpdate: (e) {
+                    if (widget.data.height != null) {
+                      widget.data.height = widget.data.height! - e.delta.dy;
+                      widget.data.top += e.delta.dy;
+                    }
 
-                            widget.onUpdate(widget.data);
-                          })))),
+                    widget.onUpdate(widget.data);
+                  },
+                ),
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-                      child: GestureDetector(
-                          child: Container(
-                              width: 25,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border:
-                                    Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: const BorderRadius.vertical(
-                                    bottom: Radius.circular(10.0)),
-                              )),
-                          onPanStart: (e) {
-                            setState(() {
-                              panning = true;
-                            });
-                          },
-                          onPanEnd: (e) {
-                            setState(() {
-                              panning = false;
-                            });
-                          },
-                          onPanUpdate: (e) {
-                            if (widget.data.height != null) {
-                              widget.data.height =
-                                  widget.data.height! - e.delta.dy;
-                              widget.data.top += e.delta.dy;
-                            }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 2),
+                child: GestureDetector(
+                  child: Container(
+                      width: 25,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey, width: 1.0),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(10.0)),
+                      )),
+                  onPanStart: (e) {
+                    setState(() {
+                      panning = true;
+                    });
+                  },
+                  onPanEnd: (e) {
+                    setState(() {
+                      panning = false;
+                    });
+                  },
+                  onPanUpdate: (e) {
+                    if (widget.data.height != null) {
+                      widget.data.height = widget.data.height! + e.delta.dy;
+                    }
 
-                            widget.onUpdate(widget.data);
-                          })))),
+                    widget.onUpdate(widget.data);
+                  },
+                ),
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 2),
-                      child: GestureDetector(
-                        child: Container(
-                            width: 25,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border:
-                                  Border.all(color: Colors.grey, width: 1.0),
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(10.0)),
-                            )),
-                        onPanStart: (e) {
-                          setState(() {
-                            panning = true;
-                          });
-                        },
-                        onPanEnd: (e) {
-                          setState(() {
-                            panning = false;
-                          });
-                        },
-                        onPanUpdate: (e) {
-                          if (widget.data.height != null) {
-                            widget.data.height =
-                                widget.data.height! + e.delta.dy;
-                          }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
+                child: GestureDetector(
+                  child: Container(
+                      width: 8,
+                      height: 25,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey, width: 1.0),
+                        borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(10.0)),
+                      )),
+                  onPanStart: (e) {
+                    setState(() {
+                      panning = true;
+                    });
+                  },
+                  onPanEnd: (e) {
+                    setState(() {
+                      panning = false;
+                    });
+                  },
+                  onPanUpdate: (e) {
+                    if (widget.data.width != null) {
+                      widget.data.width = widget.data.width! - e.delta.dx;
+                      widget.data.left += e.delta.dx;
+                    }
 
-                          widget.onUpdate(widget.data);
-                        },
-                      )))),
+                    widget.onUpdate(widget.data);
+                  },
+                ),
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                      padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
-                      child: GestureDetector(
-                          child: Container(
-                              width: 8,
-                              height: 25,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border:
-                                    Border.all(color: Colors.grey, width: 1.0),
-                                borderRadius: const BorderRadius.horizontal(
-                                    right: Radius.circular(10.0)),
-                              )),
-                          onPanStart: (e) {
-                            setState(() {
-                              panning = true;
-                            });
-                          },
-                          onPanEnd: (e) {
-                            setState(() {
-                              panning = false;
-                            });
-                          },
-                          onPanUpdate: (e) {
-                            if (widget.data.width != null) {
-                              widget.data.width =
-                                  widget.data.width! - e.delta.dx;
-                              widget.data.left += e.delta.dx;
-                            }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: GestureDetector(
+                child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey, width: 1.0),
+                      borderRadius: const BorderRadius.only(
+                        bottomRight: Radius.circular(5.0),
+                      ),
+                    )),
+                onPanStart: (e) {
+                  setState(() {
+                    panning = true;
+                  });
+                },
+                onPanEnd: (e) {
+                  setState(() {
+                    panning = false;
+                  });
+                },
+                onPanUpdate: (e) {
+                  if (widget.data.width != null) {
+                    widget.data.width = widget.data.width! - e.delta.dx;
+                    widget.data.left += e.delta.dx;
+                  }
 
-                            widget.onUpdate(widget.data);
-                          })))),
+                  if (widget.data.height != null) {
+                    widget.data.height = widget.data.height! - e.delta.dy;
+                    widget.data.top += e.delta.dy;
+                  }
+
+                  widget.onUpdate(widget.data);
+                },
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.topLeft,
-                  child: GestureDetector(
-                      child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                            borderRadius: const BorderRadius.only(
-                              bottomRight: Radius.circular(5.0),
-                            ),
-                          )),
-                      onPanStart: (e) {
-                        setState(() {
-                          panning = true;
-                        });
-                      },
-                      onPanEnd: (e) {
-                        setState(() {
-                          panning = false;
-                        });
-                      },
-                      onPanUpdate: (e) {
-                        if (widget.data.width != null) {
-                          widget.data.width = widget.data.width! - e.delta.dx;
-                          widget.data.left += e.delta.dx;
-                        }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.topRight,
+              child: GestureDetector(
+                child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey, width: 1.0),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(5.0),
+                      ),
+                    )),
+                onPanStart: (e) {
+                  setState(() {
+                    panning = true;
+                  });
+                },
+                onPanEnd: (e) {
+                  setState(() {
+                    panning = false;
+                  });
+                },
+                onPanUpdate: (e) {
+                  if (widget.data.width != null) {
+                    widget.data.width = widget.data.width! + e.delta.dx;
+                  }
 
-                        if (widget.data.height != null) {
-                          widget.data.height = widget.data.height! - e.delta.dy;
-                          widget.data.top += e.delta.dy;
-                        }
+                  if (widget.data.height != null) {
+                    widget.data.height = widget.data.height! - e.delta.dy;
+                    widget.data.top += e.delta.dy;
+                  }
 
-                        widget.onUpdate(widget.data);
-                      }))),
+                  widget.onUpdate(widget.data);
+                },
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey, width: 1.0),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(5.0),
-                          ),
-                        )),
-                    onPanStart: (e) {
-                      setState(() {
-                        panning = true;
-                      });
-                    },
-                    onPanEnd: (e) {
-                      setState(() {
-                        panning = false;
-                      });
-                    },
-                    onPanUpdate: (e) {
-                      if (widget.data.width != null) {
-                        widget.data.width = widget.data.width! + e.delta.dx;
-                      }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: GestureDetector(
+                child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey, width: 1.0),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(5.0),
+                      ),
+                    )),
+                onPanStart: (e) {
+                  setState(() {
+                    panning = true;
+                  });
+                },
+                onPanEnd: (e) {
+                  setState(() {
+                    panning = false;
+                  });
+                },
+                onPanUpdate: (e) {
+                  if (widget.data.width != null) {
+                    widget.data.width = widget.data.width! + e.delta.dx;
+                  }
 
-                      if (widget.data.height != null) {
-                        widget.data.height = widget.data.height! - e.delta.dy;
-                        widget.data.top += e.delta.dy;
-                      }
+                  if (widget.data.height != null) {
+                    widget.data.height = widget.data.height! + e.delta.dy;
+                  }
 
-                      widget.onUpdate(widget.data);
-                    },
-                  ))),
+                  widget.onUpdate(widget.data);
+                },
+              ),
+            ),
+          ),
           Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: GestureDetector(
-                    child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey, width: 1.0),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(5.0),
-                          ),
-                        )),
-                    onPanStart: (e) {
-                      setState(() {
-                        panning = true;
-                      });
-                    },
-                    onPanEnd: (e) {
-                      setState(() {
-                        panning = false;
-                      });
-                    },
-                    onPanUpdate: (e) {
-                      if (widget.data.width != null) {
-                        widget.data.width = widget.data.width! + e.delta.dx;
-                      }
+            maintainState: true,
+            visible: (hovering || panning) &&
+                widget.data.width != null &&
+                widget.data.height != null &&
+                !widget.dragging,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: GestureDetector(
+                child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey, width: 1.0),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(5.0),
+                      ),
+                    )),
+                onPanStart: (e) {
+                  setState(() {
+                    panning = true;
+                  });
+                },
+                onPanEnd: (e) {
+                  setState(() {
+                    panning = false;
+                  });
+                },
+                onPanUpdate: (e) {
+                  if (widget.data.width != null) {
+                    widget.data.width = widget.data.width! - e.delta.dx;
+                    widget.data.left += e.delta.dx;
+                  }
 
-                      if (widget.data.height != null) {
-                        widget.data.height = widget.data.height! + e.delta.dy;
-                      }
+                  if (widget.data.height != null) {
+                    widget.data.height = widget.data.height! + e.delta.dy;
+                  }
 
-                      widget.onUpdate(widget.data);
-                    },
-                  ))),
-          Visibility(
-              maintainState: true,
-              visible: (hovering || panning) &&
-                  widget.data.width != null &&
-                  widget.data.height != null &&
-                  !widget.dragging,
-              child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: GestureDetector(
-                    child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey, width: 1.0),
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(5.0),
-                          ),
-                        )),
-                    onPanStart: (e) {
-                      setState(() {
-                        panning = true;
-                      });
-                    },
-                    onPanEnd: (e) {
-                      setState(() {
-                        panning = false;
-                      });
-                    },
-                    onPanUpdate: (e) {
-                      if (widget.data.width != null) {
-                        widget.data.width = widget.data.width! - e.delta.dx;
-                        widget.data.left += e.delta.dx;
-                      }
-
-                      if (widget.data.height != null) {
-                        widget.data.height = widget.data.height! + e.delta.dy;
-                      }
-
-                      widget.onUpdate(widget.data);
-                    },
-                  )))
-        ]));
+                  widget.onUpdate(widget.data);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -879,20 +929,22 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
     return Column(
       children: [
         Section(
-            title: "Size",
-            child: Column(children: [
-              Row(children: [
-                Field(
-                  label: "WIDTH",
-                  initialValue: widget.data.width == null
-                      ? ""
-                      : widget.data.width.toString(),
-                  onChanged: (s) {
-                    widget.data.width = double.tryParse(s);
-                    widget.onUpdate(widget.data);
-                  },
-                ),
-                Field(
+          title: "Size",
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                    label: "WIDTH",
+                    initialValue: widget.data.width == null
+                        ? ""
+                        : widget.data.width.toString(),
+                    onChanged: (s) {
+                      widget.data.width = double.tryParse(s);
+                      widget.onUpdate(widget.data);
+                    },
+                  ),
+                  Field(
                     label: "HEIGHT",
                     initialValue: widget.data.height == null
                         ? ""
@@ -900,26 +952,32 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
                     onChanged: (s) {
                       widget.data.height = double.tryParse(s);
                       widget.onUpdate(widget.data);
-                    })
-              ])
-            ])),
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
         Section(
-            title: "Position",
-            child: Column(children: [
-              Row(children: [
-                Field(
-                  label: "X",
-                  initialValue: widget.data.left.toString(),
-                  onChanged: (s) {
-                    var left = double.tryParse(s);
+          title: "Position",
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                    label: "X",
+                    initialValue: widget.data.left.toString(),
+                    onChanged: (s) {
+                      var left = double.tryParse(s);
 
-                    if (left != null) {
-                      widget.data.left = left;
-                      widget.onUpdate(widget.data);
-                    }
-                  },
-                ),
-                Field(
+                      if (left != null) {
+                        widget.data.left = left;
+                        widget.onUpdate(widget.data);
+                      }
+                    },
+                  ),
+                  Field(
                     label: "Y",
                     initialValue: widget.data.top.toString(),
                     onChanged: (s) {
@@ -929,122 +987,139 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
                         widget.data.top = top;
                         widget.onUpdate(widget.data);
                       }
-                    })
-              ])
-            ])),
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
         Section(
-            title: "Alignment",
-            child: Container(
-                padding: const EdgeInsets.fromLTRB(60, 5, 0, 10),
-                child: AlignmentField(
-                  alignment: widget.data.alignment,
-                  onUpdate: (a) {
-                    if (widget.data.alignment.x != a.x) {
-                      widget.data.left = 0;
-                    }
+          title: "Alignment",
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(60, 5, 0, 10),
+            child: AlignmentField(
+              alignment: widget.data.alignment,
+              onUpdate: (a) {
+                if (widget.data.alignment.x != a.x) {
+                  widget.data.left = 0;
+                }
 
-                    if (widget.data.alignment.y != a.y) {
-                      widget.data.top = 0;
-                    }
+                if (widget.data.alignment.y != a.y) {
+                  widget.data.top = 0;
+                }
 
-                    widget.data.alignment = a;
-                    widget.onUpdate(widget.data);
-                    widget.ui.selected.notifyListeners();
-                  },
-                ))),
+                widget.data.alignment = a;
+                widget.onUpdate(widget.data);
+                widget.ui.selected.notifyListeners();
+              },
+            ),
+          ),
+        ),
         Section(
-            title: "Padding",
-            child: Column(children: [
-              Row(children: [
-                Field(
-                  label: "LEFT",
-                  initialValue: widget.data.padding.left.toString(),
-                  onChanged: (s) {
-                    widget.data.padding = EdgeInsets.fromLTRB(
-                        double.tryParse(s) ?? 0.0,
-                        widget.data.padding.top,
-                        widget.data.padding.right,
-                        widget.data.padding.bottom);
-
-                    if (widget.data.padding.left < 0) {
+          title: "Padding",
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Field(
+                    label: "LEFT",
+                    initialValue: widget.data.padding.left.toString(),
+                    onChanged: (s) {
                       widget.data.padding = EdgeInsets.fromLTRB(
-                          0,
+                          double.tryParse(s) ?? 0.0,
                           widget.data.padding.top,
                           widget.data.padding.right,
                           widget.data.padding.bottom);
-                    }
 
-                    widget.onUpdate(widget.data);
-                  },
-                ),
-                Field(
-                  label: "RIGHT",
-                  initialValue: widget.data.padding.right.toString(),
-                  onChanged: (s) {
-                    widget.data.padding = EdgeInsets.fromLTRB(
+                      if (widget.data.padding.left < 0) {
+                        widget.data.padding = EdgeInsets.fromLTRB(
+                            0,
+                            widget.data.padding.top,
+                            widget.data.padding.right,
+                            widget.data.padding.bottom);
+                      }
+
+                      widget.onUpdate(widget.data);
+                    },
+                  ),
+                  Field(
+                    label: "RIGHT",
+                    initialValue: widget.data.padding.right.toString(),
+                    onChanged: (s) {
+                      widget.data.padding = EdgeInsets.fromLTRB(
                         widget.data.padding.left,
                         widget.data.padding.top,
                         double.tryParse(s) ?? 0.0,
-                        widget.data.padding.bottom);
+                        widget.data.padding.bottom,
+                      );
 
-                    if (widget.data.padding.right < 0) {
-                      widget.data.padding = EdgeInsets.fromLTRB(
+                      if (widget.data.padding.right < 0) {
+                        widget.data.padding = EdgeInsets.fromLTRB(
                           widget.data.padding.left,
                           widget.data.padding.top,
                           0,
-                          widget.data.padding.bottom);
-                    }
+                          widget.data.padding.bottom,
+                        );
+                      }
 
-                    widget.onUpdate(widget.data);
-                  },
-                ),
-              ]),
-              Row(children: [
-                Field(
-                  label: "TOP",
-                  initialValue: widget.data.padding.top.toString(),
-                  onChanged: (s) {
-                    widget.data.padding = EdgeInsets.fromLTRB(
+                      widget.onUpdate(widget.data);
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Field(
+                    label: "TOP",
+                    initialValue: widget.data.padding.top.toString(),
+                    onChanged: (s) {
+                      widget.data.padding = EdgeInsets.fromLTRB(
+                          widget.data.padding.left,
+                          double.tryParse(s) ?? 0.0,
+                          widget.data.padding.right,
+                          widget.data.padding.bottom);
+
+                      if (widget.data.padding.top < 0) {
+                        widget.data.padding = EdgeInsets.fromLTRB(
+                          widget.data.padding.left,
+                          0,
+                          widget.data.padding.right,
+                          widget.data.padding.bottom,
+                        );
+                      }
+
+                      widget.onUpdate(widget.data);
+                    },
+                  ),
+                  Field(
+                    label: "BOTTOM",
+                    initialValue: widget.data.padding.bottom.toString(),
+                    onChanged: (s) {
+                      widget.data.padding = EdgeInsets.fromLTRB(
                         widget.data.padding.left,
-                        double.tryParse(s) ?? 0.0,
+                        widget.data.padding.top,
                         widget.data.padding.right,
-                        widget.data.padding.bottom);
+                        double.tryParse(s) ?? 0.0,
+                      );
 
-                    if (widget.data.padding.top < 0) {
-                      widget.data.padding = EdgeInsets.fromLTRB(
-                          widget.data.padding.left,
-                          0,
-                          widget.data.padding.right,
-                          widget.data.padding.bottom);
-                    }
-
-                    widget.onUpdate(widget.data);
-                  },
-                ),
-                Field(
-                  label: "BOTTOM",
-                  initialValue: widget.data.padding.bottom.toString(),
-                  onChanged: (s) {
-                    widget.data.padding = EdgeInsets.fromLTRB(
-                      widget.data.padding.left,
-                      widget.data.padding.top,
-                      widget.data.padding.right,
-                      double.tryParse(s) ?? 0.0,
-                    );
-
-                    if (widget.data.padding.bottom < 0) {
-                      widget.data.padding = EdgeInsets.fromLTRB(
+                      if (widget.data.padding.bottom < 0) {
+                        widget.data.padding = EdgeInsets.fromLTRB(
                           widget.data.padding.left,
                           widget.data.padding.top,
                           widget.data.padding.right,
-                          0);
-                    }
+                          0,
+                        );
+                      }
 
-                    widget.onUpdate(widget.data);
-                  },
-                ),
-              ]),
-            ])),
+                      widget.onUpdate(widget.data);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -1214,16 +1289,18 @@ class AlignmentFieldButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: onTap,
-        child: Container(
-            padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-            decoration: BoxDecoration(
-                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                borderRadius: borderRadius),
-            child: Icon(
-              iconData,
-              color: selected ? Colors.blue : Colors.grey,
-            )));
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        decoration: BoxDecoration(
+            color: const Color.fromRGBO(40, 40, 40, 1.0),
+            borderRadius: borderRadius),
+        child: Icon(
+          iconData,
+          color: selected ? Colors.blue : Colors.grey,
+        ),
+      ),
+    );
   }
 }
 
@@ -1275,22 +1352,22 @@ class _Label extends State<Label> {
     );*/
 
     return MouseRegion(
-        hitTestBehavior: HitTestBehavior.deferToChild,
-        onEnter: (e) {
-          if (!editorShowing.value) {
-            setState(() {
-              hovering = true;
-            });
-          }
-        },
-        onExit: (e) {
-          if (!editorShowing.value) {
-            setState(() {
-              hovering = false;
-            });
-          }
-        },
-        /*child: Container(
+      hitTestBehavior: HitTestBehavior.deferToChild,
+      onEnter: (e) {
+        if (!editorShowing.value) {
+          setState(() {
+            hovering = true;
+          });
+        }
+      },
+      onExit: (e) {
+        if (!editorShowing.value) {
+          setState(() {
+            hovering = false;
+          });
+        }
+      },
+      /*child: Container(
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
@@ -1301,23 +1378,30 @@ class _Label extends State<Label> {
         ),
         child: widget.child,
       )*/
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const AbsorbPointer(),
-            widget.child,
-            Visibility(
-                visible: hovering,
-                maintainState: true,
-                child: IgnorePointer(
-                    child: Container(
-                        width: widget.width,
-                        height: widget.height,
-                        decoration: BoxDecoration(
-                            border:
-                                Border.all(color: Colors.blue, width: 2.0))))),
-          ],
-        ));
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const AbsorbPointer(),
+          widget.child,
+          Visibility(
+            visible: hovering,
+            maintainState: true,
+            child: IgnorePointer(
+              child: Container(
+                width: widget.width,
+                height: widget.height,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.blue,
+                    width: 2.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1483,65 +1567,87 @@ class _DualField extends State<DualField> {
       controller2 = TextEditingController(text: widget.field2);
     }
 
-    return Row(children: [
-      Container(
+    return Row(
+      children: [
+        Container(
           width: 80,
           padding: const EdgeInsets.all(10),
           alignment: Alignment.centerLeft,
-          child: Text(widget.label,
-              style: const TextStyle(
+          child: Text(
+            widget.label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+        Column(
+          children: [
+            SizedBox(
+              width: 50,
+              height: 35,
+              child: TextField(
+                onChanged: widget.onUpdate1,
+                controller: controller1,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Container(
+              width: 50,
+              height: 20,
+              padding: const EdgeInsets.all(2),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.fieldLabel1,
+                style: const TextStyle(
                   color: Colors.grey,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400))),
-      Column(children: [
-        SizedBox(
-            width: 50,
-            height: 35,
-            child: TextField(
-              onChanged: widget.onUpdate1,
-              controller: controller1,
-              textAlign: TextAlign.left,
-              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+          ],
+        ),
+        Column(
+          children: [
+            SizedBox(
+              width: 50,
+              height: 35,
+              child: TextField(
+                onChanged: widget.onUpdate2,
+                controller: controller2,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
-                  fontWeight: FontWeight.w400),
-            )),
-        Container(
-            width: 50,
-            height: 20,
-            padding: const EdgeInsets.all(2),
-            alignment: Alignment.centerLeft,
-            child: Text(widget.fieldLabel1,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Container(
+              width: 50,
+              height: 20,
+              padding: const EdgeInsets.all(2),
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.fieldLabel2,
                 style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300)))
-      ]),
-      Column(children: [
-        SizedBox(
-            width: 50,
-            height: 35,
-            child: TextField(
-              onChanged: widget.onUpdate2,
-              controller: controller2,
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400),
-            )),
-        Container(
-            width: 50,
-            height: 20,
-            padding: const EdgeInsets.all(2),
-            alignment: Alignment.centerLeft,
-            child: Text(widget.fieldLabel2,
-                style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300)))
-      ])
-    ]);
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 
@@ -1559,13 +1665,15 @@ class _DropdownOverlay extends State<DropdownOverlay> {
     print("Building DropdownOverlay");
 
     return FocusScope(
-        node: _focusScopeNode,
-        child: Material(
-            key: UniqueKey(),
-            child: TextField(
-              autofocus: true,
-              controller: controller,
-            )));
+      node: _focusScopeNode,
+      child: Material(
+        key: UniqueKey(),
+        child: TextField(
+          autofocus: true,
+          controller: controller,
+        ),
+      ),
+    );
   }
 }
 
@@ -1588,15 +1696,16 @@ class CustomDropdown<T> extends StatefulWidget {
 
   /// if true the dropdown icon will as a leading icon, default to false
   final bool leadingIcon;
-  CustomDropdown(
-      {this.hideIcon = false,
-      required this.header,
-      this.child,
-      this.dropdownStyle = const DropdownStyle(),
-      this.dropdownButtonStyle = const DropdownButtonStyle(),
-      this.icon,
-      this.leadingIcon = false,
-      required this.editorShowing});
+  CustomDropdown({
+    this.hideIcon = false,
+    required this.header,
+    this.child,
+    this.dropdownStyle = const DropdownStyle(),
+    this.dropdownButtonStyle = const DropdownButtonStyle(),
+    this.icon,
+    this.leadingIcon = false,
+    required this.editorShowing,
+  });
 
   @override
   _CustomDropdownState<T> createState() => _CustomDropdownState<T>();
@@ -1630,10 +1739,12 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
       curve: Curves.easeInOut,
     );
 
-    _rotateAnimation = Tween(begin: 0.0, end: 0.5).animate(CurvedAnimation(
-      parent: _animationController!,
-      curve: Curves.easeInOut,
-    ));
+    _rotateAnimation = Tween(begin: 0.0, end: 0.5).animate(
+      CurvedAnimation(
+        parent: _animationController!,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   /*@override
@@ -1666,7 +1777,10 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
                 RotationTransition(
                   turns: _rotateAnimation!,
                   child: widget.icon ??
-                      Icon(Icons.arrow_downward, color: Colors.white),
+                      const Icon(
+                        Icons.arrow_downward,
+                        color: Colors.white,
+                      ),
                 ),
             ],
           ),
@@ -1685,12 +1799,12 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
     print("Create overlay entry");
 
     return OverlayEntry(
-        maintainState: false,
-        opaque: false,
-        builder: (entryContext) {
-          print("Overlay entry build");
+      maintainState: false,
+      opaque: false,
+      builder: (entryContext) {
+        print("Overlay entry build");
 
-          /*return Material(
+        /*return Material(
           key: UniqueKey(),
           child: TextField(
             autofocus: true,
@@ -1698,7 +1812,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
             controller: controller,
         ));*/
 
-          /*return FocusScope(
+        /*return FocusScope(
           node: _focusScopeNode,
           child: Material(
             child: TextField(
@@ -1707,44 +1821,50 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
           )
         );*/
 
-          return FocusScope(
-              autofocus: true,
-              node: _focusScopeNode,
-              child: GestureDetector(
-                  onTap: () {
-                    _toggleDropdown(close: true);
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: SizedBox(
-                      width: 200,
-                      height: 200,
-                      // height: MediaQuery.of(entryContext).size.height,
-                      // width: MediaQuery.of(entryContext).size.width,
-                      child: Stack(children: [
-                        Positioned(
-                            left: offset.dx,
-                            top: topOffset,
-                            width: 200,
-                            child: CompositedTransformFollower(
-                                offset: widget.dropdownStyle.offset ??
-                                    Offset(0, size.height + 5),
-                                link: _layerLink,
-                                showWhenUnlinked: false,
-                                child: Material(
-                                    elevation:
-                                        widget.dropdownStyle.elevation ?? 0,
-                                    borderRadius:
-                                        widget.dropdownStyle.borderRadius ??
-                                            BorderRadius.zero,
-                                    color:
-                                        const Color.fromRGBO(30, 30, 30, 1.0),
-                                    child: SizeTransition(
-                                      axisAlignment: 1,
-                                      sizeFactor: _expandAnimation!,
-                                      child: widget.child,
-                                    ))))
-                      ]))));
-        });
+        return FocusScope(
+          autofocus: true,
+          node: _focusScopeNode,
+          child: GestureDetector(
+            onTap: () {
+              _toggleDropdown(close: true);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              // height: MediaQuery.of(entryContext).size.height,
+              // width: MediaQuery.of(entryContext).size.width,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: offset.dx,
+                    top: topOffset,
+                    width: 200,
+                    child: CompositedTransformFollower(
+                      offset: widget.dropdownStyle.offset ??
+                          Offset(0, size.height + 5),
+                      link: _layerLink,
+                      showWhenUnlinked: false,
+                      child: Material(
+                        elevation: widget.dropdownStyle.elevation ?? 0,
+                        borderRadius: widget.dropdownStyle.borderRadius ??
+                            BorderRadius.zero,
+                        color: const Color.fromRGBO(30, 30, 30, 1.0),
+                        child: SizeTransition(
+                          axisAlignment: 1,
+                          sizeFactor: _expandAnimation!,
+                          child: widget.child,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _toggleDropdown({bool close = false}) async {
@@ -1950,14 +2070,15 @@ class _Field extends State<Field> {
     return Padding(
       padding: const EdgeInsets.all(5),
       child: Container(
-        width: widget.width ?? 100,
+        width: widget.width ?? 80,
         height: widget.height ?? 35,
         decoration: BoxDecoration(
           color: const Color.fromRGBO(40, 40, 40, 1.0),
           border: Border.all(
-              color:
-                  editing ? Colors.blue : const Color.fromRGBO(50, 50, 50, 1.0),
-              width: 2.0),
+            color:
+                editing ? Colors.blue : const Color.fromRGBO(50, 50, 50, 1.0),
+            width: 2.0,
+          ),
           borderRadius: const BorderRadius.all(
             Radius.circular(5.0),
           ),

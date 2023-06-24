@@ -62,8 +62,7 @@ class RootWidget extends UIWidget {
       height: height,
       decoration: BoxDecoration(
         color: color,
-        borderRadius:
-            const BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(5)),
       ),
       child: GestureDetector(
         onTap: () {
@@ -92,7 +91,7 @@ class RootWidget extends UIWidget {
           child: Row(
             children: [
               Field(
-                label: "WIDTH",
+                label: "W",
                 initialValue: width == null ? "" : width.toString(),
                 onChanged: (s) {
                   setState(() {
@@ -101,7 +100,7 @@ class RootWidget extends UIWidget {
                 },
               ),
               Field(
-                label: "HEIGHT",
+                label: "H",
                 initialValue: height == null ? "" : height.toString(),
                 onChanged: (s) {
                   setState(() {

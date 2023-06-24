@@ -20,12 +20,13 @@ class TextUIWidget extends UIWidget {
   Color color = Colors.white;
 
   TransformData data = TransformData(
-      width: 100,
-      height: 30,
-      left: 0,
-      top: 0,
-      alignment: Alignment.topLeft,
-      padding: EdgeInsets.zero);
+    width: 100,
+    height: 30,
+    left: 0,
+    top: 0,
+    alignment: Alignment.topLeft,
+    padding: EdgeInsets.zero,
+  );
 
   @override
   Map<String, dynamic> getJson() {
@@ -53,60 +54,77 @@ class TextUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: data,
-        child: Text(text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: color, fontSize: size)));
+      data: data,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: size,
+        ),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: data,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (t) {
-          setState(() {
-            data = t;
-          });
-        },
-        ui: ui,
-        child: Text(text,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: color, fontSize: size)));
+      data: data,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (t) {
+        setState(() {
+          data = t;
+        });
+      },
+      ui: ui,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: size,
+        ),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Text"),
-      TransformWidgetEditor(
-          data: data,
-          onUpdate: (t) {
-            setState(() {
-              data = t;
-            });
-          },
-          ui: ui),
-      Section(
+    return Column(
+      children: [
+        EditorTitle("Text"),
+        TransformWidgetEditor(
+            data: data,
+            onUpdate: (t) {
+              setState(() {
+                data = t;
+              });
+            },
+            ui: ui),
+        Section(
           title: "Text",
-          child: Row(children: [
-            Field(
-              width: 260,
-              label: "",
-              initialValue: text,
-              onChanged: (s) {
-                setState(() {
-                  text = s;
-                });
-              },
-            )
-          ])),
-      Section(
+          child: Row(
+            children: [
+              Field(
+                width: 260,
+                label: "",
+                initialValue: text,
+                onChanged: (s) {
+                  setState(() {
+                    text = s;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Section(
           title: "Style",
-          child: Column(children: [
-            FieldLabel(
+          child: Column(
+            children: [
+              FieldLabel(
                 text: "Font Size",
                 child: Field(
                   width: 60,
@@ -121,19 +139,25 @@ class TextUIWidget extends UIWidget {
 
                     setState(() {});
                   },
-                )),
-            FieldLabel(
+                ),
+              ),
+              FieldLabel(
                 text: "Color",
                 child: ColorField(
-                    width: 160,
-                    color: color,
-                    onChanged: (c) {
-                      setState(() {
-                        color = c;
-                      });
-                    }))
-          ]))
-    ]);
+                  width: 160,
+                  color: color,
+                  onChanged: (c) {
+                    setState(() {
+                      color = c;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

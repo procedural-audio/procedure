@@ -26,6 +26,7 @@ class WidgetTreeElement extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
       child: ExpansionTile(
+        // subtitle: Icon(Icons.expand_more, size: 14),
         maintainState: true,
         initiallyExpanded: true,
         textColor: widget == ui.selected.value ? Colors.blue : Colors.white,
@@ -35,12 +36,20 @@ class WidgetTreeElement extends StatelessWidget {
         collapsedIconColor: Colors.grey,
         backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
         collapsedBackgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
-        tilePadding: const EdgeInsets.fromLTRB(15, 0, 10, 0),
+        tilePadding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: BorderRadius.all(
+            Radius.circular(5),
+          ),
         ),
         collapsedShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: BorderRadius.all(
+            Radius.circular(5),
+          ),
+        ),
+        trailing: const Icon(
+          Icons.arrow_drop_down,
+          size: 20,
         ),
         onExpansionChanged: (v) {
           ui.selected.value = widget;
@@ -49,7 +58,10 @@ class WidgetTreeElement extends StatelessWidget {
           children: [
             Text(
               widget.name,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
             widget.name == "Empty" || widget.name == "Root"
                 ? Container()
@@ -135,9 +147,9 @@ class _WidgetMenu extends State<WidgetMenu> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
+      width: 200,
       color: const Color.fromRGBO(30, 30, 30, 1.0),
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+      padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
       child: Column(
         children: [
           EditorTitle("Widgets"),
@@ -146,37 +158,51 @@ class _WidgetMenu extends State<WidgetMenu> {
               controller: controller,
               child: Column(
                 children: [
-                  WidgetMenuSection(title: "Layout", children: [
-                    WidgetMenuElement("Stack", Icons.stacked_bar_chart),
-                    WidgetMenuElement("Row", Icons.table_rows),
-                    WidgetMenuElement("Column", Icons.table_rows),
-                    WidgetMenuElement("Grid", Icons.grid_4x4),
-                  ]),
-                  WidgetMenuSection(title: "Decoration", children: [
-                    WidgetMenuElement("Box", Icons.add_box),
-                    WidgetMenuElement("Text", Icons.text_fields),
-                    WidgetMenuElement("Image", Icons.image),
-                    WidgetMenuElement("Icon", Icons.picture_as_pdf),
-                    // WidgetMenuElement("Text Edit", Icons.text_fields),
-                    // WidgetMenuElement("Line", Icons.add_box),
-                  ]),
-                  WidgetMenuSection(title: "Interactive", children: [
-                    WidgetMenuElement("Knob", Icons.king_bed_outlined),
-                    WidgetMenuElement("Slider", Icons.slideshow_rounded),
-                    WidgetMenuElement("Button", Icons.radio_button_checked),
-                    WidgetMenuElement("Dropdown", Icons.list),
-                    WidgetMenuElement("Envelope", Icons.graphic_eq),
-                  ]),
-                  WidgetMenuSection(title: "Metering", children: [
-                    WidgetMenuElement("RMS", Icons.king_bed_outlined),
-                    WidgetMenuElement("Spectrum", Icons.slideshow_rounded),
-                    WidgetMenuElement(
-                        "Oscilliscope", Icons.radio_button_checked),
-                    WidgetMenuElement("Meter", Icons.padding),
-                  ]),
-                  WidgetMenuSection(title: "Other", children: [
-                    WidgetMenuElement("Web View", Icons.window),
-                  ])
+                  WidgetMenuSection(
+                    title: "Layout",
+                    children: [
+                      WidgetMenuElement("Stack", Icons.stacked_bar_chart),
+                      WidgetMenuElement("Row", Icons.table_rows),
+                      WidgetMenuElement("Column", Icons.table_rows),
+                      WidgetMenuElement("Grid", Icons.grid_4x4),
+                    ],
+                  ),
+                  WidgetMenuSection(
+                    title: "Decoration",
+                    children: [
+                      WidgetMenuElement("Box", Icons.add_box),
+                      WidgetMenuElement("Text", Icons.text_fields),
+                      WidgetMenuElement("Image", Icons.image),
+                      WidgetMenuElement("Icon", Icons.picture_as_pdf),
+                      // WidgetMenuElement("Text Edit", Icons.text_fields),
+                      // WidgetMenuElement("Line", Icons.add_box),
+                    ],
+                  ),
+                  WidgetMenuSection(
+                    title: "Interactive",
+                    children: [
+                      WidgetMenuElement("Knob", Icons.king_bed_outlined),
+                      WidgetMenuElement("Slider", Icons.slideshow_rounded),
+                      WidgetMenuElement("Button", Icons.radio_button_checked),
+                      WidgetMenuElement("Dropdown", Icons.list),
+                      WidgetMenuElement("Envelope", Icons.graphic_eq),
+                    ],
+                  ),
+                  WidgetMenuSection(
+                    title: "Metering",
+                    children: [
+                      WidgetMenuElement("RMS", Icons.king_bed_outlined),
+                      WidgetMenuElement("Spectrum", Icons.slideshow_rounded),
+                      WidgetMenuElement("Scope", Icons.radio_button_checked),
+                      WidgetMenuElement("Meter", Icons.padding),
+                    ],
+                  ),
+                  WidgetMenuSection(
+                    title: "Other",
+                    children: [
+                      WidgetMenuElement("Web View", Icons.window),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -200,7 +226,7 @@ class WidgetMenuSection extends StatelessWidget {
       child: GridView.count(
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        crossAxisCount: 3,
+        crossAxisCount: 2,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         children: children,
@@ -240,7 +266,7 @@ class _WidgetMenuElement extends State<WidgetMenuElement> {
         children: [
           Icon(
             widget.iconData,
-            size: 32,
+            size: 24,
             color: hovering ? Colors.blue : Colors.grey,
           ),
           Container(
