@@ -1,5 +1,3 @@
-use crate::buffers::*;
-
 pub trait Voice<T> {
     fn new() -> Self;
     fn get_current_note() -> u32;

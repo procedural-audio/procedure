@@ -1,7 +1,7 @@
 use std::mem::transmute_copy;
 use std::mem::ManuallyDrop;
 
-use pa_dsp::buffers::IO;
+use pa_dsp::IO;
 
 use std::rc::Rc;
 

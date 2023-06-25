@@ -1,6 +1,8 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
 
+use crate::traits::*;
+
 pub mod dynamics;
 mod envelopes;
 mod oscillator;
@@ -85,14 +87,6 @@ impl Frame for f32 {
 }
 */
 
-pub trait Generator {
-    type Output;
-
-    fn reset(&mut self);
-    fn prepare(&mut self, sample_rate: u32, block_size: usize);
-    fn gen(&mut self) -> Self::Output;
-}
-
 pub trait Processor {
     type Item: Clone + Copy;
 
@@ -105,22 +99,6 @@ pub trait Processor {
             *dest = self.process(*src);
         }
     }
-
-    /*#[inline]
-    fn clip(self, db: f32) -> Clipper<Self> where Self: Sized {
-        Clipper {
-            src: self,
-            db
-        }
-    }
-
-    #[inline]
-    fn gain(self, db: f32) -> Amplifier<Self> where Self: Sized {
-        Amplifier {
-            src: self,
-            db
-        }
-    }*/
 }
 
 /*pub trait Playable {
@@ -176,10 +154,6 @@ impl<T: Generator> Generator for Player<T> {
     fn gen(&mut self) -> Self::Output {
         self.source.gen()
     }
-
-    /*fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
-        self.source.generate_block(output);
-    }*/
 }
 
 pub struct Playhead<T: Frame> {

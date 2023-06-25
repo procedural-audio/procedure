@@ -1,12 +1,5 @@
 use crate::buffers::*;
-pub use crate::math::FloatBuffer;
-
-/*
-
-Notes
- - Make it stop loading thread on sample drop
-
-*/
+use crate::float::frame::*;
 
 pub struct SampleMut {
     pub buffer: AudioBuffer,

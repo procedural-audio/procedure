@@ -1,4 +1,4 @@
-use crate::dsp::*;
+use crate::traits::*;
 
 /* ========== ADSR ========== */
 

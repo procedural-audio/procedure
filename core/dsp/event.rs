@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
-use crate::Buffer;
+use crate::*;
 
 pub const NOTE_NAMES: [&'static str; 120] = [
     "C0", "C#0", "D0", "D#0", "E0", "F0", "F#0", "G0", "G#0", "A0", "A#0", "B0", "C1", "C#1", "D1",
@@ -77,14 +77,6 @@ impl Display for Event {
         }
     }
 }
-
-/*#[derive(Copy, Clone, PartialEq)]
-#[repr(C)]
-pub struct Note {
-    pub id: Id,
-    pub pitch: f32,
-    pub pressure: f32,
-}*/
 
 #[derive(Copy, Clone)]
 #[repr(C)]

@@ -1,6 +1,6 @@
 use crate::*;
 
-use pa_dsp::buffers::*;
+use pa_dsp::*;
 
 pub struct Reverb {
     algorithm: usize,
@@ -210,7 +210,9 @@ fn temp() {
 
     let out = source.gen();
     let out = effects.process(0.0);
-    (source >> effects).generate_block(&mut output);
+    (source >> effects >> effects).generate_block(&mut output);
+
+    let temp: Process<f32> = Box::new(gain(5.0));
 }
 
 struct Diffuser<const C: usize> {}
@@ -283,9 +285,7 @@ struct Verb1<F: Frame> {
 impl<F: Frame> Processor for Verb1<F> {
     type Item = F;
 
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        
-    }
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
 
     fn process(&mut self, input: Self::Item) -> Self::Item {
         self.delay.process(input)

@@ -1,12 +1,15 @@
 use std::sync::RwLock;
 
+use crate::BlockMut;
 use crate::loadable::Loadable;
 use crate::sample::sample::*;
 use crate::buffers::*;
+use crate::event::*;
 
 use hound::{Sample, WavReader};
 use std::io::BufReader;
 use std::fs::File;
+use crate::float::frame::*;
 
 use lazy_static::*;
 
@@ -103,7 +106,7 @@ fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>
     );
 
     let mut sample = SampleFile::from(Arc::new(buffer_new), path.to_string());
-    for note_name in event::NOTE_NAMES {
+    for note_name in NOTE_NAMES {
         if path.contains(note_name) {
             sample.pitch = Some(num_to_pitch(name_to_num(note_name).unwrap()));
         }
@@ -134,7 +137,7 @@ fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>
     );
 
     let mut sample = SampleFile::from(Arc::new(buffer_new), path.to_string());
-    for note_name in event::NOTE_NAMES {
+    for note_name in NOTE_NAMES {
         if path.contains(note_name) {
             sample.set_pitch(num_to_pitch(name_to_num(note_name).unwrap()));
         }

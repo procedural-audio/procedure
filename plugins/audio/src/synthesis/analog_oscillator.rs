@@ -1,6 +1,6 @@
 use crate::*;
 
-use pa_dsp::buffers::*;
+use pa_dsp::*;
 
 pub struct AnalogOscillator {
     wave_index: u32,
