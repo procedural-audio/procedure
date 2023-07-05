@@ -208,6 +208,9 @@ fn temp() {
     let x = modulator >> gain(10.0);
     let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(x);
 
+    let mut osc = osc(f32::sin, 440.0) >> gain(5.0);
+    osc.generate_block(&mut output);
+
     let out = source.gen();
     let out = effects.process(0.0);
     (source >> effects >> effects).generate_block(&mut output);

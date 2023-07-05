@@ -118,6 +118,35 @@ pub fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F,
     AudioNode(Gain2 { db , data: PhantomData })
 }
 
+pub fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Osc<F, Pitch>> {
+    AudioNode(Osc { f, pitch: hz, x: 0.0, rate: 44100.0 })
+}
+
+#[derive(Copy, Clone)]
+pub struct Osc<F: Frame, Pitch: Generator<Output = f32>> {
+    f: fn(f32) -> F,
+    pitch: Pitch,
+    x: f32,
+    rate: f32
+}
+
+impl<F: Frame, Pitch: Generator<Output = f32>> Generator for Osc<F, Pitch> {
+    type Output = F;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
+        self.rate = sample_rate as f32;
+    }
+
+    fn gen(&mut self) -> Self::Output {
+        let out = (self.f)(self.x);
+        let pitch = self.pitch.gen();
+        self.x += 2.0 * std::f32::consts::PI / self.rate * pitch;
+        return out;
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
     db: DB,
