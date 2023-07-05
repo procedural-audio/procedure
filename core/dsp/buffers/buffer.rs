@@ -93,6 +93,27 @@ pub fn output2<F: Frame>() -> AudioNode<Passthrough<F>> {
     AudioNode(Passthrough { data: PhantomData::<F> })
 }
 
+pub const fn float<F: Frame>(value: f32) -> AudioNode<Float<F>> {
+    AudioNode(Float { value, data: PhantomData::<F>})
+}
+
+pub struct Float<F: Frame> {
+    value: f32,
+    data: PhantomData<F>
+}
+
+impl<F: Frame> Generator for Float<F> {
+    type Output = F;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
+
+    fn generate(&mut self) -> Self::Output {
+        F::from(self.value)
+    }
+}
+
 pub struct Passthrough<F: Frame> {
     data: PhantomData<F>
 }
@@ -139,9 +160,9 @@ impl<F: Frame, Pitch: Generator<Output = f32>> Generator for Osc<F, Pitch> {
         self.rate = sample_rate as f32;
     }
 
-    fn gen(&mut self) -> Self::Output {
+    fn generate(&mut self) -> Self::Output {
         let out = (self.f)(self.x);
-        let pitch = self.pitch.gen();
+        let pitch = self.pitch.generate();
         self.x += 2.0 * std::f32::consts::PI / self.rate * pitch;
         return out;
     }
@@ -265,7 +286,7 @@ impl<T> Buffer<T> {
 
     pub fn fill<G: Generator<Output = T>>(&mut self, src: &mut G) {
         for d in &mut self.items {
-            *d = src.gen();
+            *d = src.generate();
         }
     }
 }
@@ -632,7 +653,7 @@ pub struct RingBuffer<F: Frame> {
         panic!("Prepare not implemented for ");
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn generate(&mut self) -> Self::Item {
     }
 }*/
 

@@ -54,7 +54,7 @@ impl Generator for WavetablePlayer {
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> f32 {
+    fn generate(&mut self) -> f32 {
         0.0
     }
 }

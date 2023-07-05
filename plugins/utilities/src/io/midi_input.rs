@@ -106,7 +106,7 @@ impl NoteListener {
         self.counter += 1;
     }
 
-    fn gen(&mut self) -> Option<NoteMessage> {
+    fn generate(&mut self) -> Option<NoteMessage> {
         self.voices[self.current_voice]
             .queued
             .pop()
@@ -236,7 +236,7 @@ impl Module for MidiInput {
             self.listener.push(msg);
         }
 
-        while let Some(msg) = self.listener.gen() {
+        while let Some(msg) = self.listener.generate() {
             println!("NoteMessage: voice: {}, id: {}, offset: {}, note: {}", voice.index, msg.id.num(), msg.offset, msg.note);
             outputs.events[0].push(msg);
         }

@@ -23,7 +23,7 @@ impl Generator for Noise {
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     #[inline]
-    fn gen(&mut self) -> f32 {
+    fn generate(&mut self) -> f32 {
         self.rng.sample(Uniform::new(-1.0, 1.0))
     }
 }
@@ -57,9 +57,9 @@ impl Generator for Lfo {
         self.rate = sample_rate;
     }
 
-    fn gen(&mut self) -> Self::Output {
+    fn generate(&mut self) -> Self::Output {
         let phase = self.phase;
-        let delta = (1.0 / self.rate as f32) * self.pitch.gen();
+        let delta = (1.0 / self.rate as f32) * self.pitch.generate();
         self.phase += delta;
         (self.shape)(phase)
     }

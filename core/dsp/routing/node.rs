@@ -39,8 +39,8 @@ impl<Out, G> Generator for AudioNode<G>
     fn reset(&mut self) {}
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Output {
-        self.0.gen()
+    fn generate(&mut self) -> Self::Output {
+        self.0.generate()
     }
 }
 
@@ -141,8 +141,8 @@ impl<Between, Out, P1, P2> Generator for Chain<P1, P2>
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Output {
-        self.1.process(self.0.gen())
+    fn generate(&mut self) -> Self::Output {
+        self.1.process(self.0.generate())
     }
 }
 

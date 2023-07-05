@@ -258,7 +258,7 @@ impl Module for PluckModule {
 			}
 			1 => {
 				for o in outputs.audio[0].as_slice_mut().iter_mut() {
-					// o.left = voice.pluck.gen();
+					// o.left = voice.pluck.generate();
 					// o.right = o.left;
 				}
 			}
@@ -299,7 +299,7 @@ impl Karplus {
 		self.buffer = Vec::with_capacity(block_size);		
 	}
 
-	fn gen(&mut self) -> Self::Item {
+	fn generate(&mut self) -> Self::Item {
 		
 	}
 }*/

@@ -87,7 +87,7 @@ impl<T: Frame> SampleFile<T> {
         todo!()
     }
 
-    fn gen(&mut self) -> Self::Item {
+    fn generate(&mut self) -> Self::Item {
         
     }
 }*/
@@ -126,9 +126,9 @@ impl<G: Generator, I: Interpolator<Item = G::Output>> Generator for Converter<G,
         self.src.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Output {
+    fn generate(&mut self) -> Self::Output {
         while self.interpolation_value >= 1.0 {
-            self.interpolator.next_sample(self.src.gen());
+            self.interpolator.next_sample(self.src.generate());
             self.interpolation_value -= 1.0;
         }
 
@@ -225,8 +225,8 @@ impl<G: Generator<Item = Stereo2>> Generator for Pitcher<G> {
         self.src.prepare(sample_rate, block_size)
     }
 
-    fn gen(&mut self) -> Self::Item {
-        self.src.gen()
+    fn generate(&mut self) -> Self::Item {
+        self.src.generate()
     }
 }*/
 
@@ -323,7 +323,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Output {
+    fn generate(&mut self) -> Self::Output {
         if self.playing && self.start != self.end {
             if let Some(sample) = &self.sample {
                 if self.should_loop {
@@ -394,8 +394,8 @@ impl<T: Frame> Generator for PitchedSamplePlayer<T> {
         self.player.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Output {
-        self.player.gen()
+    fn generate(&mut self) -> Self::Output {
+        self.player.generate()
     }
 }
 
@@ -514,8 +514,8 @@ impl<T: Frame> Generator for GranularSamplePlayer<T> {
         self.player.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Output {
-        self.player.gen()
+    fn generate(&mut self) -> Self::Output {
+        self.player.generate()
     }
 }
 

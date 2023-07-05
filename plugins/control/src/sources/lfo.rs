@@ -142,16 +142,16 @@ impl Module for LfoModule {
 
         if self.wave == 0 {
             voice.saw.set_pitch(hz);
-            outputs.control[0] = voice.saw.gen();
+            outputs.control[0] = voice.saw.generate();
         } else if self.wave == 1 {
             voice.square.set_pitch(hz);
-            outputs.control[0] = voice.square.gen();
+            outputs.control[0] = voice.square.generate();
         } else if self.wave == 2 {
             voice.sine.set_pitch(hz);
-            outputs.control[0] = voice.sine.gen();
+            outputs.control[0] = voice.sine.generate();
         } else if self.wave == 3 {
             voice.triangle.set_pitch(hz);
-            outputs.control[0] = voice.triangle.gen();
+            outputs.control[0] = voice.triangle.generate();
         }
     }
 }

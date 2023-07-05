@@ -37,8 +37,8 @@ impl<T: Generator<Output = f32>> Generator for Clipper<T> {
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> f32 {
-        f32::max(self.src.gen(), self.db) // CONFUSES LINEAR AND DB
+    fn generate(&mut self) -> f32 {
+        f32::max(self.src.generate(), self.db) // CONFUSES LINEAR AND DB
     }
 }
 
@@ -101,8 +101,8 @@ impl<T: Generator<Output = f32>> Generator for Amplifier<T> {
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> f32 {
-        amp(self.src.gen(), self.db)
+    fn generate(&mut self) -> f32 {
+        amp(self.src.generate(), self.db)
     }
 }
 

@@ -32,7 +32,7 @@ impl ADSR {
         }
     }
 
-    pub fn gen(&mut self) -> f32 {
+    pub fn generate(&mut self) -> f32 {
         match self.stage {
             Stage::Attack => {
                 0.0
@@ -131,7 +131,7 @@ impl Module for EnvelopeModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, _inputs: &IO, outputs: &mut IO) {
-        outputs.control[0] = voice.adsr.gen();
+        outputs.control[0] = voice.adsr.generate();
     }
 }
 

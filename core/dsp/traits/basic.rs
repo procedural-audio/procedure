@@ -10,7 +10,7 @@ pub trait Generator {
     // fn set_parameter(&mut self, name: &'static str, value: f32) {}
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn update(&mut self) {} // Update state
-    fn gen(&mut self) -> Self::Output;
+    fn generate(&mut self) -> Self::Output;
 }
 
 pub trait Processor2 {
@@ -31,7 +31,7 @@ impl<Out, G: Generator<Output = Out>> BlockGenerator for G {
     fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer) {
         self.update();
         for dest in output.as_slice_mut().iter_mut() {
-            *dest = self.gen();
+            *dest = self.generate();
         }
     }
 }

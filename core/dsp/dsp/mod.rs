@@ -41,9 +41,9 @@ Processor
 
     let mut stack: Amplifier<Clipper<Noise>> = Amplifier::default();
 
-    stack.gen();
-    stack.gen();
-    stack.gen();
+    stack.generate();
+    stack.generate();
+    stack.generate();
 
     stack.set_gain(-3.0);
     stack.set_clip(3.0);
@@ -151,8 +151,8 @@ impl<T: Generator> Generator for Player<T> {
         self.source.prepare(sample_rate, block_size);
     }
 
-    fn gen(&mut self) -> Self::Output {
-        self.source.gen()
+    fn generate(&mut self) -> Self::Output {
+        self.source.generate()
     }
 }
 
@@ -174,7 +174,7 @@ impl<T: Frame> Generator for Playhead<T> {
 
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Output {
+    fn generate(&mut self) -> Self::Output {
         let item = self.src[self.index];
         self.index += 1;
         return item;
@@ -223,8 +223,8 @@ impl<T: Generator + Pitched> Generator for Pitch<T> {
     fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
-    fn gen(&mut self) -> Self::Output{
-        self.src.gen()
+    fn generate(&mut self) -> Self::Output{
+        self.src.generate()
     }
 }
 
@@ -249,7 +249,7 @@ impl<T: Processor + Pitched> DerefMut for Pitch<T> {
 /*impl<I: Default, T: Processor<Item = I>> Generator for T {
     type Item = I;
 
-    fn gen(&mut self) -> Self::Item {
+    fn generate(&mut self) -> Self::Item {
         self.process(I::default())
     }
 }*/
@@ -257,8 +257,8 @@ impl<T: Processor + Pitched> DerefMut for Pitch<T> {
 /*impl<'a, T: Generator> Generator for &'a mut T {
     type Item = T::Item;
 
-    fn gen(&mut self) -> Self::Item {
-        self.deref_mut().gen()
+    fn generate(&mut self) -> Self::Item {
+        self.deref_mut().generate()
     }
 }*/
 
@@ -277,7 +277,7 @@ impl Generator for f32 {
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     #[inline]
-    fn gen(&mut self) -> f32 {
+    fn generate(&mut self) -> f32 {
         *self
     }
 }
