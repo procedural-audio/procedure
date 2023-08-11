@@ -218,7 +218,6 @@ fn temp() {
 
     let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0);
     osc2.generate_block(&mut output);
-
     // osc2.set_param("freq", 440.0);
 
     let temp: Process<f32> = Box::new(gain(5.0));

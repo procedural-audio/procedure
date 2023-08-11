@@ -66,6 +66,35 @@ class UserInterface extends StatelessWidget {
         } else {
           return Stack(
             children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(200, 0, 200, 0),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        border: Border.symmetric(
+                          vertical: BorderSide(
+                            color: Colors.black,
+                            width: 2
+                          ),
+                        )
+                      ),
+                      child: Scrollbar(
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          controller: ScrollController(initialScrollOffset: 202),
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            child: root,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
               Positioned(
                 left: 0,
                 top: 0,
@@ -98,12 +127,6 @@ class UserInterface extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(240, 80, 240, 80),
-                child: FakeWindow(
-                  child: root,
                 ),
               ),
             ],

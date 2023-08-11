@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/ui/common.dart';
 import 'package:metasampler/ui/ui.dart';
 
-/*import 'ui/layout.dart';
-import 'main.dart';
-import 'host.dart';*/
-
 class WidgetTreeElement extends StatelessWidget {
   WidgetTreeElement({required this.widget, required this.ui});
 

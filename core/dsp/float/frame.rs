@@ -8,6 +8,7 @@ use crate::event::*;
 pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
     const CHANNELS: usize;
+    const EQUILIBRIUM: Self;
 
     fn from(value: f32) -> Self;
     fn channel(&self, index: usize) -> &f32;
@@ -58,6 +59,7 @@ pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Se
 impl Frame for f32 {
     type Output = f32;
     const CHANNELS: usize = 1;
+    const EQUILIBRIUM: Self = 0.0;
 
     fn from(value: f32) -> Self {
         value
@@ -113,6 +115,7 @@ pub struct Stereo2<T> {
 impl Frame for Stereo2<f32> {
     type Output = Stereo2<f32>;
     const CHANNELS: usize = 2;
+    const EQUILIBRIUM: Self = Stereo2 { left: 0.0, right: 0.0 };
 
     fn from(value: f32) -> Self {
         Stereo2 {
