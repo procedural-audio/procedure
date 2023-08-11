@@ -127,7 +127,7 @@ impl<F: Frame> Processor2 for Passthrough<F> {
     }
 }
 
-pub fn testdsp() -> AudioNode<TestDsp> {
+pub const fn testdsp() -> AudioNode<TestDsp> {
     AudioNode(TestDsp)
 }
 
@@ -135,11 +135,11 @@ pub fn pitcheddsp() -> AudioNode<PitchedDsp> {
     AudioNode(PitchedDsp)
 }
 
-pub fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
+pub const fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
     AudioNode(Gain2 { db , data: PhantomData })
 }
 
-pub fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Osc<F, Pitch>> {
+pub const fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Osc<F, Pitch>> {
     AudioNode(Osc { f, pitch: hz, x: 0.0, rate: 44100.0 })
 }
 

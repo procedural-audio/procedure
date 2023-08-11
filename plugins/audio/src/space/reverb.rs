@@ -207,13 +207,19 @@ fn temp() {
     let modulator = AudioNode(TestOsc) >> gain(-20.0);
     let x = modulator >> gain(10.0);
     let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(x);
+    let out = effects.process(0.0);
 
-    let mut osc = osc(f32::sin, 440.0 + 100.0) >> gain(5.0);
-    osc.generate_block(&mut output);
+    let mut sin_osc = osc(f32::sin, 440.0 + 100.0) >> gain(5.0);
+    sin_osc.generate_block(&mut output);
 
     let out = source.generate();
     let out = effects.process(0.0);
     (source >> effects >> effects).generate_block(&mut output);
+
+    let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0);
+    osc2.generate_block(&mut output);
+
+    // osc2.set_param("freq", 440.0);
 
     let temp: Process<f32> = Box::new(gain(5.0));
 }

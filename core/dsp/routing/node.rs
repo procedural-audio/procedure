@@ -20,14 +20,10 @@ impl<P> std::ops::DerefMut for AudioNode<P> {
     }
 }
 
-impl<P: Pitched2> Pitched2 for AudioNode<P> {
-    fn get_pitch(&self) -> f32 {
-        self.0.get_pitch()
-    }
-
-    fn set_pitch(&mut self, hz: f32) {
-        self.0.set_pitch(hz);
-    }
+impl<P: Param> Param for AudioNode<P> {
+    fn set_param(&mut self, name: &'static str, value: f32) {
+        self.0.set_param(name, value);
+    } 
 }
 
 impl<Out, G> Generator for AudioNode<G>
@@ -225,4 +221,39 @@ impl<In, Out, Merged, P> Processor2 for Merge<In, Out, Merged, P>
     fn process(&mut self, input: Self::Input) -> Self::Output {
         self.0.process(input).merge()
     }
+}
+
+pub trait Param {
+    // type Value;
+
+    fn set_param(&mut self, name: &'static str, value: f32);
+}
+
+pub struct Parameter {
+    name: &'static str,
+    value: f32
+}
+
+impl Param for Parameter {
+    fn set_param(&mut self, name: &'static str, value: f32) {
+        if name == self.name {
+            self.value = value;
+        }
+    }
+}
+
+impl Generator for Parameter {
+    type Output = f32;
+
+    fn reset(&mut self) {}
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
+
+    fn generate(&mut self) -> Self::Output {
+        self.value
+    }
+}
+
+pub const fn param(name: &'static str, value: f32) -> Parameter {
+    Parameter { name, value }
 }
