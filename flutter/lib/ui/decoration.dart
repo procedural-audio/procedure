@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../patch.dart';
 import 'ui.dart';
-import 'layout.dart';
 import 'common.dart';
-import '../main.dart';
 
 import 'dart:io';
 
@@ -108,7 +105,7 @@ class TextUIWidget extends UIWidget {
           child: Row(
             children: [
               Field(
-                width: 260,
+                width: 170,
                 label: "",
                 initialValue: text,
                 onChanged: (s) {

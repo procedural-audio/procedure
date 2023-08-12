@@ -935,7 +935,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
               Row(
                 children: [
                   Field(
-                    label: "WIDTH",
+                    label: "W",
                     initialValue: widget.data.width == null
                         ? ""
                         : widget.data.width.toString(),
@@ -945,7 +945,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
                     },
                   ),
                   Field(
-                    label: "HEIGHT",
+                    label: "H",
                     initialValue: widget.data.height == null
                         ? ""
                         : widget.data.height.toString(),
@@ -997,7 +997,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
         Section(
           title: "Alignment",
           child: Container(
-            padding: const EdgeInsets.fromLTRB(60, 5, 0, 10),
+            padding: const EdgeInsets.fromLTRB(10, 5, 0, 10),
             child: AlignmentField(
               alignment: widget.data.alignment,
               onUpdate: (a) {
@@ -1023,7 +1023,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
               Row(
                 children: [
                   Field(
-                    label: "LEFT",
+                    label: "L",
                     initialValue: widget.data.padding.left.toString(),
                     onChanged: (s) {
                       widget.data.padding = EdgeInsets.fromLTRB(
@@ -1044,7 +1044,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
                     },
                   ),
                   Field(
-                    label: "RIGHT",
+                    label: "R",
                     initialValue: widget.data.padding.right.toString(),
                     onChanged: (s) {
                       widget.data.padding = EdgeInsets.fromLTRB(
@@ -1071,7 +1071,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
               Row(
                 children: [
                   Field(
-                    label: "TOP",
+                    label: "T",
                     initialValue: widget.data.padding.top.toString(),
                     onChanged: (s) {
                       widget.data.padding = EdgeInsets.fromLTRB(
@@ -1093,7 +1093,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
                     },
                   ),
                   Field(
-                    label: "BOTTOM",
+                    label: "B",
                     initialValue: widget.data.padding.bottom.toString(),
                     onChanged: (s) {
                       widget.data.padding = EdgeInsets.fromLTRB(
