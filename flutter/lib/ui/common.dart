@@ -2359,6 +2359,7 @@ class ChildDragTarget extends StatefulWidget {
     this.width,
     this.height,
     this.child,
+    this.showDragBoder = true,
     required this.onAddChild,
     required this.ui,
   });
@@ -2367,6 +2368,7 @@ class ChildDragTarget extends StatefulWidget {
   double? width;
   double? height;
   Widget? child;
+  bool showDragBoder;
 
   UserInterface ui;
 
@@ -2380,58 +2382,69 @@ class _ChildDragTarget extends State<ChildDragTarget> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-        hitTestBehavior: HitTestBehavior.opaque,
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: DragTarget<String>(
-          builder: (context, candidateData, rejectedData) {
-            return Stack(children: [
+      hitTestBehavior: HitTestBehavior.opaque,
+      onEnter: (e) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (e) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: DragTarget<String>(
+        builder: (context, candidateData, rejectedData) {
+          return Stack(
+            children: [
               widget.child ?? Container(),
               IgnorePointer(
-                  child: Visibility(
-                      visible: hovering,
+                child: Visibility(
+                  visible: hovering && widget.showDragBoder,
+                  child: Container(
+                    color: Colors.white.withAlpha(10),
+                    child: Center(
                       child: Container(
-                          color: Colors.white.withAlpha(10),
-                          child: Center(
-                              child: Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: BoxDecoration(
-                                      color: Colors.black.withAlpha(100),
-                                      borderRadius: BorderRadius.circular(13.0),
-                                      border: Border.all(
-                                          color: Colors.blue, width: 2.0)),
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ))))))
-            ]);
-          },
-          onWillAccept: (data) {
-            return true;
-          },
-          onAccept: (name) {
-            UIWidget? child = createUIWidget(name, widget.ui);
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(100),
+                          borderRadius: BorderRadius.circular(13.0),
+                          border: Border.all(
+                            color: Colors.blue,
+                            width: 2.0,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        onWillAccept: (data) {
+          return true;
+        },
+        onAccept: (name) {
+          UIWidget? child = createUIWidget(name, widget.ui);
 
-            if (child != null) {
-              print("Creating child $name");
-              widget.onAddChild(child);
-              print("TODO: Refresh UI widget");
-              setState(() {});
-            } else {
-              print("Couldn't create child $name");
-            }
-          },
-        ));
+          if (child != null) {
+            print("Creating child $name");
+            widget.onAddChild(child);
+            print("TODO: Refresh UI widget");
+            setState(() {});
+          } else {
+            print("Couldn't create child $name");
+          }
+        },
+      ),
+    );
   }
 }
 

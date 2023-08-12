@@ -93,13 +93,14 @@ class TextUIWidget extends UIWidget {
       children: [
         EditorTitle("Text"),
         TransformWidgetEditor(
-            data: data,
-            onUpdate: (t) {
-              setState(() {
-                data = t;
-              });
-            },
-            ui: ui),
+          data: data,
+          onUpdate: (t) {
+            setState(() {
+              data = t;
+            });
+          },
+          ui: ui,
+        ),
         Section(
           title: "Text",
           child: Row(
@@ -197,72 +198,83 @@ class ImageUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: data,
-        child: path != null
-            ? Stack(fit: StackFit.expand, children: [
-                Image.file(
-                  File(path!),
-                  repeat: ImageRepeat.noRepeat,
-                  fit: BoxFit.fill,
-                )
-              ])
-            : Container());
+      data: data,
+      child: path != null
+          ? Stack(fit: StackFit.expand, children: [
+              Image.file(
+                File(path!),
+                repeat: ImageRepeat.noRepeat,
+                fit: BoxFit.fill,
+              )
+            ])
+          : Container(),
+    );
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: data,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (v) {
-          data = v;
-          setState(() {});
-        },
-        ui: ui,
-        child: path != null
-            ? Image.file(
-                File(path!),
-                repeat: ImageRepeat.noRepeat,
-                fit: BoxFit.fill,
-              )
-            : Container());
+      data: data,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (v) {
+        data = v;
+        setState(() {});
+      },
+      ui: ui,
+      child: path != null
+          ? Image.file(
+              File(path!),
+              repeat: ImageRepeat.noRepeat,
+              fit: BoxFit.fill,
+            )
+          : Container(),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Image"),
-      TransformWidgetEditor(
+    return Column(
+      children: [
+        EditorTitle("Image"),
+        TransformWidgetEditor(
           data: data,
           onUpdate: (v) {
             data = v;
             setState(() {});
           },
-          ui: ui),
-      Section(
+          ui: ui,
+        ),
+        Section(
           title: "File",
-          child: Row(children: [
-            FileField(
-              width: 260,
-              extensions: const ["png", "jpg", "jpeg"],
-              path: path,
-              onChanged: (s) {
-                path = s;
-                setState(() {});
-              },
-            )
-          ])),
-      Section(
+          child: Row(
+            children: [
+              FileField(
+                width: 260,
+                extensions: const ["png", "jpg", "jpeg"],
+                path: path,
+                onChanged: (s) {
+                  path = s;
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        ),
+        Section(
           title: "Style",
-          child: Column(children: [
-            FieldLabel(
-              text: "Mode",
-              child: Container(),
-            )
-          ])),
-    ]);
+          child: Column(
+            children: [
+              FieldLabel(
+                text: "Mode",
+                child: Container(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -305,75 +317,86 @@ class IconUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: data,
-        child: path != null
-            ? SvgPicture.file(
-                File(path!),
-                color: color,
-              )
-            : Container());
+      data: data,
+      child: path != null
+          ? SvgPicture.file(
+              File(path!),
+              color: color,
+            )
+          : Container(),
+    );
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: data,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (t) {
-          data = t;
-          setState(() {});
-        },
-        ui: ui,
-        child: path != null
-            ? SvgPicture.file(
-                File(path!),
-                color: color,
-              )
-            : Container());
+      data: data,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (t) {
+        data = t;
+        setState(() {});
+      },
+      ui: ui,
+      child: path != null
+          ? SvgPicture.file(
+              File(path!),
+              color: color,
+            )
+          : Container(),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Icon"),
-      TransformWidgetEditor(
+    return Column(
+      children: [
+        EditorTitle("Icon"),
+        TransformWidgetEditor(
           data: data,
           onUpdate: (v) {
             data = v;
             setState(() {});
           },
-          ui: ui),
-      Section(
+          ui: ui,
+        ),
+        Section(
           title: "Path",
-          child: Row(children: [
-            FileField(
-              width: 260,
-              path: path,
-              extensions: const ["svg"],
-              onChanged: (s) {
-                path = s;
-                setState(() {});
-              },
-            )
-          ])),
-      Section(
-          title: "Style",
-          child: Column(children: [
-            FieldLabel(
-              text: "Mode",
-              child: Container(),
-            ),
-            ColorField(
-                width: 160,
-                color: color,
-                onChanged: (color) {
-                  color = color;
+          child: Row(
+            children: [
+              FileField(
+                width: 260,
+                path: path,
+                extensions: const ["svg"],
+                onChanged: (s) {
+                  path = s;
                   setState(() {});
-                })
-          ])),
-    ]);
+                },
+              )
+            ],
+          ),
+        ),
+        Section(
+          title: "Style",
+          child: Column(
+            children: [
+              FieldLabel(
+                text: "Mode",
+                child: Container(),
+              ),
+              ColorField(
+                  width: 160,
+                  color: color,
+                  onChanged: (color) {
+                    color = color;
+                    setState(() {});
+                  })
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -427,90 +450,115 @@ class BoxUIWidget extends UIWidget {
   @override
   Widget buildWidget(BuildContext context) {
     return TransformWidget(
-        data: transform,
-        child: Container(
-            decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-                border:
-                    Border.all(color: borderColor, width: borderThickness))));
+      data: transform,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.all(
+            Radius.circular(borderRadius),
+          ),
+          border: Border.all(
+            color: borderColor,
+            width: borderThickness,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditing(BuildContext context) {
     return TransformWidgetEditing(
-        data: transform,
-        onTap: () {
-          toggleEditor();
-        },
-        onUpdate: (transform) {
-          transform = transform;
-          setState(() {});
-        },
-        ui: ui,
-        child: Container(
-            decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
-                border:
-                    Border.all(color: borderColor, width: borderThickness))));
+      data: transform,
+      onTap: () {
+        toggleEditor();
+      },
+      onUpdate: (transform) {
+        transform = transform;
+        setState(() {});
+      },
+      ui: ui,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
+          border: Border.all(
+            color: borderColor,
+            width: borderThickness,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget buildWidgetEditor(BuildContext context) {
-    return Column(children: [
-      EditorTitle("Container"),
-      TransformWidgetEditor(
+    return Column(
+      children: [
+        EditorTitle("Container"),
+        TransformWidgetEditor(
           data: transform,
           onUpdate: (transform) {
             transform = transform;
             setState(() {});
           },
-          ui: ui),
-      Section(
+          ui: ui,
+        ),
+        Section(
           title: "Style",
-          child: Column(children: [
-            FieldLabel(
+          child: Column(
+            children: [
+              FieldLabel(
                 text: "Color",
                 child: ColorField(
-                    width: 150,
-                    color: color,
-                    onChanged: (c) {
-                      color = c;
-                      setState(() {});
-                    }))
-          ])),
-      Section(
+                  width: 150,
+                  color: color,
+                  onChanged: (c) {
+                    color = c;
+                    setState(() {});
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Section(
           title: "Border",
-          child: Column(children: [
-            FieldLabel(
-                text: "Radius",
-                child: Field(
-                    label: "PX",
-                    initialValue: borderRadius.toString(),
-                    onChanged: (s) {
-                      borderRadius = double.tryParse(s) ?? 0.0;
-                      setState(() {});
-                    })),
-            FieldLabel(
-                text: "Thickness",
-                child: Field(
-                    label: "PX",
-                    initialValue: borderThickness.toString(),
-                    onChanged: (s) {
-                      borderThickness = double.tryParse(s) ?? 0.0;
-                      setState(() {});
-                    })),
-            FieldLabel(
+          child: Column(
+            children: [
+              FieldLabel(
+                  text: "Radius",
+                  child: Field(
+                      label: "PX",
+                      initialValue: borderRadius.toString(),
+                      onChanged: (s) {
+                        borderRadius = double.tryParse(s) ?? 0.0;
+                        setState(() {});
+                      })),
+              FieldLabel(
+                  text: "Thickness",
+                  child: Field(
+                      label: "PX",
+                      initialValue: borderThickness.toString(),
+                      onChanged: (s) {
+                        borderThickness = double.tryParse(s) ?? 0.0;
+                        setState(() {});
+                      })),
+              FieldLabel(
                 text: "Color",
                 child: ColorField(
-                    width: 150,
-                    color: color,
-                    onChanged: (c) {
-                      color = c;
-                      setState(() {});
-                    }))
-          ]))
-    ]);
+                  width: 150,
+                  color: color,
+                  onChanged: (c) {
+                    color = c;
+                    setState(() {});
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

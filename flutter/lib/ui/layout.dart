@@ -69,6 +69,7 @@ class RootWidget extends UIWidget {
           toggleEditor();
         },
         child: ChildDragTarget(
+          showDragBoder: false,
           onAddChild: (child) {
             print("Adding child");
             children.add(child);
