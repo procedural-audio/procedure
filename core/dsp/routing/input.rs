@@ -69,6 +69,5 @@ impl<'a, Between, Out, G, P> Generator for InputChain<'a, G, P>
 fn temp() {
     let buffer = crate::Buffer::init(0.0, 512);
     let mut chain = input_block(&buffer) >> crate::gain(5.0f32);
-
-    let temp: f32 = chain.generate();
+    let o = chain.generate();
 }
