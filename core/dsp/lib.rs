@@ -7,7 +7,6 @@ pub mod event;
 pub mod traits;
 pub mod float;
 pub mod routing;
-pub mod synthesis;
 
 pub use buffers::*;
 pub use math::*;
@@ -17,7 +16,6 @@ pub use event::*;
 pub use traits::*;
 pub use float::*;
 pub use routing::*;
-pub use synthesis::*;
 
 extern crate lazy_static;
 

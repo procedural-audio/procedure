@@ -2,7 +2,7 @@ use rand::distributions::Uniform;
 use rand::prelude::ThreadRng;
 use rand::Rng;
 
-use crate::traits::*;
+use pa_dsp::*;
 
 pub struct Noise {
     rng: ThreadRng,

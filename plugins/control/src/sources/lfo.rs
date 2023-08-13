@@ -1,4 +1,5 @@
 use modules::*;
+use pa_algorithms::*;
 
 use std::f32::consts::PI;
 

@@ -1,6 +1,7 @@
 use crate::*;
 
 use pa_dsp::*;
+use pa_algorithms::*;
 
 pub struct Reverb {
     algorithm: usize,

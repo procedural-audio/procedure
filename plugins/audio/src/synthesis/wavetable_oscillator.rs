@@ -1,7 +1,7 @@
 use crate::*;
 
 use pa_dsp::loadable::{Loadable, Lock};
-use pa_dsp::synthesis::*;
+use pa_algorithms::*;
 
 fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     let mut array = [0.0; C];

@@ -1,4 +1,4 @@
-use crate::traits::*;
+use pa_dsp::*;
 
 #[derive(Copy, Clone)]
 pub struct Wavetable {

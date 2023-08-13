@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 pa-dsp = { path = "../../core/dsp" }
+pa-algorithms = { path = "../../core/algorithms" }
 modules = { path = "../../core/modules" }
 rand = "0.8"
 

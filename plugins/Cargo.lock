@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "daisysp-rs",
  "modules",
+ "pa-algorithms",
  "pa-dsp",
  "rand",
  "rlua",
@@ -105,6 +106,7 @@ name = "control"
 version = "0.1.0"
 dependencies = [
  "modules",
+ "pa-algorithms",
  "pa-dsp",
  "rand",
 ]
@@ -366,6 +368,14 @@ name = "once_cell"
 version = "1.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
+
+[[package]]
+name = "pa-algorithms"
+version = "0.1.0"
+dependencies = [
+ "pa-dsp",
+ "rand",
+]
 
 [[package]]
 name = "pa-dsp"

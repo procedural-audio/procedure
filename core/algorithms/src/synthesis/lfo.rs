@@ -1,4 +1,4 @@
-use crate::traits::*;
+use pa_dsp::*;
 
 pub struct Lfo {
     shape: fn(f32) -> f32,

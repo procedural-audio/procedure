@@ -1,6 +1,4 @@
-use crate::traits::*;
-use crate::float::*;
-use crate::routing::*;
+use pa_dsp::*;
 
 pub const fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Oscillator<F, Pitch>> {
     AudioNode(Oscillator { f, pitch: hz, x: 0.0, rate: 44100.0 })
