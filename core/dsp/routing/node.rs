@@ -2,9 +2,10 @@ use std::marker::PhantomData;
 
 use crate::traits::*;
 use crate::float::frame::Frame;
+use crate::routing::param::*;
 use crate::routing::chain::*;
-use crate::routing::parallel::*;
 use crate::routing::merge::*;
+use crate::routing::parallel::*;
 
 #[derive(Copy, Clone)]
 pub struct AudioNode<P>(pub P);
@@ -78,41 +79,6 @@ impl<In1, Out1, Merged, Out2, P1, P2> std::ops::BitAnd<AudioNode<P2>> for AudioN
     fn bitand(self, rhs: AudioNode<P2>) -> Self::Output {
         AudioNode(Chain(Merge(self.0), rhs.0))
     }
-}
-
-pub trait Param {
-    // type Value;
-
-    fn set_param(&mut self, name: &'static str, value: f32);
-}
-
-pub struct Parameter {
-    name: &'static str,
-    value: f32
-}
-
-impl Param for Parameter {
-    fn set_param(&mut self, name: &'static str, value: f32) {
-        if name == self.name {
-            self.value = value;
-        }
-    }
-}
-
-impl Generator for Parameter {
-    type Output = f32;
-
-    fn reset(&mut self) {}
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
-
-    fn generate(&mut self) -> Self::Output {
-        self.value
-    }
-}
-
-pub const fn param(name: &'static str, value: f32) -> Parameter {
-    Parameter { name, value }
 }
 
 #[derive(Copy, Clone)]

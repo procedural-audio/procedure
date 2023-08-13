@@ -27,10 +27,10 @@ impl<In, Between, Out, P1, P2> Processor2 for Chain<P1, P2>
     }
 }
 
-impl<Between, Out, P1, P2> Generator for Chain<P1, P2> 
+impl<Between, Out, G, P> Generator for Chain<G, P> 
     where
-        P1: Generator<Output = Between>,
-        P2: Processor2<Input = Between, Output = Out> {
+        G: Generator<Output = Between>,
+        P: Processor2<Input = Between, Output = Out> {
 
     type Output = Out;
 
