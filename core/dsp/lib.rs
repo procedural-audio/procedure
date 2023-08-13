@@ -1,7 +1,6 @@
 pub mod buffers;
 pub mod math;
 pub mod sample;
-pub mod loadable;
 pub mod time;
 pub mod event;
 pub mod traits;

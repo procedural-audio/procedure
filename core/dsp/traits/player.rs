@@ -1,6 +1,4 @@
 use crate::traits::*;
-use crate::buffers::*;
-use crate::float::*;
 
 pub struct Player<T> {
     source: T,
@@ -43,38 +41,4 @@ impl<T: Generator> Generator for Player<T> {
     fn generate(&mut self) -> Self::Output {
         self.source.generate()
     }
-}
-
-pub struct Playhead<T: Frame> {
-    index: usize,
-    src: Buffer<T>
-} // impl this for all generators also?
-
-impl<T: Frame> Playhead<T> {
-    // Add transport methods here???    
-}
-
-impl<T: Frame> Generator for Playhead<T> {
-    type Output = T;
-
-    fn reset(&mut self) {
-        self.index = 0;
-    }
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
-
-    fn generate(&mut self) -> Self::Output {
-        let item = self.src[self.index];
-        self.index += 1;
-        return item;
-    }
-
-    /*fn generate_block(&mut self, output: &mut Buffer<Self::Output>) {
-        if self.index + output.len() < self.src.len() {
-            let end = usize::min(self.index + output.len(), self.src.len());
-            for (buf, out) in self.src.into_iter().zip(&mut output.as_slice_mut()[self.index..end]) {
-                *out = *buf;
-            }
-        } // WON'T GET LAST BLOCK OF THE SAMPLE
-    }*/
 }
