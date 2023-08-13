@@ -28,7 +28,6 @@ impl Generator for Parameter {
     type Output = f32;
 
     fn reset(&mut self) {}
-
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn generate(&mut self) -> Self::Output {

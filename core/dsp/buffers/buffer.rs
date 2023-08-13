@@ -115,9 +115,7 @@ impl<F: Frame, DB: Generator<Output = f32>> Processor2 for Gain2<F, DB> {
     type Input = F;
     type Output = F;
 
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        
-    }
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
         input
