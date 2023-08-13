@@ -18,7 +18,19 @@ impl Generator for f32 {
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     #[inline]
-    fn generate(&mut self) -> f32 {
+    fn generate(&mut self) -> Self::Output {
+        *self
+    }
+}
+
+impl Generator for f64 {
+    type Output = f64;
+
+    fn reset(&mut self) {}
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
+
+    #[inline]
+    fn generate(&mut self) -> Self::Output {
         *self
     }
 }

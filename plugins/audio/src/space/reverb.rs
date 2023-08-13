@@ -179,11 +179,11 @@ fn temp() {
     let mut dsp2 = merge(dsp1);
     let out = dsp2.process(0.0);
 
-    let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0);
+    let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0f32);
     osc2.generate_block(&mut output);
     // osc2.set_param("freq", 440.0);
 
-    let temp: Process<f32> = Box::new(gain(5.0));
+    let temp: Process<f32> = Box::new(gain(5.0f32));
 }
 
 struct Diffuser<const C: usize> {}
@@ -252,17 +252,3 @@ impl<F: Frame> Processor2 for Delay<F> {
         self.buffer.next(input)
     }
 }
-
-/*struct Verb1<F: Frame> {
-    delay: Delay<F>,
-}
-
-impl<F: Frame> Processor for Verb1<F> {
-    type Item = F;
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
-
-    fn process(&mut self, input: Self::Item) -> Self::Item {
-        self.delay.process(input)
-    }
-}*/
