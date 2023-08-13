@@ -7,7 +7,6 @@ use crate::buffers::*;
 use crate::Generator;
 use crate::Pitched;
 use crate::float::frame::*;
-use crate::block::Block;
 
 #[derive(Clone)]
 pub struct SampleFile<T: Frame> {

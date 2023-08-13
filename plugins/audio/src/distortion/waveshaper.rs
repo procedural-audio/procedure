@@ -199,6 +199,10 @@ impl<F: Frame> Processor2 for WaveshaperDSP<F> {
     type Input = F;
     type Output = F;
 
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        
+    }
+
     fn process(&mut self, input: Self::Input) -> Self::Output {
         F::apply(input * F::from(db_to_gain(self.gain)), self.shape)
     }

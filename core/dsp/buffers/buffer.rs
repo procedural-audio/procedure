@@ -1,247 +1,13 @@
-use std::marker::PhantomData;
-use std::ops::{Deref, DerefMut};
 use std::slice;
-use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
-
-use crate::{time::*, Pitched};
-use crate::event::NoteMessage;
-use crate::block::*;
-
-use crate::float::frame::*;
-use crate::traits::*;
-
+use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 
+use crate::event::*;
+use crate::traits::*;
+
+use crate::float::frame::*;
 use crate::routing::node::*;
-
-// Distinguish between static buffers and dynamic buffers?
-
-pub struct IO {
-    pub audio: Bus<StereoBuffer>,
-    pub events: Bus<NoteBuffer>,
-    pub control: Bus<Box<f32>>,
-    pub time: Bus<Box<TimeMessage>>,
-}
-
-/* Individual Buffer Types */
-
-// TODO: Implement deref for all Processor2's to return AudioNode<T>
-// TODO: Create functions for each node that take all arguments
-// TODO: Make it so AudioNodes can be used as references also
-
-/*
-
-Faust Syntax
- - Parallel composition: dsp,dsp,dsp,dsp
- - Sequential composition: dsp:dsp:dsp:dsp
- - Split composition: dsp <: dsp
- - Combine composition: dsp :> dsp
-
-FunDSP Syntax
- - -A (negate any number of outputs)
- - !A (passes through extra inputs)
- - A * B (multiply each signal)
- - A * constant (multiply by constant)
- - A + B (mix the buffers)
- - A + constant (add to constant)
- - A - B (subtract)
- - A - constant (subtract constant)
- - A >> B (pipe A to B)
- - A & B (sum A and B)
- - A ^ B (branch input to A and B in parallel)
- - A | B (stack A and B in parallel)
-
-Final syntax
- - >> series
- - <= split
- - => merge
- - | parallel
- - Ops: +, -, *, /
-
-Examples
- - delay(100) >> delay(100) >> delay(100) <= (delay(100), delay(100)) => delay(100);
-
-*/
-
-impl<T: Copy> Block for Buffer<T> {
-    type Item = T;
-
-    fn as_slice<'a>(&'a self) -> &'a [T] {
-        self.items.as_slice()
-    }
-}
-
-impl<T: Copy> BlockMut for Buffer<T> {
-    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
-        self.items.as_mut_slice()
-    }
-}
-
-impl<F: Copy> Block for &[F] {
-    type Item = F;
-
-    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
-        self
-    }
-}
-
-pub fn input2<F: Frame>() -> AudioNode<Passthrough<F>> {
-    AudioNode(Passthrough { data: PhantomData::<F> })
-}
-
-pub fn output2<F: Frame>() -> AudioNode<Passthrough<F>> {
-    AudioNode(Passthrough { data: PhantomData::<F> })
-}
-
-pub const fn float<F: Frame>(value: f32) -> AudioNode<Float<F>> {
-    AudioNode(Float { value, data: PhantomData::<F>})
-}
-
-pub struct Float<F: Frame> {
-    value: f32,
-    data: PhantomData<F>
-}
-
-impl<F: Frame> Generator for Float<F> {
-    type Output = F;
-
-    fn reset(&mut self) {}
-
-    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
-
-    fn generate(&mut self) -> Self::Output {
-        F::from(self.value)
-    }
-}
-
-pub struct Passthrough<F: Frame> {
-    data: PhantomData<F>
-}
-
-impl<F: Frame> Processor2 for Passthrough<F> {
-    type Input = F;
-    type Output = F;
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        input
-    }
-}
-
-pub const fn testdsp() -> AudioNode<TestDsp> {
-    AudioNode(TestDsp)
-}
-
-pub fn pitcheddsp() -> AudioNode<PitchedDsp> {
-    AudioNode(PitchedDsp)
-}
-
-pub const fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
-    AudioNode(Gain2 { db , data: PhantomData })
-}
-
-pub const fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Osc<F, Pitch>> {
-    AudioNode(Osc { f, pitch: hz, x: 0.0, rate: 44100.0 })
-}
-
-#[derive(Copy, Clone)]
-pub struct Osc<F: Frame, Pitch: Generator<Output = f32>> {
-    f: fn(f32) -> F,
-    pitch: Pitch,
-    x: f32,
-    rate: f32
-}
-
-impl<F: Frame, Pitch: Generator<Output = f32>> Generator for Osc<F, Pitch> {
-    type Output = F;
-
-    fn reset(&mut self) {}
-
-    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
-        self.rate = sample_rate as f32;
-    }
-
-    fn generate(&mut self) -> Self::Output {
-        let out = (self.f)(self.x);
-        let pitch = self.pitch.generate();
-        self.x += 2.0 * std::f32::consts::PI / self.rate * pitch;
-        return out;
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
-    db: DB,
-    data: PhantomData<F>
-}
-
-impl<F: Frame, DB: Generator<Output = f32>> Processor2 for Gain2<F, DB> {
-    type Input = F;
-    type Output = F;
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        input
-    }
-}
-
-pub trait Drive {
-    fn get_drive(&self) -> f32;
-    fn set_drive(&mut self, amount: f32);
-}
-
-#[derive(Copy, Clone)]
-pub struct TestDsp;
-
-impl Processor2 for TestDsp {
-    type Input = f32;
-    type Output = f32;
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        input + 1.0
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct PitchedDsp;
-
-impl PitchedDsp {
-    pub fn set_pitch(&mut self, pitch: f32) {
-        println!("Set pitch");
-    }
-}
-
-impl Processor2 for PitchedDsp {
-    type Input = f32;
-    type Output = f32;
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        input + 1.0
-    }
-}
-
-// Replace letters with useful names
-pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<A, B>> {
-    AudioNode(Chain(first, second))
-}
-
-pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
-    AudioNode(Parallel(first, second))
-}
-
-pub fn split<In, Out, P>(processor: P) -> AudioNode<Split<In, Out, P>>
-    where
-        In: Frame,
-        Out: Frame,
-        P: Processor2<Input = In, Output = Out>
-{
-    AudioNode(Split(processor))
-}
-
-pub fn merge<In, Out: TupleMerge<Output = Merged>, Merged, P>(processor: P) -> AudioNode<Merge<In, Out, Merged, P>>
-    where
-        P: Processor2<Input = In, Output = Out>
-{
-    AudioNode(Merge(processor))
-}
+use crate::buffers::block::*;
 
 pub struct Buffer<T> {
     items: Vec<T>,
@@ -273,8 +39,6 @@ impl<T> Buffer<T> {
     pub fn as_mut_ptr(&mut self) -> *mut T {
         self.items.as_mut_ptr()
     }
-
-    /* Operations */
 
     pub fn push(&mut self, item: T) {
         self.items.push(item);
@@ -315,6 +79,52 @@ impl<T: Frame> Buffer<T> {
     }
 }
 
+impl<T: Copy> Block for Buffer<T> {
+    type Item = T;
+
+    fn as_slice<'a>(&'a self) -> &'a [T] {
+        self.items.as_slice()
+    }
+}
+
+impl<T: Copy> BlockMut for Buffer<T> {
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
+        self.items.as_mut_slice()
+    }
+}
+
+impl<F: Copy> Block for &[F] {
+    type Item = F;
+
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
+        self
+    }
+}
+
+pub const fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
+    AudioNode(Gain2 { db , data: PhantomData })
+}
+
+#[derive(Copy, Clone)]
+pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
+    db: DB,
+    data: PhantomData<F>
+}
+
+impl<F: Frame, DB: Generator<Output = f32>> Processor2 for Gain2<F, DB> {
+    type Input = F;
+    type Output = F;
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        
+    }
+
+    fn process(&mut self, input: Self::Input) -> Self::Output {
+        input
+    }
+}
+
+// Replace letters with useful names
 impl NoteBuffer {
     pub fn new() -> Self {
         Self {
@@ -372,115 +182,6 @@ impl<'a, T: Copy + Clone> IntoIterator for &'a mut Buffer<T> {
 
     fn into_iter(self) -> slice::IterMut<'a, T> {
         self.as_slice_mut().into_iter()
-    }
-}
-
-pub struct Bus<T> {
-    pub channels: Vec<Channel<T>>,
-}
-
-impl<T> Bus<T> {
-    pub fn new() -> Self {
-        Self {
-            channels: Vec::new(),
-        }
-    }
-
-    pub fn add_channel(&mut self, channel: Channel<T>) {
-        self.channels.push(channel);
-    }
-
-    pub fn channel(&self, index: usize) -> &Channel<T> {
-        &self.channels[index]
-    }
-
-    pub fn channel_mut(&mut self, index: usize) -> &mut Channel<T> {
-        &mut self.channels[index]
-    }
-
-    pub fn num_channels(&self) -> usize {
-        self.channels.len()
-    }
-
-    pub fn connected(&self, index: usize) -> bool {
-        self.channels[index].connected
-    }
-
-    pub fn len(&self) -> usize {
-        self.channels.len()
-    }
-}
-
-impl<T: Copy + Clone> Index<usize> for Bus<Buffer<T>> {
-    type Output = Buffer<T>;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        self.channel(index).deref()
-    }
-}
-
-impl<T: Copy + Clone> IndexMut<usize> for Bus<Buffer<T>> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.channel_mut(index).deref_mut()
-    }
-}
-
-impl<T: Copy + Clone> Index<usize> for Bus<Box<T>> {
-    type Output = T;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        self.channel(index).deref()
-    }
-}
-
-impl<T: Copy + Clone> IndexMut<usize> for Bus<Box<T>> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.channel_mut(index).deref_mut()
-    }
-}
-
-pub struct Channel<T> {
-    buffer: T,
-    connected: bool,
-}
-
-impl<T> Channel<T> {
-    pub fn new(buffer: T, connected: bool) -> Self {
-        Self { buffer, connected }
-    }
-
-    pub fn connected(&self) -> bool {
-        self.connected
-    }
-
-    pub fn set_connected(&mut self, connected: bool) {
-        self.connected = connected;
-    }
-}
-
-impl<T> Deref for Channel<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.buffer
-    }
-}
-
-impl<T> DerefMut for Channel<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.buffer
-    }
-}
-
-impl<F: Frame> Buffer<F> {
-    pub fn rms(&self) -> F {
-        let mut sum = F::from(0.0);
-        for sample in self {
-            sum += *sample * *sample;
-        }
-
-        let avg = sum / F::from(self.len() as f32);
-        return F::sqrt(avg);
     }
 }
 

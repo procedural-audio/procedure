@@ -1,4 +1,4 @@
-use crate::dsp::*;
+use crate::traits::*;
 
 #[derive(Copy, Clone)]
 pub struct Wavetable {
@@ -59,7 +59,7 @@ impl Generator for WavetablePlayer {
     }
 }
 
-impl Pitched for WavetablePlayer {
+/*impl Pitched for WavetablePlayer {
     fn get_pitch(&self) -> f32 {
         self.pitch
     }
@@ -67,4 +67,4 @@ impl Pitched for WavetablePlayer {
     fn set_pitch(&mut self, hz: f32) {
         self.pitch = hz;
     }
-}
+}*/

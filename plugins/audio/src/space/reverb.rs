@@ -170,21 +170,6 @@ impl Module for Reverb {
     }
 }
 
-#[derive(Copy, Clone)]
-struct TestOsc;
-
-impl Generator for TestOsc {
-   type Output = f32;
-
-    fn reset(&mut self) {}
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {}
-
-    fn generate(&mut self) -> Self::Output {
-        0.0
-    } 
-}
-
 fn temp() {
     let input = Buffer::init(0.0, 512);
     let mut output = Buffer::init(0.0, 512);
@@ -193,28 +178,6 @@ fn temp() {
     let out = dsp1.process(0.0);
     let mut dsp2 = merge(dsp1);
     let out = dsp2.process(0.0);
-
-    let mut dsp1 = testdsp() >> testdsp();
-    let out = dsp1.process(0.0);
-
-    let mut dsp2 = (testdsp() | testdsp()) & testdsp() >> testdsp();
-    let out = dsp2.process((0.0, 0.0));
-
-    let mut dsp = testdsp() | testdsp() | pitcheddsp();
-    let out = dsp.process(((0.0, 0.0), 0.0));
-
-    let mut source = AudioNode(TestOsc);
-    let modulator = AudioNode(TestOsc) >> gain(-20.0);
-    let x = modulator >> gain(10.0);
-    let mut effects = gain(5.0) >> testdsp() >> pitcheddsp() >> gain(x);
-    let out = effects.process(0.0);
-
-    let mut sin_osc = osc(f32::sin, 440.0 + 100.0) >> gain(5.0);
-    sin_osc.generate_block(&mut output);
-
-    let out = source.generate();
-    let out = effects.process(0.0);
-    (source >> effects >> effects).generate_block(&mut output);
 
     let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0);
     osc2.generate_block(&mut output);
@@ -228,6 +191,10 @@ struct Diffuser<const C: usize> {}
 impl<const C: usize> Processor2 for Diffuser<C> {
     type Input = Stereo2<f32>;
     type Output = Stereo2<f32>;
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        
+    }
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
         input
@@ -286,7 +253,7 @@ impl<F: Frame> Processor2 for Delay<F> {
     }
 }
 
-struct Verb1<F: Frame> {
+/*struct Verb1<F: Frame> {
     delay: Delay<F>,
 }
 
@@ -298,4 +265,4 @@ impl<F: Frame> Processor for Verb1<F> {
     fn process(&mut self, input: Self::Item) -> Self::Item {
         self.delay.process(input)
     }
-}
+}*/

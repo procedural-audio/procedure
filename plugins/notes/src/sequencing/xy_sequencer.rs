@@ -1,5 +1,5 @@
 use modules::*;
-use dsp::*;
+use pa_dsp::*;
 
 pub struct XYSequencer {
     pitches: [f32; 16],
