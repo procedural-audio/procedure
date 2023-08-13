@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
-use crate::buffers::Buffer;
 use crate::event::*;
+use crate::buffers::*;
 
 // Rename frame to sample maybe
 

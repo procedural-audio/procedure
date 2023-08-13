@@ -1,6 +1,5 @@
 use std::marker::PhantomData;
 
-use pa_algorithms::waveshaper;
 use pa_dsp::*;
 use pa_algorithms::*;
 use crate::*;
