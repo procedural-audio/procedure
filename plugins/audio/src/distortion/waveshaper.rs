@@ -161,7 +161,7 @@ impl Module for Waveshaper {
             1 => (waveshaper(Stereo2::sin)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
             _ => (),
         }
-        
+
         // input(&inputs.audio[0]) >> waveshaper(Stereo2::sin);
     }
 }
