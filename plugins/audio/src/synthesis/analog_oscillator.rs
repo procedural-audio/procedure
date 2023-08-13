@@ -241,8 +241,8 @@ impl Module for AnalogOscillator {
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
         println!("Preparing oscillator with rate {}", sample_rate);
 
-        // voice.buffer1 = AudioBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size);
-        // voice.buffer2 = AudioBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size);
+        // voice.buffer1 = AudioBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size);
+        // voice.buffer2 = AudioBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size);
 
         /*for osc in &mut voice.saws {
             osc.prepare(sample_rate, block_size);

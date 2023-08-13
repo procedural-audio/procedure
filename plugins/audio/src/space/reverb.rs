@@ -14,7 +14,7 @@ pub struct Reverb {
 }
 
 pub struct ReverbVoice {
-    delay: Delay<Stereo2<f32>>,
+    delay: Delay<Stereo<f32>>,
 }
 
 impl Module for Reverb {
@@ -188,8 +188,8 @@ fn temp() {
 struct Diffuser<const C: usize> {}
 
 impl<const C: usize> Processor2 for Diffuser<C> {
-    type Input = Stereo2<f32>;
-    type Output = Stereo2<f32>;
+    type Input = Stereo<f32>;
+    type Output = Stereo<f32>;
 
     fn prepare(&mut self, _sample_rate: u32,_block_size: usize) {}
 

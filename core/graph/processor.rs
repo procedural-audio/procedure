@@ -296,13 +296,13 @@ impl GraphProcessor {
                 let mut audio_input_bus = Box::new(Bus::new());
                 for i in 0..audio_input_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 0, i, true);
-                    audio_input_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
+                    audio_input_bus.add_channel(Channel::new(StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut audio_output_bus = Box::new(Bus::new());
                 for i in 0..audio_output_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 0, i, false);
-                    audio_output_bus.add_channel(Channel::new(StereoBuffer::init(Stereo2 { left: 0.0, right: 0.0 }, block_size), connected));
+                    audio_output_bus.add_channel(Channel::new(StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut events_input_bus = Box::new(Bus::new());

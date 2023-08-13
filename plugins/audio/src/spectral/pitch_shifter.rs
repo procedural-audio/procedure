@@ -4,7 +4,7 @@ use crate::*;
 
 // TODO: Output latency as time, better knob feedback
 pub struct PitchShifter {
-	dsp: PitchShifterDSP<Stereo2<f32>>,
+	dsp: PitchShifterDSP<Stereo<f32>>,
     value: f32
 }
 
@@ -66,7 +66,7 @@ impl Module for PitchShifter {
 
     fn prepare(&self, _voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
 		unsafe {
-			let dsp = &self.dsp as *const PitchShifterDSP<Stereo2<f32>> as *mut PitchShifterDSP<Stereo2<f32>>;
+			let dsp = &self.dsp as *const PitchShifterDSP<Stereo<f32>> as *mut PitchShifterDSP<Stereo<f32>>;
 			(*dsp).prepare(sample_rate, block_size);
 
 		}

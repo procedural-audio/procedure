@@ -107,18 +107,18 @@ impl Frame for f32 {
 }
 
 #[derive(Copy, Clone, PartialEq)]
-pub struct Stereo2<T> {
+pub struct Stereo<T> {
     pub left: T,
     pub right: T,
 }
 
-impl Frame for Stereo2<f32> {
-    type Output = Stereo2<f32>;
+impl Frame for Stereo<f32> {
+    type Output = Stereo<f32>;
     const CHANNELS: usize = 2;
-    const EQUILIBRIUM: Self = Stereo2 { left: 0.0, right: 0.0 };
+    const EQUILIBRIUM: Self = Stereo { left: 0.0, right: 0.0 };
 
     fn from(value: f32) -> Self {
-        Stereo2 {
+        Stereo {
             left: value,
             right: value
         }
@@ -180,72 +180,72 @@ impl Frame for Stereo2<f32> {
     }
 }
 
-impl Add for Stereo2<f32> {
-    type Output = Stereo2<f32>;
+impl Add for Stereo<f32> {
+    type Output = Stereo<f32>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Stereo2 {
+        Stereo {
             left: self.left + rhs.left,
             right: self.right + rhs.right
         }
     }
 }
 
-impl Sub for Stereo2<f32> {
-    type Output = Stereo2<f32>;
+impl Sub for Stereo<f32> {
+    type Output = Stereo<f32>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Stereo2 {
+        Stereo {
             left: self.left - rhs.left,
             right: self.right - rhs.right
         }
     }
 }
 
-impl Mul for Stereo2<f32> {
-    type Output = Stereo2<f32>;
+impl Mul for Stereo<f32> {
+    type Output = Stereo<f32>;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        Stereo2 {
+        Stereo {
             left: self.left * rhs.left,
             right: self.right * rhs.right
         }
     }
 }
 
-impl Div for Stereo2<f32> {
-    type Output = Stereo2<f32>;
+impl Div for Stereo<f32> {
+    type Output = Stereo<f32>;
 
     fn div(self, rhs: Self) -> Self::Output {
-        Stereo2 {
+        Stereo {
             left: self.left / rhs.left,
             right: self.right / rhs.right
         }
     }
 }
 
-impl AddAssign for Stereo2<f32> {
+impl AddAssign for Stereo<f32> {
     fn add_assign(&mut self, rhs: Self) {
         self.left = self.left + rhs.left;
         self.right = self.right + rhs.right;
     }
 }
 
-impl SubAssign for Stereo2<f32> {
+impl SubAssign for Stereo<f32> {
     fn sub_assign(&mut self, rhs: Self) {
         self.left = self.left - rhs.left;
         self.right = self.right - rhs.right;
     }
 }
 
-impl MulAssign for Stereo2<f32> {
+impl MulAssign for Stereo<f32> {
     fn mul_assign(&mut self, rhs: Self) {
         self.left = self.left * rhs.left;
         self.right = self.right * rhs.right;
     }
 }
 
-impl DivAssign for Stereo2<f32> {
+impl DivAssign for Stereo<f32> {
     fn div_assign(&mut self, rhs: Self) {
         self.left = self.left / rhs.left;
         self.right = self.right / rhs.right;
@@ -253,7 +253,7 @@ impl DivAssign for Stereo2<f32> {
 }
 
 pub type AudioBuffer = Buffer<f32>;
-pub type StereoBuffer = Buffer<Stereo2<f32>>;
+pub type StereoBuffer = Buffer<Stereo<f32>>;
 pub type NoteBuffer = Buffer<NoteMessage>;
 
 pub struct Channels<T: Copy + Clone, const C: usize> {

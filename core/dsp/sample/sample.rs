@@ -195,13 +195,13 @@ impl<T: Frame> Interpolator for Linear<T> {
 
 // pub type PitchedSamplePlayer<T> = Converter<SamplePlayer<T>, Linear<T>>;
 
-/*pub struct Pitcher<G: Generator<Item = Stereo2>> {
+/*pub struct Pitcher<G: Generator<Item = Stereo>> {
     base_pitch: f32,
     playing_pitch: f32,
     src: Converter<G, Linear<G::Item>>
 }
 
-impl<G: Generator<Item = Stereo2>> Pitcher<G> {
+impl<G: Generator<Item = Stereo>> Pitcher<G> {
     pub fn set_pitch(&mut self, hz: f32) {
         self.playing_pitch = hz;
         self.src.set_ratio(self.playing_pitch / self.base_pitch);
@@ -213,7 +213,7 @@ impl<G: Generator<Item = Stereo2>> Pitcher<G> {
     }
 }
 
-impl<G: Generator<Item = Stereo2>> Generator for Pitcher<G> {
+impl<G: Generator<Item = Stereo>> Generator for Pitcher<G> {
     type Item = G::Item;
 
     fn reset(&mut self) {

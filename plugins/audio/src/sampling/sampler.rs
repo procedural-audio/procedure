@@ -3,12 +3,12 @@ use pa_dsp::loadable::{Loadable, Lock};
 use crate::*;
 
 pub struct Sampler {
-    sample: Lock<SampleFile<Stereo2<f32>>>,
+    sample: Lock<SampleFile<Stereo<f32>>>,
     positions: [f32; 32]
 }
 
 pub struct SamplerVoice {
-    player: PitchedSamplePlayer<Stereo2<f32>>,
+    player: PitchedSamplePlayer<Stereo<f32>>,
     index: u32
 }
 

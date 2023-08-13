@@ -5,7 +5,7 @@ pub struct Noise {
 }
 
 impl Module for Noise {
-    type Voice = ColoredNoiseDsp<Stereo2<f32>>;
+    type Voice = ColoredNoiseDsp<Stereo<f32>>;
 
     const INFO: Info = Info {
         title: "Noise",

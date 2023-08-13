@@ -157,11 +157,11 @@ impl Module for Waveshaper {
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         let gain = db_to_gain(linear_to_db(self.gain));
         match self.selected {
-            0 => (waveshaper(Stereo2::tan)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
-            1 => (waveshaper(Stereo2::sin)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
+            0 => (waveshaper(Stereo::tan)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
+            1 => (waveshaper(Stereo::sin)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
             _ => (),
         }
 
-        // input(&inputs.audio[0]) >> waveshaper(Stereo2::sin);
+        // input(&inputs.audio[0]) >> waveshaper(Stereo::sin);
     }
 }

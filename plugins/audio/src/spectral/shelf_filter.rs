@@ -9,9 +9,9 @@ pub struct ShelfFilter {
 }
 
 pub struct ShelfFilterVoice {
-    ls: SvfLsFilter<Stereo2<f32>>,
-    bell: SvfBellFilter<Stereo2<f32>>,
-    hs: SvfHsFilter<Stereo2<f32>>
+    ls: SvfLsFilter<Stereo<f32>>,
+    bell: SvfBellFilter<Stereo<f32>>,
+    hs: SvfHsFilter<Stereo<f32>>
 }
 
 impl Module for ShelfFilter {

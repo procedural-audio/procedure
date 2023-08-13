@@ -6,7 +6,7 @@ use rlua::Thread;
 use crate::*;
 
 pub struct Granular {
-    sample: Arc<RwLock<SampleFile<Stereo2<f32>>>>,
+    sample: Arc<RwLock<SampleFile<Stereo<f32>>>>,
     positions: [f32; 32],
     buffer: StereoBuffer,
     rng: ThreadRng,
@@ -17,7 +17,7 @@ pub struct Granular {
 }
 
 pub struct GranularVoice {
-    players: [GranularSamplePlayer<Stereo2<f32>>; 32],
+    players: [GranularSamplePlayer<Stereo<f32>>; 32],
     index: u32
 }
 
@@ -56,7 +56,7 @@ impl Module for Granular {
 
         return Self {
             sample: Arc::new(RwLock::new(SampleFile::load(path).unwrap())),
-            buffer: StereoBuffer::init(Stereo2 {left: 0.0, right: 0.0 }, 512),
+            buffer: StereoBuffer::init(Stereo {left: 0.0, right: 0.0 }, 512),
             rng: rand::thread_rng(),
             positions: [0.0; 32],
             grain_position: 0.0,

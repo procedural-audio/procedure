@@ -13,7 +13,7 @@ pub struct Compressor {
 
 pub struct CompressorVoice {
     index: u32,
-    compressor: CompressorDSP<Stereo2<f32>>,
+    compressor: CompressorDSP<Stereo<f32>>,
 }
 
 impl Module for Compressor {

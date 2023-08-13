@@ -37,7 +37,7 @@ Slicer
 */
 
 pub struct Slicer {
-    sample: Arc<RwLock<SampleFile<Stereo2<f32>>>>,
+    sample: Arc<RwLock<SampleFile<Stereo<f32>>>>,
     slice_points: Vec<f32>,
     selected_slice: usize,
     window_start: f32,
@@ -72,7 +72,7 @@ impl Module for Slicer {
 
     
     fn new() -> Self {
-        let sample: SampleFile<Stereo2<f32>>;
+        let sample: SampleFile<Stereo<f32>>;
 
         if cfg!(target_os = "macos") {
             sample = SampleFile::load(

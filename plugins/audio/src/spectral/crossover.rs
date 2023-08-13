@@ -5,7 +5,7 @@ pub struct Crossover {
 }
 
 impl Module for Crossover {
-    type Voice = CrossoverDSP<Stereo2<f32>>;
+    type Voice = CrossoverDSP<Stereo<f32>>;
 
     const INFO: Info = Info {
         title: "Crossover",

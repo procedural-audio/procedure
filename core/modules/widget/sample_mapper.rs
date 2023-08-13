@@ -33,7 +33,7 @@ pub extern "C" fn ffi_sample_mapper_add_region(
 ) {
     (*widget.map.write())
         .regions
-        .push(SoundRegion::<SampleFile<Stereo2<f32>>> {
+        .push(SoundRegion::<SampleFile<Stereo<f32>>> {
             low_note,
             high_note,
             low_velocity,
@@ -210,7 +210,7 @@ pub extern "C" fn ffi_sample_mapper_get_region_sample_buffer_time_ms(
 }
 
 pub struct SampleMap {
-    regions: Vec<SoundRegion<SampleFile<Stereo2<f32>>>>,
+    regions: Vec<SoundRegion<SampleFile<Stereo<f32>>>>,
 }
 
 impl SampleMap {
@@ -241,12 +241,12 @@ impl Loadable for SampleMap {
     }
 }
 
-fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2<f32>>>> {
+fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo<f32>>>> {
     use std::fs::File;
     use std::io::BufReader;
     use xml::reader::{EventReader, XmlEvent};
 
-    let mut regions: Vec<SoundRegion<SampleFile<Stereo2<f32>>>> = Vec::new();
+    let mut regions: Vec<SoundRegion<SampleFile<Stereo<f32>>>> = Vec::new();
 
     match File::open(path) {
         Ok(file) => {
@@ -308,7 +308,7 @@ fn load_dspreset(path: &str) -> Vec<SoundRegion<SampleFile<Stereo2<f32>>>> {
                                                 }) => match name.to_string().as_str() {
                                                     "sample" => {
                                                         let mut region =
-                                                            SoundRegion::<SampleFile<Stereo2<f32>>> {
+                                                            SoundRegion::<SampleFile<Stereo<f32>>> {
                                                                 low_note: 0,
                                                                 high_note: 127,
                                                                 low_velocity: 0.0,

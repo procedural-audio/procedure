@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, c_void};
-use pa_dsp::{AudioBuffer, NoteBuffer, Stereo2, Buffer, NoteMessage, Block, BlockMut};
+use pa_dsp::{AudioBuffer, NoteBuffer, Stereo, Buffer, NoteMessage, Block, BlockMut};
 
 pub trait IOCallback {
     fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
@@ -226,7 +226,7 @@ impl AudioPlugin {
         unsafe { audio_plugin_prepare(self.plugin, sample_rate, block_size); }
     }
 
-    pub fn process(&mut self, inputs: &Buffer<Stereo2<f32>>, notes: &Buffer<NoteMessage>, outputs: &mut Buffer<Stereo2<f32>>) {
+    pub fn process(&mut self, inputs: &Buffer<Stereo<f32>>, notes: &Buffer<NoteMessage>, outputs: &mut Buffer<Stereo<f32>>) {
         unsafe {
             for (i, l) in inputs.as_slice().iter().zip(self.left.as_slice_mut()) {
                 *l = i.left;

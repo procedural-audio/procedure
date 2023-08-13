@@ -9,9 +9,9 @@ pub struct DigitalFilter {
 }
 
 pub struct DigitalFilterVoice {
-    lp: SvfLpFilter<Stereo2<f32>>,
-    bp: SvfBpFilter<Stereo2<f32>>,
-    hp: SvfHpFilter<Stereo2<f32>>
+    lp: SvfLpFilter<Stereo<f32>>,
+    bp: SvfBpFilter<Stereo<f32>>,
+    hp: SvfHpFilter<Stereo<f32>>
 }
 
 impl Module for DigitalFilter {

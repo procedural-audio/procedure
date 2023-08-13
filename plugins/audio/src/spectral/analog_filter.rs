@@ -10,12 +10,12 @@ pub struct AnalogFilter {
 }
 
 pub struct AnalogFilterVoice {
-    korg: Korg35LPF<Stereo2<f32>>,
-    diode: DiodeLPF<Stereo2<f32>>,
-    oberheim: OberheimLPF<Stereo2<f32>>,
-    ladder: MoogLadderLPF<Stereo2<f32>>,
-    half_ladder: HalfLadderLPF<Stereo2<f32>>,
-    sallen_key: SallenKeyLPF<Stereo2<f32>>,
+    korg: Korg35LPF<Stereo<f32>>,
+    diode: DiodeLPF<Stereo<f32>>,
+    oberheim: OberheimLPF<Stereo<f32>>,
+    ladder: MoogLadderLPF<Stereo<f32>>,
+    half_ladder: HalfLadderLPF<Stereo<f32>>,
+    sallen_key: SallenKeyLPF<Stereo<f32>>,
 }
 
 impl Module for AnalogFilter {
