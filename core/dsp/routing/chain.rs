@@ -1,6 +1,6 @@
+use crate::float::*;
 use crate::traits::*;
 use crate::routing::node::*;
-use crate::float::*;
 
 pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<A, B>> {
     AudioNode(Chain(first, second))
@@ -41,6 +41,21 @@ impl<Between, Out, G, P> Generator for Chain<G, P>
         self.1.process(self.0.generate())
     }
 }
+
+/*impl<Between, Out, G, P> Generator for Chain<G, P> 
+    where
+        G: Block<Item = Between>,
+        P: Processor2<Input = Between, Output = Out> {
+
+    type Output = Out;
+
+    fn reset(&mut self) {}
+    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
+
+    fn generate(&mut self) -> Self::Output {
+        self.1.process(self.0.generate())
+    }
+}*/
 
 impl<A, B> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
     type Output = AudioNode<Chain<A, B>>;

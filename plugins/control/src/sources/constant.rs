@@ -42,7 +42,7 @@ impl Module for Constant {
         Box::new(Transform {
             position: (10, 10),
             size: (70, 30),
-            child: Input {
+            child: widget::Input {
                 value: &mut self.value,
             }
         })

@@ -183,8 +183,6 @@ fn temp() {
     let mut osc2 = osc(f32::sin, param("freq", 440.0)) >> gain(-20.0f32);
     osc2.generate_block(&mut output);
     // osc2.set_param("freq", 440.0);
-
-    let temp: Process<f32> = Box::new(gain(5.0f32));
 }
 
 struct Diffuser<const C: usize> {}
@@ -193,9 +191,7 @@ impl<const C: usize> Processor2 for Diffuser<C> {
     type Input = Stereo2<f32>;
     type Output = Stereo2<f32>;
 
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        
-    }
+    fn prepare(&mut self, _sample_rate: u32,_block_size: usize) {}
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
         input

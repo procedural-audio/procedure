@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
+use pa_algorithms::waveshaper;
 use pa_dsp::*;
+use pa_algorithms::*;
 use crate::*;
 
 pub struct Waveshaper {
     selected: usize,
-    pregain: f32,
     gain: f32,
     gain2: f32,
 }
@@ -45,13 +46,8 @@ fn shape_4(x: f32, p: f32) -> f32 {
     1.5 * x - 0.5 * x * x * x
 }
 
-pub struct WaveshaperVoice {
-    // gain: Gain<Stereo2<f32>>,
-    tan: WaveshaperDSP<Stereo2<f32>>
-}
-
 impl Module for Waveshaper {
-    type Voice = WaveshaperVoice;
+    type Voice = ();
 
     const INFO: Info = Info {
         title: "Waveshaper",
@@ -73,17 +69,13 @@ impl Module for Waveshaper {
     fn new() -> Self {
         Self {
             selected: 0,
-            pregain: 0.0,
             gain: 1.0,
             gain2: 0.0,
         }
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Self::Voice {
-            // gain: Gain::new(),
-            tan: WaveshaperDSP::new(f32::atan)
-        }
+        ()
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -162,48 +154,14 @@ impl Module for Waveshaper {
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
-    fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let g = Frame::from(db_to_gain(linear_to_db(self.gain)));
+    fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        let gain = db_to_gain(linear_to_db(self.gain));
         match self.selected {
-            0 => {
-                for (o, i) in outputs.audio[0].as_slice_mut().iter_mut().zip(inputs.audio[0].as_slice()) {
-                    *o = shape_0(*i) * g;
-                }
-            },
+            0 => (waveshaper(Stereo2::tan)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
+            1 => (waveshaper(Stereo2::sin)).process_block(&inputs.audio[0], &mut outputs.audio[0]),
             _ => (),
         }
-    }
-}
-
-pub struct WaveshaperDSP<F: Frame> {
-    shape: fn(f32) -> f32,
-    gain: f32,
-    data: PhantomData<F>
-}
-
-impl<F: Frame> WaveshaperDSP<F> {
-    pub fn new(shape: fn(f32) -> f32) -> Self {
-        Self {
-            shape,
-            gain: 0.0,
-            data: PhantomData
-        }
-    }
-
-    pub fn set_gain(&mut self, db: f32) {
-        self.gain = db;
-    }
-}
-
-impl<F: Frame> Processor2 for WaveshaperDSP<F> {
-    type Input = F;
-    type Output = F;
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         
-    }
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        F::apply(input * F::from(db_to_gain(self.gain)), self.shape)
+        // input(&inputs.audio[0]) >> waveshaper(Stereo2::sin);
     }
 }
