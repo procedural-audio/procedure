@@ -52,9 +52,9 @@ impl Module for SawModule {
         })
     }
 
-    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, _block_size: usize) {
+    fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
         voice.active = false;
-        voice.saw.init(sample_rate as i32);
+		voice.saw.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -62,29 +62,22 @@ impl Module for SawModule {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
                     voice.active = true;
-                    voice.saw.init(voice.saw.get_sample_rate());
-                    voice.saw.set_freq(pitch);
+                    voice.saw.set_pitch(pitch);
                 },
                 Event::NoteOff => {
                     voice.active = false;
                 },
                 Event::Pitch(freq) => {
-                    voice.saw.set_freq(freq);
+                    voice.saw.set_pitch(freq);
                 },
                 _ => (),
             }
         }
 
         if voice.active {
-            let buffer = &mut outputs.audio[0];
+			voice.saw.generate_block(&mut outputs.audio[0]);
 
-            voice.saw.compute(
-                buffer.len() as i32,
-                &[],
-                &mut [buffer.as_slice_mut()]
-            );
-
-            for sample in buffer.into_iter() {
+            for sample in (&mut outputs.audio[0]).into_iter() {
                 sample.gain(0.1);
             }
         }
