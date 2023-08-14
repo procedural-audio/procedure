@@ -99,6 +99,7 @@ class Project extends StatefulWidget {
 
     if (newPreset != null) {
       preset.value = newPreset;
+      core.setPatch(preset.value.patch);
       return true;
     }
 
