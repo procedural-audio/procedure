@@ -1,10 +1,12 @@
 mod ml;
 mod synthesis;
 mod distortion;
+mod oscillator;
 
 pub use ml::*;
 pub use synthesis::*;
 pub use distortion::*;
+pub use oscillator::*;
 
 pub const fn input<'a, B: Block>(block: &'a B) -> AudioNode<Input<'a, B>> {
     AudioNode(Input(block))
