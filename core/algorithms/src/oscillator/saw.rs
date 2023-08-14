@@ -67,7 +67,7 @@ impl<F: Frame> Generator for Saw<F> {
     }
 
     fn generate(&mut self) -> Self::Output {
-		let fSlow0: f32 = self.fConst2 * ((self.fHslider0) as f32);
+		let fSlow0: f32 = self.fConst2 * self.fHslider0 as f32;
         self.fRec2[0] = fSlow0 + self.fConst3 * self.fRec2[1];
         let fTemp0: f32 = f32::max(1.1920929e-07, f32::abs(self.fRec2[0]));
         let fTemp1: f32 = self.fRec0[1] + self.fConst1 * fTemp0;
