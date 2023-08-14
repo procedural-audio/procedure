@@ -6,7 +6,7 @@ pub fn split<In, Out, P>(processor: P) -> AudioNode<Split<In, Out, P>>
     where
         In: Frame,
         Out: Frame,
-        P: Processor2<Input = In, Output = Out>
+        P: Processor<Input = In, Output = Out>
 {
     AudioNode(Split(processor))
 }
@@ -14,12 +14,12 @@ pub fn split<In, Out, P>(processor: P) -> AudioNode<Split<In, Out, P>>
 #[derive(Copy, Clone)]
 pub struct Split<In, Out, P>(pub P)
     where
-        P: Processor2<Input = In, Output = Out>;
+        P: Processor<Input = In, Output = Out>;
 
-impl<In, Out, P> Processor2 for Split<In, Out, P> 
+impl<In, Out, P> Processor for Split<In, Out, P> 
     where
         Out: Copy,
-        P: Processor2<Input = In, Output = Out> {
+        P: Processor<Input = In, Output = Out> {
 
     type Input = In;
     type Output = (Out, Out);

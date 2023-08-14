@@ -111,7 +111,7 @@ pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
     data: PhantomData<F>
 }
 
-impl<F: Frame, DB: Generator<Output = f32>> Processor2 for Gain2<F, DB> {
+impl<F: Frame, DB: Generator<Output = f32>> Processor for Gain2<F, DB> {
     type Input = F;
     type Output = F;
 

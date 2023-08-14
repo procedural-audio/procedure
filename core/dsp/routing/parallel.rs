@@ -2,17 +2,17 @@ use crate::traits::*;
 use crate::routing::node::*;
 use crate::float::*;
 
-pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
+pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor<Input = F, Output = G>, B: Processor<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
     AudioNode(Parallel(first, second))
 }
 
 #[derive(Copy, Clone)]
 pub struct Parallel<A, B>(pub A, pub B);
 
-impl<F, G, H, J, A, B> Processor2 for Parallel<A, B>
+impl<F, G, H, J, A, B> Processor for Parallel<A, B>
     where
-        A: Processor2<Input = F, Output = G>,
-        B: Processor2<Input = H, Output = J> {
+        A: Processor<Input = F, Output = G>,
+        B: Processor<Input = H, Output = J> {
 
     type Input = (F, H);
     type Output = (G, J);

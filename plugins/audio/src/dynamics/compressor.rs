@@ -247,7 +247,7 @@ impl<F: Frame> CompressorDSP<F> {
     }
 }
 
-impl<F: Frame> Processor2 for CompressorDSP<F> {
+impl<F: Frame> Processor for CompressorDSP<F> {
     type Input = F;
     type Output = F;
 
@@ -336,7 +336,7 @@ impl<F: Frame> BallisticsFilter<F> {
     }
 }
 
-impl<F: Frame> Processor2 for BallisticsFilter<F> {
+impl<F: Frame> Processor for BallisticsFilter<F> {
     type Input = F;
     type Output = F;
 

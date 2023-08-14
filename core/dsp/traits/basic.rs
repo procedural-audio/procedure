@@ -1,6 +1,6 @@
 use crate::buffers::*;
 
-pub type Process<F> = Box<dyn Processor2<Input = F, Output = F>>;
+pub type Process<F> = Box<dyn Processor<Input = F, Output = F>>;
 pub type Generate<F> = Box<dyn Generator<Output = F>>;
 
 pub trait Generator {
@@ -51,7 +51,7 @@ impl<Out, G: Generator<Output = Out>> BlockGenerator for G {
     }
 }
 
-pub trait Processor2 {
+pub trait Processor {
     type Input;
     type Output;
 
@@ -69,7 +69,7 @@ pub trait BlockProcessor {
             OutBuffer: BlockMut<Item = Self::Output>;
 }
 
-impl<In: Copy, Out: Copy, P: Processor2<Input = In, Output = Out>> BlockProcessor for P {
+impl<In: Copy, Out: Copy, P: Processor<Input = In, Output = Out>> BlockProcessor for P {
     type Input = In;
     type Output = Out;
 

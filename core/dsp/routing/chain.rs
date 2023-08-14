@@ -2,17 +2,17 @@ use crate::float::*;
 use crate::traits::*;
 use crate::routing::node::*;
 
-pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor2<Input = F, Output = G>, B: Processor2<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<A, B>> {
+pub fn chain<F: Frame, G: Frame, H: Frame, A: Processor<Input = F, Output = G>, B: Processor<Input = G, Output = H>>(first: A, second: B) -> AudioNode<Chain<A, B>> {
     AudioNode(Chain(first, second))
 }
 
 #[derive(Copy, Clone)]
 pub struct Chain<P1, P2>(pub P1, pub P2);
 
-impl<In, Between, Out, P1, P2> Processor2 for Chain<P1, P2> 
+impl<In, Between, Out, P1, P2> Processor for Chain<P1, P2> 
     where
-        P1: Processor2<Input = In, Output = Between>,
-        P2: Processor2<Input = Between, Output = Out> {
+        P1: Processor<Input = In, Output = Between>,
+        P2: Processor<Input = Between, Output = Out> {
 
     type Input = In;
     type Output = Out;
@@ -30,7 +30,7 @@ impl<In, Between, Out, P1, P2> Processor2 for Chain<P1, P2>
 impl<Between, Out, G, P> Generator for Chain<G, P> 
     where
         G: Generator<Output = Between>,
-        P: Processor2<Input = Between, Output = Out> {
+        P: Processor<Input = Between, Output = Out> {
 
     type Output = Out;
 
@@ -45,7 +45,7 @@ impl<Between, Out, G, P> Generator for Chain<G, P>
 /*impl<Between, Out, G, P> Generator for Chain<G, P> 
     where
         G: Block<Item = Between>,
-        P: Processor2<Input = Between, Output = Out> {
+        P: Processor<Input = Between, Output = Out> {
 
     type Output = Out;
 

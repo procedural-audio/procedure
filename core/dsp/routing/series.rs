@@ -2,9 +2,9 @@ use crate::traits::*;
 use crate::float::frame::Frame;
 
 #[derive(Copy, Clone)]
-pub struct Series<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize>(pub [A; C]);
+pub struct Series<F: Frame, A: Processor<Input = F, Output = F>, const C: usize>(pub [A; C]);
 
-impl<F: Frame, A: Processor2<Input = F, Output = F>, const C: usize> Processor2 for Series<F, A, C> {
+impl<F: Frame, A: Processor<Input = F, Output = F>, const C: usize> Processor for Series<F, A, C> {
     type Input = F;
     type Output = F;
 

@@ -44,9 +44,9 @@ impl<Out, G> Generator for AudioNode<G>
     }
 }
 
-impl<In, Out, P> Processor2 for AudioNode<P>
+impl<In, Out, P> Processor for AudioNode<P>
     where
-        P: Processor2<Input = In, Output = Out> {
+        P: Processor<Input = In, Output = Out> {
 
     type Input = In;
     type Output = Out;
@@ -71,8 +71,8 @@ impl<A, B> std::ops::BitOr<AudioNode<B>> for AudioNode<A> {
 impl<In1, Out1, Merged, Out2, P1, P2> std::ops::BitAnd<AudioNode<P2>> for AudioNode<P1> 
     where
         Out1: TupleMerge<Output = Merged>,
-        P1: Processor2<Input = In1, Output = Out1>,
-        P2: Processor2<Input = Merged, Output = Out2> {
+        P1: Processor<Input = In1, Output = Out1>,
+        P2: Processor<Input = Merged, Output = Out2> {
 
     type Output = AudioNode<Chain<Merge<In1, Out1, Merged, P1>, P2>>;
 

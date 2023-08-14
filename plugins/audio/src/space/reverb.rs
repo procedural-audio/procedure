@@ -187,7 +187,7 @@ fn temp() {
 
 struct Diffuser<const C: usize> {}
 
-impl<const C: usize> Processor2 for Diffuser<C> {
+impl<const C: usize> Processor for Diffuser<C> {
     type Input = Stereo<f32>;
     type Output = Stereo<f32>;
 
@@ -236,7 +236,7 @@ impl<F: Frame> Delay<F> {
     }
 }
 
-impl<F: Frame> Processor2 for Delay<F> {
+impl<F: Frame> Processor for Delay<F> {
     type Input = F;
     type Output = F;
 

@@ -5,7 +5,7 @@ use crate::routing::node::*;
 
 pub fn merge<In, Out: TupleMerge<Output = Merged>, Merged, P>(processor: P) -> AudioNode<Merge<In, Out, Merged, P>>
     where
-        P: Processor2<Input = In, Output = Out>
+        P: Processor<Input = In, Output = Out>
 {
     AudioNode(Merge(processor))
 }
@@ -44,12 +44,12 @@ impl<F: Add<Output = F>> TupleMerge for (F, F, F, F) {
 pub struct Merge<In, Out, Merged, P>(pub P)
     where
         Out: TupleMerge<Output = Merged>,
-        P: Processor2<Input = In, Output = Out>;
+        P: Processor<Input = In, Output = Out>;
 
-impl<In, Out, Merged, P> Processor2 for Merge<In, Out, Merged, P> 
+impl<In, Out, Merged, P> Processor for Merge<In, Out, Merged, P> 
     where
         Out: TupleMerge<Output = Merged>,
-        P: Processor2<Input = In, Output = Out> {
+        P: Processor<Input = In, Output = Out> {
 
     type Input = In;
     type Output = Merged;

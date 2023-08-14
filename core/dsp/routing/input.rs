@@ -28,7 +28,7 @@ impl<'a, F: Copy, B: Block<Item = F>> Generator for Input<'a, B> {
 /*impl<Between, Out, G, P> Generator for Chain<G, P> 
     where
         G: Block<Item = Between>,
-        P: Processor2<Input = Between, Output = Out> {
+        P: Processor<Input = Between, Output = Out> {
 
     type Output = Out;
 
@@ -54,7 +54,7 @@ pub struct InputChain<'a, B: Block, P>(&'a B, P);
 impl<'a, Between, Out, G, P> Generator for InputChain<'a, G, P>
     where
         G: Block<Item = Between>,
-        P: Processor2<Input = Between, Output = Out> {
+        P: Processor<Input = Between, Output = Out> {
 
     type Output = Out;
 

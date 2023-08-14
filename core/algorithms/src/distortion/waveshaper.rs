@@ -12,7 +12,7 @@ impl<F: Frame> Waveshaper<F> {
     }
 }
 
-impl<F: Frame> Processor2 for Waveshaper<F> {
+impl<F: Frame> Processor for Waveshaper<F> {
     type Input = F;
     type Output = F;
 
