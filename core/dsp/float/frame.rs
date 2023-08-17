@@ -3,7 +3,55 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 use crate::event::*;
 use crate::buffers::*;
 
-// Rename frame to sample maybe
+pub trait Float: Copy + Clone
+    + PartialEq + PartialOrd
+    + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
+    + AddAssign + SubAssign + MulAssign + DivAssign {
+
+    const EQUILIBRIUM: Self;
+}
+
+impl Float for f32 {
+    const EQUILIBRIUM: Self = 0.0;
+}
+
+impl Float for f64 {
+    const EQUILIBRIUM: Self = 0.0;
+}
+
+impl Sample<f32> for f32 {
+    const CHANNELS: usize = 1;
+
+    fn apply<Function: FnMut(Self) -> Self>(self, mut f: Function) -> Self where Self: Sized {
+        f(self)
+    }
+}
+
+impl Sample<f64> for f64 {
+    const CHANNELS: usize = 1;
+
+    fn apply<Function: FnMut(Self) -> Self>(self, mut f: Function) -> Self where Self: Sized {
+        f(self)
+    }
+}
+
+impl<F: Float> Sample<F> for Stereo<F> {
+    const CHANNELS: usize = 2;
+
+    fn apply<Function: FnMut(F) -> F>(self, mut f: Function) -> Self where Self: Sized {
+        Stereo {
+            left: f(self.left),
+            right: f(self.right)
+        }
+    }
+}
+
+pub trait Sample<F: Float> {
+    const CHANNELS: usize;
+
+    fn apply<Function: FnMut(F) -> F>(self, f: Function) -> Self where Self: Sized;
+    // fn apply_if<Function: FnMut(Self) -> Self>(self, f: Function, condition: [bool; Self::CHANNELS]) -> Self where Self: Sized;
+}
 
 pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;

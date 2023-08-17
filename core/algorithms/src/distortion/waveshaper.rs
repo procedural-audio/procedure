@@ -4,6 +4,18 @@ pub const fn waveshaper<F: Frame>(f: fn(F) -> F) -> AudioNode<Waveshaper<F>> {
     AudioNode(Waveshaper(f))
 }
 
+pub const fn waveshaper_sin<F: Frame>() -> AudioNode<Waveshaper<F>> {
+    AudioNode(Waveshaper(F::sin))
+}
+
+pub const fn waveshaper_cos<F: Frame>() -> AudioNode<Waveshaper<F>> {
+    AudioNode(Waveshaper(F::cos))
+}
+
+pub const fn waveshaper_tan<F: Frame>() -> AudioNode<Waveshaper<F>> {
+    AudioNode(Waveshaper(F::tan))
+}
+
 pub struct Waveshaper<F: Frame>(fn (F) -> F);
 
 impl<F: Frame> Waveshaper<F> {
