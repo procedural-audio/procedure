@@ -1,0 +1,107 @@
+use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
+
+use crate::float::float::*;
+use crate::float::sample::*;
+
+/// Stereo float type
+#[derive(Copy, Clone, Default, PartialEq)]
+pub struct Stereo<T> {
+    pub left: T,
+    pub right: T,
+}
+
+impl<F: Float> Add for Stereo<F> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Stereo {
+            left: self.left + rhs.left,
+            right: self.right + rhs.right
+        }
+    }
+}
+
+impl<F: Float> Sub for Stereo<F> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Stereo {
+            left: self.left - rhs.left,
+            right: self.right - rhs.right
+        }
+    }
+}
+
+impl<F: Float> Mul for Stereo<F> {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Stereo {
+            left: self.left * rhs.left,
+            right: self.right * rhs.right
+        }
+    }
+}
+
+impl<F: Float> Div for Stereo<F> {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Stereo {
+            left: self.left / rhs.left,
+            right: self.right / rhs.right
+        }
+    }
+}
+
+impl<F: Float> AddAssign for Stereo<F> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.left = self.left + rhs.left;
+        self.right = self.right + rhs.right;
+    }
+}
+
+impl<F: Float> SubAssign for Stereo<F> {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.left = self.left - rhs.left;
+        self.right = self.right - rhs.right;
+    }
+}
+
+impl<F: Float> MulAssign for Stereo<F> {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.left = self.left * rhs.left;
+        self.right = self.right * rhs.right;
+    }
+}
+
+impl<F: Float> DivAssign for Stereo<F> {
+    fn div_assign(&mut self, rhs: Self) {
+        self.left = self.left / rhs.left;
+        self.right = self.right / rhs.right;
+    }
+}
+
+impl<F: Float> Sample for Stereo<F> {
+    type Float = F;
+
+    const CHANNELS: usize = 2;
+    const EQUILIBRIUM: Self = Self {
+        left: F::ZERO,
+        right: F::ZERO
+    };
+
+    fn from(value: Self::Float) -> Self {
+        Self {
+            left: value,
+            right: value 
+        }        
+    }
+
+    fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
+        Self {
+            left: f(self.left),
+            right: f(self.right),
+        }
+    }
+}

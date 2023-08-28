@@ -331,8 +331,8 @@ impl Graph {
     pub fn process(
         &mut self,
         time: &TimeMessage,
-        audio: &mut [AudioBuffer],
-        midi: &mut NoteBuffer,
+        audio: &mut [Buffer<f32>],
+        midi: &mut Buffer<NoteMessage>,
     ) {
         match self.updated.try_lock() {
             Ok(mut processor) => {

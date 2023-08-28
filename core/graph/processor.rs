@@ -21,8 +21,8 @@ enum CopyAction<T> {
         should_copy: bool,
     },
     NotesCopy {
-        src: Ptr<Bus<NoteBuffer>>,
-        dest: Ptr<Bus<NoteBuffer>>,
+        src: Ptr<Bus<Buffer<NoteMessage>>>,
+        dest: Ptr<Bus<Buffer<NoteMessage>>>,
         src_index: usize,
         dest_index: usize,
         should_copy: bool,
@@ -54,15 +54,15 @@ pub struct ProcessAction {
     module: *mut dyn PolyphonicModule,
     voice_index: usize,
     node: Rc<Node>,
-    audio_inputs: Ptr<Bus<StereoBuffer>>,
-    audio_outputs: Ptr<Bus<StereoBuffer>>,
-    events_inputs: Ptr<Bus<NoteBuffer>>,
-    events_outputs: Ptr<Bus<NoteBuffer>>,
+    audio_inputs: Ptr<Bus<Buffer<Stereo<f32>>>>,
+    audio_outputs: Ptr<Bus<Buffer<Stereo<f32>>>>,
+    events_inputs: Ptr<Bus<Buffer<NoteMessage>>>,
+    events_outputs: Ptr<Bus<Buffer<NoteMessage>>>,
     control_inputs: Ptr<Bus<Box<f32>>>,
     control_outputs: Ptr<Bus<Box<f32>>>,
     time_inputs: Ptr<Bus<Box<TimeMessage>>>,
     time_outputs: Ptr<Bus<Box<TimeMessage>>>,
-    copy_actions: Vec<CopyAction<StereoBuffer>>,
+    copy_actions: Vec<CopyAction<Buffer<Stereo<f32>>>>,
 }
 
 impl Clone for ProcessAction {
@@ -90,8 +90,8 @@ impl Clone for ProcessAction {
 pub struct GraphProcessor {
     pub actions: Vec<ProcessAction>,
 
-    pub audio_buffers: Vec<Box<Bus<StereoBuffer>>>,
-    pub events_buffers: Vec<Box<Bus<NoteBuffer>>>,
+    pub audio_buffers: Vec<Box<Bus<Buffer<Stereo<f32>>>>>,
+    pub events_buffers: Vec<Box<Bus<Buffer<NoteMessage>>>>,
     pub control_buffers: Vec<Box<Bus<Box<f32>>>>,
     pub time_buffers: Vec<Box<Bus<Box<TimeMessage>>>>,
 
@@ -143,8 +143,8 @@ impl GraphProcessor {
             );
         }*/
 
-        let mut audio_channels_buffers: Vec<Box<Bus<StereoBuffer>>> = Vec::new();
-        let mut events_channels_buffers: Vec<Box<Bus<NoteBuffer>>> = Vec::new();
+        let mut audio_channels_buffers: Vec<Box<Bus<Buffer<Stereo<f32>>>>> = Vec::new();
+        let mut events_channels_buffers: Vec<Box<Bus<Buffer<NoteMessage>>>> = Vec::new();
         let mut control_channels_buffers: Vec<Box<Bus<Box<f32>>>> = Vec::new();
         let mut time_channels_buffers: Vec<Box<Bus<Box<TimeMessage>>>> = Vec::new();
         let mut process_actions: Vec<ProcessAction> = Vec::new();
@@ -296,25 +296,25 @@ impl GraphProcessor {
                 let mut audio_input_bus = Box::new(Bus::new());
                 for i in 0..audio_input_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 0, i, true);
-                    audio_input_bus.add_channel(Channel::new(StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
+                    audio_input_bus.add_channel(Channel::new(Buffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut audio_output_bus = Box::new(Bus::new());
                 for i in 0..audio_output_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 0, i, false);
-                    audio_output_bus.add_channel(Channel::new(StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
+                    audio_output_bus.add_channel(Channel::new(Buffer::init(Stereo { left: 0.0, right: 0.0 }, block_size), connected));
                 }
 
                 let mut events_input_bus = Box::new(Bus::new());
                 for i in 0..events_input_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 1, i, true);
-                    events_input_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
+                    events_input_bus.add_channel(Channel::new(Buffer::with_capacity(64), connected));
                 }
 
                 let mut events_output_bus = Box::new(Bus::new());
                 for i in 0..events_output_channels_count {
                     let connected = is_connected(&nodes, connectors, node.id, 1, i, false);
-                    events_output_bus.add_channel(Channel::new(NoteBuffer::with_capacity(64), connected));
+                    events_output_bus.add_channel(Channel::new(Buffer::with_capacity(64), connected));
                 }
 
                 let mut control_input_bus = Box::new(Bus::new());
@@ -675,14 +675,14 @@ impl GraphProcessor {
     pub fn process(
         &mut self,
         time: &TimeMessage,
-        audio: &mut [AudioBuffer],
-        events: &mut NoteBuffer,
+        audio: &mut [Buffer<f32>],
+        events: &mut Buffer<NoteMessage>,
     ) {
         /* Zero all audio buffers */
         for bus in &mut self.audio_buffers {
             for i in 0..bus.num_channels() {
                 for sample in bus.channel_mut(i).as_slice_mut() {
-                   sample.zero(); 
+                    *sample = Stereo::EQUILIBRIUM;
                 }
             }
         }

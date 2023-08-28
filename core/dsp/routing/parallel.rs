@@ -2,7 +2,7 @@ use crate::traits::*;
 use crate::routing::node::*;
 use crate::float::*;
 
-pub fn parallel<F: Frame, G: Frame, H: Frame, J: Frame, A: Processor<Input = F, Output = G>, B: Processor<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
+pub fn parallel<F: Sample, G: Sample, H: Sample, J: Sample, A: Processor<Input = F, Output = G>, B: Processor<Input = H, Output = J>>(first: A, second: B) -> AudioNode<Parallel<A, B>> {
     AudioNode(Parallel(first, second))
 }
 

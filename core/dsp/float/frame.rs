@@ -2,56 +2,7 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
 use crate::event::*;
 use crate::buffers::*;
-
-pub trait Float: Copy + Clone
-    + PartialEq + PartialOrd
-    + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
-    + AddAssign + SubAssign + MulAssign + DivAssign {
-
-    const EQUILIBRIUM: Self;
-}
-
-impl Float for f32 {
-    const EQUILIBRIUM: Self = 0.0;
-}
-
-impl Float for f64 {
-    const EQUILIBRIUM: Self = 0.0;
-}
-
-impl Sample<f32> for f32 {
-    const CHANNELS: usize = 1;
-
-    fn apply<Function: FnMut(Self) -> Self>(self, mut f: Function) -> Self where Self: Sized {
-        f(self)
-    }
-}
-
-impl Sample<f64> for f64 {
-    const CHANNELS: usize = 1;
-
-    fn apply<Function: FnMut(Self) -> Self>(self, mut f: Function) -> Self where Self: Sized {
-        f(self)
-    }
-}
-
-impl<F: Float> Sample<F> for Stereo<F> {
-    const CHANNELS: usize = 2;
-
-    fn apply<Function: FnMut(F) -> F>(self, mut f: Function) -> Self where Self: Sized {
-        Stereo {
-            left: f(self.left),
-            right: f(self.right)
-        }
-    }
-}
-
-pub trait Sample<F: Float> {
-    const CHANNELS: usize;
-
-    fn apply<Function: FnMut(F) -> F>(self, f: Function) -> Self where Self: Sized;
-    // fn apply_if<Function: FnMut(Self) -> Self>(self, f: Function, condition: [bool; Self::CHANNELS]) -> Self where Self: Sized;
-}
+use crate::float::stereo::*;
 
 pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self> + AddAssign + SubAssign + MulAssign + DivAssign {
     type Output;
@@ -63,7 +14,6 @@ pub trait Frame: Copy + Clone + PartialEq + Add<Output = Self> + Sub<Output = Se
     fn channel_mut(&mut self, index: usize) -> &mut f32;
 
     fn zero(&mut self);
-    // fn fill(&mut self, value: Self);
     fn gain(&mut self, db: f32);
     fn sqrt(self) -> Self;
     fn mono(&self) -> f32;
@@ -154,12 +104,6 @@ impl Frame for f32 {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
-pub struct Stereo<T> {
-    pub left: T,
-    pub right: T,
-}
-
 impl Frame for Stereo<f32> {
     type Output = Stereo<f32>;
     const CHANNELS: usize = 2;
@@ -225,78 +169,6 @@ impl Frame for Stereo<f32> {
             left: f(a.left, b.left),
             right: f(a.right, b.right),
         }
-    }
-}
-
-impl Add for Stereo<f32> {
-    type Output = Stereo<f32>;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Stereo {
-            left: self.left + rhs.left,
-            right: self.right + rhs.right
-        }
-    }
-}
-
-impl Sub for Stereo<f32> {
-    type Output = Stereo<f32>;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Stereo {
-            left: self.left - rhs.left,
-            right: self.right - rhs.right
-        }
-    }
-}
-
-impl Mul for Stereo<f32> {
-    type Output = Stereo<f32>;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        Stereo {
-            left: self.left * rhs.left,
-            right: self.right * rhs.right
-        }
-    }
-}
-
-impl Div for Stereo<f32> {
-    type Output = Stereo<f32>;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        Stereo {
-            left: self.left / rhs.left,
-            right: self.right / rhs.right
-        }
-    }
-}
-
-impl AddAssign for Stereo<f32> {
-    fn add_assign(&mut self, rhs: Self) {
-        self.left = self.left + rhs.left;
-        self.right = self.right + rhs.right;
-    }
-}
-
-impl SubAssign for Stereo<f32> {
-    fn sub_assign(&mut self, rhs: Self) {
-        self.left = self.left - rhs.left;
-        self.right = self.right - rhs.right;
-    }
-}
-
-impl MulAssign for Stereo<f32> {
-    fn mul_assign(&mut self, rhs: Self) {
-        self.left = self.left * rhs.left;
-        self.right = self.right * rhs.right;
-    }
-}
-
-impl DivAssign for Stereo<f32> {
-    fn div_assign(&mut self, rhs: Self) {
-        self.left = self.left / rhs.left;
-        self.right = self.right / rhs.right;
     }
 }
 

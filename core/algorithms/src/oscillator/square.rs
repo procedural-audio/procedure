@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use pa_dsp::*;
 
-pub struct Square<F: Frame> {
+pub struct Square<S: Sample> {
     fSampleRate: i32,
     fConst1: f32,
     iVec0: [i32; 2],
@@ -16,10 +16,10 @@ pub struct Square<F: Frame> {
     IOTA0: i32,
     fVec2: Box<[f32; 4096]>,
     fConst5: f32,
-    data: PhantomData<F>
+    data: PhantomData<S>
 }
 
-impl<F: Frame> Square<F> {
+impl<S: Sample> Square<S> {
     pub fn new() -> Self {
         Self {
             fSampleRate: 0,
@@ -40,7 +40,7 @@ impl<F: Frame> Square<F> {
     }
 }
 
-impl<F: Frame> Pitched for Square<F> {
+impl<S: Sample> Pitched for Square<S> {
     fn get_pitch(&self) -> f32 {
         self.fHslider0
     }
@@ -50,8 +50,8 @@ impl<F: Frame> Pitched for Square<F> {
     }
 }
 
-impl<F: Frame> Generator for Square<F> {
-    type Output = F;
+impl<S: Sample> Generator for Square<S> {
+    type Output = S;
 
     fn reset(&mut self) {}
 
@@ -88,7 +88,7 @@ impl<F: Frame> Generator for Square<F> {
     }
 
     fn generate(&mut self) -> Self::Output {
-        let fSlow0: f32 = self.fConst3 * ((self.fHslider0) as f32);
+        /*let fSlow0: f32 = self.fConst3 * ((self.fHslider0) as f32);
         self.iVec0[0] = 1;
         self.fRec1[0] = fSlow0 + self.fConst4 * self.fRec1[1];
         let fTemp0: f32 = f32::max(self.fRec1[0], 23.4489498);
@@ -112,7 +112,8 @@ impl<F: Frame> Generator for Square<F> {
         self.fRec0[1] = self.fRec0[0];
         self.fVec1[1] = self.fVec1[0];
         self.IOTA0 = self.IOTA0 + 1;
-        return F::from(output);
+        return S::from(output);*/
+        todo!()
     }
 }
 

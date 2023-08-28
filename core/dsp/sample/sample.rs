@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Mul, Sub, Add};
 use std::sync::Arc;
 
 use rand::{rngs::ThreadRng, Rng};
@@ -6,19 +6,19 @@ use rand::{rngs::ThreadRng, Rng};
 use crate::buffers::*;
 use crate::Generator;
 use crate::Pitched;
-use crate::float::frame::*;
+use crate::float::*;
 
 #[derive(Clone)]
-pub struct SampleFile<T: Frame> {
-    buffer: Arc<Buffer<T>>,
+pub struct SampleFile<S: Sample> {
+    buffer: Arc<Buffer<S>>,
     pub path: String,
     pub start: usize,
     pub end: usize,
     pub pitch: Option<f32>
 }
 
-impl<T: Frame> SampleFile<T> {
-    pub fn from(buffer: Arc<Buffer<T>>, path: String) -> Self {
+impl<S: Sample> SampleFile<S> {
+    pub fn from(buffer: Arc<Buffer<S>>, path: String) -> Self {
         let start = 0;
         let end = buffer.len();
 
@@ -43,7 +43,7 @@ impl<T: Frame> SampleFile<T> {
         &self.path
     }
 
-    pub fn as_slice(&self) -> &[T] {
+    pub fn as_slice(&self) -> &[S] {
         self.buffer.as_slice()
     }
 
@@ -91,29 +91,30 @@ impl<T: Frame> SampleFile<T> {
     }
 }*/
 
-pub struct Converter<G: Generator, I: Interpolator<Item = G::Output>> {
+pub struct Converter<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> {
     src: G,
     interpolator: I,
-    interpolation_value: f32,
-    ratio: f32
+    interpolation_value: F,
+    ratio: F
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Output>> Converter<G, I> {
+impl<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> Converter<F, S, G, I> {
     pub fn from(src: G) -> Self {
         Self {
             src,
             interpolator: I::new(),
-            interpolation_value: 0.0,
-            ratio: 1.0
+            interpolation_value: F::ZERO,
+            ratio: F::MAX
         }
     }
 
     pub fn set_ratio(&mut self, ratio: f32) {
-        self.ratio = ratio;
+        panic!("set_ratio not implemented");
+        // self.ratio = ratio;
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Output>> Generator for Converter<G, I> {
+impl<F: Float, S: Sample<Float = F>, G: Generator<Output = S>, I: Interpolator<Item = S>> Generator for Converter<F, S, G, I> {
     type Output = G::Output;
 
     fn reset(&mut self) {
@@ -126,18 +127,19 @@ impl<G: Generator, I: Interpolator<Item = G::Output>> Generator for Converter<G,
     }
 
     fn generate(&mut self) -> Self::Output {
-        while self.interpolation_value >= 1.0 {
+        while self.interpolation_value >= F::MAX {
             self.interpolator.next_sample(self.src.generate());
-            self.interpolation_value -= 1.0;
+            self.interpolation_value -= F::MAX;
         }
 
-        let out = self.interpolator.interpolate(self.interpolation_value);
+        let s = S::from(self.interpolation_value);
+        let out = self.interpolator.interpolate(s);
         self.interpolation_value += self.ratio;
         return out;
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Output>> std::ops::Deref for Converter<G, I> {
+impl<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> std::ops::Deref for Converter<F, S, G, I> {
     type Target = G;
 
     fn deref(&self) -> &Self::Target {
@@ -145,39 +147,39 @@ impl<G: Generator, I: Interpolator<Item = G::Output>> std::ops::Deref for Conver
     }
 }
 
-impl<G: Generator, I: Interpolator<Item = G::Output>> std::ops::DerefMut for Converter<G, I> {
+impl<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> std::ops::DerefMut for Converter<F, S, G, I> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.src
     }
 }
 
 pub trait Interpolator {
-    type Item;
+    type Item: Sample;
 
     fn new() -> Self;
     fn reset(&mut self);
     fn next_sample(&mut self, input: Self::Item);
-    fn interpolate(&self, x: f32) -> Self::Item;
+    fn interpolate(&self, x: Self::Item) -> Self::Item;
 }
 
-pub struct Linear<T: Frame> {
-    last: T,
-    prev: T
+pub struct Linear<S: Add + Sub + Mul> {
+    last: S,
+    prev: S
 }
 
-impl<T: Frame> Interpolator for Linear<T> {
-    type Item = T;
+impl<F: Sample> Interpolator for Linear<F> {
+    type Item = F;
 
     fn new() -> Self {
         Self {
-            last: T::from(0.0),
-            prev: T::from(0.0)
+            last: F::EQUILIBRIUM,
+            prev: F::EQUILIBRIUM
         }
     }
 
     fn reset(&mut self) {
-        self.last = Self::Item::from(0.0);
-        self.prev = Self::Item::from(0.0);
+        self.last = F::EQUILIBRIUM;
+        self.prev = F::EQUILIBRIUM;
     }
 
     fn next_sample(&mut self, input: Self::Item) {
@@ -185,9 +187,9 @@ impl<T: Frame> Interpolator for Linear<T> {
         self.prev = input;
     }
 
-    fn interpolate(&self, x: f32) -> Self::Item {
+    fn interpolate(&self, x: F) -> Self::Item {
         // println!("Interpolation x {}", x);
-        ((self.prev - self.last) * Self::Item::from(x)) + self.last
+        ((self.prev - self.last) * x) + self.last
     }
 }
 
@@ -229,7 +231,7 @@ impl<G: Generator<Item = Stereo>> Generator for Pitcher<G> {
     }
 }*/
 
-pub struct SamplePlayer<T: Frame> {
+pub struct SamplePlayer<T: Sample> {
     sample: Option<SampleFile<T>>,
     playing: bool,
     index: usize,
@@ -238,7 +240,7 @@ pub struct SamplePlayer<T: Frame> {
     should_loop: bool
 }
 
-impl<T: Frame> SamplePlayer<T> {
+impl<T: Sample> SamplePlayer<T> {
     pub fn new() -> Self {
         Self {
             sample: None,
@@ -316,7 +318,7 @@ impl<T: Frame> SamplePlayer<T> {
     }
 }
 
-impl<T: Frame> Generator for SamplePlayer<T> {
+impl<T: Sample> Generator for SamplePlayer<T> {
     type Output = T;
 
     fn reset(&mut self) {}
@@ -338,7 +340,7 @@ impl<T: Frame> Generator for SamplePlayer<T> {
             }
         }
 
-        Self::Output::from(0.0)
+        T::EQUILIBRIUM
     }
 
     /*fn generate_block(&mut self, output: &mut Buffer<T>) {
@@ -364,12 +366,12 @@ impl<T: Frame> Generator for SamplePlayer<T> {
     }*/
 }
 
-pub struct PitchedSamplePlayer<S: Frame> {
-    pub player: Converter<SamplePlayer<S>, Linear<S>>,
+pub struct PitchedSamplePlayer<S: Sample> {
+    pub player: Converter<S::Float, S, SamplePlayer<S>, Linear<S>>,
     pitch: f32,
 }
 
-impl<T: Frame> PitchedSamplePlayer<T> {
+impl<T: Sample> PitchedSamplePlayer<T> {
     pub fn new() -> Self {
         let player = Converter::from(SamplePlayer::new());
         
@@ -384,7 +386,7 @@ impl<T: Frame> PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> Generator for PitchedSamplePlayer<T> {
+impl<T: Sample> Generator for PitchedSamplePlayer<T> {
     type Output = T;
 
     fn reset(&mut self) {}
@@ -398,7 +400,7 @@ impl<T: Frame> Generator for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> Pitched for PitchedSamplePlayer<T> {
+impl<T: Sample> Pitched for PitchedSamplePlayer<T> {
     fn get_pitch(&self) -> f32 {
         self.pitch
     }
@@ -416,7 +418,7 @@ impl<T: Frame> Pitched for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> Deref for PitchedSamplePlayer<T> {
+impl<T: Sample> Deref for PitchedSamplePlayer<T> {
     type Target = SamplePlayer<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -424,19 +426,19 @@ impl<T: Frame> Deref for PitchedSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> DerefMut for PitchedSamplePlayer<T> {
+impl<T: Sample> DerefMut for PitchedSamplePlayer<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.player.deref_mut()
     }
 }
 
-pub struct GranularSamplePlayer<F: Frame> {
+pub struct GranularSamplePlayer<F: Sample> {
     player: PitchedSamplePlayer<F>,
     rng: ThreadRng,
     start_delta: f32,
 }
 
-impl<F: Frame> GranularSamplePlayer<F> {
+impl<F: Sample> GranularSamplePlayer<F> {
     pub fn new() -> Self {
         let mut player = PitchedSamplePlayer::<F>::new();
         player.set_loop(true);
@@ -504,7 +506,7 @@ impl<F: Frame> GranularSamplePlayer<F> {
     }
 }
 
-impl<T: Frame> Generator for GranularSamplePlayer<T> {
+impl<T: Sample> Generator for GranularSamplePlayer<T> {
     type Output = T;
 
     fn reset(&mut self) {}
@@ -518,7 +520,7 @@ impl<T: Frame> Generator for GranularSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> Deref for GranularSamplePlayer<T> {
+impl<T: Sample> Deref for GranularSamplePlayer<T> {
     type Target = PitchedSamplePlayer<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -526,7 +528,7 @@ impl<T: Frame> Deref for GranularSamplePlayer<T> {
     }
 }
 
-impl<T: Frame> DerefMut for GranularSamplePlayer<T> {
+impl<T: Sample> DerefMut for GranularSamplePlayer<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.player
     }

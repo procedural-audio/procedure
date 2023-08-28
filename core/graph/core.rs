@@ -76,12 +76,12 @@ pub unsafe extern "C" fn ffi_host_process(
     events: *mut NoteMessage,
     events_count: u32,
 ) {
-    let mut events = NoteBuffer::from_raw_parts(events, events_count as usize, events_count as usize);
+    let mut events = Buffer::from_raw_parts(events, events_count as usize, events_count as usize);
 
     if num_channels == 0 {
         println!("No IO channels available");
     } else if num_channels == 1 {
-        let buffer_center = AudioBuffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
+        let buffer_center = Buffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
 
         let mut audio = [buffer_center];
 
@@ -89,8 +89,8 @@ pub unsafe extern "C" fn ffi_host_process(
 
         std::mem::forget(audio);
     } else if num_channels == 2 {
-        let buffer_left = AudioBuffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
-        let buffer_right = AudioBuffer::from_raw_parts(*buffer.offset(1), num_samples as usize, num_samples as usize);
+        let buffer_left = Buffer::from_raw_parts(*buffer.offset(0), num_samples as usize, num_samples as usize);
+        let buffer_right = Buffer::from_raw_parts(*buffer.offset(1), num_samples as usize, num_samples as usize);
 
         let mut audio = [buffer_left, buffer_right];
 
@@ -107,8 +107,8 @@ pub unsafe extern "C" fn ffi_host_process(
 #[no_mangle]
 pub unsafe extern "C" fn api_host_process(
     host: &mut Host,
-    audio: &mut [AudioBuffer],
-    events: &mut NoteBuffer,
+    audio: &mut [Buffer<f32>],
+    events: &mut Buffer<NoteMessage>,
 ) {
     for buffer in audio.iter_mut() {
         for sample in buffer {

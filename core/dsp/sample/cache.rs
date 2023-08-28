@@ -5,11 +5,12 @@ use crate::loadable::Loadable;
 use crate::sample::sample::*;
 use crate::buffers::*;
 use crate::event::*;
+use crate::float::*;
+use crate::float::sample::*;
 
 use hound::{Sample, WavReader};
 use std::io::BufReader;
 use std::fs::File;
-use crate::float::frame::*;
 
 use lazy_static::*;
 
@@ -88,7 +89,7 @@ impl FileLoad<SampleFile<Stereo>> for SampleFile<Stereo> {
 fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo<f32>> {
     let sample_rate = reader.spec().sample_rate;
     let size = reader.samples::<i16>().len();
-    let mut buffer_new = StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, size / 2);
+    let mut buffer_new = Buffer::init(Stereo { left: 0.0, right: 0.0 }, size / 2);
 
     let mut i = 0;
     reader.samples::<i16>()
@@ -119,7 +120,7 @@ fn load_sample_file_i16(path: &str, mut reader: hound::WavReader<BufReader<File>
 fn load_sample_file_i24(path: &str, mut reader: hound::WavReader<BufReader<File>>, channels: u16) -> SampleFile<Stereo<f32>> {
     // let sample_rate = reader.spec().sample_rate;
     let size = reader.samples::<i32>().len();
-    let mut buffer_new = StereoBuffer::init(Stereo { left: 0.0, right: 0.0 }, size / 2);
+    let mut buffer_new = Buffer::init(Stereo { left: 0.0, right: 0.0 }, size / 2);
 
     let mut i = 0;
     reader.samples::<i32>()

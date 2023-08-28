@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "algorithms",
 	"dsp",
 	"graph",
 	"modules"

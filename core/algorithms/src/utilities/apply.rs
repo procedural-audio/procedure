@@ -1,20 +1,20 @@
 use pa_dsp::*;
 
-pub const fn apply<F: Frame>(max: F) -> AudioNode<Apply<F>> {
+pub const fn apply<S: Sample>(max: S) -> AudioNode<Apply<S>> {
     AudioNode(Apply(max))
 }
 
-pub struct Apply<F: Frame>(F);
+pub struct Apply<S: Sample>(S);
 
-impl<F: Frame> Apply<F> {
-    pub fn from(max: F) -> Self {
+impl<S: Sample> Apply<S> {
+    pub fn from(max: S) -> Self {
         Self(max)
     }
 }
 
-impl<F: Frame> Processor for Apply<F> {
-    type Input = F;
-    type Output = F;
+impl<S: Sample> Processor for Apply<S> {
+    type Input = S;
+    type Output = S;
 
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 

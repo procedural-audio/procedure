@@ -4,8 +4,8 @@ use crate::float::*;
 
 pub fn split<In, Out, P>(processor: P) -> AudioNode<Split<In, Out, P>>
     where
-        In: Frame,
-        Out: Frame,
+        In: Sample,
+        Out: Sample,
         P: Processor<Input = In, Output = Out>
 {
     AudioNode(Split(processor))

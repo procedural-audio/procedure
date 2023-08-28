@@ -60,7 +60,7 @@ impl Host {
         self.time = TimeMessage::from(0.0, delta_beats);
     }
 
-    pub fn process(&mut self, audio: &mut [AudioBuffer], midi: &mut NoteBuffer) {
+    pub fn process(&mut self, audio: &mut [Buffer<f32>], midi: &mut Buffer<NoteMessage>) {
         if let Some(graph) = &mut self.graph {
             graph.process(&self.time, audio, midi);
         }

@@ -1,11 +1,11 @@
 use std::slice;
 use std::marker::PhantomData;
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Add, AddAssign, SubAssign, Sub};
 
 use crate::event::*;
 use crate::traits::*;
 
-use crate::float::frame::*;
+use crate::float::sample::*;
 use crate::routing::node::*;
 use crate::buffers::block::*;
 
@@ -71,10 +71,18 @@ impl<T: Copy> Buffer<T> {
     }
 }
 
-impl<T: Frame> Buffer<T> {
-    pub fn add_from<B: Block<Item = T>>(&mut self, src: &B) {
+impl<T: Add<Output = T> + Copy> Buffer<T> {
+    pub fn add_from<B: Block<Item = T>>(&mut self, src: &B) where Self: BlockMut<Item = B::Item> {
         for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest += *src;
+            *dest = *dest + *src;
+        }
+    }
+}
+
+impl<T: Sub<Output = T> + Copy> Buffer<T> {
+    pub fn sub_from<B: Block<Item = T>>(&mut self, src: &B) where Self: BlockMut<Item = B::Item> {
+        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
+            *dest = *dest - *src;
         }
     }
 }
@@ -101,29 +109,8 @@ impl<F: Copy> Block for &[F] {
     }
 }
 
-pub const fn gain<F: Frame, DB: Generator<Output = f32>>(db: DB) -> AudioNode<Gain2<F, DB>> {
-    AudioNode(Gain2 { db , data: PhantomData })
-}
-
-#[derive(Copy, Clone)]
-pub struct Gain2<F: Frame, DB: Generator<Output = f32>> {
-    db: DB,
-    data: PhantomData<F>
-}
-
-impl<F: Frame, DB: Generator<Output = f32>> Processor for Gain2<F, DB> {
-    type Input = F;
-    type Output = F;
-
-    fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
-
-    fn process(&mut self, input: Self::Input) -> Self::Output {
-        input
-    }
-}
-
 // Replace letters with useful names
-impl NoteBuffer {
+impl Buffer<NoteMessage> {
     pub fn new() -> Self {
         Self {
             items: Vec::new()
@@ -332,8 +319,8 @@ impl<T: AudioChannelMut<1>> BufferMut for T {
     }
 }*/
 
-pub struct RingBuffer<F: Frame> {
-    buffer: Buffer<F>,
+pub struct RingBuffer<S: Sample> {
+    buffer: Buffer<S>,
     length: usize,
     index: usize
 }
@@ -356,8 +343,8 @@ pub struct RingBuffer<F: Frame> {
     }
 }*/
 
-impl<F: Frame> RingBuffer<F> {
-    pub fn init(value: F, size: usize) -> Self {
+impl<S: Sample> RingBuffer<S> {
+    pub fn init(value: S, size: usize) -> Self {
         Self {
             buffer: Buffer::init(value, size),
             length: 1,
@@ -375,16 +362,16 @@ impl<F: Frame> RingBuffer<F> {
 
     pub fn resize(&mut self, length: usize) {
         if length > self.buffer.capacity() {
-            self.buffer.items.resize(length, F::from(0.0));
+            self.buffer.items.resize(length, S::EQUILIBRIUM);
         } else {
             self.length = length;
             for sample in self.buffer.as_slice_mut().iter_mut().skip(length) {
-                *sample = F::from(0.0);
+                *sample = S::EQUILIBRIUM;
             }
         }
     }
 
-    pub fn next(&mut self, input: F) -> F {
+    pub fn next(&mut self, input: S) -> S {
         let output = self.buffer.items[self.index];
         self.buffer.items[self.index] = input;
         self.index = (self.index + 1) % self.length;

@@ -413,6 +413,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "pa-algorithms"
+version = "0.1.0"
+dependencies = [
+ "pa-dsp",
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "pa-dsp"
 version = "0.1.0"
 dependencies = [

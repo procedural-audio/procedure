@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::traits::*;
-use crate::float::frame::*;
+use crate::float::sample::*;
 use crate::routing::param::*;
 use crate::routing::chain::*;
 use crate::routing::merge::*;

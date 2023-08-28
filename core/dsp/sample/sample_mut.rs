@@ -1,12 +1,12 @@
 use crate::buffers::*;
-use crate::float::frame::*;
+use crate::float::*;
 
 pub struct SampleMut {
-    pub buffer: AudioBuffer,
+    pub buffer: Buffer<Stereo<f32>>,
 }
 
 impl SampleMut {
-    pub fn from(buffer: AudioBuffer) -> Self {
+    pub fn from(buffer: Buffer<Stereo<f32>>) -> Self {
         Self { buffer }
     }
 
@@ -75,13 +75,13 @@ impl SampleMut {
         });*/
     }
 
-    fn as_ptr(&self) -> *const f32 {
+    /*fn as_ptr(&self) -> *const f32 {
         self.buffer.as_ptr()
     }
 
     fn as_mut_ptr(&mut self) -> *mut f32 {
         self.buffer.as_mut_ptr()
-    }
+    }*/
 
     fn size(&self) -> usize {
         self.buffer.capacity()

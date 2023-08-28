@@ -1,19 +1,19 @@
 use pa_dsp::*;
 
-pub const fn constant<F: Frame>(max: F) -> AudioNode<Constant<F>> {
+pub const fn constant<S: Sample>(max: S) -> AudioNode<Constant<S>> {
     AudioNode(Constant(max))
 }
 
-pub struct Constant<F: Frame>(F);
+pub struct Constant<S: Sample>(S);
 
-impl<F: Frame> Constant<F> {
-    pub fn from(max: F) -> Self {
+impl<S: Sample> Constant<S> {
+    pub fn from(max: S) -> Self {
         Self(max)
     }
 }
 
-impl<F: Frame> Generator for Constant<F> {
-    type Output = F;
+impl<S: Sample> Generator for Constant<S> {
+    type Output = S;
 
     fn reset(&mut self) {}
 

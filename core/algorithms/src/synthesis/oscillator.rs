@@ -1,19 +1,19 @@
 use pa_dsp::*;
 
-pub const fn osc<F: Frame, Pitch: Generator<Output = f32>>(f: fn(f32) -> F, hz: Pitch) -> AudioNode<Oscillator<F, Pitch>> {
+pub const fn osc<S: Sample, Pitch: Generator<Output = f32>>(f: fn(f32) -> S, hz: Pitch) -> AudioNode<Oscillator<S, Pitch>> {
     AudioNode(Oscillator { f, pitch: hz, x: 0.0, rate: 44100.0 })
 }
 
 #[derive(Copy, Clone)]
-pub struct Oscillator<F: Frame, Pitch: Generator<Output = f32>> {
-    f: fn(f32) -> F,
+pub struct Oscillator<S: Sample, Pitch: Generator<Output = f32>> {
+    f: fn(f32) -> S,
     pitch: Pitch,
     x: f32,
     rate: f32
 }
 
-impl<F: Frame, Pitch: Generator<Output = f32>> Generator for Oscillator<F, Pitch> {
-    type Output = F;
+impl<S: Sample, Pitch: Generator<Output = f32>> Generator for Oscillator<S, Pitch> {
+    type Output = S;
 
     fn reset(&mut self) {}
 

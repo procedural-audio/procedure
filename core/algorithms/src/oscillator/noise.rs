@@ -1,10 +1,10 @@
 use pa_dsp::*;
 
-pub fn colored_noise<F: Frame>(f: f32) -> AudioNode<ColoredNoise<F>> {
+pub fn colored_noise<S: Sample>(s: f32) -> AudioNode<ColoredNoise<S>> {
     todo!()
 }
 
-pub struct ColoredNoise<F: Frame> {
+pub struct ColoredNoise<S: Sample> {
 	fSampleRate: i32,
 	fConst1: f32,
 	fConst2: f32,
@@ -17,14 +17,14 @@ pub struct ColoredNoise<F: Frame> {
 	fConst9: f32,
 	fConst10: f32,
 	iRec3: [i32;2],
-	fVec0: [F;2],
-	fRec2: [F;2],
-	fRec1: [F;2],
-	fVec1: [F;2],
-	fRec0: [F;2],
+	fVec0: [S;2],
+	fRec2: [S;2],
+	fRec1: [S;2],
+	fVec1: [S;2],
+	fRec0: [S;2],
 }
 
-impl<F: Frame> ColoredNoise<F> {
+impl<S: Sample> ColoredNoise<S> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -39,11 +39,11 @@ impl<F: Frame> ColoredNoise<F> {
 			fConst9: 0.0,
 			fConst10: 0.0,
 			iRec3: [0;2],
-			fVec0: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fVec1: [F::from(0.0);2],
-			fRec0: [F::from(0.0);2],
+			fVec0: [S::EQUILIBRIUM;2],
+			fRec2: [S::EQUILIBRIUM;2],
+			fRec1: [S::EQUILIBRIUM;2],
+			fVec1: [S::EQUILIBRIUM;2],
+			fRec0: [S::EQUILIBRIUM;2],
 		}
 	}
 
@@ -68,19 +68,19 @@ impl<F: Frame> ColoredNoise<F> {
 			self.iRec3[(l0) as usize] = 0;
 		}
 		for l1 in 0..2 {
-			self.fVec0[(l1) as usize] = F::from(0.0);
+			self.fVec0[(l1) as usize] = S::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = S::EQUILIBRIUM;
 		}
 		for l3 in 0..2 {
-			self.fRec1[(l3) as usize] = F::from(0.0);
+			self.fRec1[(l3) as usize] = S::EQUILIBRIUM;
 		}
 		for l4 in 0..2 {
-			self.fVec1[(l4) as usize] = F::from(0.0);
+			self.fVec1[(l4) as usize] = S::EQUILIBRIUM;
 		}
 		for l5 in 0..2 {
-			self.fRec0[(l5) as usize] = F::from(0.0);
+			self.fRec0[(l5) as usize] = S::EQUILIBRIUM;
 		}
 	}
 
@@ -113,7 +113,7 @@ impl<F: Frame> ColoredNoise<F> {
         self.fHslider0 = f32::clamp(color, -1.0, 1.0);
     }
 
-	fn compute(&mut self, count: i32, inputs: &[&[F]], outputs: &mut[&mut[F]]) {
+	/*fn compute(&mut self, count: i32, inputs: &[&[S]], outputs: &mut[&mut[S]]) {
 		let (outputs0) = if let [outputs0, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			(outputs0)
@@ -138,12 +138,12 @@ impl<F: Frame> ColoredNoise<F> {
 		for output0 in zipped_iterators {
 			self.iRec3[0] = 1103515245 * self.iRec3[1] + 12345;
 			let mut fTemp0: f32 = ((self.iRec3[0]) as f32);
-			self.fVec0[0] = F::from(fTemp0);
-			self.fRec2[0] = F::from(0.995000005) * self.fRec2[1] + F::from(4.65661287e-10) * (F::from(fTemp0) - self.fVec0[1]);
-			self.fRec1[0] = F::from(0.0) - F::from(self.fConst9) * (F::from(self.fConst10) * self.fRec1[1] - (F::from(fSlow7) * self.fRec2[0] + F::from(fSlow8) * self.fRec2[1]));
-			self.fVec1[0] = F::from(fSlow10) * self.fRec1[0];
-			self.fRec0[0] = F::from(0.0) - F::from(self.fConst6) * (F::from(self.fConst7) * self.fRec0[1] - (F::from(fSlow5) * self.fRec1[0] + F::from(fSlow9) * self.fVec1[1]));
-			*output0 = ((F::min(F::from(1.0), F::max(F::from(-1.0), F::from(fSlow2) * self.fRec0[0] / F::from(fSlow13)))) as F);
+			self.fVec0[0] = S::from(fTemp0);
+			self.fRec2[0] = S::from(0.995000005) * self.fRec2[1] + S::from(4.65661287e-10) * (S::from(fTemp0) - self.fVec0[1]);
+			self.fRec1[0] = S::EQUILIBRIUM - S::from(self.fConst9) * (S::from(self.fConst10) * self.fRec1[1] - (S::from(fSlow7) * self.fRec2[0] + S::from(fSlow8) * self.fRec2[1]));
+			self.fVec1[0] = S::from(fSlow10) * self.fRec1[0];
+			self.fRec0[0] = S::EQUILIBRIUM - S::from(self.fConst6) * (S::from(self.fConst7) * self.fRec0[1] - (S::from(fSlow5) * self.fRec1[0] + S::from(fSlow9) * self.fVec1[1]));
+			*output0 = (S::min(S::from(1.0), S::max(S::from(-1.0), S::from(fSlow2) * self.fRec0[0] / S::from(fSlow13))));
 			self.iRec3[1] = self.iRec3[0];
 			self.fVec0[1] = self.fVec0[0];
 			self.fRec2[1] = self.fRec2[0];
@@ -151,5 +151,5 @@ impl<F: Frame> ColoredNoise<F> {
 			self.fVec1[1] = self.fVec1[0];
 			self.fRec0[1] = self.fRec0[0];
 		}
-	}
+	}*/
 }

@@ -1,32 +1,32 @@
 pub use pa_dsp::*;
 
-pub const fn waveshaper<F: Frame>(f: fn(F) -> F) -> AudioNode<Waveshaper<F>> {
+pub const fn waveshaper<S: Sample>(f: fn(S) -> S) -> AudioNode<Waveshaper<S>> {
     AudioNode(Waveshaper(f))
 }
 
-pub const fn waveshaper_sin<F: Frame>() -> AudioNode<Waveshaper<F>> {
-    AudioNode(Waveshaper(F::sin))
+pub const fn waveshaper_sin<S: Sample>() -> AudioNode<Waveshaper<S>> {
+    AudioNode(Waveshaper(S::sin))
 }
 
-pub const fn waveshaper_cos<F: Frame>() -> AudioNode<Waveshaper<F>> {
-    AudioNode(Waveshaper(F::cos))
+pub const fn waveshaper_cos<S: Sample>() -> AudioNode<Waveshaper<S>> {
+    AudioNode(Waveshaper(S::cos))
 }
 
-pub const fn waveshaper_tan<F: Frame>() -> AudioNode<Waveshaper<F>> {
-    AudioNode(Waveshaper(F::tan))
+pub const fn waveshaper_tan<S: Sample>() -> AudioNode<Waveshaper<S>> {
+    AudioNode(Waveshaper(S::tan))
 }
 
-pub struct Waveshaper<F: Frame>(fn (F) -> F);
+pub struct Waveshaper<S: Sample>(fn (S) -> S);
 
-impl<F: Frame> Waveshaper<F> {
-    pub fn from(f: fn(F) -> F) -> Waveshaper<F> {
+impl<S: Sample> Waveshaper<S> {
+    pub fn from(f: fn(S) -> S) -> Waveshaper<S> {
         Self(f)
     }
 }
 
-impl<F: Frame> Processor for Waveshaper<F> {
-    type Input = F;
-    type Output = F;
+impl<S: Sample> Processor for Waveshaper<S> {
+    type Input = S;
+    type Output = S;
 
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 

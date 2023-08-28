@@ -42,7 +42,7 @@ impl IntoDecibals for f32 {
     }
 }
 
-pub trait Float {
+/*pub trait Float {
     fn zero(&mut self);
     fn neg(&mut self);
     fn add(&mut self, value: f32);
@@ -249,7 +249,7 @@ impl StereoFloat for (&mut f32, &mut f32) {
         Float::gain(self.0, amount);
         Float::gain(self.1, amount);
     }
-}
+}*/
 
 /*impl StereoFloat for (f32, f32) {
     fn pan(&mut self, decibals: f32) {

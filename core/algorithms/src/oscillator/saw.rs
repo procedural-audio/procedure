@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use pa_dsp::*;
 
-pub struct Saw<F: Frame> {
+pub struct Saw<S: Sample> {
 	f_sample_rate: i32,
 	f_const_0: f32,
 	f_const_1: f32,
@@ -11,10 +11,10 @@ pub struct Saw<F: Frame> {
 	f_const_3: f32,
 	f_rec_2: [f32;2],
 	f_rec_0: [f32;2],
-    data: PhantomData<F>
+    data: PhantomData<S>
 }
 
-impl<F: Frame> Saw<F> {
+impl<S: Sample> Saw<S> {
     pub fn new() -> Self {
         Self {
             f_sample_rate: 0,
@@ -30,7 +30,7 @@ impl<F: Frame> Saw<F> {
     }
 }
 
-impl<F: Frame> Pitched for Saw<F> {
+impl<S: Sample> Pitched for Saw<S> {
     fn set_pitch(&mut self, pitch: f32) {
         self.f_pitch = pitch;
     }
@@ -40,8 +40,8 @@ impl<F: Frame> Pitched for Saw<F> {
     }
 }
 
-impl<F: Frame> Generator for Saw<F> {
-    type Output = F;
+impl<S: Sample> Generator for Saw<S> {
+    type Output = S;
 
     fn reset(&mut self) {
     }
@@ -67,7 +67,7 @@ impl<F: Frame> Generator for Saw<F> {
     }
 
     fn generate(&mut self) -> Self::Output {
-		let f_slow_0: f32 = self.f_const_2 * self.f_pitch as f32;
+		/*let f_slow_0: f32 = self.f_const_2 * self.f_pitch as f32;
         self.f_rec_2[0] = f_slow_0 + self.f_const_3 * self.f_rec_2[1];
         let f0: f32 = f32::max(1.1920929e-07, f32::abs(self.f_rec_2[0]));
         let f1: f32 = self.f_rec_0[1] + self.f_const_1 * f0;
@@ -76,9 +76,10 @@ impl<F: Frame> Generator for Saw<F> {
         self.f_rec_0[0] = if i1 as i32 != 0 { f1 } else { f2 };
         let f3: f32 = f1 + (1.0 - self.f_const_0 / f0) * f2;
         let f_rec_1: f32 = if i1 as i32 != 0 { f1 } else { f3 };
-        let output = F::from(2.0) * F::from(f_rec_1) + F::from(-1.0);
+        let output = S::from(2.0) * S::from(f_rec_1) + S::from(-1.0);
         self.f_rec_2[1] = self.f_rec_2[0];
         self.f_rec_0[1] = self.f_rec_0[0];
-        return output;
+        return output;*/
+        todo!()
     }
 }

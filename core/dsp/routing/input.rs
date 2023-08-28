@@ -65,9 +65,3 @@ impl<'a, Between, Out, G, P> Generator for InputChain<'a, G, P>
         todo!()
     }
 }
-
-fn temp() {
-    let buffer = crate::Buffer::init(0.0, 512);
-    let mut chain = input_block(&buffer) >> crate::gain(5.0f32);
-    let o = chain.generate();
-}
