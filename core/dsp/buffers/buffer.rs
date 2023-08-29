@@ -6,7 +6,6 @@ use crate::event::*;
 use crate::traits::*;
 
 use crate::float::sample::*;
-use crate::routing::node::*;
 use crate::buffers::block::*;
 
 pub struct Buffer<T> {
@@ -98,14 +97,6 @@ impl<T: Copy> Block for Buffer<T> {
 impl<T: Copy> BlockMut for Buffer<T> {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
         self.items.as_mut_slice()
-    }
-}
-
-impl<F: Copy> Block for &[F] {
-    type Item = F;
-
-    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
-        self
     }
 }
 
@@ -325,24 +316,6 @@ pub struct RingBuffer<S: Sample> {
     index: usize
 }
 
-/*impl<F: Frame> Generator for RingBuffer<F> {
-    type Item = F;
-
-    fn reset(&mut self) {
-        self.index = 0;
-        for sample in self.buffer.as_slice_mut() {
-            sample.zero();
-        }
-    }
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        panic!("Prepare not implemented for ");
-    }
-
-    fn generate(&mut self) -> Self::Item {
-    }
-}*/
-
 impl<S: Sample> RingBuffer<S> {
     pub fn init(value: S, size: usize) -> Self {
         Self {
@@ -378,3 +351,21 @@ impl<S: Sample> RingBuffer<S> {
         output
     }
 }
+
+/*impl<F: Frame> Generator for RingBuffer<F> {
+    type Item = F;
+
+    fn reset(&mut self) {
+        self.index = 0;
+        for sample in self.buffer.as_slice_mut() {
+            sample.zero();
+        }
+    }
+
+    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+        panic!("Prepare not implemented for ");
+    }
+
+    fn generate(&mut self) -> Self::Item {
+    }
+}*/
