@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
 use std::ffi::{CString, c_void};
-use pa_dsp::{AudioBuffer, NoteBuffer, Stereo, Buffer, NoteMessage, Block, BlockMut};
+use pa_dsp::{Stereo, Buffer, NoteMessage, Block, BlockMut};
 
 pub trait IOCallback {
-    fn process2(&mut self, buffer: &[AudioBuffer], notes: &NoteBuffer);
+    fn process2(&mut self, buffer: &[Buffer<f32>], notes: &Buffer<NoteMessage>);
 }
 
 #[no_mangle]
@@ -63,25 +63,25 @@ impl IODevice {
                 let size = num_samples as usize;
 
                 println!("Process callback");
-                let events = NoteBuffer::new();
+                let events = Buffer<NoteMessage>::new();
 
                 let audio_outputs = [
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(0, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(1, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(2, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(3, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(4, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(5, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(6, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(7, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(8, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(9, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(10, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(11, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(12, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(13, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(14, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(15, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(0, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(1, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(2, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(3, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(4, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(5, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(6, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(7, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(8, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(9, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(10, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(11, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(12, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(13, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(14, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(15, output_channels as isize)), size, size),
                 ];
 
                 self.processor.process(&audio_outputs[0..output_channels as usize], &events);
@@ -133,27 +133,27 @@ impl IOManager {
                 let size = num_samples as usize;
 
                 // println!("Process callback");
-                let events = NoteBuffer::new();
+                let events = Buffer::new();
 
                 // callback.process2(&[], &events);
 
                 /*let audio_outputs = [
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(0, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(1, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(2, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(3, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(4, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(5, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(6, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(7, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(8, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(9, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(10, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(11, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(12, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(13, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(14, output_channels as isize)), size, size),
-                    AudioBuffer::from_raw_parts(*outputs.offset(isize::min(15, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(0, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(1, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(2, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(3, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(4, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(5, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(6, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(7, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(8, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(9, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(10, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(11, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(12, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(13, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(14, output_channels as isize)), size, size),
+                    Buffer<f32>::from_raw_parts(*outputs.offset(isize::min(15, output_channels as isize)), size, size),
                 ];
 
                 (*callback).process(&audio_outputs[0..output_channels as usize], &events);
@@ -193,8 +193,8 @@ impl AudioPluginManager {
             Some(
                 AudioPlugin {
                     plugin,
-                    left: AudioBuffer::init(0.0, 512),
-                    right: AudioBuffer::init(0.0, 512),
+                    left: Buffer::init(0.0, 512),
+                    right: Buffer::init(0.0, 512),
                 }
             )
         }
@@ -211,8 +211,8 @@ impl Drop for AudioPluginManager {
 
 pub struct AudioPlugin {
     plugin: *mut c_void,
-    left: AudioBuffer,
-    right: AudioBuffer
+    left: Buffer<f32>,
+    right: Buffer<f32>
 }
 
 impl AudioPlugin {
@@ -221,8 +221,8 @@ impl AudioPlugin {
     }
 
     pub fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        self.left = AudioBuffer::init(0.0, block_size);
-        self.right = AudioBuffer::init(0.0, block_size);
+        self.left = Buffer::init(0.0, block_size);
+        self.right = Buffer::init(0.0, block_size);
         unsafe { audio_plugin_prepare(self.plugin, sample_rate, block_size); }
     }
 

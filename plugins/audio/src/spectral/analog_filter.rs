@@ -180,7 +180,7 @@ res = hslider("res",1,0,10,0.01);
 process = ve.korg35LPF(freq, res);
 */
 
-pub struct Korg35LPF<F: Frame> {
+pub struct Korg35LPF<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -190,7 +190,7 @@ pub struct Korg35LPF<F: Frame> {
 	fRec2: [F;2],
 }
 
-impl<F: Frame> Korg35LPF<F> {
+impl<F: Sample> Korg35LPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -311,20 +311,20 @@ res = hslider("res",1,0.5,10,0.01);
 process = ve.diodeLadder(freq, res);
 */
 
-fn mydsp_faustpower2_f<F: Frame>(value: F) -> F {
+fn mydsp_faustpower2_f<F: Sample>(value: F) -> F {
 	return value * value;
 }
-fn mydsp_faustpower10_f<F: Frame>(value: F) -> F {
+fn mydsp_faustpower10_f<F: Sample>(value: F) -> F {
 	return value * value * value * value * value * value * value * value * value * value;
 }
-fn mydsp_faustpower3_f<F: Frame>(value: F) -> F {
+fn mydsp_faustpower3_f<F: Sample>(value: F) -> F {
 	return value * value * value;
 }
-fn mydsp_faustpower4_f<F: Frame>(value: F) -> F {
+fn mydsp_faustpower4_f<F: Sample>(value: F) -> F {
 	return value * value * value * value;
 }
 
-pub struct DiodeLPF<F: Frame> {
+pub struct DiodeLPF<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -335,7 +335,7 @@ pub struct DiodeLPF<F: Frame> {
 	fRec3: [F;2],
 }
 
-impl<F: Frame> DiodeLPF<F> {
+impl<F: Sample> DiodeLPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -486,7 +486,7 @@ res = hslider("res",1,0.5,10,0.01);
 process = ve.oberheimLPF(freq, res);
 */
 
-pub struct OberheimLPF<F: Frame> {
+pub struct OberheimLPF<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -495,7 +495,7 @@ pub struct OberheimLPF<F: Frame> {
 	fRec1: [F;2],
 }
 
-impl<F: Frame> OberheimLPF<F> {
+impl<F: Sample> OberheimLPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -604,7 +604,7 @@ res = hslider("res",1,0.5,10,0.01);
 process = ve.moogLadder(freq, res);
 */
 
-pub struct MoogLadderLPF<F: Frame> {
+pub struct MoogLadderLPF<F: Sample> {
 	fHslider0: f32,
 	fHslider1: f32,
 	fRec0: [F;2],
@@ -614,7 +614,7 @@ pub struct MoogLadderLPF<F: Frame> {
 	fSampleRate: i32,
 }
 
-impl<F: Frame> MoogLadderLPF<F> {
+impl<F: Sample> MoogLadderLPF<F> {
 	fn new() -> Self {
 		Self {
 			fHslider0: 0.0,
@@ -734,7 +734,7 @@ res = hslider("res",1,0.5,10,0.01);
 process = ve.moogHalfLadder(freq, res);
 */
 
-pub struct HalfLadderLPF<F: Frame> {
+pub struct HalfLadderLPF<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -744,7 +744,7 @@ pub struct HalfLadderLPF<F: Frame> {
 	fRec2: [F;2],
 }
 
-impl<F: Frame> HalfLadderLPF<F> {
+impl<F: Sample> HalfLadderLPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -864,7 +864,7 @@ res = hslider("res",1,0.5,10,0.01);
 process = ve.sallenKey2ndOrderLPF(freq, res);
 */
 
-pub struct SallenKeyLPF<F: Frame> {
+pub struct SallenKeyLPF<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -873,7 +873,7 @@ pub struct SallenKeyLPF<F: Frame> {
 	fRec1: [F;2],
 }
 
-impl<F: Frame> SallenKeyLPF<F> {
+impl<F: Sample> SallenKeyLPF<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,

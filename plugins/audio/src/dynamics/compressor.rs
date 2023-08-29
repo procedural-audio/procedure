@@ -182,7 +182,7 @@ impl Module for Compressor {
     }
 }
 
-pub struct CompressorDSP<F: Frame> {
+pub struct CompressorDSP<F: Sample> {
     ballistics_filter: BallisticsFilter<F>,
     threshold: f32,
     threshold_inverse: f32,
@@ -194,7 +194,7 @@ pub struct CompressorDSP<F: Frame> {
     data: PhantomData<F>
 }
 
-impl<F: Frame> CompressorDSP<F> {
+impl<F: Sample> CompressorDSP<F> {
     pub fn new() -> Self {
         Self {
             ballistics_filter: BallisticsFilter::new(),
@@ -247,7 +247,7 @@ impl<F: Frame> CompressorDSP<F> {
     }
 }
 
-impl<F: Frame> Processor for CompressorDSP<F> {
+impl<F: Sample> Processor for CompressorDSP<F> {
     type Input = F;
     type Output = F;
 
@@ -283,7 +283,7 @@ pub enum LevelType {
     Rms
 }
 
-pub struct BallisticsFilter<F: Frame> {
+pub struct BallisticsFilter<F: Sample> {
     prev: F,
     sample_rate: f32,
     exp_factor: f32,
@@ -294,7 +294,7 @@ pub struct BallisticsFilter<F: Frame> {
     level: LevelType
 }
 
-impl<F: Frame> BallisticsFilter<F> {
+impl<F: Sample> BallisticsFilter<F> {
     pub fn new() -> Self {
         Self {
             prev: F::from(0.0),
@@ -336,7 +336,7 @@ impl<F: Frame> BallisticsFilter<F> {
     }
 }
 
-impl<F: Frame> Processor for BallisticsFilter<F> {
+impl<F: Sample> Processor for BallisticsFilter<F> {
     type Input = F;
     type Output = F;
 

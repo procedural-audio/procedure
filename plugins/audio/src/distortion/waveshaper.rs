@@ -10,7 +10,7 @@ pub struct Waveshaper {
     gain2: f32,
 }
 
-fn shape_0<F: Frame> (x: F) -> F {
+fn shape_0<F: Sample> (x: F) -> F {
     let x = x * F::from(2.0 * std::f32::consts::PI);
     F::apply(x, f32::atan)
 }

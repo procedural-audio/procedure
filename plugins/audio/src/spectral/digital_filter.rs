@@ -144,7 +144,7 @@ q = hslider("res",1,0.5,10,0.01);
 process = fi.svf.lp(freq, q);
 */
 
-pub struct SvfLpFilter<F: Frame> {
+pub struct SvfLpFilter<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -153,7 +153,7 @@ pub struct SvfLpFilter<F: Frame> {
 	fRec1: [F;2],
 }
 
-impl<F: Frame> SvfLpFilter<F> {
+impl<F: Sample> SvfLpFilter<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -249,7 +249,7 @@ impl<F: Frame> SvfLpFilter<F> {
 	}
 }
 
-pub struct SvfHpFilter<F: Frame> {
+pub struct SvfHpFilter<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -258,7 +258,7 @@ pub struct SvfHpFilter<F: Frame> {
 	fRec1: [F;2],
 }
 
-impl<F: Frame> SvfHpFilter<F> {
+impl<F: Sample> SvfHpFilter<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -357,7 +357,7 @@ impl<F: Frame> SvfHpFilter<F> {
 	}
 }
 
-pub struct SvfBpFilter<F: Frame> {
+pub struct SvfBpFilter<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -366,7 +366,7 @@ pub struct SvfBpFilter<F: Frame> {
 	fRec1: [F;2],
 }
 
-impl<F: Frame> SvfBpFilter<F> {
+impl<F: Sample> SvfBpFilter<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,

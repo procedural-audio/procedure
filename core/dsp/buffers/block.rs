@@ -1,12 +1,48 @@
 // Trait definitions
 
+use std::ops::{Add, Sub};
+
+use crate::{Generator, Sample};
+
 pub trait Block {
     type Item;
     fn as_slice<'a>(&'a self) -> &'a [Self::Item];
+
+    fn copy_to<B: BlockMut<Item = Self::Item>>(&self, dest: &mut B) where Self::Item: Copy {
+        dest.as_slice_mut().copy_from_slice(self.as_slice());
+    }
 }
 
 pub trait BlockMut: Block {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
+
+    fn copy_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy {
+        self.as_slice_mut().copy_from_slice(src.as_slice());
+    }
+
+    fn equilibrate(&mut self) where Self::Item: Sample {
+        for d in self.as_slice_mut() {
+            *d = Self::Item::EQUILIBRIUM;
+        }
+    }
+
+    fn fill<G: Generator<Output = Self::Item>>(&mut self, src: &mut G) {
+        for d in self.as_slice_mut() {
+            *d = src.generate();
+        }
+    }
+
+    fn add_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Add<Output = Self::Item> {
+        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
+            *dest = *dest + *src;
+        }
+    }
+
+    fn sub_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Sub<Output = Self::Item> {
+        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
+            *dest = *dest - *src;
+        }
+    }
 }
 
 // Slice implementations

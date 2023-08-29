@@ -83,7 +83,7 @@ impl Module for PitchShifter {
     }
 }
 
-pub struct PitchShifterDSP<F: Frame> {
+pub struct PitchShifterDSP<F: Sample> {
 	shifters: Vec<signalsmith_stretch_sys::PitchShifter>,
 	input_buffers: Vec<Vec<f32>>,
 	output_buffers: Vec<Vec<f32>>,
@@ -91,7 +91,7 @@ pub struct PitchShifterDSP<F: Frame> {
 	cheap: bool,
 }
 
-impl<F: Frame> PitchShifterDSP<F> {
+impl<F: Sample> PitchShifterDSP<F> {
 	pub fn new() -> Self {
 		Self {
 			shifters: Vec::new(),

@@ -198,13 +198,13 @@ impl<const C: usize> Processor for Diffuser<C> {
     }
 }
 
-struct Delay<F: Frame> {
+struct Delay<F: Sample> {
     buffer: RingBuffer<F>,
     delay_ms: f32,
     sample_rate: u32
 }
 
-impl<F: Frame> Delay<F> {
+impl<F: Sample> Delay<F> {
     pub fn new(max_delay_samples: usize) -> Self {
         Self {
             buffer: RingBuffer::init(F::from(0.0), max_delay_samples),
@@ -236,7 +236,7 @@ impl<F: Frame> Delay<F> {
     }
 }
 
-impl<F: Frame> Processor for Delay<F> {
+impl<F: Sample> Processor for Delay<F> {
     type Input = F;
     type Output = F;
 

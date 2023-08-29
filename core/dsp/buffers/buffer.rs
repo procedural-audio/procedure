@@ -1,12 +1,14 @@
 use std::slice;
-use std::marker::PhantomData;
 use std::ops::{Index, IndexMut, Add, AddAssign, SubAssign, Sub};
 
-use crate::event::*;
-use crate::traits::*;
+use crate::{event::*, Stereo};
 
 use crate::float::sample::*;
 use crate::buffers::block::*;
+
+pub type AudioBuffer = Buffer<f32>;
+pub type StereoBuffer = Buffer<Stereo<f32>>;
+pub type NoteBuffer = Buffer<NoteMessage>;
 
 pub struct Buffer<T> {
     items: Vec<T>,
@@ -46,12 +48,6 @@ impl<T> Buffer<T> {
     pub fn clear(&mut self) {
         self.items.clear();
     }
-
-    pub fn fill<G: Generator<Output = T>>(&mut self, src: &mut G) {
-        for d in &mut self.items {
-            *d = src.generate();
-        }
-    }
 }
 
 impl<T: Copy> Buffer<T> {
@@ -63,26 +59,6 @@ impl<T: Copy> Buffer<T> {
         }
 
         Self { items }
-    }
-
-    pub fn copy_from<B: Block<Item = T>>(&mut self, src: &B) {
-        self.as_slice_mut().copy_from_slice(src.as_slice());
-    }
-}
-
-impl<T: Add<Output = T> + Copy> Buffer<T> {
-    pub fn add_from<B: Block<Item = T>>(&mut self, src: &B) where Self: BlockMut<Item = B::Item> {
-        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest = *dest + *src;
-        }
-    }
-}
-
-impl<T: Sub<Output = T> + Copy> Buffer<T> {
-    pub fn sub_from<B: Block<Item = T>>(&mut self, src: &B) where Self: BlockMut<Item = B::Item> {
-        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest = *dest - *src;
-        }
     }
 }
 

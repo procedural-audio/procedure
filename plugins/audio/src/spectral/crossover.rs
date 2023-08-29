@@ -92,7 +92,7 @@ freq = hslider("freq", 0.5, 0, 1, 0.0001);
 process = _ : fi.crossover2LR4(freq) : si.bus(2);
 */
 
-pub struct CrossoverDSP<F: Frame> {
+pub struct CrossoverDSP<F: Sample> {
 	fSampleRate: i32,
 	fConst0: f32,
 	fHslider0: f32,
@@ -104,7 +104,7 @@ pub struct CrossoverDSP<F: Frame> {
 	fRec8: [F;2],
 }
 
-impl<F: Frame> CrossoverDSP<F> {
+impl<F: Sample> CrossoverDSP<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,

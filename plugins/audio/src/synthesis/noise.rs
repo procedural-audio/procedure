@@ -80,7 +80,7 @@ impl Module for Noise {
     process = no.colored_noise(2, freq);
 );*/
 
-pub struct ColoredNoiseDsp<F: Frame> {
+pub struct ColoredNoiseDsp<F: Sample> {
 	fSampleRate: i32,
 	fConst1: f32,
 	fConst2: f32,
@@ -100,7 +100,7 @@ pub struct ColoredNoiseDsp<F: Frame> {
 	fRec0: [F;2],
 }
 
-impl<F: Frame> ColoredNoiseDsp<F> {
+impl<F: Sample> ColoredNoiseDsp<F> {
 	fn new() -> Self {
 		Self {
 			fSampleRate: 0,
@@ -115,11 +115,11 @@ impl<F: Frame> ColoredNoiseDsp<F> {
 			fConst9: 0.0,
 			fConst10: 0.0,
 			iRec3: [0;2],
-			fVec0: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fVec1: [F::from(0.0);2],
-			fRec0: [F::from(0.0);2],
+			fVec0: [F::EQUILIBRIUM;2],
+			fRec2: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fVec1: [F::EQUILIBRIUM;2],
+			fRec0: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -144,19 +144,19 @@ impl<F: Frame> ColoredNoiseDsp<F> {
 			self.iRec3[(l0) as usize] = 0;
 		}
 		for l1 in 0..2 {
-			self.fVec0[(l1) as usize] = F::from(0.0);
+			self.fVec0[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = F::EQUILIBRIUM;
 		}
 		for l3 in 0..2 {
-			self.fRec1[(l3) as usize] = F::from(0.0);
+			self.fRec1[(l3) as usize] = F::EQUILIBRIUM;
 		}
 		for l4 in 0..2 {
-			self.fVec1[(l4) as usize] = F::from(0.0);
+			self.fVec1[(l4) as usize] = F::EQUILIBRIUM;
 		}
 		for l5 in 0..2 {
-			self.fRec0[(l5) as usize] = F::from(0.0);
+			self.fRec0[(l5) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -216,9 +216,9 @@ impl<F: Frame> ColoredNoiseDsp<F> {
 			let mut fTemp0: f32 = ((self.iRec3[0]) as f32);
 			self.fVec0[0] = F::from(fTemp0);
 			self.fRec2[0] = F::from(0.995000005) * self.fRec2[1] + F::from(4.65661287e-10) * (F::from(fTemp0) - self.fVec0[1]);
-			self.fRec1[0] = F::from(0.0) - F::from(self.fConst9) * (F::from(self.fConst10) * self.fRec1[1] - (F::from(fSlow7) * self.fRec2[0] + F::from(fSlow8) * self.fRec2[1]));
+			self.fRec1[0] = F::EQUILIBRIUM - F::from(self.fConst9) * (F::from(self.fConst10) * self.fRec1[1] - (F::from(fSlow7) * self.fRec2[0] + F::from(fSlow8) * self.fRec2[1]));
 			self.fVec1[0] = F::from(fSlow10) * self.fRec1[0];
-			self.fRec0[0] = F::from(0.0) - F::from(self.fConst6) * (F::from(self.fConst7) * self.fRec0[1] - (F::from(fSlow5) * self.fRec1[0] + F::from(fSlow9) * self.fVec1[1]));
+			self.fRec0[0] = F::EQUILIBRIUM - F::from(self.fConst6) * (F::from(self.fConst7) * self.fRec0[1] - (F::from(fSlow5) * self.fRec1[0] + F::from(fSlow9) * self.fVec1[1]));
 			*output0 = ((F::min(F::from(1.0), F::max(F::from(-1.0), F::from(fSlow2) * self.fRec0[0] / F::from(fSlow13)))) as F);
 			self.iRec3[1] = self.iRec3[0];
 			self.fVec0[1] = self.fVec0[0];

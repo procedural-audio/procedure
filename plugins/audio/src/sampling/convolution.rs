@@ -125,13 +125,13 @@ impl Module for Convolution {
     }
 }
 
-fn dot_product<F: Frame>(xs: &[F], ys: &[F]) -> F {
+fn dot_product<F: Sample>(xs: &[F], ys: &[F]) -> F {
     xs.iter()
         .zip(ys)
         .fold(F::from(0.0), |acc, (&x, &y)| acc + x * y)
 }
 
-fn convolve<F: Frame>(sample: &[F], coeff: &[F], output: &mut [F]) {
+fn convolve<F: Sample>(sample: &[F], coeff: &[F], output: &mut [F]) {
     sample
         .windows(coeff.len())
         .map(|window| {
