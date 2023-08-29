@@ -14,6 +14,8 @@ pub trait Sample: Copy + Clone
     fn from(value: Self::Float) -> Self;
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized;
 
+    fn mono(self) -> Self::Float;
+
     fn sin(self) -> Self {
         self.apply(Float::sin)
     }
@@ -40,6 +42,10 @@ impl Sample for f32 {
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
         f(self)
     }
+
+    fn mono(self) -> Self::Float {
+        self
+    }
 }
 
 impl Sample for f64 {
@@ -54,5 +60,9 @@ impl Sample for f64 {
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
         f(self)
+    }
+
+    fn mono(self) -> Self::Float {
+        self
     }
 }

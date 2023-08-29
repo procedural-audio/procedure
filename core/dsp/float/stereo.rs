@@ -104,4 +104,8 @@ impl<F: Float> Sample for Stereo<F> {
             right: f(self.right),
         }
     }
+
+    fn mono(self) -> Self::Float {
+        Float::avg(self.left, self.right)
+    }
 }

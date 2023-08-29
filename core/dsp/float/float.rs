@@ -14,6 +14,8 @@ pub trait Float: Copy + Clone
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn tan(self) -> Self;
+
+    fn avg(self, v: Self) -> Self;
 }
 
 impl Float for f32 {
@@ -36,6 +38,10 @@ impl Float for f32 {
     fn tan(self) -> Self {
         f32::tan(self)
     }
+
+    fn avg(self, v: Self) -> Self {
+        (self + v) / 2.0
+    }
 }
 
 impl Float for f64 {
@@ -57,5 +63,9 @@ impl Float for f64 {
 
     fn tan(self) -> Self {
         f64::tan(self)
+    }
+
+    fn avg(self, v: Self) -> Self {
+        (self + v) / 2.0
     }
 }

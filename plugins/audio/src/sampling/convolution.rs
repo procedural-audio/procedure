@@ -128,7 +128,7 @@ impl Module for Convolution {
 fn dot_product<F: Sample>(xs: &[F], ys: &[F]) -> F {
     xs.iter()
         .zip(ys)
-        .fold(F::from(0.0), |acc, (&x, &y)| acc + x * y)
+        .fold(F::EQUILIBRIUM, |acc, (&x, &y)| acc + x * y)
 }
 
 fn convolve<F: Sample>(sample: &[F], coeff: &[F], output: &mut [F]) {
@@ -138,7 +138,7 @@ fn convolve<F: Sample>(sample: &[F], coeff: &[F], output: &mut [F]) {
             window
                 .iter()
                 .zip(coeff)
-                .fold(F::from(0.0), |acc, (&x, &y)| acc + x * y)
+                .fold(F::EQUILIBRIUM, |acc, (&x, &y)| acc + x * y)
         })
         .zip(output)
         .for_each(
