@@ -1,6 +1,6 @@
 // Trait definitions
 
-use std::ops::{Add, Sub};
+use std::ops::{Add, Sub, Mul};
 
 use crate::{Generator, Sample};
 
@@ -19,6 +19,7 @@ pub trait Block {
 
     fn rms(&self) -> Self::Item where Self::Item: Sample {
         panic!("rms not implemented");
+
         let mut total = Self::Item::EQUILIBRIUM;
         let mut count = Self::Item::EQUILIBRIUM;
 
@@ -35,10 +36,6 @@ pub trait Block {
 pub trait BlockMut: Block {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
 
-    fn copy_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy {
-        self.as_slice_mut().copy_from_slice(src.as_slice());
-    }
-
     fn equilibrate(&mut self) where Self::Item: Sample {
         for d in self.as_slice_mut() {
             *d = Self::Item::EQUILIBRIUM;
@@ -51,6 +48,10 @@ pub trait BlockMut: Block {
         }
     }
 
+    fn copy_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy {
+        self.as_slice_mut().copy_from_slice(src.as_slice());
+    }
+
     fn add_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Add<Output = Self::Item> {
         for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
             *dest = *dest + *src;
@@ -60,6 +61,12 @@ pub trait BlockMut: Block {
     fn sub_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Sub<Output = Self::Item> {
         for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
             *dest = *dest - *src;
+        }
+    }
+
+    fn mul_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Mul<Output = Self::Item> {
+        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
+            *dest = *dest * *src;
         }
     }
 }

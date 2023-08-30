@@ -52,10 +52,10 @@ impl<A, B> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
 }
 
 // Chain to mutable block
-impl<S, A: BlockGenerator<Output = S>, B: BlockMut<Item = S>> std::ops::Shr<B> for AudioNode<A> {
+impl<S, A: Generator<Output = S>, B: BlockMut<Item = S>> std::ops::Shr<&mut B> for AudioNode<A> {
     type Output = ();
 
-    fn shr(mut self, mut rhs: B) -> Self::Output {
-        self.generate_block(&mut rhs);
+    fn shr(mut self, rhs: &mut B) -> Self::Output {
+        self.generate_block(rhs);
     }
 }

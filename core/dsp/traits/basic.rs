@@ -1,8 +1,5 @@
 use crate::buffers::*;
 
-pub type Process<F> = Box<dyn Processor<Input = F, Output = F>>;
-pub type Generate<F> = Box<dyn Generator<Output = F>>;
-
 pub trait Generator {
     type Output;
 

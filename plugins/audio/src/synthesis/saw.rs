@@ -54,7 +54,7 @@ impl Module for SawModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        // inputs.audio[0] >> AudioNode(&voice.saw) >> &mut outputs.audio[0];
+        osc(Stereo::sin, 440.0f32) >> &mut outputs.audio[0];
 
         for msg in &inputs.events[0] {
             match msg.note {
@@ -82,3 +82,30 @@ impl Module for SawModule {
         }
     }
 }
+
+pub struct Info2 {
+    title: &'static str,
+    color: Color,
+    path: &'static [&'static str],
+    graph: fn() -> Box<dyn Generator<Output = f32>>
+}
+
+pub trait Module2 {
+    const INFO: Info2;
+}
+
+impl Module2 for SawModule {
+    const INFO: Info2 = Info2 {
+        title: "Saw",
+        color: Color::BLUE,
+        path: &["path", "to", "module"],
+        // graph: graph!(saw(440.0) >> gain(20.0) >> gain(-10.0) >> gain(-20.0)),
+        graph: || {
+            Box::new(
+                osc(f32::sin, 550.0f32) >> gain(20.0) >> gain(-10.0) >> gain(-20.0)
+            )
+        }
+    };
+}
+
+// module!("Saw", saw(440.0) >> gain(20.0) >> gain(-10.0) >> gain(-20.0));

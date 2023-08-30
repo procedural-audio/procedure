@@ -1,7 +1,7 @@
 use crate::traits::*;
 
-pub struct Player<T> {
-    source: T,
+pub struct Player<G: Generator> {
+    source: G,
     playing: bool
 }
 
