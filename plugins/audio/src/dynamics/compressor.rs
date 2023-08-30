@@ -136,7 +136,7 @@ impl Module for Compressor {
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.compressor.prepare(sample_rate, block_size);
+        // voice.compressor.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
@@ -247,7 +247,7 @@ impl<F: Sample> CompressorDSP<F> {
     }
 }
 
-impl<F: Sample> Processor for CompressorDSP<F> {
+/*impl<F: Sample> Processor for CompressorDSP<F> {
     type Input = F;
     type Output = F;
 
@@ -263,9 +263,9 @@ impl<F: Sample> Processor for CompressorDSP<F> {
 
         let gain = F::apply(env, | s| {
             if s < self.threshold {
-                1.0
+                self.threshold
             } else {
-                f32::powf(s * self.threshold_inverse, self.ratio_inverse - 1.0)
+                F::powf(s * self.threshold_inverse, self.ratio_inverse - 1.0)
             }
         });
 
@@ -275,7 +275,7 @@ impl<F: Sample> Processor for CompressorDSP<F> {
 
         return input * gain;
     }
-}
+}*/
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum LevelType {
@@ -297,7 +297,7 @@ pub struct BallisticsFilter<F: Sample> {
 impl<F: Sample> BallisticsFilter<F> {
     pub fn new() -> Self {
         Self {
-            prev: F::from(0.0),
+            prev: F::EQUILIBRIUM,
             sample_rate: 44100.0,
             exp_factor: -0.142,
             attack: 1.0,
@@ -332,11 +332,11 @@ impl<F: Sample> BallisticsFilter<F> {
     }
 
     pub fn reset(&mut self) {
-        self.prev = F::from(0.0);
+        self.prev = F::EQUILIBRIUM;
     }
 }
 
-impl<F: Sample> Processor for BallisticsFilter<F> {
+/*impl<F: Sample> Processor for BallisticsFilter<F> {
     type Input = F;
     type Output = F;
 
@@ -374,4 +374,4 @@ impl<F: Sample> Processor for BallisticsFilter<F> {
             result
         }
     }
-}
+}*/

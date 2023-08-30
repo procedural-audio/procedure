@@ -10,9 +10,9 @@ pub struct Waveshaper {
     gain2: f32,
 }
 
-fn shape_0<F: Sample> (x: F) -> F {
-    let x = x * F::from(2.0 * std::f32::consts::PI);
-    F::apply(x, f32::atan)
+fn shape_0<F: Float, S: Sample<Float = F>> (x: S) -> S {
+    let x = x * S::from(F::from(2.0 * std::f32::consts::PI));
+    S::apply(x, F::atan)
 }
 
 // https://www.musicdsp.org/en/latest/Effects/41-waveshaper.html

@@ -91,11 +91,8 @@ impl<F: Float> Sample for Stereo<F> {
         right: F::ZERO
     };
 
-    fn from(value: Self::Float) -> Self {
-        Self {
-            left: value,
-            right: value 
-        }        
+    fn from_f32(v: f32) -> Self {
+        Self::from(F::from(v))
     }
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
@@ -107,5 +104,35 @@ impl<F: Float> Sample for Stereo<F> {
 
     fn mono(self) -> Self::Float {
         Float::avg(self.left, self.right)
+    }
+
+    fn powf(self, e: Self) -> Self {
+        Self {
+            left: Float::powf(self.left, e.left),
+            right: Float::powf(self.right, e.right),
+        }
+    }
+
+    fn min(self, rhs: Self) -> Self {
+        Self {
+            left: Float::min(self.left, rhs.left),
+            right: Float::min(self.right, rhs.right),
+        }
+    }
+
+    fn max(self, rhs: Self) -> Self {
+        Self {
+            left: Float::max(self.left, rhs.left),
+            right: Float::max(self.right, rhs.right),
+        }
+    }
+}
+
+impl<F: Float> From<F> for Stereo<F> {
+    fn from(v: F) -> Self {
+        Self {
+            left: v,
+            right: v
+        }
     }
 }

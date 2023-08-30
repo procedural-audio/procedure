@@ -197,9 +197,9 @@ impl<F: Sample> Korg35LPF<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fRec2: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -222,13 +222,13 @@ impl<F: Sample> Korg35LPF<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -290,11 +290,11 @@ impl<F: Sample> Korg35LPF<F> {
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
 			let mut fTemp0: F = ((*input0)) - self.fRec2[1];
-			let mut fTemp1: F = F::from(fSlow6) * (self.fRec2[1] + F::from(fSlow7) * (F::from(fSlow0) * fTemp0 + F::from(fSlow8) * self.fRec0[1]) + F::from(fSlow9) * self.fRec1[1]) - self.fRec0[1];
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp1;
-			let mut fTemp2: F = self.fRec0[1] + F::from(fSlow2) * fTemp1;
-			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * (F::from(fSlow10) * fTemp2 - self.fRec1[1]);
-			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp0;
+			let mut fTemp1: F = F::from_f32(fSlow6) * (self.fRec2[1] + F::from_f32(fSlow7) * (F::from_f32(fSlow0) * fTemp0 + F::from_f32(fSlow8) * self.fRec0[1]) + F::from_f32(fSlow9) * self.fRec1[1]) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow3) * fTemp1;
+			let mut fTemp2: F = self.fRec0[1] + F::from_f32(fSlow2) * fTemp1;
+			self.fRec1[0] = self.fRec1[1] + F::from_f32(fSlow3) * (F::from_f32(fSlow10) * fTemp2 - self.fRec1[1]);
+			self.fRec2[0] = self.fRec2[1] + F::from_f32(fSlow3) * fTemp0;
 			let mut fRec3: F = fTemp2;
 			*output0 = ((fRec3) as F);
 			self.fRec0[1] = self.fRec0[0];
@@ -342,10 +342,10 @@ impl<F: Sample> DiodeLPF<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
-			fRec3: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fRec2: [F::EQUILIBRIUM;2],
+			fRec3: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -368,16 +368,16 @@ impl<F: Sample> DiodeLPF<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = F::EQUILIBRIUM;
 		}
 		for l3 in 0..2 {
-			self.fRec3[(l3) as usize] = F::from(0.0);
+			self.fRec3[(l3) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -456,20 +456,20 @@ impl<F: Sample> DiodeLPF<F> {
 		let mut fSlow28: f32 = 1.0 / fSlow2;
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			let mut fTemp0: F = F::max(F::from(-1.0), F::min(F::from(1.0), ((*input0) as F)));
-			let mut fTemp1: F = F::from(fSlow21) * self.fRec0[1] + self.fRec1[1];
-			let mut fTemp2: F = F::from(fSlow23) * fTemp1;
+			let mut fTemp0: F = F::max(F::from_f32(-1.0), F::min(F::from_f32(1.0), ((*input0) as F)));
+			let mut fTemp1: F = F::from_f32(fSlow21) * self.fRec0[1] + self.fRec1[1];
+			let mut fTemp2: F = F::from_f32(fSlow23) * fTemp1;
 			let mut fTemp3: F = fTemp2 + self.fRec2[1];
-			let mut fTemp4: F = F::from(fSlow13) * fTemp3 + self.fRec3[1];
-			let mut fTemp5: F = (F::from(fSlow18) * (F::from(1.5) * fTemp0 * (F::from(1.0) - F::from(0.333333343) * mydsp_faustpower2_f(fTemp0)) + F::from(fSlow19) * (F::from(0.0) - (F::from(0.0411641225) * self.fRec0[1] + F::from(fSlow20) * fTemp1) - F::from(fSlow22) * fTemp3 - F::from(fSlow24) * fTemp4)) + F::from(fSlow25) * (fTemp3 + F::from(fSlow26) * fTemp4)) - self.fRec3[1];
-			let mut fTemp6: F = F::from(0.5) * (F::from(fSlow12) * (self.fRec3[1] + F::from(fSlow3) * fTemp5) + F::from(fSlow27) * (fTemp1 + F::from(fSlow14) * fTemp3)) - self.fRec2[1];
-			let mut fTemp7: F = F::from(0.5) * (F::from(fSlow8) * (self.fRec2[1] + F::from(fSlow3) * fTemp6) + F::from(fSlow28) * (self.fRec0[1] + fTemp2)) - self.fRec1[1];
-			let mut fTemp8: F = F::from(0.5) * (self.fRec1[1] + F::from(fSlow3) * fTemp7) - self.fRec0[1];
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow4) * fTemp8;
-			self.fRec1[0] = self.fRec1[1] + F::from(fSlow4) * fTemp7;
-			self.fRec2[0] = self.fRec2[1] + F::from(fSlow4) * fTemp6;
-			self.fRec3[0] = self.fRec3[1] + F::from(fSlow4) * fTemp5;
-			let mut fRec4: F = self.fRec0[1] + F::from(fSlow3) * fTemp8;
+			let mut fTemp4: F = F::from_f32(fSlow13) * fTemp3 + self.fRec3[1];
+			let mut fTemp5: F = (F::from_f32(fSlow18) * (F::from_f32(1.5) * fTemp0 * (F::from_f32(1.0) - F::from_f32(0.333333343) * mydsp_faustpower2_f(fTemp0)) + F::from_f32(fSlow19) * (F::EQUILIBRIUM - (F::from_f32(0.0411641225) * self.fRec0[1] + F::from_f32(fSlow20) * fTemp1) - F::from_f32(fSlow22) * fTemp3 - F::from_f32(fSlow24) * fTemp4)) + F::from_f32(fSlow25) * (fTemp3 + F::from_f32(fSlow26) * fTemp4)) - self.fRec3[1];
+			let mut fTemp6: F = F::from_f32(0.5) * (F::from_f32(fSlow12) * (self.fRec3[1] + F::from_f32(fSlow3) * fTemp5) + F::from_f32(fSlow27) * (fTemp1 + F::from_f32(fSlow14) * fTemp3)) - self.fRec2[1];
+			let mut fTemp7: F = F::from_f32(0.5) * (F::from_f32(fSlow8) * (self.fRec2[1] + F::from_f32(fSlow3) * fTemp6) + F::from_f32(fSlow28) * (self.fRec0[1] + fTemp2)) - self.fRec1[1];
+			let mut fTemp8: F = F::from_f32(0.5) * (self.fRec1[1] + F::from_f32(fSlow3) * fTemp7) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow4) * fTemp8;
+			self.fRec1[0] = self.fRec1[1] + F::from_f32(fSlow4) * fTemp7;
+			self.fRec2[0] = self.fRec2[1] + F::from_f32(fSlow4) * fTemp6;
+			self.fRec3[0] = self.fRec3[1] + F::from_f32(fSlow4) * fTemp5;
+			let mut fRec4: F = self.fRec0[1] + F::from_f32(fSlow3) * fTemp8;
 			*output0 = ((fRec4) as F);
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];
@@ -502,8 +502,8 @@ impl<F: Sample> OberheimLPF<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -526,10 +526,10 @@ impl<F: Sample> OberheimLPF<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 	}
 	fn instance_constants(&mut self, sample_rate: i32) {
@@ -582,13 +582,13 @@ impl<F: Sample> OberheimLPF<F> {
 		let mut fSlow4: f32 = fSlow0 / fSlow3;
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			let mut fTemp0: F = ((*input0)) - (self.fRec0[1] + F::from(fSlow2) * self.fRec1[1]);
-			let mut fTemp1: F = F::from(fSlow4) * fTemp0;
-			let mut fTemp2: F = F::max(F::from(-1.0), F::min(F::from(1.0), self.fRec1[1] + fTemp1));
-			let mut fTemp3: F = fTemp2 * (F::from(1.0) - F::from(0.333333343) * mydsp_faustpower2_f(fTemp2));
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow1) * fTemp3;
+			let mut fTemp0: F = ((*input0)) - (self.fRec0[1] + F::from_f32(fSlow2) * self.fRec1[1]);
+			let mut fTemp1: F = F::from_f32(fSlow4) * fTemp0;
+			let mut fTemp2: F = F::max(F::from_f32(-1.0), F::min(F::from_f32(1.0), self.fRec1[1] + fTemp1));
+			let mut fTemp3: F = fTemp2 * (F::from_f32(1.0) - F::from_f32(0.333333343) * mydsp_faustpower2_f(fTemp2));
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow1) * fTemp3;
 			self.fRec1[0] = fTemp1 + fTemp3;
-			let mut fTemp4: F = F::from(fSlow0) * fTemp3;
+			let mut fTemp4: F = F::from_f32(fSlow0) * fTemp3;
 			let mut fRec2: F = self.fRec0[1] + fTemp4;
 			*output0 = fRec2;
 			self.fRec0[1] = self.fRec0[0];
@@ -619,10 +619,10 @@ impl<F: Sample> MoogLadderLPF<F> {
 		Self {
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
-			fRec3: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fRec2: [F::EQUILIBRIUM;2],
+			fRec3: [F::EQUILIBRIUM;2],
 			fSampleRate: 0,
 		}
 	}
@@ -644,16 +644,16 @@ impl<F: Sample> MoogLadderLPF<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = F::EQUILIBRIUM;
 		}
 		for l3 in 0..2 {
-			self.fRec3[(l3) as usize] = F::from(0.0);
+			self.fRec3[(l3) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -709,15 +709,15 @@ impl<F: Sample> MoogLadderLPF<F> {
 		let mut fSlow6: f32 = 0.16465649 * fSlow4 * (1.0 - fSlow2);
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			let mut fTemp0: F = F::from(fSlow5) * (((*input0)) - F::from(fSlow6) * (self.fRec3[1] + F::from(fSlow2) * (self.fRec2[1] + F::from(fSlow2) * (self.fRec1[1] + F::from(fSlow2) * self.fRec0[1])))) - self.fRec0[1];
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp0;
-			let mut fTemp1: F = (self.fRec0[1] + F::from(fSlow2) * fTemp0) - self.fRec1[1];
-			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * fTemp1;
-			let mut fTemp2: F = (self.fRec1[1] + F::from(fSlow2) * fTemp1) - self.fRec2[1];
-			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp2;
-			let mut fTemp3: F = (self.fRec2[1] + F::from(fSlow2) * fTemp2) - self.fRec3[1];
-			self.fRec3[0] = self.fRec3[1] + F::from(fSlow3) * fTemp3;
-			let mut fRec4: F = self.fRec3[1] + F::from(fSlow2) * fTemp3;
+			let mut fTemp0: F = F::from_f32(fSlow5) * (((*input0)) - F::from_f32(fSlow6) * (self.fRec3[1] + F::from_f32(fSlow2) * (self.fRec2[1] + F::from_f32(fSlow2) * (self.fRec1[1] + F::from_f32(fSlow2) * self.fRec0[1])))) - self.fRec0[1];
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow3) * fTemp0;
+			let mut fTemp1: F = (self.fRec0[1] + F::from_f32(fSlow2) * fTemp0) - self.fRec1[1];
+			self.fRec1[0] = self.fRec1[1] + F::from_f32(fSlow3) * fTemp1;
+			let mut fTemp2: F = (self.fRec1[1] + F::from_f32(fSlow2) * fTemp1) - self.fRec2[1];
+			self.fRec2[0] = self.fRec2[1] + F::from_f32(fSlow3) * fTemp2;
+			let mut fTemp3: F = (self.fRec2[1] + F::from_f32(fSlow2) * fTemp2) - self.fRec3[1];
+			self.fRec3[0] = self.fRec3[1] + F::from_f32(fSlow3) * fTemp3;
+			let mut fRec4: F = self.fRec3[1] + F::from_f32(fSlow2) * fTemp3;
 			*output0 = fRec4;
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];
@@ -751,9 +751,9 @@ impl<F: Sample> HalfLadderLPF<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fRec2: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fRec2: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -776,13 +776,13 @@ impl<F: Sample> HalfLadderLPF<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec2[(l2) as usize] = F::from(0.0);
+			self.fRec2[(l2) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -841,14 +841,14 @@ impl<F: Sample> HalfLadderLPF<F> {
 		let mut fSlow9: f32 = 0.082328245 * (fSlow0 * fSlow5) / fSlow1;
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			let mut fTemp0: F = F::from(fSlow6) * (((*input0)) + F::from(fSlow7) * (F::from(0.0) - (F::from(0.16465649) * self.fRec0[1] + F::from(fSlow8) * self.fRec1[1]) - F::from(fSlow9) * self.fRec2[1])) - self.fRec2[1];
-			let mut fTemp1: F = (self.fRec2[1] + F::from(fSlow2) * fTemp0) - self.fRec1[1];
-			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow2) * fTemp1;
+			let mut fTemp0: F = F::from_f32(fSlow6) * (((*input0)) + F::from_f32(fSlow7) * (F::EQUILIBRIUM - (F::from_f32(0.16465649) * self.fRec0[1] + F::from_f32(fSlow8) * self.fRec1[1]) - F::from_f32(fSlow9) * self.fRec2[1])) - self.fRec2[1];
+			let mut fTemp1: F = (self.fRec2[1] + F::from_f32(fSlow2) * fTemp0) - self.fRec1[1];
+			let mut fTemp2: F = self.fRec1[1] + F::from_f32(fSlow2) * fTemp1;
 			let mut fTemp3: F = fTemp2 - self.fRec0[1];
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow3) * fTemp3;
-			self.fRec1[0] = self.fRec1[1] + F::from(fSlow3) * fTemp1;
-			self.fRec2[0] = self.fRec2[1] + F::from(fSlow3) * fTemp0;
-			let mut fRec3: F = F::from(2.0) * (self.fRec0[1] + F::from(fSlow2) * fTemp3) - fTemp2;
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow3) * fTemp3;
+			self.fRec1[0] = self.fRec1[1] + F::from_f32(fSlow3) * fTemp1;
+			self.fRec2[0] = self.fRec2[1] + F::from_f32(fSlow3) * fTemp0;
+			let mut fRec3: F = F::from_f32(2.0) * (self.fRec0[1] + F::from_f32(fSlow2) * fTemp3) - fTemp2;
 			*output0 = ((fRec3) as F);
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];
@@ -880,8 +880,8 @@ impl<F: Sample> SallenKeyLPF<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
 		}
 	}
 
@@ -902,10 +902,10 @@ impl<F: Sample> SallenKeyLPF<F> {
 	}
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::EQUILIBRIUM;
 		}
 	}
 	fn instance_constants(&mut self, sample_rate: i32) {
@@ -958,12 +958,12 @@ impl<F: Sample> SallenKeyLPF<F> {
 		let mut fSlow5: f32 = 2.0 * fSlow4;
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
-			let mut fTemp0: F = ((*input0) as F) - (self.fRec0[1] + F::from(fSlow2) * self.fRec1[1]);
-			let mut fTemp1: F = self.fRec1[1] + F::from(fSlow4) * fTemp0;
-			self.fRec0[0] = self.fRec0[1] + F::from(fSlow1) * fTemp1;
-			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow5) * fTemp0;
+			let mut fTemp0: F = ((*input0) as F) - (self.fRec0[1] + F::from_f32(fSlow2) * self.fRec1[1]);
+			let mut fTemp1: F = self.fRec1[1] + F::from_f32(fSlow4) * fTemp0;
+			self.fRec0[0] = self.fRec0[1] + F::from_f32(fSlow1) * fTemp1;
+			let mut fTemp2: F = self.fRec1[1] + F::from_f32(fSlow5) * fTemp0;
 			self.fRec1[0] = fTemp2;
-			let mut fRec2: F = self.fRec0[1] + F::from(fSlow0) * fTemp2;
+			let mut fRec2: F = self.fRec0[1] + F::from_f32(fSlow0) * fTemp2;
 			*output0 = ((fRec2) as F);
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];

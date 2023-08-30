@@ -207,7 +207,7 @@ struct Delay<F: Sample> {
 impl<F: Sample> Delay<F> {
     pub fn new(max_delay_samples: usize) -> Self {
         Self {
-            buffer: RingBuffer::init(F::from(0.0), max_delay_samples),
+            buffer: RingBuffer::init(F::EQUILIBRIUM, max_delay_samples),
             delay_ms: 0.0,
             sample_rate: 0,
         }

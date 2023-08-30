@@ -160,8 +160,8 @@ impl<F: Sample> SvfLpFilter<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
+			fRec0: [F::from_f32(0.0);2],
+			fRec1: [F::from_f32(0.0);2],
 		}
 	}
 
@@ -184,10 +184,10 @@ impl<F: Sample> SvfLpFilter<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::from_f32(0.0);
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::from_f32(0.0);
 		}
 	}
 
@@ -237,10 +237,10 @@ impl<F: Sample> SvfLpFilter<F> {
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
 			let mut fTemp0: F = ((*input0) as F);
-			let mut fTemp1: F = self.fRec0[1] + F::from(fSlow0) * (fTemp0 - self.fRec1[1]);
-			self.fRec0[0] = F::from(fSlow2) * fTemp1 - self.fRec0[1];
-			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow3) * fTemp1;
-			self.fRec1[0] = F::from(2.0) * fTemp2 - self.fRec1[1];
+			let mut fTemp1: F = self.fRec0[1] + F::from_f32(fSlow0) * (fTemp0 - self.fRec1[1]);
+			self.fRec0[0] = F::from_f32(fSlow2) * fTemp1 - self.fRec0[1];
+			let mut fTemp2: F = self.fRec1[1] + F::from_f32(fSlow3) * fTemp1;
+			self.fRec1[0] = F::from_f32(2.0) * fTemp2 - self.fRec1[1];
 			let mut fRec2: F = fTemp2;
 			*output0 = ((fRec2) as F);
 			self.fRec0[1] = self.fRec0[0];
@@ -265,8 +265,8 @@ impl<F: Sample> SvfHpFilter<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
+			fRec0: [F::from_f32(0.0);2],
+			fRec1: [F::from_f32(0.0);2],
 		}
 	}
 
@@ -289,10 +289,10 @@ impl<F: Sample> SvfHpFilter<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::from_f32(0.0);
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::from_f32(0.0);
 		}
 	}
 
@@ -344,13 +344,13 @@ impl<F: Sample> SvfHpFilter<F> {
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
 			let mut fTemp0: F = ((*input0) as F);
-			let mut fTemp1: F = self.fRec0[1] + F::from(fSlow0) * (fTemp0 - self.fRec1[1]);
-			self.fRec0[0] = F::from(fSlow3) * fTemp1 - self.fRec0[1];
-			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow4) * fTemp1;
-			self.fRec1[0] = F::from(2.0) * fTemp2 - self.fRec1[1];
-			let mut fRec2: F = F::from(fSlow5) * fTemp1;
+			let mut fTemp1: F = self.fRec0[1] + F::from_f32(fSlow0) * (fTemp0 - self.fRec1[1]);
+			self.fRec0[0] = F::from_f32(fSlow3) * fTemp1 - self.fRec0[1];
+			let mut fTemp2: F = self.fRec1[1] + F::from_f32(fSlow4) * fTemp1;
+			self.fRec1[0] = F::from_f32(2.0) * fTemp2 - self.fRec1[1];
+			let mut fRec2: F = F::from_f32(fSlow5) * fTemp1;
 			let mut fRec3: F = fTemp2;
-			*output0 = ((fTemp0 - (fRec3 + F::from(fSlow1) * fRec2)) as F);
+			*output0 = ((fTemp0 - (fRec3 + F::from_f32(fSlow1) * fRec2)) as F);
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];
 		}
@@ -373,8 +373,8 @@ impl<F: Sample> SvfBpFilter<F> {
 			fConst0: 0.0,
 			fHslider0: 0.0,
 			fHslider1: 0.0,
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
+			fRec0: [F::from_f32(0.0);2],
+			fRec1: [F::from_f32(0.0);2],
 		}
 	}
 
@@ -397,10 +397,10 @@ impl<F: Sample> SvfBpFilter<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec0[(l0) as usize] = F::from(0.0);
+			self.fRec0[(l0) as usize] = F::from_f32(0.0);
 		}
 		for l1 in 0..2 {
-			self.fRec1[(l1) as usize] = F::from(0.0);
+			self.fRec1[(l1) as usize] = F::from_f32(0.0);
 		}
 	}
 
@@ -451,11 +451,11 @@ impl<F: Sample> SvfBpFilter<F> {
 		let zipped_iterators = inputs0.zip(outputs0);
 		for (input0, output0) in zipped_iterators {
 			let mut fTemp0: F = ((*input0) as F);
-			let mut fTemp1: F = self.fRec0[1] + F::from(fSlow0) * (fTemp0 - self.fRec1[1]);
-			self.fRec0[0] = F::from(fSlow2) * fTemp1 - self.fRec0[1];
-			let mut fTemp2: F = self.fRec1[1] + F::from(fSlow3) * fTemp1;
-			self.fRec1[0] = F::from(2.0) * fTemp2 - self.fRec1[1];
-			let mut fRec2: F = F::from(fSlow4) * fTemp1;
+			let mut fTemp1: F = self.fRec0[1] + F::from_f32(fSlow0) * (fTemp0 - self.fRec1[1]);
+			self.fRec0[0] = F::from_f32(fSlow2) * fTemp1 - self.fRec0[1];
+			let mut fTemp2: F = self.fRec1[1] + F::from_f32(fSlow3) * fTemp1;
+			self.fRec1[0] = F::from_f32(2.0) * fTemp2 - self.fRec1[1];
+			let mut fRec2: F = F::from_f32(fSlow4) * fTemp1;
 			*output0 = ((fRec2) as F);
 			self.fRec0[1] = self.fRec0[0];
 			self.fRec1[1] = self.fRec1[0];

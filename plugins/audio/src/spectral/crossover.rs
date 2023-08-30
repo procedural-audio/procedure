@@ -110,12 +110,12 @@ impl<F: Sample> CrossoverDSP<F> {
 			fSampleRate: 0,
 			fConst0: 0.0,
 			fHslider0: 0.0,
-			fRec3: [F::from(0.0);2],
-			fRec4: [F::from(0.0);2],
-			fRec0: [F::from(0.0);2],
-			fRec1: [F::from(0.0);2],
-			fRec7: [F::from(0.0);2],
-			fRec8: [F::from(0.0);2],
+			fRec3: [F::EQUILIBRIUM;2],
+			fRec4: [F::EQUILIBRIUM;2],
+			fRec0: [F::EQUILIBRIUM;2],
+			fRec1: [F::EQUILIBRIUM;2],
+			fRec7: [F::EQUILIBRIUM;2],
+			fRec8: [F::EQUILIBRIUM;2],
 		}
     }
 
@@ -125,22 +125,22 @@ impl<F: Sample> CrossoverDSP<F> {
 
 	fn instance_clear(&mut self) {
 		for l0 in 0..2 {
-			self.fRec3[(l0) as usize] = F::from(0.0);
+			self.fRec3[(l0) as usize] = F::EQUILIBRIUM;
 		}
 		for l1 in 0..2 {
-			self.fRec4[(l1) as usize] = F::from(0.0);
+			self.fRec4[(l1) as usize] = F::EQUILIBRIUM;
 		}
 		for l2 in 0..2 {
-			self.fRec0[(l2) as usize] = F::from(0.0);
+			self.fRec0[(l2) as usize] = F::EQUILIBRIUM;
 		}
 		for l3 in 0..2 {
-			self.fRec1[(l3) as usize] = F::from(0.0);
+			self.fRec1[(l3) as usize] = F::EQUILIBRIUM;
 		}
 		for l4 in 0..2 {
-			self.fRec7[(l4) as usize] = F::from(0.0);
+			self.fRec7[(l4) as usize] = F::EQUILIBRIUM;
 		}
 		for l5 in 0..2 {
-			self.fRec8[(l5) as usize] = F::from(0.0);
+			self.fRec8[(l5) as usize] = F::EQUILIBRIUM;
 		}
 	}
 
@@ -173,34 +173,34 @@ impl<F: Sample> CrossoverDSP<F> {
 		} else {
 			panic!("wrong number of outputs");
 		};
-		let mut fSlow0: F = F::from(f32::tan(self.fConst0 * ((self.fHslider0) as f32)));
-		let mut fSlow1: F = fSlow0 * (fSlow0 + F::from(1.41421354)) + F::from(1.0);
-		let mut fSlow2: F = F::from(2.0) / fSlow1;
+		let mut fSlow0: F = F::from_f32(f32::tan(self.fConst0 * ((self.fHslider0) as f32)));
+		let mut fSlow1: F = fSlow0 * (fSlow0 + F::from_f32(1.41421354)) + F::from_f32(1.0);
+		let mut fSlow2: F = F::from_f32(2.0) / fSlow1;
 		let mut fSlow3: F = fSlow0 / fSlow1;
-		let mut fSlow4: F = F::from(1.0) / fSlow1;
+		let mut fSlow4: F = F::from_f32(1.0) / fSlow1;
 		let zipped_iterators = inputs0.zip(outputs0).zip(outputs1);
 		for ((input0, output0), output1) in zipped_iterators {
 			let mut fTemp0: F = *input0;
 			let mut fTemp1: F = self.fRec3[1] + fSlow0 * (fTemp0 - self.fRec4[1]);
 			self.fRec3[0] = fSlow2 * fTemp1 - self.fRec3[1];
 			let mut fTemp2: F = self.fRec4[1] + fSlow3 * fTemp1;
-			self.fRec4[0] = F::from(2.0) * fTemp2 - self.fRec4[1];
+			self.fRec4[0] = F::from_f32(2.0) * fTemp2 - self.fRec4[1];
 			let mut fRec5: F = fSlow4 * fTemp1;
 			let mut fRec6: F = fTemp2;
 			let mut fTemp3: F = self.fRec0[1] + fSlow0 * (fRec6 - self.fRec1[1]);
 			self.fRec0[0] = fSlow2 * fTemp3 - self.fRec0[1];
 			let mut fTemp4: F = self.fRec1[1] + fSlow3 * fTemp3;
-			self.fRec1[0] = F::from(2.0) * fTemp4 - self.fRec1[1];
+			self.fRec1[0] = F::from_f32(2.0) * fTemp4 - self.fRec1[1];
 			let mut fRec2: F = fTemp4;
 			*output0 = (fRec2) as F;
-			let mut fTemp5: F = fRec6 + F::from(1.41421354) * fRec5;
+			let mut fTemp5: F = fRec6 + F::from_f32(1.41421354) * fRec5;
 			let mut fTemp6: F = self.fRec7[1] + fSlow0 * (fTemp0 - (fTemp5 + self.fRec8[1]));
 			self.fRec7[0] = fSlow2 * fTemp6 - self.fRec7[1];
 			let mut fTemp7: F = self.fRec8[1] + fSlow3 * fTemp6;
-			self.fRec8[0] = F::from(2.0) * fTemp7 - self.fRec8[1];
+			self.fRec8[0] = F::from_f32(2.0) * fTemp7 - self.fRec8[1];
 			let mut fRec9: F = fSlow4 * fTemp6;
 			let mut fRec10: F = fTemp7;
-			*output1 = ((fTemp0 - (F::from(1.41421354) * (fRec5 + fRec9) + fRec6 + fRec10)) as F);
+			*output1 = ((fTemp0 - (F::from_f32(1.41421354) * (fRec5 + fRec9) + fRec6 + fRec10)) as F);
 			self.fRec3[1] = self.fRec3[0];
 			self.fRec4[1] = self.fRec4[0];
 			self.fRec0[1] = self.fRec0[0];

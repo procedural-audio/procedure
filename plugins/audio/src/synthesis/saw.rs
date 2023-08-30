@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use crate::*;
 
 use pa_algorithms::*;
@@ -78,7 +80,8 @@ impl Module for SawModule {
 			voice.saw.generate_block(&mut outputs.audio[0]);
 
             for sample in (&mut outputs.audio[0]).into_iter() {
-                sample.gain(0.1);
+                sample.left *= 0.1;
+                sample.right *= 0.1;
             }
         }
     }

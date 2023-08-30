@@ -74,7 +74,8 @@ impl Module for SquareModule {
             voice.square.generate_block(&mut outputs.audio[0]);
 
             for sample in outputs.audio[0].as_slice_mut() {
-                sample.gain(0.1);
+                sample.left *= 0.1;
+                sample.right *= 0.1;
             }
         }
     }

@@ -214,12 +214,12 @@ impl<F: Sample> ColoredNoiseDsp<F> {
 		for output0 in zipped_iterators {
 			self.iRec3[0] = 1103515245 * self.iRec3[1] + 12345;
 			let mut fTemp0: f32 = ((self.iRec3[0]) as f32);
-			self.fVec0[0] = F::from(fTemp0);
-			self.fRec2[0] = F::from(0.995000005) * self.fRec2[1] + F::from(4.65661287e-10) * (F::from(fTemp0) - self.fVec0[1]);
-			self.fRec1[0] = F::EQUILIBRIUM - F::from(self.fConst9) * (F::from(self.fConst10) * self.fRec1[1] - (F::from(fSlow7) * self.fRec2[0] + F::from(fSlow8) * self.fRec2[1]));
-			self.fVec1[0] = F::from(fSlow10) * self.fRec1[0];
-			self.fRec0[0] = F::EQUILIBRIUM - F::from(self.fConst6) * (F::from(self.fConst7) * self.fRec0[1] - (F::from(fSlow5) * self.fRec1[0] + F::from(fSlow9) * self.fVec1[1]));
-			*output0 = ((F::min(F::from(1.0), F::max(F::from(-1.0), F::from(fSlow2) * self.fRec0[0] / F::from(fSlow13)))) as F);
+			self.fVec0[0] = F::from_f32(fTemp0);
+			self.fRec2[0] = F::from_f32(0.995000005) * self.fRec2[1] + F::from_f32(4.65661287e-10) * (F::from_f32(fTemp0) - self.fVec0[1]);
+			self.fRec1[0] = F::EQUILIBRIUM - F::from_f32(self.fConst9) * (F::from_f32(self.fConst10) * self.fRec1[1] - (F::from_f32(fSlow7) * self.fRec2[0] + F::from_f32(fSlow8) * self.fRec2[1]));
+			self.fVec1[0] = F::from_f32(fSlow10) * self.fRec1[0];
+			self.fRec0[0] = F::EQUILIBRIUM - F::from_f32(self.fConst6) * (F::from_f32(self.fConst7) * self.fRec0[1] - (F::from_f32(fSlow5) * self.fRec1[0] + F::from_f32(fSlow9) * self.fVec1[1]));
+			*output0 = ((F::min(F::from_f32(1.0), F::max(F::from_f32(-1.0), F::from_f32(fSlow2) * self.fRec0[0] / F::from_f32(fSlow13)))) as F);
 			self.iRec3[1] = self.iRec3[0];
 			self.fVec0[1] = self.fVec0[0];
 			self.fRec2[1] = self.fRec2[0];

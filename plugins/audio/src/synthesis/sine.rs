@@ -78,7 +78,8 @@ impl Module for SineModule {
                 &mut [outputs.audio[0].as_slice_mut()]);
 
             for sample in outputs.audio[0].as_slice_mut() {
-                sample.gain(0.1);
+                sample.left *= 0.1;
+                sample.right *= 0.1;
             }
         }
     }

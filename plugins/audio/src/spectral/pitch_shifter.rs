@@ -135,7 +135,8 @@ impl<F: Sample> PitchShifterDSP<F> {
 	}
 
 	pub fn process(&mut self, inputs: &Buffer<F>, outputs: &mut Buffer<F>) {
-		for i in 0..F::CHANNELS {
+		todo!()
+		/*for i in 0..F::CHANNELS {
 			for (j, s) in inputs.as_slice().iter().enumerate() {
 				self.input_buffers[i][j] = *s.channel(i);
 			}
@@ -145,6 +146,6 @@ impl<F: Sample> PitchShifterDSP<F> {
 			for (j, s) in outputs.as_slice_mut().iter_mut().enumerate() {
 				*s.channel_mut(i) = self.output_buffers[i][j];
 			}
-		}
+		}*/
 	}
 }

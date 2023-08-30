@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
-pub trait Float: Copy + Clone
+pub trait Float: Copy + Clone + From<f32>
     + PartialEq + PartialOrd
     + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
     + AddAssign + SubAssign + MulAssign + DivAssign {
@@ -9,23 +9,27 @@ pub trait Float: Copy + Clone
     const MIN: Self;
     const MAX: Self;
 
-    fn from(v: f32) -> Self;
-
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn tan(self) -> Self;
+    fn atan(self) -> Self;
 
+    fn powf(self, e: Self) -> Self;
     fn avg(self, v: Self) -> Self;
+
+    fn min(self, v: Self) -> Self {
+        if self < v { self } else { v }
+    }
+
+    fn max(self, v: Self) -> Self {
+        if self > v { self } else { v }
+    }
 }
 
 impl Float for f32 {
     const ZERO: Self = 0.0;
     const MIN: Self = -1.0;
     const MAX: Self = 1.0;
-
-    fn from(v: f32) -> Self {
-        v
-    }
 
     fn sin(self) -> Self {
         f32::sin(self)
@@ -39,8 +43,16 @@ impl Float for f32 {
         f32::tan(self)
     }
 
+    fn atan(self) -> Self {
+        f32::atan(self)
+    }
+
     fn avg(self, v: Self) -> Self {
         (self + v) / 2.0
+    }
+
+    fn powf(self, e: Self) -> Self {
+        f32::powf(self, e)
     }
 }
 
@@ -48,10 +60,6 @@ impl Float for f64 {
     const ZERO: Self = 0.0;
     const MIN: Self = -1.0;
     const MAX: Self = 1.0;
-
-    fn from(v: f32) -> Self {
-        v as f64
-    }
 
     fn sin(self) -> Self {
         f64::sin(self)
@@ -65,7 +73,15 @@ impl Float for f64 {
         f64::tan(self)
     }
 
+    fn atan(self) -> Self {
+        f64::atan(self)
+    }
+
     fn avg(self, v: Self) -> Self {
         (self + v) / 2.0
+    }
+
+    fn powf(self, e: Self) -> Self {
+        f64::powf(self, e)
     }
 }

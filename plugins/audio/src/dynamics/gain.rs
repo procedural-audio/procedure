@@ -68,7 +68,8 @@ impl Module for Gain {
         outputs.audio[0].copy_from(&inputs.audio[0]);
 
         for sample in &mut outputs.audio[0] {
-            sample.gain(value);
+            todo!()
+            // sample.gain(value);
         }
     }
 }

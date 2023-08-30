@@ -2,7 +2,7 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
 use crate::float::float::*;
 
-pub trait Sample: Copy + Clone
+pub trait Sample: Copy + Clone + From<Self::Float>
     + PartialEq
     + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
     + AddAssign + SubAssign + MulAssign + DivAssign {
@@ -11,7 +11,8 @@ pub trait Sample: Copy + Clone
     const CHANNELS: usize;
     const EQUILIBRIUM: Self;
 
-    fn from(value: Self::Float) -> Self;
+    fn from_f32(v: f32) -> Self;
+
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized;
 
     fn mono(self) -> Self::Float;
@@ -27,6 +28,10 @@ pub trait Sample: Copy + Clone
     fn tan(self) -> Self {
         Self::apply(self, Float::tan)
     }
+
+    fn powf(self, e: Self) -> Self;
+    fn min(self, rhs: Self) -> Self;
+    fn max(self, rhs: Self) -> Self;
 }
 
 impl Sample for f32 {
@@ -35,8 +40,8 @@ impl Sample for f32 {
     const CHANNELS: usize = 1;
     const EQUILIBRIUM: Self = Self::ZERO;
 
-    fn from(value: Self::Float) -> Self {
-        value
+    fn from_f32(v: f32) -> Self {
+        v
     }
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
@@ -45,6 +50,18 @@ impl Sample for f32 {
 
     fn mono(self) -> Self::Float {
         self
+    }
+
+    fn powf(self, e: Self) -> Self {
+        Float::powf(self, e)
+    }
+
+    fn min(self, rhs: Self) -> Self {
+        Float::min(self, rhs)
+    }
+
+    fn max(self, rhs: Self) -> Self {
+        Float::min(self, rhs)
     }
 }
 
@@ -54,8 +71,8 @@ impl Sample for f64 {
     const CHANNELS: usize = 1;
     const EQUILIBRIUM: Self = Self::ZERO;
 
-    fn from(value: Self::Float) -> Self {
-        value
+    fn from_f32(v: f32) -> Self {
+        v as f64
     }
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
@@ -64,5 +81,17 @@ impl Sample for f64 {
 
     fn mono(self) -> Self::Float {
         self
+    }
+
+    fn powf(self, e: Self) -> Self {
+        Float::powf(self, e)
+    }
+
+    fn min(self, rhs: Self) -> Self {
+        Float::min(self, rhs)
+    }
+
+    fn max(self, rhs: Self) -> Self {
+        Float::min(self, rhs)
     }
 }

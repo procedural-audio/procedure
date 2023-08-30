@@ -25,10 +25,6 @@ impl<T> Buffer<T> {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.items.len()
-    }
-
     pub fn capacity(&self) -> usize {
         self.items.capacity()
     }

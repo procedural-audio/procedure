@@ -6,10 +6,29 @@ use crate::{Generator, Sample};
 
 pub trait Block {
     type Item;
+
     fn as_slice<'a>(&'a self) -> &'a [Self::Item];
+
+    fn len(&self) -> usize {
+        self.as_slice().len()
+    }
 
     fn copy_to<B: BlockMut<Item = Self::Item>>(&self, dest: &mut B) where Self::Item: Copy {
         dest.as_slice_mut().copy_from_slice(self.as_slice());
+    }
+
+    fn rms(&self) -> Self::Item where Self::Item: Sample {
+        panic!("rms not implemented");
+        let mut total = Self::Item::EQUILIBRIUM;
+        let mut count = Self::Item::EQUILIBRIUM;
+
+        for s in self.as_slice() {
+            total += *s;
+        }
+
+        total = total / count;
+
+        return total;
     }
 }
 
