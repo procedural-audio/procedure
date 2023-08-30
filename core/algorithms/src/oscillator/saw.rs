@@ -67,7 +67,7 @@ impl<S: Sample> Generator for Saw<S> {
     }
 
     fn generate(&mut self) -> Self::Output {
-		/*let f_slow_0: f32 = self.f_const_2 * self.f_pitch as f32;
+		let f_slow_0: f32 = self.f_const_2 * self.f_pitch as f32;
         self.f_rec_2[0] = f_slow_0 + self.f_const_3 * self.f_rec_2[1];
         let f0: f32 = f32::max(1.1920929e-07, f32::abs(self.f_rec_2[0]));
         let f1: f32 = self.f_rec_0[1] + self.f_const_1 * f0;
@@ -76,10 +76,9 @@ impl<S: Sample> Generator for Saw<S> {
         self.f_rec_0[0] = if i1 as i32 != 0 { f1 } else { f2 };
         let f3: f32 = f1 + (1.0 - self.f_const_0 / f0) * f2;
         let f_rec_1: f32 = if i1 as i32 != 0 { f1 } else { f3 };
-        let output = S::from(2.0) * S::from(f_rec_1) + S::from(-1.0);
+        let output = S::from_f32(2.0) * S::from_f32(f_rec_1) + S::from_f32(-1.0);
         self.f_rec_2[1] = self.f_rec_2[0];
         self.f_rec_0[1] = self.f_rec_0[0];
-        return output;*/
-        todo!()
+        return output;
     }
 }

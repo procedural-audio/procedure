@@ -88,7 +88,7 @@ impl<S: Sample> Generator for Square<S> {
     }
 
     fn generate(&mut self) -> Self::Output {
-        /*let fSlow0: f32 = self.fConst3 * ((self.fHslider0) as f32);
+        let fSlow0: f32 = self.fConst3 * ((self.fHslider0) as f32);
         self.iVec0[0] = 1;
         self.fRec1[0] = fSlow0 + self.fConst4 * self.fRec1[1];
         let fTemp0: f32 = f32::max(self.fRec1[0], 23.4489498);
@@ -112,8 +112,7 @@ impl<S: Sample> Generator for Square<S> {
         self.fRec0[1] = self.fRec0[0];
         self.fVec1[1] = self.fVec1[0];
         self.IOTA0 = self.IOTA0 + 1;
-        return S::from(output);*/
-        todo!()
+        return S::from_f32(output);
     }
 }
 

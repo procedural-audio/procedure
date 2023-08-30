@@ -1,3 +1,4 @@
+use crate::BlockMut;
 use crate::float::*;
 use crate::traits::*;
 use crate::routing::node::*;
@@ -47,5 +48,14 @@ impl<A, B> std::ops::Shr<AudioNode<B>> for AudioNode<A> {
 
     fn shr(self, rhs: AudioNode<B>) -> Self::Output {
         AudioNode(Chain(self.0, rhs.0))
+    }
+}
+
+// Chain to mutable block
+impl<S, A: BlockGenerator<Output = S>, B: BlockMut<Item = S>> std::ops::Shr<B> for AudioNode<A> {
+    type Output = ();
+
+    fn shr(mut self, mut rhs: B) -> Self::Output {
+        self.generate_block(&mut rhs);
     }
 }

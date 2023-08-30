@@ -113,7 +113,7 @@ impl<S: Sample> ColoredNoise<S> {
         self.fHslider0 = f32::clamp(color, -1.0, 1.0);
     }
 
-	/*fn compute(&mut self, count: i32, inputs: &[&[S]], outputs: &mut[&mut[S]]) {
+	fn compute(&mut self, count: i32, inputs: &[&[S]], outputs: &mut[&mut[S]]) {
 		let (outputs0) = if let [outputs0, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			(outputs0)
@@ -138,12 +138,12 @@ impl<S: Sample> ColoredNoise<S> {
 		for output0 in zipped_iterators {
 			self.iRec3[0] = 1103515245 * self.iRec3[1] + 12345;
 			let mut fTemp0: f32 = ((self.iRec3[0]) as f32);
-			self.fVec0[0] = S::from(fTemp0);
-			self.fRec2[0] = S::from(0.995000005) * self.fRec2[1] + S::from(4.65661287e-10) * (S::from(fTemp0) - self.fVec0[1]);
-			self.fRec1[0] = S::EQUILIBRIUM - S::from(self.fConst9) * (S::from(self.fConst10) * self.fRec1[1] - (S::from(fSlow7) * self.fRec2[0] + S::from(fSlow8) * self.fRec2[1]));
-			self.fVec1[0] = S::from(fSlow10) * self.fRec1[0];
-			self.fRec0[0] = S::EQUILIBRIUM - S::from(self.fConst6) * (S::from(self.fConst7) * self.fRec0[1] - (S::from(fSlow5) * self.fRec1[0] + S::from(fSlow9) * self.fVec1[1]));
-			*output0 = (S::min(S::from(1.0), S::max(S::from(-1.0), S::from(fSlow2) * self.fRec0[0] / S::from(fSlow13))));
+			self.fVec0[0] = S::from_f32(fTemp0);
+			self.fRec2[0] = S::from_f32(0.995000005) * self.fRec2[1] + S::from_f32(4.65661287e-10) * (S::from_f32(fTemp0) - self.fVec0[1]);
+			self.fRec1[0] = S::EQUILIBRIUM - S::from_f32(self.fConst9) * (S::from_f32(self.fConst10) * self.fRec1[1] - (S::from_f32(fSlow7) * self.fRec2[0] + S::from_f32(fSlow8) * self.fRec2[1]));
+			self.fVec1[0] = S::from_f32(fSlow10) * self.fRec1[0];
+			self.fRec0[0] = S::EQUILIBRIUM - S::from_f32(self.fConst6) * (S::from_f32(self.fConst7) * self.fRec0[1] - (S::from_f32(fSlow5) * self.fRec1[0] + S::from_f32(fSlow9) * self.fVec1[1]));
+			*output0 = (S::min(S::from_f32(1.0), S::max(S::from_f32(-1.0), S::from_f32(fSlow2) * self.fRec0[0] / S::from_f32(fSlow13))));
 			self.iRec3[1] = self.iRec3[0];
 			self.fVec0[1] = self.fVec0[0];
 			self.fRec2[1] = self.fRec2[0];
@@ -151,5 +151,5 @@ impl<S: Sample> ColoredNoise<S> {
 			self.fVec1[1] = self.fVec1[0];
 			self.fRec0[1] = self.fRec0[0];
 		}
-	}*/
+	}
 }

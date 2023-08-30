@@ -1,5 +1,3 @@
-use std::ops::Mul;
-
 use crate::*;
 
 use pa_algorithms::*;
@@ -21,12 +19,8 @@ impl Module for SawModule {
         color: Color::BLUE,
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
-        inputs: &[
-            Pin::Notes("Notes", 15)
-        ],
-        outputs: &[
-            Pin::Audio("Audio Output", 15)
-        ],
+        inputs: &[Pin::Notes("Notes", 15)],
+        outputs: &[Pin::Audio("Audio Output", 15)],
         path: &["Audio", "Synthesis", "Saw"],
         presets: Presets::NONE
     };
@@ -60,6 +54,8 @@ impl Module for SawModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
+        // inputs.audio[0] >> AudioNode(&voice.saw) >> &mut outputs.audio[0];
+
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
