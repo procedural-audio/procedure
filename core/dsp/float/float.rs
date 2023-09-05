@@ -1,9 +1,5 @@
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
-/*pub const fn float<F: Float>(float: f32) -> F {
-    F::from(float)
-}*/
-
 pub trait Float: Copy + Clone + From<f32>
     + PartialEq + PartialOrd
     + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
