@@ -1,5 +1,3 @@
-// Maybe create a complex type like in CMajor?
-
 use crate::Float;
 
 pub const fn complex<F: Float>(real: F, imaginary: F) -> Complex<F> {
