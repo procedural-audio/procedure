@@ -76,9 +76,9 @@ impl<S: Sample> Generator for Saw<S> {
         self.f_rec_0[0] = if i1 as i32 != 0 { f1 } else { f2 };
         let f3: f32 = f1 + (1.0 - self.f_const_0 / f0) * f2;
         let f_rec_1: f32 = if i1 as i32 != 0 { f1 } else { f3 };
-        let output = S::from_f32(2.0) * S::from_f32(f_rec_1) + S::from_f32(-1.0);
+        let output = 2.0 * f_rec_1 + -1.0;
         self.f_rec_2[1] = self.f_rec_2[0];
         self.f_rec_0[1] = self.f_rec_0[0];
-        return output;
+        return S::from_f32(output);
     }
 }

@@ -1,5 +1,9 @@
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
+/*pub const fn float<F: Float>(float: f32) -> F {
+    F::from(float)
+}*/
+
 pub trait Float: Copy + Clone + From<f32>
     + PartialEq + PartialOrd
     + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
@@ -88,3 +92,5 @@ impl Float for f64 {
         f64::powf(self, e)
     }
 }
+
+// processor!(osc(440.0) >> reverb(5.0, 10.0, 1) >> gain(10.0))

@@ -1,3 +1,4 @@
+use crate::Block;
 use crate::BlockMut;
 use crate::float::*;
 use crate::traits::*;

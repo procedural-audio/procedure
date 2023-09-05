@@ -4,13 +4,8 @@ use pa_algorithms::*;
 
 pub struct SquareModule;
 
-pub struct SquareModuleVoice {
-    square: Square<Stereo<f32>>,
-    active: bool,
-}
-
 impl Module for SquareModule {
-    type Voice = SquareModuleVoice;
+    type Voice = Player<Square<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Squ",
@@ -28,10 +23,7 @@ impl Module for SquareModule {
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Self::Voice {
-            square: Square::new(),
-            active: false,
-        }
+        Player::from(Square::new())
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -44,39 +36,36 @@ impl Module for SquareModule {
             child: Icon {
                 path: "waveforms/square.svg",
                 color: Color::BLUE,
-            },
+            }
         })
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.active = false;
-        voice.square.prepare(sample_rate, block_size);
+        voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
-                    voice.active = true;
-                    voice.square.set_pitch(pitch);
+                    voice.play();
+                    voice.set_pitch(pitch);
                 }
                 Event::NoteOff => {
-                    voice.active = false;
+                    voice.stop();
                 }
                 Event::Pitch(pitch) => {
-                    voice.square.set_pitch(pitch);
+                    voice.set_pitch(pitch);
                 }
                 _ => (),
             }
         }
 
-        if voice.active {
-            voice.square.generate_block(&mut outputs.audio[0]);
+        voice.generate_block(&mut outputs.audio[0]);
 
-            for sample in outputs.audio[0].as_slice_mut() {
-                sample.left *= 0.1;
-                sample.right *= 0.1;
-            }
+        for sample in outputs.audio[0].as_slice_mut() {
+            sample.left *= 0.1;
+            sample.right *= 0.1;
         }
     }
 }

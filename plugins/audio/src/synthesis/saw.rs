@@ -4,13 +4,8 @@ use pa_algorithms::*;
 
 pub struct SawModule;
 
-pub struct SawModuleVoice {
-    saw: Saw<Stereo<f32>>,
-    active: bool,
-}
-
 impl Module for SawModule {
-    type Voice = SawModuleVoice;
+    type Voice = Player<Saw<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Saw",
@@ -28,10 +23,7 @@ impl Module for SawModule {
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Self::Voice {
-            saw: Saw::new(),
-            active: false,
-        }
+        Player::from(Saw::new())
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -44,68 +36,36 @@ impl Module for SawModule {
             child: Icon {
                 path: "waveforms/saw.svg",
                 color: Color::BLUE,
-            },
+            }
         })
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
-        voice.active = false;
-		voice.saw.prepare(sample_rate, block_size);
+		voice.prepare(sample_rate, block_size);
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        osc(Stereo::sin, 440.0f32) >> &mut outputs.audio[0];
-
         for msg in &inputs.events[0] {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
-                    voice.active = true;
-                    voice.saw.set_pitch(pitch);
+                    voice.set_pitch(pitch);
+                    voice.play();
                 },
                 Event::NoteOff => {
-                    voice.active = false;
+                    voice.stop();
                 },
                 Event::Pitch(freq) => {
-                    voice.saw.set_pitch(freq);
+                    voice.set_pitch(freq);
                 },
                 _ => (),
             }
         }
 
-        if voice.active {
-			voice.saw.generate_block(&mut outputs.audio[0]);
+        voice.generate_block(&mut outputs.audio[0]);
 
-            for sample in (&mut outputs.audio[0]).into_iter() {
-                sample.left *= 0.1;
-                sample.right *= 0.1;
-            }
+        for sample in (&mut outputs.audio[0]).into_iter() {
+            sample.left *= 0.1;
+            sample.right *= 0.1;
         }
     }
 }
-
-pub struct Info2 {
-    title: &'static str,
-    color: Color,
-    path: &'static [&'static str],
-    graph: fn() -> Box<dyn Generator<Output = f32>>
-}
-
-pub trait Module2 {
-    const INFO: Info2;
-}
-
-impl Module2 for SawModule {
-    const INFO: Info2 = Info2 {
-        title: "Saw",
-        color: Color::BLUE,
-        path: &["path", "to", "module"],
-        // graph: graph!(saw(440.0) >> gain(20.0) >> gain(-10.0) >> gain(-20.0)),
-        graph: || {
-            Box::new(
-                osc(f32::sin, 550.0f32) >> gain(20.0) >> gain(-10.0) >> gain(-20.0)
-            )
-        }
-    };
-}
-
-// module!("Saw", saw(440.0) >> gain(20.0) >> gain(-10.0) >> gain(-20.0));
