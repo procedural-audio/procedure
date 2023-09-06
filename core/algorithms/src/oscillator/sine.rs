@@ -10,6 +10,7 @@ pub struct Sine<S: Sample> {
     fConst3: f32,
     fRec2: [f32; 2],
     fRec1: [f32; 2],
+    sig: SineSIG0,
     data: PhantomData<S>
 }
 
@@ -23,6 +24,7 @@ impl<S: Sample> Sine<S> {
             fConst3: 0.0,
             fRec2: [0.0; 2],
             fRec1: [0.0; 2],
+            sig: newSineSIG0(),
             data: PhantomData
         }
     }
@@ -93,8 +95,8 @@ impl<S: Sample> Generator for Sine<S> {
         self.instance_clear();
     }
 
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        todo!()
+    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
+        self.init(sample_rate as i32);
     }
 
     fn generate(&mut self) -> Self::Output {
@@ -117,13 +119,6 @@ pub struct SineSIG0 {
 }
 
 impl SineSIG0 {
-    fn get_num_inputsSineSIG0(&self) -> i32 {
-        return 0;
-    }
-    fn get_num_outputsSineSIG0(&self) -> i32 {
-        return 1;
-    }
-
     fn instance_initSineSIG0(&mut self, _sample_rate: i32) {
         for l0 in 0..2 {
             self.iVec0[(l0) as usize] = 0;
