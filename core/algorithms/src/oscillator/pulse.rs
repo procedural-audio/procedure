@@ -12,13 +12,13 @@ pub struct Pulse<S: Sample> {
 	fRec0: [f32;2],
 	fVec1: [f32;2],
 	IOTA0: i32,
-	fVec2: [f32;4096],
+	fVec2: Box<[f32;4096]>,
 	fHslider1: f32,
     data: PhantomData<S>
 }
 
 impl<S: Sample> Pulse<S> {
-	pub const fn new() -> Self { 
+	pub fn new() -> Self { 
 		Self {
 			fSampleRate: 0,
 			fConst0: 0.0,
@@ -29,7 +29,7 @@ impl<S: Sample> Pulse<S> {
 			fRec0: [0.0;2],
 			fVec1: [0.0;2],
 			IOTA0: 0,
-			fVec2: [0.0;4096],
+			fVec2: Box::new([0.0;4096]),
 			fHslider1: 0.0,
             data: PhantomData
 		}

@@ -18,8 +18,8 @@ impl Module for PulseModule {
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Audio Input", 25),
-            Pin::Control("Gain (0-1)", 55),
+            Pin::Notes("Notes Input", 25),
+            Pin::Control("Duty (0-1)", 55),
         ],
         outputs: &[
             Pin::Audio("Audio Output", 25)
@@ -62,9 +62,13 @@ impl Module for PulseModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        let value = f32::clamp(self.value, 0.0, 1.0);
+        let mut value = f32::clamp(self.value, 0.0, 1.0);
 
-        voice.set_duty(value);
+        if inputs.control.connected(0) {
+            value = f32::clamp(inputs.control[0], 0.0, 1.0);
+        }
+
+        voice.set_duty(value * 0.4 + 0.1);
         voice.update_pitch(&inputs.events[0]);
         voice.update_playback(&inputs.events[0]);
         voice.generate_block(&mut outputs.audio[0]);
