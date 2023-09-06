@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::Generator;
+use pa_dsp::{Generator, Sample};
 
 pub const fn player<G: Generator>(dsp: G) -> Player<G> {
     Player::from(dsp)
@@ -28,7 +28,7 @@ impl<G: Generator> Player<G> {
     }
 }
 
-impl<G: Generator> Generator for Player<G> where G::Output: Default {
+impl<G: Generator> Generator for Player<G> where G::Output: Sample {
     type Output = G::Output;
 
     fn reset(&mut self) {
@@ -43,7 +43,7 @@ impl<G: Generator> Generator for Player<G> where G::Output: Default {
         if self.active {
             self.dsp.generate()
         } else {
-            G::Output::default()
+            G::Output::EQUILIBRIUM
         }
     }
 }
