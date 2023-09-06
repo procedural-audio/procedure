@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::{Generator, Sample};
+use pa_dsp::{Generator, Sample, Block, NoteMessage};
 
 pub const fn player<G: Generator>(dsp: G) -> Player<G> {
     Player::from(dsp)
@@ -25,6 +25,22 @@ impl<G: Generator> Player<G> {
 
     pub fn stop(&mut self) {
         self.active = false;
+    }
+
+    pub fn update_playback<B: Block<Item = NoteMessage>>(&mut self, block: &B) {
+        for item in block.as_slice() {
+            match item.note {
+                crate::Event::NoteOn { pitch: _, pressure: _ } => {
+                    self.play();
+                },
+                crate::Event::NoteOff => {
+                    self.stop();
+                },
+                crate::Event::Pitch(_hz) => {},
+                crate::Event::Pressure(_) => (),
+                crate::Event::Other(_, _) => (),
+            }
+        }
     }
 }
 

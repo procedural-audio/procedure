@@ -58,7 +58,7 @@ impl<T: Copy> Buffer<T> {
     }
 }
 
-impl<T: Copy> Block for Buffer<T> {
+impl<T> Block for Buffer<T> {
     type Item = T;
 
     fn as_slice<'a>(&'a self) -> &'a [T] {
@@ -66,7 +66,7 @@ impl<T: Copy> Block for Buffer<T> {
     }
 }
 
-impl<T: Copy> BlockMut for Buffer<T> {
+impl<T> BlockMut for Buffer<T> {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
         self.items.as_mut_slice()
     }
@@ -323,21 +323,3 @@ impl<S: Sample> RingBuffer<S> {
         output
     }
 }
-
-/*impl<F: Frame> Generator for RingBuffer<F> {
-    type Item = F;
-
-    fn reset(&mut self) {
-        self.index = 0;
-        for sample in self.buffer.as_slice_mut() {
-            sample.zero();
-        }
-    }
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        panic!("Prepare not implemented for ");
-    }
-
-    fn generate(&mut self) -> Self::Item {
-    }
-}*/
