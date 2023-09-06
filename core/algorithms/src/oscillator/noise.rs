@@ -25,7 +25,7 @@ pub struct ColoredNoise<S: Sample> {
 }
 
 impl<S: Sample> ColoredNoise<S> {
-	fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			fSampleRate: 0,
 			fConst1: 0.0,
@@ -45,18 +45,6 @@ impl<S: Sample> ColoredNoise<S> {
 			fVec1: [S::EQUILIBRIUM;2],
 			fRec0: [S::EQUILIBRIUM;2],
 		}
-	}
-
-	fn get_sample_rate(&self) -> i32 {
-		return self.fSampleRate;
-	}
-
-	fn get_num_inputs(&self) -> i32 {
-		return 0;
-	}
-
-	fn get_num_outputs(&self) -> i32 {
-		return 1;
 	}
 
 	fn instance_reset_params(&mut self) {
@@ -99,21 +87,11 @@ impl<S: Sample> ColoredNoise<S> {
 		self.fConst10 = 125.663704 - self.fConst5;
 	}
 
-	fn instance_init(&mut self, sample_rate: i32) {
-		self.instance_constants(sample_rate);
-		self.instance_reset_params();
-		self.instance_clear();
-	}
-
-	fn init(&mut self, sample_rate: i32) {
-		self.instance_init(sample_rate);
-	}
-
-    fn set_color(&mut self, color: f32) {
+    pub fn set_color(&mut self, color: f32) {
         self.fHslider0 = f32::clamp(color, -1.0, 1.0);
     }
 
-	fn compute(&mut self, count: i32, inputs: &[&[S]], outputs: &mut[&mut[S]]) {
+	/*fn compute(&mut self, count: i32, inputs: &[&[S]], outputs: &mut[&mut[S]]) {
 		let (outputs0) = if let [outputs0, ..] = outputs {
 			let outputs0 = outputs0[..count as usize].iter_mut();
 			(outputs0)
@@ -151,5 +129,55 @@ impl<S: Sample> ColoredNoise<S> {
 			self.fVec1[1] = self.fVec1[0];
 			self.fRec0[1] = self.fRec0[0];
 		}
-	}
+	}*/
+}
+
+impl<S: Sample> Generator for ColoredNoise<S> {
+    type Output = S;
+
+    fn reset(&mut self) {
+		self.instance_clear();
+		self.instance_reset_params();
+    }
+
+    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
+		self.instance_constants(sample_rate as i32);
+		self.reset();
+    }
+
+    fn generate(&mut self) -> Self::Output {
+		let mut fSlow0: f32 = ((self.fHslider0) as f32);
+		let mut fSlow1: f32 = f32::tan(self.fConst2 * f32::powf(1000.0, 1.0 - fSlow0));
+		let mut fSlow2: f32 = self.fConst1 / fSlow1;
+		let mut fSlow3: f32 = self.fConst8 * fSlow1;
+		let mut fSlow4: f32 = f32::tan(self.fConst2 * f32::powf(1000.0, -1.0 * fSlow0));
+		let mut fSlow5: f32 = self.fConst3 * (self.fConst5 + fSlow3) / fSlow4;
+		let mut fSlow6: f32 = self.fConst8 * fSlow4;
+		let mut fSlow7: f32 = self.fConst5 + fSlow6;
+		let mut fSlow8: f32 = fSlow6 - self.fConst5;
+		let mut fSlow9: f32 = fSlow3 - self.fConst5;
+		let mut fSlow10: f32 = self.fConst3 / fSlow4;
+		let mut fSlow11: f32 = 2.0 * fSlow0;
+		let mut iSlow12: i32 = ((((fSlow11 > 0.0) as i32) - ((fSlow11 < 0.0) as i32) > 0) as i32);
+		let mut fSlow13: f32 = if (iSlow12 as i32 != 0) { 1.0 } else { 0.801599979 } * f32::exp(0.0 - fSlow11 * if (iSlow12 as i32 != 0) { -4.28000021 } else { -2.6329999 }) + if (iSlow12 as i32 != 0) { 0.0 } else { 0.198400006 } * f32::exp(0.0 - fSlow11 * if (iSlow12 as i32 != 0) { 0.0 } else { -0.719600022 });
+
+		{
+			self.iRec3[0] = 1103515245 * self.iRec3[1] + 12345;
+			let mut fTemp0: f32 = ((self.iRec3[0]) as f32);
+			self.fVec0[0] = S::from_f32(fTemp0);
+			self.fRec2[0] = S::from_f32(0.995000005) * self.fRec2[1] + S::from_f32(4.65661287e-10) * (S::from_f32(fTemp0) - self.fVec0[1]);
+			self.fRec1[0] = S::EQUILIBRIUM - S::from_f32(self.fConst9) * (S::from_f32(self.fConst10) * self.fRec1[1] - (S::from_f32(fSlow7) * self.fRec2[0] + S::from_f32(fSlow8) * self.fRec2[1]));
+			self.fVec1[0] = S::from_f32(fSlow10) * self.fRec1[0];
+			self.fRec0[0] = S::EQUILIBRIUM - S::from_f32(self.fConst6) * (S::from_f32(self.fConst7) * self.fRec0[1] - (S::from_f32(fSlow5) * self.fRec1[0] + S::from_f32(fSlow9) * self.fVec1[1]));
+			let output = (S::min(S::from_f32(1.0), S::max(S::from_f32(-1.0), S::from_f32(fSlow2) * self.fRec0[0] / S::from_f32(fSlow13))));
+			self.iRec3[1] = self.iRec3[0];
+			self.fVec0[1] = self.fVec0[0];
+			self.fRec2[1] = self.fRec2[0];
+			self.fRec1[1] = self.fRec1[0];
+			self.fVec1[1] = self.fVec1[0];
+			self.fRec0[1] = self.fRec0[0];
+
+			return output;
+		}
+    }
 }
