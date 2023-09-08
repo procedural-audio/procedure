@@ -387,7 +387,8 @@ impl<T: WidgetNew, L: Loadable> BrowserTrait for Browser<T, L> {
     }
 
     fn get_loaded_path(&self) -> String {
-        (*self.loadable.read()).path()
+        // (*self.loadable.read()).path()
+        String::from("/test/path")
     }
 
     fn get_extensions(&self) -> String {

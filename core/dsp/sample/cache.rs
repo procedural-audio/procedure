@@ -50,9 +50,9 @@ impl Loadable for SampleFile<Stereo<f32>> {
         }
     }
 
-    fn path(&self) -> String {
+    /*fn path(&self) -> String {
         self.path.clone()
-    }
+    }*/
 }
 
 /*pub trait FileLoad<T> {

@@ -15,7 +15,7 @@ use pa_algorithms::*;
     return array;
 }*/
 
-fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
+/*fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     let mut array = [0.0; C];
     let mut i = 0;
 
@@ -25,9 +25,9 @@ fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
     }
 
     return array;
-}
+}*/
 
-pub struct Wavetable {
+/*pub struct Wavetable {
     pub table: [f32; 2048]
 }
 
@@ -43,14 +43,10 @@ impl Loadable for Wavetable {
     fn load(_path: &str) -> Result<Self, String> where Self: Sized {
         Ok( Self { table: wavetable(|x| x.sin()) } )
     }
-
-    fn path(&self) -> String {
-        String::from("Some test path")
-    }
-}
+}*/
 
 pub struct WavetableOscillator {
-    wavetable: Lock<Wavetable>
+    wavetable: Lock<Wavetable<f32, 2048>>
 }
 
 pub struct WavetableOscillatorVoice {
@@ -81,8 +77,11 @@ impl Module for WavetableOscillator {
     };
 
     fn new() -> Self {
+        let path = "/home/chase/github/assets/wavetables/serum/reddit-pack/Classic Synths/01_RESO1.WAV";
+        let wavetable = Wavetable::load(path).unwrap();
+
         Self {
-            wavetable: Lock::new(Wavetable::new())
+            wavetable: Lock::new(wavetable)
         }
     }
 

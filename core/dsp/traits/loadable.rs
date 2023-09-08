@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard, TryLockError};
 
 pub trait Loadable {
     fn load(path: &str) -> Result<Self, String> where Self: Sized;
-    fn path(&self) -> String;
+    // fn path(&self) -> String;
 }
 
 pub struct Lock<T> {
