@@ -3,48 +3,6 @@ use crate::*;
 use pa_dsp::loadable::{Loadable, Lock};
 use pa_algorithms::*;
 
-/*fn wavetable2<F: Float, const C: usize>(f: fn(F) -> F) -> [F; C] {
-    let mut array = [F::ZERO; C];
-    let mut i = 0;
-
-    while i < C {
-        array[i] = f(F::from(i) / C * F::PI * F::from(2.0));
-        i += 1;
-    }
-
-    return array;
-}*/
-
-/*fn wavetable<T: Fn(f32) -> f32, const C: usize>(f: T) -> [f32; C] {
-    let mut array = [0.0; C];
-    let mut i = 0;
-
-    while i < C {
-        array[i] = f(i as f32 / C as f32 * std::f32::consts::PI * 2.0);
-        i += 1;
-    }
-
-    return array;
-}*/
-
-/*pub struct Wavetable {
-    pub table: [f32; 2048]
-}
-
-impl Wavetable {
-    pub fn new() -> Self {
-        Self {
-            table: wavetable(|x| x.sin())
-        }
-    }
-}
-
-impl Loadable for Wavetable {
-    fn load(_path: &str) -> Result<Self, String> where Self: Sized {
-        Ok( Self { table: wavetable(|x| x.sin()) } )
-    }
-}*/
-
 pub struct WavetableOscillator {
     wavetable: Lock<Wavetable<f32, 2048>>
 }
