@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import 'package:grpc/src/server/call.dart';
 import 'package:metasampler/settings.dart';
 import 'package:pa_protocol/pa_protocol.dart';
 
@@ -16,6 +17,13 @@ void test1() {
   );
 
   msg.ensureModule();
+}
+
+class CoreProtocolThing extends CoreProtocolServiceBase {
+  @override
+  Future<Status> sayHello(ServiceCall call, CoreMsg request) {
+    return Future.value(Status.create());
+  }
 }
 
 class Core {
