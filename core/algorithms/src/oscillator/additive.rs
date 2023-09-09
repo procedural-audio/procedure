@@ -45,7 +45,7 @@ impl<S: Sample> Generator for Additive<S> {
         self.value = Complex::from(1.0, 0.0);
     }
 
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
+    fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
         self.rate = sample_rate as f32;
     }
 
