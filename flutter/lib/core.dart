@@ -1,11 +1,22 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:metasampler/settings.dart';
+import 'package:pa_protocol/pa_protocol.dart';
 
-import 'dart:ffi';
-import 'dart:io';
 import 'module.dart';
 import 'patch.dart';
+
+void test1() {
+  var msg = CoreMsg(
+    patch: null,
+    module: null,
+    widget: null,
+  );
+
+  msg.ensureModule();
+}
 
 class Core {
   Core(this.raw);

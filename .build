@@ -70,3 +70,6 @@ if not os.system("cd core && cargo build --release && cd .."):
                 else:
                     print("Host build failed")
             
+
+os.system("cd protocol && ./build.sh")
+

@@ -16,7 +16,7 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::rc::Rc;
 
-/* Begin main */
+use pa_protocol::*;
 
 #[no_mangle]
 pub unsafe fn ffi_hack_convert(data: usize) -> usize {
@@ -48,7 +48,47 @@ fn str_from_char(buffer: &i8) -> &str {
     }
 }
 
-/* Host */
+#[no_mangle]
+pub unsafe fn ffi_message(buffer: &[u8]) {
+    println!("Recieving message");
+    match Message::decode(buffer) {
+        Ok(msg) => {
+            let msg: CoreMsg = msg;
+
+            use core_msg::Kind;
+
+            if let Some(kind) = msg.kind {
+                match kind {
+                    Kind::Patch(msg) => patch_message(msg),
+                    Kind::Module(msg) => module_message(msg),
+                    Kind::Widget(msg) => widget_message(msg),
+                }
+            }
+        },
+        Err(e) => println!("{}", e)
+    }
+}
+
+pub fn patch_message(msg: PatchMsg) {
+    use patch_msg::Cmd;
+
+    if let Some(cmd) = msg.cmd {
+        match cmd {
+            Cmd::Add(cmd) => {},
+            Cmd::Remove(cmd) => {},
+        }
+    }
+}
+
+pub fn module_message(msg: ModuleMsg) {
+
+}
+
+pub fn widget_message(msg: WidgetMsg) {
+
+}
+
+/* Replace everything below here */
 
 #[no_mangle]
 pub unsafe extern "C" fn ffi_host_load(host: &mut Host, buffer: &i8) -> bool {
