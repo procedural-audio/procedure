@@ -6,7 +6,7 @@ pub const fn complex<F: Float>(real: F, imaginary: F) -> Complex<F> {
     Complex { real, imaginary }
 }
 
-pub type Complex32 = Complex<f32>;
+pub type Complex32= Complex<f32>;
 pub type Complex64 = Complex<f32>;
 
 #[derive(Copy, Clone, PartialEq)]

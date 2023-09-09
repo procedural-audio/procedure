@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::f32::consts::PI;
 
-use pa_dsp::{Generator, Sample, Float, Pitched, Complex};
+use pa_dsp::{Generator, Sample, Float, Pitched, Complex, complex};
 
 pub struct Additive<S: Sample> {
     pitch: f32,
@@ -15,8 +15,8 @@ impl<S: Sample> Additive<S> {
     pub fn new() -> Self {
         Self {
             pitch: 440.0,
-            multiplier: Complex::from(1.0, 0.0),
-            value: Complex::from(1.0, 0.0),
+            multiplier: complex(1.0, 0.0),
+            value: complex(1.0, 0.0),
             rate: 44100.0,
             data: PhantomData
         }
@@ -30,9 +30,9 @@ impl<S: Sample> Pitched for Additive<S> {
 
     fn set_pitch(&mut self, hz: f32) {
         self.pitch = hz;
-        let phase_increment = self.pitch * 2.0 * PI * self.rate;
-        self.multiplier.real = f32::cos(phase_increment);
-        self.multiplier.imaginary = f32::sin(phase_increment);
+        let inc = self.pitch * 2.0 * PI * self.rate;
+        self.multiplier.real = f32::cos(inc);
+        self.multiplier.imaginary = f32::sin(inc);
     }
 }
 
