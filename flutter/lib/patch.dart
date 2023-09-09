@@ -742,11 +742,11 @@ class NewConnector extends StatelessWidget {
 class Grid extends CustomPainter {
   @override
   void paint(Canvas canvas, ui.Size size) {
-    const spacing = 25;
+    const spacing = 30;
     final paint = Paint()
       ..color = const Color.fromRGBO(25, 25, 25, 1.0)
-      ..strokeWidth = 3;
-    
+      ..strokeWidth = 2;
+
     List<Offset> points = [];
     for (double i = 0; i < size.width; i += spacing) {
       for (double j = 0; j < size.height; j += spacing) {
