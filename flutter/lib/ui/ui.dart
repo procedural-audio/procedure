@@ -13,7 +13,7 @@ import '../views/presets.dart';
 class UserInterface extends StatelessWidget {
   UserInterface(this.info, {super.key});
 
-  late final RootWidget root = RootWidget(this);
+  late final InterfaceRoot root = InterfaceRoot(this);
   final PresetInfo info;
   final ValueNotifier<UIWidget?> selected = ValueNotifier(null);
   final ValueNotifier<bool> editing = ValueNotifier(false);

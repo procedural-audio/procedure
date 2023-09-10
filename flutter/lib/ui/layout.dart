@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'common.dart';
 import 'ui.dart';
 
-class RootWidget extends UIWidget {
-  RootWidget(UserInterface ui) : super(ui);
+class InterfaceRoot extends UIWidget {
+  InterfaceRoot(UserInterface ui) : super(ui);
 
   @override
   final String name = "Root";

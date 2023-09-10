@@ -55,6 +55,7 @@ NodusProcessor::NodusProcessor()
     // Old initializer
     // flutterViewController = [[[FlutterViewController alloc] initWithNibName:nil bundle:nil] retain];
     
+    std::cout << "About to processor stuff" << std::endl;
     // Build arguments
     std::string s1 = "core: ";
     std::string s2 = s1.append(std::to_string((long) core));
@@ -67,8 +68,9 @@ NodusProcessor::NodusProcessor()
     NSArray<NSString*>* args = @[s3, s6];
     FlutterDartProject* project = [[[FlutterDartProject alloc] initWithPrecompiledDartBundle:nil] retain];
     project.dartEntrypointArguments = args;
+    
     flutterViewController = [[[FlutterViewController alloc] initWithProject:project] retain];
-        
+
     auto codec = [FlutterJSONMessageCodec alloc];
     
     audioPluginsChannel = [

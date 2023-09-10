@@ -12,6 +12,8 @@ debug = False
 if len(sys.argv) > 1 and (sys.argv[1] == "-d" or sys.argv[1] == "--debug"):
 	debug = True
 
+os.system("cd protocol && ./build.sh")
+
 if not os.system("cd core && cargo build --release && cd .."):
     if "windows" in platform:
         print("Found windows OS")
@@ -70,6 +72,4 @@ if not os.system("cd core && cargo build --release && cd .."):
                 else:
                     print("Host build failed")
             
-
-os.system("cd protocol && ./build.sh")
 
