@@ -3,7 +3,7 @@ syntax = "proto3";
 package workstation.core;
 
 service CoreProtocol {
-    rpc SayHello (CoreMsg) returns (Status) {}
+    rpc Dispatch (CoreMsg) returns (Status) {}
 }
 
 message Status {

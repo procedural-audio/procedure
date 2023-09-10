@@ -49,7 +49,7 @@ fn str_from_char(buffer: &i8) -> &str {
 }
 
 #[no_mangle]
-pub unsafe fn ffi_message(buffer: &[u8]) {
+pub unsafe fn ffi_dispatch(buffer: &[u8]) -> u32 {
     println!("Recieving message");
     match Message::decode(buffer) {
         Ok(msg) => {
@@ -67,6 +67,8 @@ pub unsafe fn ffi_message(buffer: &[u8]) {
         },
         Err(e) => println!("{}", e)
     }
+
+    return 0;
 }
 
 pub fn patch_message(msg: PatchMsg) {

@@ -1,4 +1,7 @@
+import 'dart:developer';
 import 'dart:ffi';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
@@ -19,14 +22,55 @@ void test1() {
   msg.ensureModule();
 }
 
-class CoreProtocolThing extends CoreProtocolServiceBase {
+/*class CoreProtocolThing extends CoreProtocolServiceBase {
   @override
-  Future<Status> sayHello(ServiceCall call, CoreMsg request) {
+  Future<Status> dispatch(ServiceCall call, CoreMsg request) {
     return Future.value(Status.create());
   }
+}*/
+
+class Temp extends ServiceCall {
+  @override
+  // TODO: implement clientCertificate
+  X509Certificate? get clientCertificate => throw UnimplementedError();
+
+  @override
+  // TODO: implement clientMetadata
+  Map<String, String>? get clientMetadata => throw UnimplementedError();
+
+  @override
+  // TODO: implement deadline
+  DateTime? get deadline => throw UnimplementedError();
+
+  @override
+  // TODO: implement headers
+  Map<String, String>? get headers => throw UnimplementedError();
+
+  @override
+  // TODO: implement isCanceled
+  bool get isCanceled => throw UnimplementedError();
+
+  @override
+  // TODO: implement isTimedOut
+  bool get isTimedOut => throw UnimplementedError();
+
+  @override
+  void sendHeaders() {
+    // TODO: implement sendHeaders
+  }
+
+  @override
+  void sendTrailers({int? status, String? message}) {
+    // TODO: implement sendTrailers
+  }
+
+  @override
+  // TODO: implement trailers
+  Map<String, String>? get trailers => throw UnimplementedError();
+
 }
 
-class Core {
+class Core extends CoreProtocolServiceBase {
   Core(this.raw);
 
   // Make sure this doesn't leak???
@@ -40,6 +84,39 @@ class Core {
 
   static Core from(int addr) {
     return Core(_ffiHackConvert(addr));
+  }
+
+  void dispatchTest() {
+
+    var msg = CoreMsg(
+      patch: PatchMsg(
+        add: AddModule(
+          name: "module_name",
+          x: 0,
+          y: 0,
+        ),
+      ),
+      module: null,
+      widget: null
+    );
+
+    dispatch(Temp(), msg);
+  }
+
+  @override
+  Future<Status> dispatch(ServiceCall call, CoreMsg request) {
+    var buffer = request.writeToBuffer();
+    final pointer = calloc<Uint8>(buffer.length);
+
+    for (int i = 0; i < buffer.length; i++) {
+      pointer[i] = buffer[i];
+    }
+
+    _ffiDispatch(pointer);
+
+    calloc.free(pointer);
+
+    return Future.value(Status.create());
   }
 
   bool load(String path) {
@@ -141,6 +218,9 @@ class Core {
 var core = DynamicLibrary.open(Settings2.coreLibraryDirectory());
 
 /* Global */
+int Function(Pointer<Uint8>) _ffiDispatch = core
+    .lookup<NativeFunction<Int32 Function(Pointer<Uint8>)>>("ffi_dispatch")
+    .asFunction();
 
 RawCore Function(int) _ffiHackConvert = core
     .lookup<NativeFunction<RawCore Function(Int64)>>("ffi_hack_convert")

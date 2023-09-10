@@ -54,6 +54,10 @@ class App extends StatelessWidget {
         }
       },
     );
+
+    for (int i = 0; i < 1000; i++) {
+      core.dispatchTest();
+    }
   }
 
   final Core core;
