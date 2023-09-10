@@ -68,6 +68,9 @@ class Temp extends ServiceCall {
   // TODO: implement trailers
   Map<String, String>? get trailers => throw UnimplementedError();
 
+  @override
+  // TODO: implement remoteAddress
+  InternetAddress? get remoteAddress => throw UnimplementedError();
 }
 
 class Core extends CoreProtocolServiceBase {
@@ -87,18 +90,16 @@ class Core extends CoreProtocolServiceBase {
   }
 
   void dispatchTest() {
-
     var msg = CoreMsg(
-      patch: PatchMsg(
-        add: AddModule(
-          name: "module_name",
-          x: 0,
-          y: 0,
+        patch: PatchMsg(
+          add: AddModule(
+            name: "module_name",
+            x: 0,
+            y: 0,
+          ),
         ),
-      ),
-      module: null,
-      widget: null
-    );
+        module: null,
+        widget: null);
 
     dispatch(Temp(), msg);
   }
