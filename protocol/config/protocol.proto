@@ -4,6 +4,11 @@ package workstation.core;
 
 service CoreProtocol {
     rpc Dispatch (CoreMsg) returns (Status) {}
+    rpc GetModule (Int) returns (Status) {}
+}
+
+message Int {
+    int32 value = 1;
 }
 
 message Status {

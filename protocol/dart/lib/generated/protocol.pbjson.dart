@@ -8,6 +8,16 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
+@$core.Deprecated('Use intDescriptor instead')
+const Int$json = const {
+  '1': 'Int',
+  '2': const [
+    const {'1': 'value', '3': 1, '4': 1, '5': 5, '10': 'value'},
+  ],
+};
+
+/// Descriptor for `Int`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List intDescriptor = $convert.base64Decode('CgNJbnQSFAoFdmFsdWUYASABKAVSBXZhbHVl');
 @$core.Deprecated('Use statusDescriptor instead')
 const Status$json = const {
   '1': 'Status',
