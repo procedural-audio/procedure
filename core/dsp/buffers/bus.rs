@@ -1,8 +1,4 @@
-use std::ops::{Deref, DerefMut};
-
-use crate::float::sample::*;
-
-use std::ops::{Index, IndexMut};
+use std::ops::{Deref, DerefMut, Index, IndexMut};
 
 use crate::buffers::buffer::*;
 
@@ -102,15 +98,3 @@ impl<T> DerefMut for Channel<T> {
         &mut self.buffer
     }
 }
-
-/*impl<S: Sample> Buffer<S> {
-    pub fn rms(&self) -> S {
-        let mut sum = S::EQUILIBRIUM;
-        for sample in self {
-            sum += *sample * *sample;
-        }
-
-        let avg = sum / S::from(self.len() as f32);
-        return S::sqrt(avg);
-    }
-}*/

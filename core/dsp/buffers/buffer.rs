@@ -1,5 +1,5 @@
 use std::slice;
-use std::ops::{Index, IndexMut, AddAssign, SubAssign, MulAssign, Add, Mul, Sub, Div, DivAssign};
+use std::ops::{Add, Mul, Sub, Div, Index, IndexMut, AddAssign, SubAssign, MulAssign, DivAssign};
 
 use crate::{event::*, Stereo};
 

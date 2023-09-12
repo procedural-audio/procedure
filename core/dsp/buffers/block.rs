@@ -1,8 +1,6 @@
-// Trait definitions
-
 use std::ops::{Add, Sub, Mul, Div};
 
-use crate::{Generator, Sample};
+use crate::Sample;
 
 pub trait Block {
     type Item;
@@ -75,7 +73,7 @@ pub trait BlockMut: Block {
         self.zip_apply(src, | a, b | a / b);
     }
 
-    /* Sample specific  */
+    /* Sample specific */
 
     fn gain(&mut self, db: <Self::Item as Sample>::Float) where Self::Item: Sample {
         self.apply(| v | v.gain(db))
