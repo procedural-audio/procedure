@@ -1,8 +1,3 @@
-use std::ops::*;
-//use derive_more::*;
-
-use crate::math::faster;
-
 pub fn db_to_gain(db: f32) -> f32 {
     f32::powf(10.0, db / 20.0)
 }

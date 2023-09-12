@@ -17,6 +17,8 @@ pub trait Float: Copy + Clone + From<f32>
 
     fn powf(self, e: Self) -> Self;
     fn avg(self, v: Self) -> Self;
+    fn log(self, v: Self) -> Self;
+    fn log10(self) -> Self;
 
     fn min(self, v: Self) -> Self {
         if self < v { self } else { v }
@@ -56,6 +58,14 @@ impl Float for f32 {
     fn powf(self, e: Self) -> Self {
         f32::powf(self, e)
     }
+
+    fn log(self, v: Self) -> Self {
+        f32::log(self, v)
+    }
+
+    fn log10(self) -> Self {
+        f32::log10(self)
+    }
 }
 
 impl Float for f64 {
@@ -86,6 +96,14 @@ impl Float for f64 {
 
     fn powf(self, e: Self) -> Self {
         f64::powf(self, e)
+    }
+
+    fn log(self, v: Self) -> Self {
+        f64::log(self, v)
+    }
+
+    fn log10(self) -> Self {
+        f64::log10(self)
     }
 }
 

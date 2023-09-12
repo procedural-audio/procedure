@@ -30,7 +30,11 @@ pub trait Sample: Copy + Clone + From<Self::Float>
     }
 
     fn gain(&self, db: Self::Float) -> Self {
-        self.apply(| v | v * db)
+        let linear = Self::Float::powf(
+            Self::Float::from(10.0),
+            db / Self::Float::from(10.0));
+
+        self.apply(| v | v * linear)
     }
 
     fn powf(self, e: Self) -> Self;
