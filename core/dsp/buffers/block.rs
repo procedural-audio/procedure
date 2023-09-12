@@ -1,6 +1,6 @@
 // Trait definitions
 
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, Div};
 
 use crate::{Generator, Sample};
 
@@ -13,18 +13,17 @@ pub trait Block {
         self.as_slice().len()
     }
 
-    fn copy_to<B: BlockMut<Item = Self::Item>>(&self, dest: &mut B) where Self::Item: Copy {
-        dest.as_slice_mut().copy_from_slice(self.as_slice());
+    fn copy_to<B: BlockMut<Item = Self::Item>>(&self, dest: &mut B) where Self: Sized, Self::Item: Copy {
+        dest.copy_from(self);
     }
 
     fn rms(&self) -> Self::Item where Self::Item: Sample {
-        panic!("rms not implemented");
-
         let mut total = Self::Item::EQUILIBRIUM;
         let mut count = Self::Item::EQUILIBRIUM;
 
         for s in self.as_slice() {
             total += *s;
+            count += Self::Item::from_f32(1.0);
         }
 
         total = total / count;
@@ -36,42 +35,62 @@ pub trait Block {
 pub trait BlockMut: Block {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
 
-    fn equilibrate(&mut self) where Self::Item: Sample {
-        for d in self.as_slice_mut() {
-            *d = Self::Item::EQUILIBRIUM;
+    fn apply<F: Fn(Self::Item) -> Self::Item>(&mut self, f: F) where Self::Item: Copy {
+        for v in self.as_slice_mut() {
+            *v = f(*v);
         }
     }
 
-    fn fill<G: Generator<Output = Self::Item>>(&mut self, src: &mut G) {
-        for d in self.as_slice_mut() {
-            *d = src.generate();
+    fn zip_apply<I: Copy, B: Block<Item = I>, F: Fn(Self::Item, I) -> Self::Item>(&mut self, b: &B, f: F) where Self::Item: Copy {
+        for (v, i) in self.as_slice_mut().iter_mut().zip(b.as_slice()) {
+            *v = f(*v, *i);
         }
     }
+
+    /* Element operations */
+
+    fn fill(&mut self, value: Self::Item) where Self::Item: Copy {
+        self.apply(| _v | { value } );
+    }
+
+    /* Block operations */
 
     fn copy_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy {
         self.as_slice_mut().copy_from_slice(src.as_slice());
     }
 
     fn add_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Add<Output = Self::Item> {
-        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest = *dest + *src;
-        }
+        self.zip_apply(src, | a, b | a + b);
     }
 
     fn sub_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Sub<Output = Self::Item> {
-        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest = *dest - *src;
-        }
+        self.zip_apply(src, | a, b | a - b);
     }
 
     fn mul_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Mul<Output = Self::Item> {
-        for (dest, src) in self.as_slice_mut().iter_mut().zip(src.as_slice()) {
-            *dest = *dest * *src;
-        }
+        self.zip_apply(src, | a, b | a * b);
     }
+
+    fn div_from<B: Block<Item = Self::Item>>(&mut self, src: &B) where Self::Item: Copy + Div<Output = Self::Item> {
+        self.zip_apply(src, | a, b | a / b);
+    }
+
+    /* Sample specific  */
+
+    fn gain(&mut self, db: <Self::Item as Sample>::Float) where Self::Item: Sample {
+        self.apply(| v | v.gain(db))
+    }
+
+    fn equilibrate(&mut self) where Self::Item: Sample {
+        self.fill(Self::Item::EQUILIBRIUM);
+    }
+
+    /* Note specific */
+
+    // fn transpose
 }
 
-// Slice implementations
+/* Slice implementations */
 
 impl<S> Block for &[S] {
     type Item = S;
@@ -95,7 +114,7 @@ impl<S> BlockMut for &mut [S] {
     }
 }
 
-// Raw pointer implementations
+/* Raw pointer implementations */
 
 impl<S> Block for (*const S, usize) {
     type Item = S;

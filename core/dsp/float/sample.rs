@@ -29,6 +29,10 @@ pub trait Sample: Copy + Clone + From<Self::Float>
         Self::apply(self, Float::tan)
     }
 
+    fn gain(&self, db: Self::Float) -> Self {
+        self.apply(| v | v * db)
+    }
+
     fn powf(self, e: Self) -> Self;
     fn min(self, rhs: Self) -> Self;
     fn max(self, rhs: Self) -> Self;

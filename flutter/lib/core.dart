@@ -1,7 +1,4 @@
-import 'dart:developer';
 import 'dart:ffi';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
@@ -14,13 +11,22 @@ import 'patch.dart';
 
 class Core extends CoreProtocolServiceBase {
   Core(this.raw) {
+    /*final server = Server.create(
+      services: [CoreProtocolService()],
+      codecRegistry: CodecRegistry(
+        codecs: const [GzipCodec(), IdentityCodec()],
+      ),
+    );*/
+
     final channel = ClientChannel(
       'localhost',
       port: 50051,
       options: ChannelOptions(
         credentials: const ChannelCredentials.insecure(),
-        codecRegistry: CodecRegistry(codecs: const [GzipCodec(), IdentityCodec()])
-      )
+        codecRegistry: CodecRegistry(
+          codecs: const [GzipCodec(), IdentityCodec()],
+        ),
+      ),
     );
 
     final stub = CoreProtocolClient(channel);
@@ -68,6 +74,12 @@ class Core extends CoreProtocolServiceBase {
     calloc.free(pointer);
 
     return Future.value(Status.create());
+  }
+
+  @override
+  Future<Status> getModule(ServiceCall call, Int request) {
+    // TODO: implement getModule
+    throw UnimplementedError();
   }
 
   bool load(String path) {
@@ -126,7 +138,7 @@ class Core extends CoreProtocolServiceBase {
     } else {
       _ffiCoreSetPatchNull(raw, Pointer.fromAddress(0));
     }
-  }
+  }  
 }
 
 var core = DynamicLibrary.open(Settings2.coreLibraryDirectory());

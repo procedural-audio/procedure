@@ -67,8 +67,9 @@ impl Module for Gain {
         value = f32::clamp(value, 0.0, 1.0);
         outputs.audio[0].copy_from(&inputs.audio[0]);
 
+        outputs.audio[0] += &inputs.audio[0];
+
         for sample in &mut outputs.audio[0] {
-            todo!()
             // sample.gain(value);
         }
     }

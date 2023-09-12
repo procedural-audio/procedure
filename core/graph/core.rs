@@ -16,7 +16,7 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::rc::Rc;
 
-use pa_protocol::*;
+// use pa_protocol::*;
 
 #[no_mangle]
 pub unsafe fn ffi_hack_convert(data: usize) -> usize {
@@ -48,7 +48,7 @@ fn str_from_char(buffer: &i8) -> &str {
     }
 }
 
-#[no_mangle]
+/*#[no_mangle]
 pub unsafe fn ffi_dispatch(buffer: &[u8]) -> u32 {
     println!("Recieving message");
     match Message::decode(buffer) {
@@ -88,7 +88,7 @@ pub fn module_message(msg: ModuleMsg) {
 
 pub fn widget_message(msg: WidgetMsg) {
 
-}
+}*/
 
 /* Replace everything below here */
 
