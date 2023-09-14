@@ -27,6 +27,7 @@ impl Module for SquareModule {
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
+
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {

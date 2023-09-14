@@ -19,6 +19,8 @@ impl<In, Between, Out, P1, P2> Processor for Chain<P1, P2>
     type Input = In;
     type Output = Out;
 
+    fn reset(&mut self) {}
+
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         self.0.prepare(sample_rate, block_size);
         self.1.prepare(sample_rate, block_size);

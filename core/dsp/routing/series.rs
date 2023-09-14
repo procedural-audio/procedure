@@ -8,6 +8,8 @@ impl<F: Sample, A: Processor<Input = F, Output = F>, const C: usize> Processor f
     type Input = F;
     type Output = F;
 
+    fn reset(&mut self) {}
+
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, input: F) -> F {

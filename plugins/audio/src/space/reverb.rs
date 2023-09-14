@@ -191,6 +191,7 @@ impl<const C: usize> Processor for Diffuser<C> {
     type Input = Stereo<f32>;
     type Output = Stereo<f32>;
 
+    fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32,_block_size: usize) {}
 
     fn process(&mut self, input: Self::Input) -> Self::Output {
@@ -240,6 +241,7 @@ impl<F: Sample> Processor for Delay<F> {
     type Input = F;
     type Output = F;
 
+    fn reset(&mut self) {}
     fn prepare(&mut self, sample_rate: u32, _block_size: usize) {
         self.sample_rate = sample_rate;
         self.set_delay_ms(self.delay_ms);

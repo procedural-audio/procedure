@@ -52,6 +52,7 @@ pub trait Processor {
     type Input;
     type Output;
 
+    fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn process(&mut self, input: Self::Input) -> Self::Output;
 }

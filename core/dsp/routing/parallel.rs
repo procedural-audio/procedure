@@ -17,6 +17,8 @@ impl<F, G, H, J, A, B> Processor for Parallel<A, B>
     type Input = (F, H);
     type Output = (G, J);
 
+    fn reset(&mut self) {}
+
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         self.0.prepare(sample_rate, block_size);
         self.1.prepare(sample_rate, block_size);

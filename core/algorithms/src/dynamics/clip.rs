@@ -16,6 +16,7 @@ impl<S: Sample> Processor for Clip<S> {
     type Input = S;
     type Output = S;
 
+    fn reset(&mut self) {}
     fn prepare(&mut self, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, input: Self::Input) -> Self::Output {

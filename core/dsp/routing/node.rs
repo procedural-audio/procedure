@@ -51,6 +51,8 @@ impl<In, Out, P> Processor for AudioNode<P>
     type Input = In;
     type Output = Out;
 
+    fn reset(&mut self) {}
+
     fn prepare(&mut self, sample_rate: u32, block_size: usize) {
         self.0.prepare(sample_rate, block_size);
     }
