@@ -4,7 +4,7 @@ pub trait Pitched {
     fn get_pitch(&self) -> f32;
     fn set_pitch(&mut self, hz: f32);
 
-    fn update_pitch<B: Block<Item = NoteMessage>>(&mut self, block: &B) {
+    /*fn update_pitch<B: Block<Item = NoteMessage>>(&mut self, block: &B) {
         for item in block.as_slice() {
             match item.note {
                 crate::Event::NoteOn { pitch, pressure: _ } => {
@@ -18,5 +18,5 @@ pub trait Pitched {
                 crate::Event::Other(_, _) => (),
             }
         }
-    }
+    }*/
 }

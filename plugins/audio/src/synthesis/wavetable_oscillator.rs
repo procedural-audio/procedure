@@ -60,9 +60,6 @@ impl Module for WavetableOscillator {
                 directory: Directory::WAVETABLES,
                 extensions: &[".wavetable"],
                 child: EmptyWidget,
-                /*child: WavetablePicker {
-                    wavetable: &mut self.wavetable
-                }*/
             }
         });
     }

@@ -4,7 +4,7 @@ use pa_algorithms::*;
 pub struct SineModule;
 
 impl Module for SineModule {
-    type Voice = Player<Sine<Stereo<f32>>>;
+    type Voice = PitchedPlayer<Sine<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Sin",
@@ -22,7 +22,7 @@ impl Module for SineModule {
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Player::from(Sine::new())
+        PitchedPlayer::from(Sine::new())
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -44,23 +44,7 @@ impl Module for SineModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for msg in &inputs.events[0] {
-            match msg.note {
-                Event::NoteOn { pitch, pressure: _ } => {
-                    voice.set_pitch(pitch);
-                    voice.play();
-                }
-                Event::NoteOff => {
-                    voice.stop();
-                }
-                Event::Pitch(pitch) => {
-                    voice.set_pitch(pitch);
-                }
-                _ => (),
-            }
-        }
-
-        voice.generate_block(&mut outputs.audio[0]);
+        voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
 
         for sample in outputs.audio[0].as_slice_mut() {
             sample.left *= 0.1;

@@ -1,14 +1,14 @@
 use crate::*;
 
 use pa_dsp::*;
-use pa_algorithms::{Pulse, Player};
+use pa_algorithms::{Pulse, PitchedPlayer};
 
 pub struct PulseModule {
     value: f32,
 }
 
 impl Module for PulseModule {
-    type Voice = Player<Pulse<Stereo<f32>>>;
+    type Voice = PitchedPlayer<Pulse<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Pulse",
@@ -33,7 +33,7 @@ impl Module for PulseModule {
     }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Player::from(Pulse::new())
+        PitchedPlayer::from(Pulse::new())
     }
 
     fn load(&mut self, _version: &str, state: &State) {
@@ -69,9 +69,7 @@ impl Module for PulseModule {
         }
 
         voice.set_duty(value * 0.4 + 0.1);
-        voice.update_pitch(&inputs.events[0]);
-        voice.update_playback(&inputs.events[0]);
-        voice.generate_block(&mut outputs.audio[0]);
+        voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
 
         for sample in (&mut outputs.audio[0]).into_iter() {
             sample.left *= 0.1;

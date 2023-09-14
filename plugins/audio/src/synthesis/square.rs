@@ -45,23 +45,7 @@ impl Module for SquareModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for msg in &inputs.events[0] {
-            match msg.note {
-                Event::NoteOn { pitch, pressure: _ } => {
-                    voice.play();
-                    voice.set_pitch(pitch);
-                }
-                Event::NoteOff => {
-                    voice.stop();
-                }
-                Event::Pitch(pitch) => {
-                    voice.set_pitch(pitch);
-                }
-                _ => (),
-            }
-        }
-
-        voice.generate_block(&mut outputs.audio[0]);
+        voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
 
         for sample in outputs.audio[0].as_slice_mut() {
             sample.left *= 0.1;
@@ -69,3 +53,5 @@ impl Module for SquareModule {
         }
     }
 }
+
+// module!(SquareModule, Player<Square<Stereo<f32>>>);

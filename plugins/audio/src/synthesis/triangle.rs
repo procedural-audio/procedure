@@ -1,11 +1,11 @@
-use pa_algorithms::{Player, Triangle};
+use pa_algorithms::{PitchedPlayer, Triangle};
 
 use crate::*;
 
 pub struct TriangleModule;
 
 impl Module for TriangleModule {
-    type Voice = Player<Triangle<Stereo<f32>>>;
+    type Voice = PitchedPlayer<Triangle<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Tri",
@@ -23,7 +23,7 @@ impl Module for TriangleModule {
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Player::from(Triangle::new())
+        PitchedPlayer::from(Triangle::new())
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -45,23 +45,7 @@ impl Module for TriangleModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for msg in &inputs.events[0] {
-            match msg.note {
-                Event::NoteOn { pitch, pressure: _ } => {
-                    voice.set_pitch(pitch);
-                    voice.play();
-                }
-                Event::NoteOff => {
-                    voice.stop();
-                }
-                Event::Pitch(pitch) => {
-                    voice.set_pitch(pitch);
-                }
-                _ => (),
-            }
-        }
-
-        voice.generate_block(&mut outputs.audio[0]);
+        voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
 
         for sample in outputs.audio[0].as_slice_mut() {
             sample.left *= 0.1;

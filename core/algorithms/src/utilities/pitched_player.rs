@@ -1,22 +1,19 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator};
+use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator, Pitched};
 
-pub trait Playable {
-    fn play(&mut self);
-    fn stop(&mut self);
+use crate::Playable;
+
+pub const fn pitched_player<G: Generator + Pitched>(dsp: G) -> PitchedPlayer<G> {
+    PitchedPlayer::from(dsp)
 }
 
-pub const fn player<G: Generator>(dsp: G) -> Player<G> {
-    Player::from(dsp)
-}
-
-pub struct Player<G: Generator> {
+pub struct PitchedPlayer<G: Generator + Pitched> {
     dsp: G,
     active: bool
 }
 
-impl<G: Generator> Playable for Player<G> {
+impl<G: Generator + Pitched> Playable for PitchedPlayer<G> {
     fn play(&mut self) {
         self.active = true;
     }
@@ -26,16 +23,16 @@ impl<G: Generator> Playable for Player<G> {
     }
 }
 
-impl<G: Generator> Player<G> {
+impl<G: Generator + Pitched> PitchedPlayer<G> {
     pub const fn from(dsp: G) -> Self {
-        Player {
+        PitchedPlayer {
             dsp,
             active: false
         }
     }
 }
 
-impl<G: Generator> Generator for Player<G> where G::Output: Sample {
+impl<G: Generator + Pitched> Generator for PitchedPlayer<G> where G::Output: Sample {
     type Output = G::Output;
 
     fn reset(&mut self) {
@@ -55,7 +52,7 @@ impl<G: Generator> Generator for Player<G> where G::Output: Sample {
     }
 }
 
-impl<G: Generator> BlockProcessor for Player<G> {
+impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> {
     type Input = NoteMessage;
     type Output = G::Output;
 
@@ -66,13 +63,16 @@ impl<G: Generator> BlockProcessor for Player<G> {
         
         for msg in input.as_slice() {
             match msg.note {
-                crate::Event::NoteOn { pitch: _, pressure: _ } => {
+                crate::Event::NoteOn { pitch, pressure: _ } => {
+                    self.set_pitch(pitch);
                     self.play();
                 },
                 crate::Event::NoteOff => {
                     self.stop();
                 },
-                crate::Event::Pitch(_hz) => {},
+                crate::Event::Pitch(hz) => {
+                    self.set_pitch(hz);
+                },
                 crate::Event::Pressure(_) => (),
                 crate::Event::Other(_, _) => (),
             }
@@ -82,7 +82,7 @@ impl<G: Generator> BlockProcessor for Player<G> {
     }
 }
 
-impl<G: Generator> Deref for Player<G> {
+impl<G: Generator + Pitched> Deref for PitchedPlayer<G> {
     type Target = G;
 
     fn deref(&self) -> &Self::Target {
@@ -90,7 +90,7 @@ impl<G: Generator> Deref for Player<G> {
     }
 }
 
-impl<G: Generator> DerefMut for Player<G> {
+impl<G: Generator + Pitched> DerefMut for PitchedPlayer<G> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.dsp
     }

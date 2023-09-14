@@ -5,7 +5,7 @@ use pa_algorithms::*;
 pub struct SawModule;
 
 impl Module for SawModule {
-    type Voice = Player<Saw<Stereo<f32>>>;
+    type Voice = PitchedPlayer<Saw<Stereo<f32>>>;
 
     const INFO: Info = Info {
         title: "Saw",
@@ -23,7 +23,7 @@ impl Module for SawModule {
     fn new() -> Self { Self }
 
     fn new_voice(&self, _index: u32) -> Self::Voice {
-        Player::from(Saw::new())
+        PitchedPlayer::from(Saw::new())
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
@@ -45,23 +45,7 @@ impl Module for SawModule {
     }
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        for msg in &inputs.events[0] {
-            match msg.note {
-                Event::NoteOn { pitch, pressure: _ } => {
-                    voice.set_pitch(pitch);
-                    voice.play();
-                },
-                Event::NoteOff => {
-                    voice.stop();
-                },
-                Event::Pitch(freq) => {
-                    voice.set_pitch(freq);
-                },
-                _ => (),
-            }
-        }
-
-        voice.generate_block(&mut outputs.audio[0]);
+        voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
 
         for sample in (&mut outputs.audio[0]).into_iter() {
             sample.left *= 0.1;
