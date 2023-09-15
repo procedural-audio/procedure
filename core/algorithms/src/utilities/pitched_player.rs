@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator, Pitched};
+use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator, Pitched, Event};
 
 use crate::Playable;
 
@@ -36,6 +36,7 @@ impl<G: Generator + Pitched> Generator for PitchedPlayer<G> where G::Output: Sam
     type Output = G::Output;
 
     fn reset(&mut self) {
+        self.active = false;
         self.dsp.reset();
     }
 
@@ -63,18 +64,18 @@ impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> {
         
         for msg in input.as_slice() {
             match msg.note {
-                crate::Event::NoteOn { pitch, pressure: _ } => {
+                Event::NoteOn { pitch, pressure: _ } => {
                     self.set_pitch(pitch);
                     self.play();
                 },
-                crate::Event::NoteOff => {
+                Event::NoteOff => {
                     self.stop();
                 },
-                crate::Event::Pitch(hz) => {
+                Event::Pitch(hz) => {
                     self.set_pitch(hz);
                 },
-                crate::Event::Pressure(_) => (),
-                crate::Event::Other(_, _) => (),
+                Event::Pressure(_) => (),
+                Event::Other(_, _) => (),
             }
         }
 
