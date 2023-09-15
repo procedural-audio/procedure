@@ -4,7 +4,8 @@ use crate::float::float::*;
 
 pub trait Sample: Copy + Clone + From<Self::Float>
     + PartialEq
-    + Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + Div<Output = Self>
+    + Add<Self, Output = Self> + Sub<Self, Output = Self> + Mul<Self, Output = Self> + Div<Self, Output = Self>
+    + Add<Self::Float, Output = Self> + Sub<Self::Float, Output = Self> + Mul<Self::Float, Output = Self> + Div<Self::Float, Output = Self>
     + AddAssign + SubAssign + MulAssign + DivAssign {
 
     type Float: Float;

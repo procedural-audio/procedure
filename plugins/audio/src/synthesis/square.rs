@@ -27,7 +27,6 @@ impl Module for SquareModule {
     }
 
     fn load(&mut self, _version: &str, _state: &State) {}
-
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
@@ -47,12 +46,6 @@ impl Module for SquareModule {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
-
-        for sample in outputs.audio[0].as_slice_mut() {
-            sample.left *= 0.1;
-            sample.right *= 0.1;
-        }
+        outputs.audio[0].apply(| s | s * 0.1);
     }
 }
-
-// module!(SquareModule, Player<Square<Stereo<f32>>>);

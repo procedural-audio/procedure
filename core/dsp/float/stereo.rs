@@ -10,7 +10,7 @@ pub struct Stereo<T> {
     pub right: T,
 }
 
-impl<F: Float> Add for Stereo<F> {
+impl<F: Float> Add<Self> for Stereo<F> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -21,7 +21,7 @@ impl<F: Float> Add for Stereo<F> {
     }
 }
 
-impl<F: Float> Sub for Stereo<F> {
+impl<F: Float> Sub<Self> for Stereo<F> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -32,7 +32,7 @@ impl<F: Float> Sub for Stereo<F> {
     }
 }
 
-impl<F: Float> Mul for Stereo<F> {
+impl<F: Float> Mul<Self> for Stereo<F> {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -43,7 +43,7 @@ impl<F: Float> Mul for Stereo<F> {
     }
 }
 
-impl<F: Float> Div for Stereo<F> {
+impl<F: Float> Div<Self> for Stereo<F> {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
@@ -54,31 +54,75 @@ impl<F: Float> Div for Stereo<F> {
     }
 }
 
-impl<F: Float> AddAssign for Stereo<F> {
+impl<F: Float> AddAssign<Self> for Stereo<F> {
     fn add_assign(&mut self, rhs: Self) {
         self.left = self.left + rhs.left;
         self.right = self.right + rhs.right;
     }
 }
 
-impl<F: Float> SubAssign for Stereo<F> {
+impl<F: Float> SubAssign<Self> for Stereo<F> {
     fn sub_assign(&mut self, rhs: Self) {
         self.left = self.left - rhs.left;
         self.right = self.right - rhs.right;
     }
 }
 
-impl<F: Float> MulAssign for Stereo<F> {
+impl<F: Float> MulAssign<Self> for Stereo<F> {
     fn mul_assign(&mut self, rhs: Self) {
         self.left = self.left * rhs.left;
         self.right = self.right * rhs.right;
     }
 }
 
-impl<F: Float> DivAssign for Stereo<F> {
+impl<F: Float> DivAssign<Self> for Stereo<F> {
     fn div_assign(&mut self, rhs: Self) {
         self.left = self.left / rhs.left;
         self.right = self.right / rhs.right;
+    }
+}
+
+impl<F: Float> Add<F> for Stereo<F> {
+    type Output = Self;
+
+    fn add(self, rhs: F) -> Self::Output {
+        Stereo {
+            left: self.left + rhs,
+            right: self.right + rhs
+        }
+    }
+}
+
+impl<F: Float> Sub<F> for Stereo<F> {
+    type Output = Self;
+
+    fn sub(self, rhs: F) -> Self::Output {
+        Stereo {
+            left: self.left - rhs,
+            right: self.right - rhs
+        }
+    }
+}
+
+impl<F: Float> Mul<F> for Stereo<F> {
+    type Output = Self;
+
+    fn mul(self, rhs: F) -> Self::Output {
+        Stereo {
+            left: self.left * rhs,
+            right: self.right * rhs
+        }
+    }
+}
+
+impl<F: Float> Div<F> for Stereo<F> {
+    type Output = Self;
+
+    fn div(self, rhs: F) -> Self::Output {
+        Stereo {
+            left: self.left / rhs,
+            right: self.right / rhs
+        }
     }
 }
 

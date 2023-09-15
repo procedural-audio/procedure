@@ -70,10 +70,6 @@ impl Module for PulseModule {
 
         voice.set_duty(value * 0.4 + 0.1);
         voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
-
-        for sample in (&mut outputs.audio[0]).into_iter() {
-            sample.left *= 0.1;
-            sample.right *= 0.1;
-        }
+        outputs.audio[0].apply(| s | s * 0.1 );
     }
 }

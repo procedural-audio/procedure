@@ -30,14 +30,16 @@ impl Module for SawModule {
     fn save(&self, _state: &mut State) {}
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Transform {
-            position: (30, 25),
-            size: (40, 40),
-            child: Icon {
-                path: "waveforms/saw.svg",
-                color: Color::BLUE,
+        Box::new(
+            Transform {
+                position: (30, 25),
+                size: (40, 40),
+                child: Icon {
+                    path: "waveforms/saw.svg",
+                    color: Color::BLUE,
+                }
             }
-        })
+        )
     }
 
     fn prepare(&self, voice: &mut Self::Voice, sample_rate: u32, block_size: usize) {
@@ -46,10 +48,6 @@ impl Module for SawModule {
 
     fn process(&mut self, voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
         voice.process_block(&inputs.events[0], &mut outputs.audio[0]);
-
-        for sample in (&mut outputs.audio[0]).into_iter() {
-            sample.left *= 0.1;
-            sample.right *= 0.1;
-        }
+        outputs.audio[0].apply(| s | s * 0.1 );
     }
 }
