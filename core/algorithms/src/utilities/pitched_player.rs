@@ -53,7 +53,7 @@ impl<G: Generator + Pitched> Generator for PitchedPlayer<G> where G::Output: Sam
     }
 }
 
-impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> {
+impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> where G::Output: Sample {
     type Input = NoteMessage;
     type Output = G::Output;
 
@@ -65,10 +65,12 @@ impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> {
         for msg in input.as_slice() {
             match msg.note {
                 Event::NoteOn { pitch, pressure: _ } => {
+                    println!("Note on");
                     self.set_pitch(pitch);
                     self.play();
                 },
                 Event::NoteOff => {
+                    println!("Note off");
                     self.stop();
                 },
                 Event::Pitch(hz) => {
