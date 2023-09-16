@@ -1,17 +1,19 @@
 mod saw;
-mod square;
 mod sine;
+mod square;
 mod triangle;
 mod noise;
 mod pulse;
-mod wavetable;
 mod additive;
+mod wavetable;
+mod oscillator;
 
 pub use saw::*;
-pub use square::*;
 pub use sine::*;
+pub use square::*;
 pub use triangle::*;
 pub use noise::*;
 pub use pulse::*;
-pub use wavetable::*;
 pub use additive::*;
+pub use wavetable::*;
+pub use oscillator::*;
