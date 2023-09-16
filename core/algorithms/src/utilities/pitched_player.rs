@@ -1,8 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator, Pitched, Event};
+use crate::*;
+use pa_dsp::*;
 
-use crate::Playable;
 
 pub const fn pitched_player<G: Generator + Pitched>(dsp: G) -> PitchedPlayer<G> {
     PitchedPlayer::from(dsp)
