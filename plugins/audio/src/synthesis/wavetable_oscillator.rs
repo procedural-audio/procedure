@@ -1,7 +1,6 @@
 use crate::*;
-
-use pa_dsp::loadable::{Loadable, Lock};
 use pa_algorithms::*;
+use pa_dsp::loadable::{Loadable, Lock};
 
 pub struct WavetableOscillator {
     wavetable: Lock<Wavetable<f32, 2048>>

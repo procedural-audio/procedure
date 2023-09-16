@@ -1,6 +1,5 @@
-use pa_algorithms::{PitchedPlayer, Triangle};
-
 use crate::*;
+use pa_algorithms::{PitchedPlayer, Triangle};
 
 pub struct TriangleModule;
 

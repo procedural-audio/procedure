@@ -65,14 +65,12 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         splashColor: Colors.transparent,
-        pageTransitionsTheme: const PageTransitionsTheme(builders: {
-          TargetPlatform.linux: ZoomPageTransitionsBuilder(),
-          TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
-          // TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-          // TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-          // TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
-          // TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        }),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+            TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+          },
+        ),
       ),
       home: Scaffold(
         backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),

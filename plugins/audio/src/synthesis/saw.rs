@@ -1,5 +1,4 @@
 use crate::*;
-
 use pa_algorithms::*;
 
 pub struct SawModule;
