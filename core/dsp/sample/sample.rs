@@ -4,9 +4,10 @@ use std::sync::Arc;
 use rand::{rngs::ThreadRng, Rng};
 
 use crate::buffers::*;
+use crate::float::*;
+
 use crate::Generator;
 use crate::Pitched;
-use crate::float::*;
 
 #[derive(Clone)]
 pub struct SampleFile<S: Sample> {
@@ -95,7 +96,7 @@ pub struct Converter<F: Float, S: Sample, G: Generator<Output = S>, I: Interpola
     src: G,
     interpolator: I,
     interpolation_value: F,
-    ratio: F
+    ratio: f32
 }
 
 impl<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> Converter<F, S, G, I> {
@@ -104,13 +105,12 @@ impl<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> C
             src,
             interpolator: I::new(),
             interpolation_value: F::ZERO,
-            ratio: F::MAX
+            ratio: 1.0
         }
     }
 
     pub fn set_ratio(&mut self, ratio: f32) {
-        panic!("set_ratio not implemented");
-        // self.ratio = ratio;
+        self.ratio = ratio;
     }
 }
 
@@ -134,7 +134,7 @@ impl<F: Float, S: Sample<Float = F>, G: Generator<Output = S>, I: Interpolator<I
 
         let s = S::from(self.interpolation_value);
         let out = self.interpolator.interpolate(s);
-        self.interpolation_value += self.ratio;
+        self.interpolation_value += F::from(self.ratio);
         return out;
     }
 }

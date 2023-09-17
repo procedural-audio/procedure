@@ -46,16 +46,16 @@ impl Module for MidSide {
             position: (35, 30),
             size: (50, 70),
             child: Knob {
-                text: "Pan",
+                text: "M/S",
                 color: Color::BLUE,
                 value: &mut self.value,
                 feedback: Box::new(| v| {
                     if v == 0.5 {
                         String::from("C")
                     } else if v < 0.5 {
-                        format!("{:.1} M", linear_to_db(1.0 - v) / 4.0)
+                        format!("{:.1} M", 1.0 - v)
                     } else {
-                        format!("{:.1} S", linear_to_db(v) / 4.0)
+                        format!("{:.1} S", v)
                     }
                 })
             }
@@ -71,13 +71,10 @@ impl Module for MidSide {
             self.value
         };
 
-        let db_mid = linear_to_db(1.0 - value) / 4.0;
-        let db_side = linear_to_db(value) / 4.0;
-
         outputs.audio[0].copy_from(&inputs.audio[0]);
         outputs.audio[0].apply(| s | {
-            let mid = (s.left + s.right).gain(db_mid);
-            let side = (s.left - s.right).gain(db_side);
+            let mid = (s.left + s.right) * (1.0 - value);
+            let side = (s.left - s.right) * value;
 
             Stereo {
                 left: mid + side,
