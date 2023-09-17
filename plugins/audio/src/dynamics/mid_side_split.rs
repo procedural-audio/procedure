@@ -10,14 +10,14 @@ impl Module for MidSideSplit {
         id: "default.audio.dynamics.mid_side_split",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(110, 90),
+        size: Size::Static(110, 95),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Input", 30),
+            Pin::Audio("Input", 35),
         ],
         outputs: &[
-            Pin::Audio("Mid", 30),
-            Pin::Audio("Side", 60),
+            Pin::Audio("Mid", 35),
+            Pin::Audio("Side", 65),
         ],
         path: &["Audio", "Dynamics", "Mid-Side Split"],
         presets: Presets::NONE

@@ -1,28 +1,27 @@
 use crate::*;
-use pa_dsp::*;
 
-pub struct Gain {
+pub struct MidSide {
     value: f32,
 }
 
-impl Module for Gain {
+impl Module for MidSide {
     type Voice = ();
 
     const INFO: Info = Info {
-        title: "Gain",
-        id: "default.effects.dynamics.gain",
+        title: "Mid-Side",
+        id: "default.effects.dynamics.mid_side",
         version: "0.0.0",
         color: Color::BLUE,
         size: Size::Static(120, 110),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Audio("Audio Input", 25),
-            Pin::Control("Gain (0-1)", 55),
+            Pin::Control("M/S Amount", 55),
         ],
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Dynamics", "Gain"],
+        path: &["Audio", "Dynamics", "Mid-Side"],
         presets: Presets::NONE
     };
 
@@ -35,11 +34,11 @@ impl Module for Gain {
     }
 
     fn load(&mut self, _version: &str, state: &State) {
-        self.value = state.load("gain");
+        self.value = state.load("ms");
     }
 
     fn save(&self, state: &mut State) {
-        state.save("gain", self.value);
+        state.save("ms", self.value);
     }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
@@ -47,10 +46,18 @@ impl Module for Gain {
             position: (35, 30),
             size: (50, 70),
             child: Knob {
-                text: "Gain",
+                text: "Pan",
                 color: Color::BLUE,
                 value: &mut self.value,
-                feedback: Box::new(| v| format!("{:.1} db", linear_to_db(v)))
+                feedback: Box::new(| v| {
+                    if v == 0.5 {
+                        String::from("C")
+                    } else if v < 0.5 {
+                        format!("{:.1} M", linear_to_db(1.0 - v) / 4.0)
+                    } else {
+                        format!("{:.1} S", linear_to_db(v) / 4.0)
+                    }
+                })
             }
         })
     }
@@ -64,7 +71,18 @@ impl Module for Gain {
             self.value
         };
 
+        let db_mid = linear_to_db(1.0 - value) / 4.0;
+        let db_side = linear_to_db(value) / 4.0;
+
         outputs.audio[0].copy_from(&inputs.audio[0]);
-        outputs.audio[0].gain(linear_to_db(value));
+        outputs.audio[0].apply(| s | {
+            let mid = (s.left + s.right).gain(db_mid);
+            let side = (s.left - s.right).gain(db_side);
+
+            Stereo {
+                left: mid + side,
+                right: mid - side
+            }
+        });
     }
 }

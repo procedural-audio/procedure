@@ -41,6 +41,7 @@ static PLUGIN: Plugin = Plugin {
         module::<WavetableOscillator>(),
         module::<synthesis::Noise>(),
         module::<synthesis::PluckModule>(),
+        module::<MidSide>(),
         // module::<AdditiveOscillator>(),
         // module::<HarmonicOscillator>(),
         // module::<modules::Noise>(),
@@ -66,8 +67,8 @@ static PLUGIN: Plugin = Plugin {
         module::<Gate>(),
         module::<Compressor>(),
         module::<VoiceSpread>(),
-        module::<MidSideSplit>(),
-        module::<MidSideMerge>(),
+        // module::<MidSideSplit>(), // Excluding for now
+        // module::<MidSideMerge>(), // Excluding for now
         // module::<TransientShaper>(),
         // module::<TransientSeparator>(),
 

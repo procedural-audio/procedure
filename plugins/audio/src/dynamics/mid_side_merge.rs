@@ -10,14 +10,14 @@ impl Module for MidSideMerge {
         id: "default.audio.dynamics.mid_side_merge",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(110, 90),
+        size: Size::Static(110, 95),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Audio("Mid", 30),
-            Pin::Audio("Side", 60),
+            Pin::Audio("Mid", 35),
+            Pin::Audio("Side", 65),
         ],
         outputs: &[
-            Pin::Audio("Output", 30),
+            Pin::Audio("Output", 35),
         ],
         path: &["Audio", "Dynamics", "Mid-Side Merge"],
         presets: Presets::NONE

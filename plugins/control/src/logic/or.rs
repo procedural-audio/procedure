@@ -45,10 +45,10 @@ impl Module for Or {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0] == 0.0 && inputs.control[1] == 0.0 {
-            outputs.control[0] = 0.0;
-        } else {
+        if inputs.control[0] >= 0.5 || inputs.control[1] >= 0.5 {
             outputs.control[0] = 1.0;
+        } else {
+            outputs.control[0] = 0.0;
         }
     }
 }

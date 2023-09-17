@@ -13,8 +13,7 @@ impl Module for Not {
         size: Size::Static(100, 75),
         voicing: Voicing::Polyphonic,
         inputs: &[
-            Pin::Control("Input 1", 15),
-            Pin::Control("Input 2", 45),
+            Pin::Control("Input", 15),
         ],
         outputs: &[
             Pin::Control("Output", 30)
@@ -45,10 +44,10 @@ impl Module for Not {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0] == 0.0 {
-            outputs.control[0] = 1.0;
-        } else {
+        if inputs.control[0] >= 0.5 {
             outputs.control[0] = 0.0;
+        } else {
+            outputs.control[0] = 1.0;
         }
     }
 }

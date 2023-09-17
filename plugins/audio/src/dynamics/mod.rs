@@ -7,6 +7,7 @@ mod panner;
 mod voice_spread;
 mod mid_side_split;
 mod mid_side_merge;
+mod mid_side;
 
 pub use compressor::*;
 pub use gain::*;
@@ -17,3 +18,4 @@ pub use panner::*;
 pub use voice_spread::*;
 pub use mid_side_split::*;
 pub use mid_side_merge::*;
+pub use mid_side::*;
