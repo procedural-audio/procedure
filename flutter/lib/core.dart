@@ -42,7 +42,7 @@ class Core extends CoreProtocolServiceBase {
       module: null,
       widget: null,
     );
-    
+
     stub.dispatch(msg);
     stub.getModule(Int(value: 1));
   }
@@ -138,7 +138,7 @@ class Core extends CoreProtocolServiceBase {
     } else {
       _ffiCoreSetPatchNull(raw, Pointer.fromAddress(0));
     }
-  }  
+  }
 }
 
 var core = DynamicLibrary.open(Settings2.coreLibraryDirectory());

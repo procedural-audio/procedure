@@ -40,7 +40,7 @@ impl Module for NotEqual {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        if inputs.control[0] > inputs.control[1] {
+        if inputs.control[0] != inputs.control[1] {
             outputs.control[0] = 1.0;
         } else {
             outputs.control[0] = 0.0;

@@ -14,7 +14,6 @@ impl Module for Negative {
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Control("Input 1", 15),
-            Pin::Control("Input 2", 45),
         ],
         outputs: &[
             Pin::Control("Output", 30)
@@ -45,6 +44,6 @@ impl Module for Negative {
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}
 
     fn process(&mut self, _voice: &mut Self::Voice, inputs: &IO, outputs: &mut IO) {
-        outputs.control[0] = inputs.control[0] - inputs.control[1];
+        outputs.control[0] = inputs.control[0];
     }
 }
