@@ -1,7 +1,6 @@
-use std::marker::PhantomData;
-
 use pa_dsp::*;
 use pa_algorithms::*;
+
 use crate::*;
 
 pub struct Waveshaper {
