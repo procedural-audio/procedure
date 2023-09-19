@@ -10,6 +10,8 @@ pub trait Float: Copy + Clone + From<f32>
     const MAX: Self;
     const PI: Self;
 
+    fn from_usize(v: usize) -> Self;
+
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn tan(self) -> Self;
@@ -34,6 +36,10 @@ impl Float for f32 {
     const MIN: Self = -1.0;
     const MAX: Self = 1.0;
     const PI: Self = std::f32::consts::PI;
+
+    fn from_usize(v: usize) -> Self {
+        v as f32
+    }
 
     fn sin(self) -> Self {
         f32::sin(self)
@@ -73,6 +79,10 @@ impl Float for f64 {
     const MIN: Self = -1.0;
     const MAX: Self = 1.0;
     const PI: Self = std::f64::consts::PI;
+
+    fn from_usize(v: usize) -> Self {
+        v as f64
+    }
 
     fn sin(self) -> Self {
         f64::sin(self)

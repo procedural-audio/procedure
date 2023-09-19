@@ -1,5 +1,8 @@
 use crate::buffers::*;
 
+pub type GeneratorGraph<Out> = Box<dyn Generator<Output = Out>>;
+pub type ProcessorGraph<In, Out> = Box<dyn Processor<Input = In, Output = Out>>;
+
 pub trait Generator {
     type Output;
 
