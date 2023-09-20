@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use pa_dsp::*;
 
 fn test() {

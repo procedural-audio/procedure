@@ -6,6 +6,7 @@ import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
 import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/window.dart';
 
 import 'core.dart';
 import 'patch.dart';
@@ -320,6 +321,7 @@ class _Project extends State<Project> {
             display: display,
           ),
         ),
+        PopupWindow(),
       ],
     );
   }
