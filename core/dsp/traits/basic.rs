@@ -9,12 +9,6 @@ pub trait Generator {
     fn reset(&mut self);
     fn prepare(&mut self, sample_rate: u32, block_size: usize);
     fn generate(&mut self) -> Self::Output;
-
-    /*fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer) {
-        for dest in output.as_slice_mut().iter_mut() {
-            *dest = self.generate();
-        }
-    }*/
 }
 
 impl Generator for f32 {
