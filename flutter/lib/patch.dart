@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/window.dart';
 
 import 'dart:async';
 import 'dart:io';
@@ -566,6 +567,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
+          PopupWindow(),
         ],
       ),
     );

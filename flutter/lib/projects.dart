@@ -321,7 +321,6 @@ class _Project extends State<Project> {
             display: display,
           ),
         ),
-        PopupWindow(),
       ],
     );
   }
