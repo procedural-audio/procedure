@@ -8,7 +8,6 @@ import 'package:metasampler/window.dart';
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
@@ -124,16 +123,6 @@ class RawPatch extends Struct {
   static RawPatch create() {
     return _ffiCreatePatch();
   }
-
-  /*static RawPatch? from(File file) {
-    var patch = RawPatch.create();
-
-    if (patch.load(file.path)) {
-      return patch;
-    }
-
-    return null;
-  }*/
 
   bool load(File file, Plugins plugins) {
     var rawPath = file.path.toNativeUtf8();
@@ -567,7 +556,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
-          PopupWindow(),
+          // PopupWindow(),
         ],
       ),
     );

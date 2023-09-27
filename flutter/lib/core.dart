@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:grpc/grpc.dart';
 import 'package:metasampler/settings.dart';
-import 'package:pa_protocol/pa_protocol.dart';
+// import 'package:pa_protocol/pa_protocol.dart';
 
 import 'module.dart';
 import 'patch.dart';
 
-class Core extends CoreProtocolServiceBase {
+class Core { // extends CoreProtocolServiceBase {
   Core(this.raw) {
     /*final server = Server.create(
       services: [CoreProtocolService()],
@@ -29,7 +29,7 @@ class Core extends CoreProtocolServiceBase {
       ),
     );
 
-    final stub = CoreProtocolClient(channel);
+    /*final stub = CoreProtocolClient(channel);
 
     var msg = CoreMsg(
       patch: PatchMsg(
@@ -44,7 +44,7 @@ class Core extends CoreProtocolServiceBase {
     );
 
     stub.dispatch(msg);
-    stub.getModule(Int(value: 1));
+    stub.getModule(Int(value: 1));*/
   }
 
   // Make sure this doesn't leak???
@@ -60,7 +60,7 @@ class Core extends CoreProtocolServiceBase {
     return Core(_ffiHackConvert(addr));
   }
 
-  @override
+  /*@override
   Future<Status> dispatch(ServiceCall call, CoreMsg request) {
     var buffer = request.writeToBuffer();
     final pointer = calloc<Uint8>(buffer.length);
@@ -80,7 +80,7 @@ class Core extends CoreProtocolServiceBase {
   Future<Status> getModule(ServiceCall call, Int request) {
     // TODO: implement getModule
     throw UnimplementedError();
-  }
+  }*/
 
   bool load(String path) {
     var rawPath = path.toNativeUtf8();
