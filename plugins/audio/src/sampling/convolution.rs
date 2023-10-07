@@ -73,7 +73,7 @@ impl Module for Convolution {
                 extensions: &[".wav", ".mp3"],
                 child: Stack {
                     children: (
-                        SampleEditor {
+                        SampleViewer {
                             sample: self.sample.clone(),
                         }
                         /*Painter {

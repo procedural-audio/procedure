@@ -20,7 +20,7 @@ impl Module for Sampler {
         id: "default.sampling.sampler",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(300, 180),
+        size: Size::Static(240, 180),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10)
@@ -72,21 +72,37 @@ impl Module for Sampler {
     }
 
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
-        Box::new(Padding {
-            padding: (5, 35, 5, 5),
-            child: Browser {
-                loadable: self.sample.clone(),
-                directory: Directory::SAMPLES,
-                extensions: &[".wav", ".mp3"],
-                child: Stack {
+        Box::new(
+            Padding {
+                padding: (5, 35, 5, 5),
+                child: Column {
                     children: (
-                        SampleEditor {
-                            sample: self.sample.clone(),
+                        SizedBox {
+                            size: (1000, 10),
+                            child: Row {
+                                children: (
+                                    Button {
+                                        color: Color::BLUE,
+                                        on_pressed: | v | {
+                                            println!("Pressed")
+                                        }
+                                    },
+                                    Button {
+                                        color: Color::RED,
+                                        on_pressed: | v | {
+                                            println!("Pressed")
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        SampleViewer {
+                            sample: self.sample.clone()
                         }
-                    )
+                    ),
                 }
             }
-        })
+        )
     }
 
     fn prepare(&self, _voice: &mut Self::Voice, _sample_rate: u32, _block_size: usize) {}

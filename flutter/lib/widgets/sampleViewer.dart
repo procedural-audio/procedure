@@ -8,25 +8,25 @@ import 'dart:ui' as ui;
 import '../core.dart';
 import '../module.dart';
 
-Pointer<Utf8> Function(RawWidgetPointer) ffiSampleEditorGetBufferPath = core
+Pointer<Utf8> Function(RawWidgetPointer) ffiSampleViewerGetBufferPath = core
     .lookup<NativeFunction<Pointer<Utf8> Function(RawWidgetPointer)>>(
-        "ffi_sample_editor_get_buffer_path")
+        "ffi_sample_viewer_get_buffer_path")
     .asFunction();
-int Function(RawWidgetPointer) ffiSampleEditorGetBufferLength = core
+int Function(RawWidgetPointer) ffiSampleViewerGetBufferLength = core
     .lookup<NativeFunction<Int64 Function(RawWidgetPointer)>>(
-        "ffi_sample_editor_get_buffer_length")
+        "ffi_sample_viewer_get_buffer_length")
     .asFunction();
-double Function(RawWidgetPointer, int) ffiSampleEditorGetSampleLeft = core
+double Function(RawWidgetPointer, int) ffiSampleViewerGetSampleLeft = core
     .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
-        "ffi_sample_editor_get_sample_left")
+        "ffi_sample_viewer_get_sample_left")
     .asFunction();
-double Function(RawWidgetPointer, int) ffiSampleEditorGetSampleRight = core
+double Function(RawWidgetPointer, int) ffiSampleViewerGetSampleRight = core
     .lookup<NativeFunction<Float Function(RawWidgetPointer, Int64)>>(
-        "ffi_sample_editor_get_sample_right")
+        "ffi_sample_viewer_get_sample_right")
     .asFunction();
 
-class SampleEditorWidget extends ModuleWidget {
-  SampleEditorWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
+class SampleViewerWidget extends ModuleWidget {
+  SampleViewerWidget(Node n, RawNode m, RawWidget w) : super(n, m, w) {
     refreshBuffer();
   }
 
@@ -34,13 +34,12 @@ class SampleEditorWidget extends ModuleWidget {
   List<double> rightBuffer = [0.0];
 
   bool loadingSample = false;
-  bool hovering = false;
 
   String path = "";
 
   @override
   void refresh() {
-    var rawPath = ffiSampleEditorGetBufferPath(widgetRaw.pointer);
+    var rawPath = ffiSampleViewerGetBufferPath(widgetRaw.pointer);
     var newPath = rawPath.toDartString();
 
     if (newPath != path) {
@@ -56,13 +55,13 @@ class SampleEditorWidget extends ModuleWidget {
     rightBuffer.clear();
 
     int count = 300;
-    int length = ffiSampleEditorGetBufferLength(widgetRaw.pointer);
+    int length = ffiSampleViewerGetBufferLength(widgetRaw.pointer);
 
     for (int i = 0; i < count; i++) {
       int index = (length ~/ count) * i;
 
-      double left = ffiSampleEditorGetSampleLeft(widgetRaw.pointer, index);
-      double right = ffiSampleEditorGetSampleRight(widgetRaw.pointer, index);
+      double left = ffiSampleViewerGetSampleLeft(widgetRaw.pointer, index);
+      double right = ffiSampleViewerGetSampleRight(widgetRaw.pointer, index);
 
       leftBuffer.add(left * 1.0);
       rightBuffer.add(right * 1.0);
@@ -71,29 +70,19 @@ class SampleEditorWidget extends ModuleWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (e) {
-        setState(() {
-          hovering = true;
-        });
-      },
-      onExit: (e) {
-        setState(() {
-          hovering = false;
-        });
-      },
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(20, 20, 20, 1.0),
-          borderRadius: BorderRadius.all(
-            Radius.circular(5),
-          ),
+    return Container(
+      width: double.maxFinite,
+      height: double.maxFinite,
+      decoration: const BoxDecoration(
+        color: Color.fromRGBO(20, 20, 20, 1.0),
+        borderRadius: BorderRadius.all(
+          Radius.circular(5),
         ),
-        child: CustomPaint(
-          painter: SamplePainter(
-            leftBuffer: leftBuffer,
-            rightBuffer: rightBuffer,
-          ),
+      ),
+      child: CustomPaint(
+        painter: SamplePainter(
+          leftBuffer: leftBuffer,
+          rightBuffer: rightBuffer,
         ),
       ),
     );

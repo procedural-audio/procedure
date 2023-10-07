@@ -131,13 +131,13 @@ pub struct FFIBuffer {
 }
 
 #[repr(C)]
-pub struct SampleEditor {
+pub struct SampleViewer {
     pub sample: Lock<crate::SampleFile<crate::Stereo<f32>>>,
 }
 
-impl WidgetNew for SampleEditor {
+impl WidgetNew for SampleViewer {
     fn get_name(&self) -> &'static str {
-        "SampleEditor"
+        "SampleViewer"
     }
 
     fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
@@ -148,7 +148,7 @@ impl WidgetNew for SampleEditor {
 /* ========== FFI ========== */
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_editor_get_buffer_path(widget: &mut SampleEditor) -> *const i8 {
+pub unsafe extern "C" fn ffi_sample_viewer_get_buffer_path(widget: &mut SampleViewer) -> *const i8 {
     let sample = widget.sample.read();
     let s = CString::new(sample.path()).unwrap();
     let p = s.as_ptr();
@@ -157,17 +157,17 @@ pub unsafe extern "C" fn ffi_sample_editor_get_buffer_path(widget: &mut SampleEd
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_editor_get_buffer_length(widget: &mut SampleEditor) -> usize {
+pub unsafe extern "C" fn ffi_sample_viewer_get_buffer_length(widget: &mut SampleViewer) -> usize {
     widget.sample.read().len()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_editor_get_sample_left(widget: &mut SampleEditor, index: usize) -> f32 {
+pub unsafe extern "C" fn ffi_sample_viewer_get_sample_left(widget: &mut SampleViewer, index: usize) -> f32 {
     (*widget.sample.read()).as_slice()[index].left
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ffi_sample_editor_get_sample_right(widget: &mut SampleEditor, index: usize) -> f32 {
+pub unsafe extern "C" fn ffi_sample_viewer_get_sample_right(widget: &mut SampleViewer, index: usize) -> f32 {
     (*widget.sample.read()).as_slice()[index].right
 }
 

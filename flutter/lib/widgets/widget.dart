@@ -6,7 +6,7 @@ import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/iconButton.dart';
 import 'package:metasampler/widgets/painter2.dart';
 import 'package:metasampler/widgets/plotter.dart';
-import 'package:metasampler/widgets/sampleEditor.dart';
+import 'package:metasampler/widgets/sampleViewer.dart';
 
 import 'dart:ui' as ui;
 import 'dart:async';
@@ -119,8 +119,8 @@ ModuleWidget? createWidget(Node node, RawNode moduleRaw, RawWidget widgetRaw,
     return TabsWidget(node, moduleRaw, widgetRaw);
     /*} else if (name == "NodeSequencer") {
     return NodeSequencerWidget(node, moduleRaw, widgetRaw);*/
-  } else if (name == "SampleEditor") {
-    return SampleEditorWidget(node, moduleRaw, widgetRaw);
+  } else if (name == "SampleViewer") {
+    return SampleViewerWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Painter2") {
     return Painter2Widget(node, moduleRaw, widgetRaw);
   } else if (name == "Refresh") {

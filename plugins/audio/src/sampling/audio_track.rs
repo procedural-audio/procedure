@@ -5,7 +5,7 @@ use modules::loadable::Loadable;
 use crate::*;
 
 pub struct AudioTrack {
-    sample: Arc<RwLock<SampleFile<Stereo<f32>>>>,
+    sample: Lock<SampleFile<Stereo<f32>>>,
     player: PitchedSamplePlayer<Stereo<f32>>,
     rate: u32,
     position: f32
@@ -24,7 +24,7 @@ impl Module for AudioTrack {
         id: "default.sampling.audio_track",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(600, 150),
+        size: Size::Static(240, 180),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Time("Time", 10)
@@ -41,7 +41,7 @@ impl Module for AudioTrack {
             // "/Users/chasekanipe/Desktop/Iris.wav"
             "/Users/chasekanipe/Desktop/Spectrum.wav"
         } else if cfg!(target_os = "linux") {
-            todo!()
+            "/home/chase/github/assets/samples/Winter Felt Piano/Samples/Pianobook Piano f G1.wav"
         } else {
             todo!()
         };
@@ -54,7 +54,7 @@ impl Module for AudioTrack {
         let rate = 0;
         let position = 0.0;
 
-        let sample = Arc::new(RwLock::new(sample));
+        let sample = Lock::new(sample);
 
         return Self { player, sample, rate, position };
     }
@@ -72,20 +72,17 @@ impl Module for AudioTrack {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(Padding {
             padding: (5, 35, 5, 5),
-            child: Stack {
-                children: (
-                    /*SampleFilePicker {
-                        sample: self.sample.clone()
-                    },*/
-                    /*Painter {
-                        paint: | canvas | {
-                            canvas.draw_line(
-                                (canvas.width * self.position, 0.0),
-                                (canvas.width * self.position, canvas.height),
-                                Paint::new());
+            child: Browser {
+                loadable: self.sample.clone(),
+                directory: Directory::SAMPLES,
+                extensions: &[".wav", ".mp3"],
+                child: Stack {
+                    children: (
+                        SampleViewer {
+                            sample: self.sample.clone(),
                         }
-                    }*/
-                )
+                    )
+                }
             }
         })
     }
