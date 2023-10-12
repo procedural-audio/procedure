@@ -13,6 +13,20 @@ impl<G: WidgetGroup> WidgetNew for Stack<G> {
     }
 }
 
+pub struct Expanded<W: WidgetNew> {
+    pub child: W
+}
+
+impl<W: WidgetNew> WidgetNew for Expanded<W> {
+    fn get_name(&self) -> &'static str {
+        "Expanded"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &(self.child)
+    }
+}
+
 #[repr(C)]
 pub struct Grid<G: WidgetGroup> {
     pub columns: usize,

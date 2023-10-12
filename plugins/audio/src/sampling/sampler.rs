@@ -4,7 +4,11 @@ use crate::*;
 
 pub struct Sampler {
     sample: Lock<SampleFile<Stereo<f32>>>,
-    positions: [f32; 32]
+    positions: [f32; 32],
+    slider_1: f32,
+    slider_2: f32,
+    slider_3: f32,
+    slider_4: f32
 }
 
 pub struct SamplerVoice {
@@ -20,7 +24,7 @@ impl Module for Sampler {
         id: "default.sampling.sampler",
         version: "0.0.0",
         color: Color::BLUE,
-        size: Size::Static(240, 180),
+        size: Size::Static(280, 180),
         voicing: Voicing::Polyphonic,
         inputs: &[
             Pin::Notes("Notes Input", 10)
@@ -43,7 +47,11 @@ impl Module for Sampler {
 
         return Self {
             sample: Lock::new(SampleFile::load(path).unwrap()),
-            positions: [0.0; 32]
+            positions: [0.0; 32],
+            slider_1: 0.5,
+            slider_2: 0.5,
+            slider_3: 0.5,
+            slider_4: 0.5
         };
     }
 
@@ -75,31 +83,51 @@ impl Module for Sampler {
         Box::new(
             Padding {
                 padding: (5, 35, 5, 5),
-                child: Column {
-                    children: (
-                        SizedBox {
-                            size: (1000, 10),
-                            child: Row {
-                                children: (
-                                    Button {
-                                        color: Color::BLUE,
-                                        on_pressed: | v | {
-                                            println!("Pressed")
+                child: Background {
+                    color: Color::rgb(20, 20, 20),
+                    border: Border {
+                        color: Color::rgb(20, 20, 20),
+                        width: 0,
+                        radius: 5
+                    },
+                    child: Column {
+                        children: (
+                            SizedBox {
+                                size: (50, 30),
+                                child: Row {
+                                    children: (
+                                        SizedBox {
+                                            size: (60, 20),
+                                            child: LabelSlider {
+                                                value: &mut self.slider_1,
+                                                color: Color::BLUE,
+                                                text: | v | {
+                                                    format!("{:.2} db", v)
+                                                }
+                                            }
+                                        },
+                                        SizedBox {
+                                            size: (20, 20),
+                                            child: LabelSlider {
+                                                value: &mut self.slider_2,
+                                                color: Color::BLUE,
+                                                text: | v | {
+                                                    let num = (v * 120.0).round() as usize;
+                                                    let name = NOTE_NAMES[num];
+                                                    format!("{}", name)
+                                                }
+                                            }
                                         }
-                                    },
-                                    Button {
-                                        color: Color::RED,
-                                        on_pressed: | v | {
-                                            println!("Pressed")
-                                        }
-                                    }
-                                )
+                                    )
+                                }
+                            },
+                            Expanded {
+                                child: SampleViewer {
+                                    sample: self.sample.clone()
+                                }
                             }
-                        },
-                        SampleViewer {
-                            sample: self.sample.clone()
-                        }
-                    ),
+                        )
+                    }
                 }
             }
         )
@@ -120,8 +148,12 @@ impl Module for Sampler {
                     voice.player.set_pitch(pitch);
                     voice.player.play();
                 },
-                Event::NoteOff => voice.player.stop(),
-                Event::Pitch(pitch) => voice.player.set_pitch(pitch),
+                Event::NoteOff => {
+                    voice.player.stop()
+                },
+                Event::Pitch(pitch) => {
+                    voice.player.set_pitch(pitch)
+                },
                 _ => ()
             }
         }

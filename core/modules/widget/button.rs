@@ -642,3 +642,52 @@ pub unsafe extern "C" fn ffi_keyboard_key_press(widget: &mut dyn KeyboardTrait, 
 pub unsafe extern "C" fn ffi_keyboard_key_release(widget: &mut dyn KeyboardTrait, index: usize) {
     widget.key_release(index)
 }
+
+pub struct LabelSlider<'a> {
+    pub value: &'a mut f32,
+    pub color: Color,
+    pub text: fn(f32) -> String,
+}
+
+impl<'a> WidgetNew for LabelSlider<'a> {
+    fn get_name(&self) -> &'static str {
+        "LabelSlider"
+    }
+
+    fn get_children<'w>(&'w self) -> &'w dyn WidgetGroup {
+        &()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_label_slider_get_value(widget: &mut LabelSlider) -> f32{
+    *widget.value
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_label_slider_set_value(widget: &mut LabelSlider, value: f32) {
+    *widget.value = value;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_label_slider_get_color(widget: &mut LabelSlider) -> u32 {
+    widget.color.0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn ffi_label_slider_get_text(widget: &mut LabelSlider) -> *const i8 {
+    let v = *widget.value;
+    let text = (widget.text)(v);
+
+    let s = match CString::new(text) {
+        Ok(s) => s,
+        Err(e) => {
+            println!("Error with knob label {}", e);
+            CString::new("").unwrap()
+        }
+    };
+
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}

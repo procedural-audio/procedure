@@ -2,13 +2,15 @@ use modules::*;
 
 mod conversions;
 mod io;
+mod scripting;
 //mod math;
-//mod scripting;
 
 pub use conversions::*;
 pub use io::*;
+pub use scripting::*;
 //pub use math::*;
 //pub use scripting::*;
+
 
 static PLUGIN: Plugin = Plugin {
     name: "Built-in Utility Modules",
@@ -23,6 +25,7 @@ static PLUGIN: Plugin = Plugin {
         module::<AudioOutput>(),
         module::<MidiInput>(),
         module::<MidiOutput>(),
+        module::<JitTestModule>(),
         // module::<AudioPluginModule>(),
 
         // Scripting

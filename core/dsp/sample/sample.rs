@@ -53,45 +53,6 @@ impl<S: Sample> SampleFile<S> {
     }
 }
 
-/*impl<T: Frame> Playable for SampleFile<T> {
-    type Player = SamplePlayer<T>;
-
-    fn player(self) -> Self::Player {
-        SamplePlayer::new()
-    }
-}*/
-
-/*impl<T: Frame> Player for SamplePlayer<T> {
-    fn play(&mut self) {
-        self.playing = true;
-    }
-
-    fn pause(&mut self) {
-        self.playing = false;
-    }
-
-    fn stop(&mut self) {
-        self.playing = false;
-        self.index = 0;
-    }
-}*/
-
-/*impl<T: Frame> Generator for SamplePlayer<T> {
-    type Item = T;
-
-    fn reset(&mut self) {
-        todo!()
-    }
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        todo!()
-    }
-
-    fn generate(&mut self) -> Self::Item {
-        
-    }
-}*/
-
 pub struct Converter<F: Float, S: Sample, G: Generator<Output = S>, I: Interpolator<Item = S>> {
     src: G,
     interpolator: I,
@@ -188,48 +149,9 @@ impl<F: Sample> Interpolator for Linear<F> {
     }
 
     fn interpolate(&self, x: F) -> Self::Item {
-        // println!("Interpolation x {}", x);
         ((self.prev - self.last) * x) + self.last
     }
 }
-
-/* ===== Sample Voice ===== */
-
-// pub type PitchedSamplePlayer<T> = Converter<SamplePlayer<T>, Linear<T>>;
-
-/*pub struct Pitcher<G: Generator<Item = Stereo>> {
-    base_pitch: f32,
-    playing_pitch: f32,
-    src: Converter<G, Linear<G::Item>>
-}
-
-impl<G: Generator<Item = Stereo>> Pitcher<G> {
-    pub fn set_pitch(&mut self, hz: f32) {
-        self.playing_pitch = hz;
-        self.src.set_ratio(self.playing_pitch / self.base_pitch);
-    }
-
-    pub fn set_source_pitch(&mut self, hz: f32) {
-        self.base_pitch = hz;
-        self.src.set_ratio(self.playing_pitch / self.base_pitch);
-    }
-}
-
-impl<G: Generator<Item = Stereo>> Generator for Pitcher<G> {
-    type Item = G::Item;
-
-    fn reset(&mut self) {
-        self.src.reset()
-    }
-
-    fn prepare(&mut self, sample_rate: u32, block_size: usize) {
-        self.src.prepare(sample_rate, block_size)
-    }
-
-    fn generate(&mut self) -> Self::Item {
-        self.src.generate()
-    }
-}*/
 
 pub struct SamplePlayer<T: Sample> {
     sample: Option<SampleFile<T>>,
@@ -342,41 +264,17 @@ impl<T: Sample> Generator for SamplePlayer<T> {
 
         T::EQUILIBRIUM
     }
-
-    /*fn generate_block(&mut self, output: &mut Buffer<T>) {
-        if self.playing && self.start != self.end {
-            if let Some(sample) = &self.sample {
-                if self.should_loop {
-                    for (buf, out) in sample.buffer.as_slice()[self.start..self.end].iter().cycle().skip(self.index).zip(&mut output.into_iter()) {
-                        *out = *buf;
-                        self.index += 1;
-                    }
-                } else {
-                    if self.index + output.len() < sample.end {
-                        let end = self.index + output.len();
-                        for (buf, out) in sample.buffer.as_slice()[self.index..end].iter().zip(&mut output.into_iter()) {
-                            *out = *buf;
-                        }
-
-                        self.index += output.len();
-                    }
-                }
-            }
-        }
-    }*/
 }
 
 pub struct PitchedSamplePlayer<S: Sample> {
-    pub player: Converter<S::Float, S, SamplePlayer<S>, Linear<S>>,
+    player: Converter<S::Float, S, SamplePlayer<S>, Linear<S>>,
     pitch: f32,
 }
 
 impl<T: Sample> PitchedSamplePlayer<T> {
     pub fn new() -> Self {
-        let player = Converter::from(SamplePlayer::new());
-        
         Self {
-            player,
+            player: Converter::from(SamplePlayer::new()),
             pitch: 440.0
         }
     }

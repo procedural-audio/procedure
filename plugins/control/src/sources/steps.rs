@@ -51,7 +51,7 @@ impl Module for Steps {
     fn build<'w>(&'w mut self) -> Box<dyn WidgetNew + 'w> {
         Box::new(
             Padding {
-                padding: (10, 35, 10, 10),
+                padding: (5, 35, 5, 5),
                 child: Refresh {
                     callback: &mut self.callback,
                     child: widget::GridBuilder {
@@ -59,7 +59,7 @@ impl Module for Steps {
                         state: &mut self.faders,
                         builder: | _i, v | {
                             Padding {
-                                padding: (3, 0, 3, 0),
+                                padding: (1, 0, 1, 0),
                                 child: widget::Fader {
                                     value: &mut v.0,
                                     color: &v.1,

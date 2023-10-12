@@ -71,8 +71,6 @@ class SampleViewerWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.maxFinite,
-      height: double.maxFinite,
       decoration: const BoxDecoration(
         color: Color.fromRGBO(20, 20, 20, 1.0),
         borderRadius: BorderRadius.all(

@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/widgets/browser.dart';
 import 'package:metasampler/widgets/dynamicLine.dart';
 import 'package:metasampler/widgets/iconButton.dart';
+import 'package:metasampler/widgets/labelSlider.dart';
 import 'package:metasampler/widgets/painter2.dart';
 import 'package:metasampler/widgets/plotter.dart';
 import 'package:metasampler/widgets/sampleViewer.dart';
@@ -111,6 +112,10 @@ ModuleWidget? createWidget(Node node, RawNode moduleRaw, RawWidget widgetRaw,
     return DynamicLineWidget(node, moduleRaw, widgetRaw);
   } else if (name == "Keyboard") {
     return KeyboardWidget(node, moduleRaw, widgetRaw);
+  } else if (name == "Expanded") {
+    return ExpandedWidget(node, moduleRaw, widgetRaw);
+  } else if (name == "LabelSlider") {
+    return LabelSliderWidget(node, moduleRaw, widgetRaw);
   } else if (name == "SampleMapper") {
     return SampleMapperWidget(node, moduleRaw, widgetRaw);
   } else if (name == "LuaEditor") {

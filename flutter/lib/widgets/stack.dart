@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
 import 'dart:ffi';
 
-import '../patch.dart';
 import 'widget.dart';
 import '../core.dart';
 import '../module.dart';
-import '../main.dart';
+
+class RowWidget extends ModuleWidget {
+  RowWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children.map((e) => e).toList(),
+    );
+  }
+}
+
+class ColumnWidget extends ModuleWidget {
+  ColumnWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children.map((e) => e).toList(),
+    );
+  }
+}
 
 class StackWidget extends ModuleWidget {
   StackWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
@@ -19,25 +45,14 @@ class StackWidget extends ModuleWidget {
   }
 }
 
-class RowWidget extends ModuleWidget {
-  RowWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
+class ExpandedWidget extends ModuleWidget {
+  ExpandedWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-        mainAxisSize: MainAxisSize.max,
-        children: children.map((e) => Expanded(child: e)).toList());
-  }
-}
-
-class ColumnWidget extends ModuleWidget {
-  ColumnWidget(Node n, RawNode m, RawWidget w) : super(n, m, w);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-        mainAxisSize: MainAxisSize.max,
-        children: children.map((e) => Expanded(child: e)).toList());
+    return Expanded(
+      child: children[0],
+    );
   }
 }
 

@@ -361,6 +361,7 @@ class Node extends StatelessWidget {
                     ),
                   ),
                   child: Stack(
+                    fit: StackFit.expand,
                     children: [
                       Align(
                         alignment: Alignment.topCenter,
@@ -376,6 +377,7 @@ class Node extends StatelessWidget {
                         ),
                       ),
                       Stack(
+                        fit: StackFit.expand,
                         children: <Widget>[] + widgets + pins,
                       )
                     ],

@@ -28,38 +28,44 @@ class ButtonWidget extends ModuleWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {},
-        child: Listener(
-            onPointerDown: (e) {
-              setState(() {
-                ffiButtonOnPressed(widgetRaw.getTrait(), true);
-              });
-            },
-            onPointerUp: (e) {
-              setState(() {
-                ffiButtonOnPressed(widgetRaw.getTrait(), false);
-              });
-            },
-            onPointerCancel: (e) {
-              setState(() {
-                ffiButtonOnPressed(widgetRaw.getTrait(), false);
-              });
-            },
-            child: MouseRegion(
-                onEnter: (event) {
-                  setState(() {
-                    mouseOver = true;
-                  });
-                },
-                onExit: (event) {
-                  setState(() {
-                    mouseOver = false;
-                  });
-                },
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: color,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(5)))))));
+      onTap: () {},
+      child: Listener(
+        onPointerDown: (e) {
+          setState(() {
+            ffiButtonOnPressed(widgetRaw.getTrait(), true);
+          });
+        },
+        onPointerUp: (e) {
+          setState(() {
+            ffiButtonOnPressed(widgetRaw.getTrait(), false);
+          });
+        },
+        onPointerCancel: (e) {
+          setState(() {
+            ffiButtonOnPressed(widgetRaw.getTrait(), false);
+          });
+        },
+        child: MouseRegion(
+          onEnter: (event) {
+            setState(() {
+              mouseOver = true;
+            });
+          },
+          onExit: (event) {
+            setState(() {
+              mouseOver = false;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(5),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

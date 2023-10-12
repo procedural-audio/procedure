@@ -66,8 +66,8 @@ class FaderWidget extends ModuleWidget {
             ),
             decoration: BoxDecoration(
               border: Border.all(
-                color: color,
                 width: 2.0,
+                color: const Color.fromRGBO(50, 50, 50, 1.0),
               ),
               borderRadius: const BorderRadius.all(
                 Radius.circular(5),
