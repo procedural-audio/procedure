@@ -26,8 +26,7 @@ impl Module for Phaser {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Modulation", "Phaser"],
-        presets: Presets::NONE
+        path: &["Audio", "Modulation", "Phaser"]
     };
     
     fn new() -> Self {

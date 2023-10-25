@@ -25,8 +25,7 @@ impl Module for Generate {
         outputs: &[
             Pin::Notes("Notes Output", 10),
         ],
-        path: &["Notes", "Generative", "Generate"],
-        presets: Presets::NONE
+        path: &["Notes", "Generative", "Generate"]
     };
 
     fn new() -> Self {

@@ -32,8 +32,7 @@ impl Module for DigitalFilter {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Spectral", "Digital Filter"],
-        presets: Presets::NONE
+        path: &["Audio", "Spectral", "Digital Filter"]
     };
 
     fn new() -> Self {

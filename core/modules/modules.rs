@@ -289,7 +289,6 @@ pub struct Info {
     pub inputs: &'static [Pin],
     pub outputs: &'static [Pin],
     pub path: &'static [&'static str],
-    pub presets: Presets
 }
 
 pub struct Param2<T>(&'static str, T);

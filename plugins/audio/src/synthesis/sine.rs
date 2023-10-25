@@ -15,8 +15,7 @@ impl Module for SineModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: &["Audio", "Synthesis", "Sine"],
-        presets: Presets::NONE
+        path: &["Audio", "Synthesis", "Sine"]
     };
 
     fn new() -> Self { Self }

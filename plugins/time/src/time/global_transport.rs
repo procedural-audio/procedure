@@ -21,8 +21,7 @@ impl Module for GlobalTransport {
         outputs: &[
             Pin::Time("Time Output", 15)
         ],
-        path: &["Time", "Clocks", "Global Transport"],
-        presets: Presets::NONE
+        path: &["Time", "Clocks", "Global Transport"]
     };
 
     fn new() -> Self {

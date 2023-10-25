@@ -22,11 +22,7 @@ impl Module for MultiSampler {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Multi-Sampler"],
-        presets: Presets {
-            path: "multi-samples",
-            extension: ".multisample"
-        }
+        path: &["Audio", "Sampling", "Multi-Sampler"]
     };
 
     fn new() -> Self {

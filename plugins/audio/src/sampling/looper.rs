@@ -17,8 +17,7 @@ impl Module for Looper {
             Pin::Control("Control Input", 45),
         ],
         outputs: &[Pin::Control("Control Output", 30)],
-        path: &["Audio", "Sampling", "Looper"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Looper"]
     };
     
     fn new() -> Self {

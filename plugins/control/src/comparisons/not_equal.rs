@@ -19,8 +19,7 @@ impl Module for NotEqual {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Comparisons", "Not Equal"],
-        presets: Presets::NONE
+        path: &["Control", "Comparisons", "Not Equal"]
     };
 
     fn new() -> Self { Self }

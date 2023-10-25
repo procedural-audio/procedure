@@ -19,8 +19,7 @@ impl Module for MidSideMerge {
         outputs: &[
             Pin::Audio("Output", 35),
         ],
-        path: &["Audio", "Dynamics", "Mid-Side Merge"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Mid-Side Merge"]
     };
 
     fn new() -> Self {

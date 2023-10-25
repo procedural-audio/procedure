@@ -18,8 +18,7 @@ impl Module for AudioInput {
         outputs: &[
             Pin::Audio("External Audio 1", 22)
         ],
-        path: &["Utilities", "IO", "Audio Input"],
-        presets: Presets::NONE
+        path: &["Utilities", "IO", "Audio Input"]
     };
 
     

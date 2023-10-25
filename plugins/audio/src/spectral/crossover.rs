@@ -22,8 +22,7 @@ impl Module for Crossover {
             Pin::Audio("Audio High", 25),
             Pin::Audio("Audio Low", 55)
         ],
-        path: &["Audio", "Spectral", "Crossover"],
-        presets: Presets::NONE
+        path: &["Audio", "Spectral", "Crossover"]
     };
 
     

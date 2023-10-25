@@ -24,8 +24,7 @@ impl Module for Keyboard {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Sequencing", "Keyboard"],
-        presets: Presets::NONE
+        path: &["Notes", "Sequencing", "Keyboard"]
     };
     
     fn new() -> Self {

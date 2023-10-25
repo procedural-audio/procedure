@@ -21,8 +21,7 @@ impl Module for Slew {
         outputs: &[
             Pin::Control("Output", 25)
         ],
-        path: &["Control", "Effects", "Slew"],
-        presets: Presets::NONE
+        path: &["Control", "Effects", "Slew"]
     };
 
     fn new() -> Self {

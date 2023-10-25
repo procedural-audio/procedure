@@ -18,8 +18,7 @@ impl Module for Not {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Logic", "Not"],
-        presets: Presets::NONE
+        path: &["Control", "Logic", "Not"]
     };
 
     fn new() -> Self {

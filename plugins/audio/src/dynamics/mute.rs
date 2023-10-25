@@ -21,8 +21,7 @@ impl Module for Mute {
         outputs: &[
             Pin::Audio("Audio Output", 15)
         ],
-        path: &["Audio", "Dynamics", "Mute"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Mute"]
     };
     
     fn new() -> Self {

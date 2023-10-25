@@ -15,8 +15,7 @@ impl Module for SawModule {
         voicing: Voicing::Polyphonic,
         inputs: &[Pin::Notes("Notes", 15)],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: &["Audio", "Synthesis", "Saw"],
-        presets: Presets::NONE
+        path: &["Audio", "Synthesis", "Saw"]
     };
 
     fn new() -> Self { Self }

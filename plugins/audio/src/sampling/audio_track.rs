@@ -32,8 +32,7 @@ impl Module for AudioTrack {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Audio Track"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Audio Track"]
     };
 
     fn new() -> Self {

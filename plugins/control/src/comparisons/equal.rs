@@ -19,8 +19,7 @@ impl Module for Equal {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Comparisons", "Equal"],
-        presets: Presets::NONE
+        path: &["Control", "Comparisons", "Equal"]
     };
 
     fn new() -> Self { Self }

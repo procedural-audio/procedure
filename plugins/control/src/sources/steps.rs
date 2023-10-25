@@ -21,8 +21,7 @@ impl Module for Steps {
         outputs: &[
             Pin::Control("Steps Output", 10)
         ],
-        path: &["Control", "Sources", "Steps"],
-        presets: Presets::NONE
+        path: &["Control", "Sources", "Steps"]
     };
 
     fn new() -> Self {

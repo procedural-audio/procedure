@@ -23,8 +23,7 @@ impl Module for PulseModule {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Synthesis", "Pulse"],
-        presets: Presets::NONE
+        path: &["Audio", "Synthesis", "Pulse"]
     };
 
     fn new() -> Self {

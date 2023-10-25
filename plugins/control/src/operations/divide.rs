@@ -19,8 +19,7 @@ impl Module for Divide {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Operations", "Divide"],
-        presets: Presets::NONE
+        path: &["Control", "Operations", "Divide"]
     };
 
     fn new() -> Self {

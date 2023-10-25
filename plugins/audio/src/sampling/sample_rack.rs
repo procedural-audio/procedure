@@ -32,8 +32,7 @@ impl Module for SampleRack {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Sample Rack"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Sample Rack"]
     };
 
     fn new() -> Self {

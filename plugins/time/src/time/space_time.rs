@@ -27,8 +27,7 @@ impl Module for Spacetime {
             Pin::Time("Relative Time 3", 10+25*6),
             Pin::Control("Length Contraction 3", 10+25*7),
         ],
-        path: &["Time", "Clocks", "Spacetime"],
-        presets: Presets::NONE
+        path: &["Time", "Clocks", "Spacetime"]
     };
 
     fn new() -> Self {

@@ -24,8 +24,7 @@ impl Module for Hold {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Effects", "Hold"],
-        presets: Presets::NONE
+        path: &["Control", "Effects", "Hold"]
     };
 
     fn new() -> Self {

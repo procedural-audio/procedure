@@ -18,8 +18,7 @@ impl Module for GetVelocity {
         outputs: &[
             Pin::Control("Velocity (hz)", 10)
         ],
-        path: &["Notes", "Effects", "Get Velocity"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Get Velocity"]
     };
     
     fn new() -> Self {

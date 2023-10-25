@@ -17,8 +17,7 @@ impl Module for Arranger {
             Pin::Control("Reverse (bool)", 45),
         ],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: &["Time", "Arrangement", "Arranger"],
-        presets: Presets::NONE
+        path: &["Time", "Arrangement", "Arranger"]
     };
     
     fn new() -> Self {

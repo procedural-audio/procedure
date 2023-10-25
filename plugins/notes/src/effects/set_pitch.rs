@@ -19,8 +19,7 @@ impl Module for SetPitch {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Effects", "Set Pitch"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Set Pitch"]
     };
     
     fn new() -> Self {

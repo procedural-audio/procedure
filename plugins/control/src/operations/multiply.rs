@@ -19,8 +19,7 @@ impl Module for Multiply {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Operations", "Multiply"],
-        presets: Presets::NONE
+        path: &["Control", "Operations", "Multiply"]
     };
     
     fn new() -> Self {

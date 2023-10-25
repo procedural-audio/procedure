@@ -18,8 +18,7 @@ impl Module for KnobModule {
         outputs: &[
             Pin::Control("Clock Output", 30)
         ],
-        path: &["Control", "Widgets", "Knob"],
-        presets: Presets::NONE
+        path: &["Control", "Widgets", "Knob"]
     };
     
     fn new() -> Self {

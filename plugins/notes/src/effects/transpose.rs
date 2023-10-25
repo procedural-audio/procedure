@@ -21,8 +21,7 @@ impl Module for Transpose {
         outputs: &[
             Pin::Notes("Notes Output", 25)
         ],
-        path: &["Notes", "Effects", "Transpose"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Transpose"]
     };
 
     fn new() -> Self {

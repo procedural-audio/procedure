@@ -24,8 +24,7 @@ impl Module for Chorus {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Modulation", "Chorus"],
-        presets: Presets::NONE
+        path: &["Audio", "Modulation", "Chorus"]
     };
 
     fn new() -> Self {

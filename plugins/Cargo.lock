@@ -318,7 +318,6 @@ version = "0.1.0"
 dependencies = [
  "pa-dsp",
  "rand",
- "rlua",
  "serde",
  "serde_json",
  "xml-rs",

@@ -22,8 +22,7 @@ impl Module for Gain {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Dynamics", "Gain"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Gain"]
     };
 
     fn new() -> Self {

@@ -32,8 +32,7 @@ impl Module for PluckModule {
         outputs: &[
             Pin::Audio("Audio Output", 20),
         ],
-        path: &["Audio", "Synthesis", "Pluck"],
-        presets: Presets::NONE
+        path: &["Audio", "Synthesis", "Pluck"]
     };
 
     fn new() -> Self {

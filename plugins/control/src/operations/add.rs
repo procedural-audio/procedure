@@ -19,8 +19,7 @@ impl Module for Add {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Operations", "Add"],
-        presets: Presets::NONE
+        path: &["Control", "Operations", "Add"]
     };
 
     fn new() -> Self {

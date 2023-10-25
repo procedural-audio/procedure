@@ -22,8 +22,7 @@ impl Module for Accumulator {
         outputs: &[
             Pin::Time("Time Output", 30)
         ],
-        path: &["Time", "Effects", "Accumulate"],
-        presets: Presets::NONE
+        path: &["Time", "Effects", "Accumulate"]
     };
 
     

@@ -156,8 +156,7 @@ impl Module for MidiInput {
         outputs: &[
             Pin::Notes("External Midi 1", 22)
         ],
-        path: &["Utilities", "IO", "Midi Input"],
-        presets: Presets::NONE
+        path: &["Utilities", "IO", "Midi Input"]
     };
 
     

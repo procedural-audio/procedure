@@ -18,8 +18,7 @@ impl Module for GetPitch {
         outputs: &[
             Pin::Control("Pitch (hz)", 10)
         ],
-        path: &["Notes", "Effects", "Get Pitch"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Get Pitch"]
     };
     
     fn new() -> Self {

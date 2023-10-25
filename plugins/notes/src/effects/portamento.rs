@@ -27,8 +27,7 @@ impl Module for Portamento {
         outputs: &[
             Pin::Notes("Output", 25)
         ],
-        path: &["Notes", "Effects", "Portamento"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Portamento"]
     };
 
     fn new() -> Self {

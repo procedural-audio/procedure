@@ -25,8 +25,7 @@ impl Module for PitchShifter {
         outputs: &[
             Pin::Audio("Audio Output", 25),
         ],
-        path: &["Audio", "Spectral", "Pitch Shifter"],
-        presets: Presets::NONE
+        path: &["Audio", "Spectral", "Pitch Shifter"]
     };
 
     

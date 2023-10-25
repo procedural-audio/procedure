@@ -33,8 +33,7 @@ impl Module for Arpeggiator {
         outputs: &[
             Pin::Notes("Midi Output", 10)
         ],
-        path: &["Notes", "Generative", "Arpeggiator"],
-        presets: Presets::NONE
+        path: &["Notes", "Generative", "Arpeggiator"]
     };
 
     fn new() -> Self {

@@ -36,8 +36,7 @@ impl Module for AnalogFilter {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Spectral", "Analog Filter"],
-        presets: Presets::NONE
+        path: &["Audio", "Spectral", "Analog Filter"]
     };
 
     fn new() -> Self {

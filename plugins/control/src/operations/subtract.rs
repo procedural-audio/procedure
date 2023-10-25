@@ -19,8 +19,7 @@ impl Module for Subtract {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Operations", "Subtract"],
-        presets: Presets::NONE
+        path: &["Control", "Operations", "Subtract"]
     };
     
     fn new() -> Self {

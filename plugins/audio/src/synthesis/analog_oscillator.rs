@@ -42,8 +42,7 @@ impl Module for AnalogOscillator {
             Pin::Audio("Audio Output", 20),
             Pin::Audio("Audio Output", 50)
         ],
-        path: &["Audio", "Synthesis", "Analog Oscillator"],
-        presets: Presets::NONE
+        path: &["Audio", "Synthesis", "Analog Oscillator"]
     };
 
     fn new() -> Self {

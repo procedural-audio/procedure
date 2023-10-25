@@ -38,8 +38,7 @@ impl Module for Reverb {
         outputs: &[
             Pin::Audio("Audio Output", 15),
         ],
-        path: &["Audio", "Space", "Reverb"],
-        presets: Presets::NONE
+        path: &["Audio", "Space", "Reverb"]
     };
 
     fn new() -> Self {

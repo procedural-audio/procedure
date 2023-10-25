@@ -19,8 +19,7 @@ impl Module for Greater {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Comparisons", "Greater"],
-        presets: Presets::NONE
+        path: &["Control", "Comparisons", "Greater"]
     };
 
     fn new() -> Self { Self }

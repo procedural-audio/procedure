@@ -26,8 +26,7 @@ impl Module for Multiplexer {
         outputs: &[
             Pin::Control("Output", 7+25*4),
         ],
-        path: &["Control", "Effects", "Multiplexer"],
-        presets: Presets::NONE
+        path: &["Control", "Effects", "Multiplexer"]
     };
 
     fn new() -> Self { Self }

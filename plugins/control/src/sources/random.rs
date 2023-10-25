@@ -20,8 +20,7 @@ impl Module for Random {
         outputs: &[
             Pin::Control("Output (0-1)", 22)
         ],
-        path: &["Control", "Sources", "Random"],
-        presets: Presets::NONE
+        path: &["Control", "Sources", "Random"]
     };
     
     fn new() -> Self {

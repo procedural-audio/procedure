@@ -21,8 +21,7 @@ impl Module for VoiceSpread {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Dynamics", "Voice Spread"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Voice Spread"]
     };
 
     

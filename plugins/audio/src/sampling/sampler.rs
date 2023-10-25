@@ -32,8 +32,7 @@ impl Module for Sampler {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Sampler"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Sampler"]
     };
 
     fn new() -> Self {

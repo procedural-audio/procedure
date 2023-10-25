@@ -24,8 +24,7 @@ impl Module for Flanger {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Modulation", "Flanger"],
-        presets: Presets::NONE
+        path: &["Audio", "Modulation", "Flanger"]
     };
 
     fn new() -> Self {

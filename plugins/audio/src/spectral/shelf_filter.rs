@@ -32,8 +32,7 @@ impl Module for ShelfFilter {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Spectral", "Shelf Filter"],
-        presets: Presets::NONE
+        path: &["Audio", "Spectral", "Shelf Filter"]
     };
 
     fn new() -> Self {

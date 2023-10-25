@@ -33,8 +33,7 @@ impl Module for StepSequencer {
         outputs: &[
             Pin::Notes("Midi Output", 10)
         ],
-        path: &["Notes", "Sequencing", "Step Sequencer"],
-        presets: Presets::NONE
+        path: &["Notes", "Sequencing", "Step Sequencer"]
     };
     
     fn new() -> Self {

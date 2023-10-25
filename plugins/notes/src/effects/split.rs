@@ -27,8 +27,7 @@ impl Module for Split {
             Pin::Notes("Notes High", 10),
             Pin::Notes("Notes Low", 35)
         ],
-        path: &["Notes", "Effects", "Split"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Split"]
     };
     
     fn new() -> Self {

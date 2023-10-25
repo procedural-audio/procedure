@@ -19,8 +19,7 @@ impl Module for MidSideSplit {
             Pin::Audio("Mid", 35),
             Pin::Audio("Side", 65),
         ],
-        path: &["Audio", "Dynamics", "Mid-Side Split"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Mid-Side Split"]
     };
 
     fn new() -> Self {

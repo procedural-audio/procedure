@@ -19,8 +19,7 @@ impl Module for Display {
             Pin::Control("Input", 17)
         ],
         outputs: &[],
-        path: &["Control", "Widgets", "Display"],
-        presets: Presets::NONE
+        path: &["Control", "Widgets", "Display"]
     };
 
     fn new() -> Self {

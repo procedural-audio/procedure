@@ -28,8 +28,7 @@ impl Module for Convolution {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Convolver"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Convolver"]
     };
 
     fn new() -> Self {

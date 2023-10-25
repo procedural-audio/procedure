@@ -19,8 +19,7 @@ impl Module for LessEqual {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Comparisons", "Less Equal"],
-        presets: Presets::NONE
+        path: &["Control", "Comparisons", "Less Equal"]
     };
 
     fn new() -> Self { Self }

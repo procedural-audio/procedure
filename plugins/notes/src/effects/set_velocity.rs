@@ -19,8 +19,7 @@ impl Module for SetVelocity {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Effects", "Set Velocity"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Set Velocity"]
     };
     
     fn new() -> Self {

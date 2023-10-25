@@ -19,8 +19,7 @@ impl Module for Less {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Comparisons", "Less"],
-        presets: Presets::NONE
+        path: &["Control", "Comparisons", "Less"]
     };
 
     fn new() -> Self { Self }

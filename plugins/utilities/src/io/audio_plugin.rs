@@ -34,8 +34,7 @@ impl Module for AudioPluginModule {
             Pin::Audio("Audio Output", 15),
             Pin::Notes("Notes Output", 45)
         ],
-        path: &["Utilities", "IO", "Audio Plugin"],
-        presets: Presets::NONE
+        path: &["Utilities", "IO", "Audio Plugin"]
     };
 
     fn new() -> Self {

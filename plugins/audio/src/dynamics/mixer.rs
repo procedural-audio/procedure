@@ -51,8 +51,7 @@ impl Module for Mixer {
         outputs: &[
             Pin::Audio("Audio Output", 15)
         ],
-        path: &["Audio", "Dynamics", "Mixer"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Mixer"]
     };
 
     fn new() -> Self {

@@ -41,8 +41,7 @@ impl Module for Tube {
         outputs: &[
             Pin::Audio("Audio Output", 20)
         ],
-        path: &["Audio", "Distortion", "Tube"],
-        presets: Presets::NONE
+        path: &["Audio", "Distortion", "Tube"]
     };
 
     

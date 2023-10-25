@@ -14,8 +14,7 @@ impl Module for LocalTime {
         voicing: Voicing::Monophonic,
         inputs: &[],
         outputs: &[Pin::Time("Time Output", 30)],
-        path: &["Time", "Clocks", "Local Time"],
-        presets: Presets::NONE
+        path: &["Time", "Clocks", "Local Time"]
     };
     
     fn new() -> Self {

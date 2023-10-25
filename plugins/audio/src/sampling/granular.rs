@@ -41,8 +41,7 @@ impl Module for Granular {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Sampling", "Granular"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Granular"]
     };
 
     fn new() -> Self {

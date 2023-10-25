@@ -19,8 +19,7 @@ impl Module for Xor {
         outputs: &[
             Pin::Control("Control Output", 30)
         ],
-        path: &["Control", "Logic", "Xor"],
-        presets: Presets::NONE
+        path: &["Control", "Logic", "Xor"]
     };
 
     fn new() -> Self {

@@ -21,8 +21,7 @@ impl Module for MidSide {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Dynamics", "Mid-Side"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Mid-Side"]
     };
 
     fn new() -> Self {

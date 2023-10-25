@@ -60,8 +60,7 @@ impl Module for Waveshaper {
             Pin::Control("Knob 2", 80),
         ],
         outputs: &[Pin::Audio("Audio Output", 20)],
-        path: &["Audio", "Distortion", "Waveshaper"],
-        presets: Presets::NONE
+        path: &["Audio", "Distortion", "Waveshaper"]
     };
     
     fn new() -> Self {

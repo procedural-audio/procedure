@@ -18,8 +18,7 @@ impl Module for Negative {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Operations", "Negative"],
-        presets: Presets::NONE
+        path: &["Control", "Operations", "Negative"]
     };
     
     fn new() -> Self {

@@ -20,8 +20,7 @@ impl Module for Transpose {
         outputs: &[
             Pin::Notes("Notes Output", 25)
         ],
-        path: "Notes/Effects/Unison",
-        presets: Presets::NONE
+        path: "Notes/Effects/Unison"
     };
 
     

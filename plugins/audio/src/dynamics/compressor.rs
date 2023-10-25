@@ -36,8 +36,7 @@ impl Module for Compressor {
         outputs: &[
             Pin::Audio("Audio Output", 25)
         ],
-        path: &["Audio", "Dynamics", "Compressor"],
-        presets: Presets::NONE
+        path: &["Audio", "Dynamics", "Compressor"]
     };
 
     fn new() -> Self {

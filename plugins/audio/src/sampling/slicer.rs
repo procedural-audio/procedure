@@ -66,8 +66,7 @@ impl Module for Slicer {
             Pin::Control("Window crossfade", 15 + 30 * 4),
         ],
         outputs: &[Pin::Audio("Audio Output", 15)],
-        path: &["Audio", "Sampling", "Slicer"],
-        presets: Presets::NONE
+        path: &["Audio", "Sampling", "Slicer"]
     };
 
     

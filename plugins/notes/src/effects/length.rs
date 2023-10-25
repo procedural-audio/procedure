@@ -26,8 +26,7 @@ impl Module for Length {
         outputs: &[
             Pin::Notes("Notes Output", 25)
         ],
-        path: &["Notes", "Effects", "Length"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Length"]
     };
 
     fn new() -> Self {

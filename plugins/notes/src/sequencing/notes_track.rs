@@ -31,8 +31,7 @@ impl Module for NotesTrack {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Sequencing", "Notes Track"],
-        presets: Presets::NONE
+        path: &["Notes", "Sequencing", "Notes Track"]
     };
 
     fn new() -> Self {

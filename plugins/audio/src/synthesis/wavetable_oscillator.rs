@@ -26,11 +26,7 @@ impl Module for WavetableOscillator {
         outputs: &[
             Pin::Audio("Audio Output", 10)
         ],
-        path: &["Audio", "Synthesis", "Wavetable"],
-        presets: Presets {
-            path: "wavetables",
-            extension: ".wavetable"
-        }
+        path: &["Audio", "Synthesis", "Wavetable"]
     };
 
     fn new() -> Self {

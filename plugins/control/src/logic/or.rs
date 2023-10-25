@@ -19,8 +19,7 @@ impl Module for Or {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Logic", "Or"],
-        presets: Presets::NONE
+        path: &["Control", "Logic", "Or"]
     };
 
     fn new() -> Self {

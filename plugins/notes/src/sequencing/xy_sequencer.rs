@@ -23,8 +23,7 @@ impl Module for XYSequencer {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Sequencing", "XY Sequencer"],
-        presets: Presets::NONE
+        path: &["Notes", "Sequencing", "XY Sequencer"]
     };
     
     fn new() -> Self {

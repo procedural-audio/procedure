@@ -18,8 +18,7 @@ impl Module for PadModule {
         outputs: &[
             Pin::Control("Is Pressed", 25)
         ],
-        path: &["Control", "Widgets", "Pad"],
-        presets: Presets::NONE
+        path: &["Control", "Widgets", "Pad"]
     };
     
     fn new() -> Self {

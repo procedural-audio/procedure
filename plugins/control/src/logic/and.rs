@@ -19,8 +19,7 @@ impl Module for And {
         outputs: &[
             Pin::Control("Output", 30)
         ],
-        path: &["Control", "Logic", "And"],
-        presets: Presets::NONE
+        path: &["Control", "Logic", "And"]
     };
 
     fn new() -> Self {

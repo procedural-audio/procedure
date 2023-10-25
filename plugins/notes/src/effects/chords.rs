@@ -43,8 +43,7 @@ impl Module for Chords {
         outputs: &[
             Pin::Notes("Notes Output", 10)
         ],
-        path: &["Notes", "Effects", "Chords"],
-        presets: Presets::NONE
+        path: &["Notes", "Effects", "Chords"]
     };
 
     fn new() -> Self {
