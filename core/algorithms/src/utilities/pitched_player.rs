@@ -60,7 +60,7 @@ impl<G: Generator + Pitched> BlockProcessor for PitchedPlayer<G> where G::Output
     fn process_block<InBuffer, OutBuffer>(&mut self, input: &InBuffer, output: &mut OutBuffer)
         where
             InBuffer: Block<Item = Self::Input>,
-            OutBuffer: BlockMut<Item = Self::Output> {
+            OutBuffer: Block<Item = Self::Output> {
         
         for msg in input.as_slice() {
             match msg.note {

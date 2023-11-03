@@ -23,9 +23,9 @@ pub struct Input<'a, I: Copy, B: Block<Item = I>>(&'a B);
 impl<'a, I: Copy, B: Block<Item = I>> BlockGenerator for Input<'a, I, B> {
     type Output = I;
 
-    fn generate_block<OutBuffer: BlockMut<Item = I>>(&mut self, output: &mut OutBuffer) {
+    fn generate_block<OutBuffer: Block<Item = I>>(&mut self, output: &mut OutBuffer) {
         output.copy_from(self.0);
     }
 }
 
-pub struct Output<'a, B: BlockMut>(&'a B);
+pub struct Output<'a, B: Block>(&'a B);

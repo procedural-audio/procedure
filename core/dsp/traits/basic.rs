@@ -38,13 +38,13 @@ impl Generator for f64 {
 pub trait BlockGenerator {
     type Output;
 
-    fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer);
+    fn generate_block<OutBuffer: Block<Item = Self::Output>>(&mut self, output: &mut OutBuffer);
 }
 
 impl<Out, G: Generator<Output = Out>> BlockGenerator for G {
     type Output = Out;
 
-    fn generate_block<OutBuffer: BlockMut<Item = Self::Output>>(&mut self, output: &mut OutBuffer) {
+    fn generate_block<OutBuffer: Block<Item = Self::Output>>(&mut self, output: &mut OutBuffer) {
         for dest in output.as_slice_mut().iter_mut() {
             *dest = self.generate();
         }
@@ -67,14 +67,14 @@ pub trait BlockProcessor {
     fn process_block<InBuffer, OutBuffer>(&mut self, input: &InBuffer, output: &mut OutBuffer)
         where
             InBuffer: Block<Item = Self::Input>,
-            OutBuffer: BlockMut<Item = Self::Output>;
+            OutBuffer: Block<Item = Self::Output>;
 }
 
 impl<In: Copy, Out: Copy, P: Processor<Input = In, Output = Out>> BlockProcessor for P {
     type Input = In;
     type Output = Out;
 
-    fn process_block<InBuffer: Block<Item = In>, OutBuffer: BlockMut<Item = Out>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
+    fn process_block<InBuffer: Block<Item = In>, OutBuffer: Block<Item = Out>>(&mut self, input: &InBuffer, output: &mut OutBuffer) {
         for (dest, src) in output.as_slice_mut().iter_mut().zip(input.as_slice()) {
             *dest = self.process(*src);
         }

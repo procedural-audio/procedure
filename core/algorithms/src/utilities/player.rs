@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockMut, BlockGenerator};
+use pa_dsp::{Generator, Sample, Block, NoteMessage, BlockProcessor, BlockGenerator};
 
 pub trait Playable {
     fn play(&mut self);
@@ -62,7 +62,7 @@ impl<G: Generator> BlockProcessor for Player<G> {
     fn process_block<InBuffer, OutBuffer>(&mut self, input: &InBuffer, output: &mut OutBuffer)
         where
             InBuffer: Block<Item = Self::Input>,
-            OutBuffer: BlockMut<Item = Self::Output> {
+            OutBuffer: Block<Item = Self::Output> {
         
         for msg in input.as_slice() {
             match msg.note {

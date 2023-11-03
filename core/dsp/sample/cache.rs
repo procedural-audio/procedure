@@ -1,6 +1,5 @@
 use std::sync::RwLock;
 
-use crate::BlockMut;
 use crate::loadable::Loadable;
 use crate::sample::sample::*;
 use crate::buffers::*;

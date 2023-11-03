@@ -6,12 +6,13 @@ pub trait Block {
     type Item;
 
     fn as_slice<'a>(&'a self) -> &'a [Self::Item];
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
 
     fn len(&self) -> usize {
         self.as_slice().len()
     }
 
-    fn copy_to<B: BlockMut<Item = Self::Item>>(&self, dest: &mut B) where Self: Sized, Self::Item: Copy {
+    fn copy_to<B: Block<Item = Self::Item>>(&self, dest: &mut B) where Self: Sized, Self::Item: Copy {
         dest.copy_from(self);
     }
 
@@ -28,10 +29,6 @@ pub trait Block {
 
         return total;
     }
-}
-
-pub trait BlockMut: Block {
-    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item];
 
     fn apply<F: Fn(Self::Item) -> Self::Item>(&mut self, f: F) where Self::Item: Copy {
         for v in self.as_slice_mut() {
@@ -90,27 +87,18 @@ pub trait BlockMut: Block {
 
 /* Slice implementations */
 
-impl<S> Block for &[S] {
+impl<S> Block for [S] {
     type Item = S;
 
     fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
         self
     }
-}
 
-impl<S> Block for &mut [S] {
-    type Item = S;
-
-    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
-        self
-    }
-}
-
-impl<S> BlockMut for &mut [S] {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
         self
     }
 }
+
 
 /* Raw pointer implementations */
 
@@ -122,6 +110,10 @@ impl<S> Block for (*const S, usize) {
             std::slice::from_raw_parts(self.0, self.1)
         }
     }
+
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
+        unreachable!()
+    }
 }
 
 impl<S> Block for (*mut S, usize) {
@@ -132,9 +124,7 @@ impl<S> Block for (*mut S, usize) {
             std::slice::from_raw_parts(self.0, self.1)
         }
     }
-}
 
-impl<S> BlockMut for (*mut S, usize) {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
         unsafe {
             std::slice::from_raw_parts_mut(self.0, self.1)

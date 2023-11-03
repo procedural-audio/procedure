@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod widget;
 pub use crate::widget::*;
+mod module_new;
 
 pub struct Plugin {
     pub name: &'static str,

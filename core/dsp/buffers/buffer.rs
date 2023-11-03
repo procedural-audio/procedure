@@ -64,9 +64,7 @@ impl<T> Block for Buffer<T> {
     fn as_slice<'a>(&'a self) -> &'a [T] {
         self.items.as_slice()
     }
-}
 
-impl<T> BlockMut for Buffer<T> {
     fn as_slice_mut<'a>(&'a mut self) -> &'a mut [T] {
         self.items.as_mut_slice()
     }
