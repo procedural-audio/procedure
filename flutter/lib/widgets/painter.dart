@@ -70,7 +70,7 @@ class PainterWidget extends ModuleWidget {
   }
 }
 
-class PairFFI extends Struct {
+final class PairFFI extends Struct {
   @Float()
   external double x;
 
@@ -78,7 +78,7 @@ class PairFFI extends Struct {
   external double y;
 }
 
-class PairFFIList extends Struct {
+final class PairFFIList extends Struct {
   external Pointer<PairFFI> pointer;
 
   @Int64()
@@ -88,7 +88,7 @@ class PairFFIList extends Struct {
   external int capacity;
 }
 
-class CanvasFFI extends Struct {
+final class CanvasFFI extends Struct {
   @Int64()
   external int pointer;
 
@@ -105,7 +105,7 @@ class CanvasFFI extends Struct {
   external double height;
 }
 
-class PaintFFI extends Struct {
+final class PaintFFI extends Struct {
   @Int32()
   external int color;
 
@@ -113,7 +113,7 @@ class PaintFFI extends Struct {
   external double width;
 }
 
-class PaintAction extends Struct {
+final class PaintAction extends Struct {
   @Int32()
   external int action;
 

@@ -1,6 +1,7 @@
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:metasampler/moduleInfo.dart';
 
 import 'dart:ffi';
 
@@ -160,7 +161,7 @@ class _PinState extends State<Pin> {
   }
 }
 
-class ModuleInfo extends StatelessWidget {
+/*class ModuleInfo extends StatelessWidget {
   ModuleInfo(this.rawInfo, this.id, this.name, this.path, this.color);
 
   static ModuleInfo from(RawModuleInfo rawInfo) {
@@ -207,11 +208,12 @@ class ModuleInfo extends StatelessWidget {
       ),
     );
   }
-}
+}*/
 
 class Node extends StatelessWidget {
   Node({
-    required this.rawNode,
+    // required this.rawNode,
+    required this.info,
     required this.patch,
     required this.connectors,
     required this.selectedNodes,
@@ -219,69 +221,12 @@ class Node extends StatelessWidget {
     required this.onRemoveConnector,
     required this.onDrag,
   }) : super(key: UniqueKey()) {
-    id = rawNode.getId();
-    position.value = Offset(rawNode.getX() + 0.0, rawNode.getY() + 0.0);
-    name = rawNode.getName();
-    color = rawNode.getColor();
-
-    refreshSize();
-
-    int inputsCount = rawNode.getInputPinsCount();
-    for (int i = 0; i < inputsCount; i++) {
-      var type = rawNode.getInputPinType(i);
-      var offset = Offset(10, 0.0 + rawNode.getInputPinY(i));
-      pins.add(
-        Pin(
-          offset: offset,
-          nodeId: id,
-          pinIndex: i,
-          type: type,
-          isInput: true,
-          node: this,
-          selectedNodes: selectedNodes,
-          connectors: connectors,
-          onAddConnector: onAddConnector,
-          onRemoveConnector: (nodeId, pinIndex) {
-            onRemoveConnector(nodeId, pinIndex);
-          },
-        ),
-      );
-    }
-
-    int outputsCount = rawNode.getOutputPinsCount();
-    for (int i = 0; i < outputsCount; i++) {
-      var type = rawNode.getOutputPinType(i);
-      var x = rawNode.getWidth(patch) - 25;
-      var offset = Offset(x, 0.0 + rawNode.getOutputPinY(i));
-      pins.add(
-        Pin(
-          offset: offset,
-          nodeId: id,
-          pinIndex: i + inputsCount,
-          type: type,
-          isInput: false,
-          node: this,
-          selectedNodes: selectedNodes,
-          connectors: connectors,
-          onAddConnector: onAddConnector,
-          onRemoveConnector: (nodeId, pinIndex) {
-            onRemoveConnector(nodeId, pinIndex);
-          },
-        ),
-      );
-    }
-
-    var widgetRaw = rawNode.getWidgetRoot();
-    var widget = createWidget(this, rawNode, widgetRaw);
-    if (widget != null) {
-      widgets.add(widget);
-    } else {
-      print("Failed to create root widget");
-    }
+    size = Offset(info.width.toDouble(), info.height.toDouble());
+    name = info.name;
   }
 
+  final ModuleInfo info;
   final Patch patch;
-  final RawNode rawNode;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
@@ -303,7 +248,7 @@ class Node extends StatelessWidget {
   }
 
   void refreshSize() {
-    var newSize = Offset(
+    /*var newSize = Offset(
       rawNode.getWidth(patch) + 0.0,
       rawNode.getHeight(patch) + 0.0,
     );
@@ -311,7 +256,7 @@ class Node extends StatelessWidget {
     if (newSize.dx != size.dx || newSize.dy != size.dy) {
       size = newSize;
       position.notifyListeners();
-    }
+    }*/
   }
 
   @override
@@ -336,10 +281,10 @@ class Node extends StatelessWidget {
               }
             },
             onPanUpdate: (details) {
-              var x = rawNode.getX() + details.delta.dx;
-              var y = rawNode.getY() + details.delta.dy;
-              rawNode.setX(x);
-              rawNode.setY(y);
+              var x = position.value.dx + details.delta.dx;
+              var y = position.value.dy + details.delta.dy;
+              // rawNode.setX(x);
+              // rawNode.setY(y);
               position.value = Offset(x, y);
               onDrag(details.localPosition);
             },
@@ -402,7 +347,7 @@ void callTickRecursive(ModuleWidget widget) {
 
 enum IO { audio, midi, control, time, external }
 
-class RawNode extends Struct {
+final class RawNode extends Struct {
   @Int64()
   external int pointer;
 

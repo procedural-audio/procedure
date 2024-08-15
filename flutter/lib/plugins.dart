@@ -6,72 +6,60 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'settings.dart';
-import 'module.dart';
 import 'patch.dart';
 import 'core.dart';
+import 'moduleInfo.dart';
 
-RawPlugins Function() _ffiCreatePlugins = core
-    .lookup<NativeFunction<RawPlugins Function()>>("ffi_create_plugins")
-    .asFunction();
-RawPlugin Function(RawPlugins, Pointer<Utf8>) _ffiPluginsLoad = core
-    .lookup<NativeFunction<RawPlugin Function(RawPlugins, Pointer<Utf8>)>>(
-        "ffi_plugins_load")
-    .asFunction();
-void Function(RawPlugins, Pointer<Utf8>) _ffiPluginsUnload = core
-    .lookup<NativeFunction<Void Function(RawPlugins, Pointer<Utf8>)>>(
-        "ffi_plugins_unload")
-    .asFunction();
+var PLUGINS = Plugins.platformDefault();
 
-Plugins PLUGINS = Plugins.platformDefault();
+class Plugin {
+  Plugin(this.name, this.version, this._modules);
 
-class RawPlugins extends Struct {
-  @Int64()
-  external int pointer;
+  final String name;
+  final int version;
+  final ValueNotifier<List<ModuleInfo>> _modules;
 
-  static RawPlugins create() {
-    return _ffiCreatePlugins();
-  }
+  static Future<Plugin?> load(String path) async {
+    List<ModuleInfo> modules = [];
 
-  Plugin? load(String path) {
-    var cPath = path.toNativeUtf8();
-    var plugin = _ffiPluginsLoad(this, cPath);
-    calloc.free(cPath);
-
-    if (plugin.pointer != 0) {
-      return Plugin(plugin, File(path));
-    } else {
-      return null;
+    await for (var entity in Directory(path).list(recursive: true)) {
+      if (entity.path.endsWith(".cmajormodule")) {
+        var module = await ModuleInfo.load(entity.path);
+        if (module != null) {
+          print("Loaded module ${module.name} at ${module.path}");
+          modules.add(module);
+        } else {
+          print("Failed to load module: ${entity.path}");
+        }
+      }
     }
+
+    return Plugin("Temp Plugin Name", 1, ValueNotifier(modules));
   }
 
-  void unload(Plugin plugin) {
-    var rawPath = plugin.file.path.toNativeUtf8();
-    _ffiPluginsUnload(this, rawPath);
-    calloc.free(rawPath);
-  }
+  /*void scan() async {
+    print("Scanning modules...");
+  }*/
 
-  void remove(String path) {}
+  ValueNotifier<List<ModuleInfo>> modules() {
+    return _modules;
+  }
 }
 
-class Plugins extends StatelessWidget with ChangeNotifier {
+class Plugins {
   Plugins(this.directory) {
-    var pluginLoadDir = Directory(Settings2.pluginLoadDirectory());
-    pluginLoadDir.listSync().forEach((e) => e.delete());
-
     scan();
 
     directory.watch().listen((event) {
-      reload();
+      reload(event.path);
     });
   }
 
   final Directory directory;
   final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
-  RawPlugins rawPlugins = RawPlugins.create();
-  bool scanning = false;
 
   static Plugins platformDefault() {
-    var path = Settings2.pluginBuildDirectory();
+    var path = Settings2.pluginDirectory();
     var directory = Directory(path);
     return Plugins(directory);
   }
@@ -79,40 +67,14 @@ class Plugins extends StatelessWidget with ChangeNotifier {
   void scan() async {
     print("Scanning plugins");
 
-    if (scanning) {
-      return;
-    }
-
-    scanning = true;
-
     List<Plugin> plugins = [];
     if (await directory.exists()) {
       var items = directory.list();
       await for (var item in items) {
-        var extension = ".dynamiclibraryhere";
-
-        if (Platform.isMacOS) {
-          extension = ".dylib";
-        } else if (Platform.isLinux) {
-          extension = ".so";
-        } else if (Platform.isWindows) {
-          extension = ".dll";
-        } else {
-          print("Unknown dynamcic library extension for platform");
-        }
-
-        if (item.path.contains(extension)) {
-          File file = File(item.path);
-          var rand = (Random().nextInt(999999 - 100000) + 100000).toString();
-          var name = item.name.replaceAll(extension, "") + rand + extension;
-          var path = Settings2.pluginLoadDirectory() + "/" + name;
-          var newFile = await file.copy(path);
-          if (await newFile.exists()) {
-            var plugin = rawPlugins.load(newFile.path);
-            if (plugin != null) {
-              plugins.add(plugin);
-            }
-          }
+        print("Scanning plugin: ${item.path}");
+        var plugin = await Plugin.load(item.path);
+        if (plugin != null) {
+          plugins.add(plugin);
         }
       }
     } else {
@@ -120,46 +82,32 @@ class Plugins extends StatelessWidget with ChangeNotifier {
     }
 
     _plugins.value = plugins;
-    print("Done scanning plugins");
-    scanning = false;
 
-    notifyListeners();
+    print("Done scanning plugins");
   }
 
   ValueNotifier<List<Plugin>> list() {
     return _plugins;
   }
 
-  void reload() async {
-    print("Reloading plugins");
-    for (var plugin in _plugins.value) {
+  void reload(String path) async {
+    print("Reload plugin at $path");
+
+    /*for (var plugin in _plugins.value) {
       rawPlugins.unload(plugin);
     }
 
-    scan();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _plugins,
-      builder: (context, List<Plugin> plugins, child) {
-        return ListView.builder(
-          shrinkWrap: true,
-          scrollDirection: Axis.vertical,
-          itemCount: plugins.length,
-          itemBuilder: (context, index) {
-            return plugins[index];
-          },
-        );
-      },
-    );
+    scan();*/
   }
 }
 
-class Plugin extends StatelessWidget {
+/*class Plugin extends StatelessWidget {
   Plugin(this.rawPlugin, this.file) {
     List<ModuleInfo> modules = [];
+
+    print("Skipping Plugin initializer");
+
+    return;
 
     int count = rawPlugin.getModuleCount();
     for (int i = 0; i < count; i++) {
@@ -211,7 +159,7 @@ class Plugin extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      PLUGINS.reload();
+                      PLUGINS.scan();
                     },
                     icon: const Icon(
                       Icons.refresh,
@@ -237,9 +185,9 @@ class Plugin extends StatelessWidget {
       },
     );
   }
-}
+}*/
 
-class RawPlugin extends Struct {
+/*class RawPlugin extends Struct {
   @Int64()
   external int pointer;
 
@@ -292,3 +240,4 @@ RawModuleInfo Function(RawPlugin, int) ffiPluginGetModuleInfo = core
     .lookup<NativeFunction<RawModuleInfo Function(RawPlugin, Int64)>>(
         "ffi_plugin_get_module_info")
     .asFunction();
+*/

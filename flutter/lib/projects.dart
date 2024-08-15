@@ -96,7 +96,8 @@ class Project extends StatefulWidget {
   }
 
   Future<bool> loadPreset(PresetInfo info) async {
-    var newPreset = await Preset.load(info, PLUGINS);
+    print("Skipping Project.loadPreset");
+    /*var newPreset = await Preset.load(info, PLUGINS);
 
     if (newPreset != null) {
       preset.value = newPreset;
@@ -104,7 +105,8 @@ class Project extends StatefulWidget {
       return true;
     }
 
-    return false;
+    return false;*/
+    return true;
   }
 
   Future<bool> loadInterface(PresetInfo info) async {
@@ -146,7 +148,7 @@ class Project extends StatefulWidget {
   }
 
   void scan() async {
-    List<PresetInfo> infos = [];
+    /*List<PresetInfo> infos = [];
     var patchesDir = Directory(info.directory.path + "/presets");
 
     if (await patchesDir.exists()) {
@@ -160,7 +162,7 @@ class Project extends StatefulWidget {
           presets.value = infos;
         }
       }
-    }
+    }*/
   }
 
   @override

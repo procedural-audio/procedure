@@ -2,14 +2,15 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import 'package:grpc/grpc.dart';
+// import 'package:grpc/grpc.dart';
 import 'package:metasampler/settings.dart';
 // import 'package:pa_protocol/pa_protocol.dart';
 
 import 'module.dart';
 import 'patch.dart';
 
-class Core { // extends CoreProtocolServiceBase {
+class Core {
+  // extends CoreProtocolServiceBase {
   Core(this.raw) {
     /*final server = Server.create(
       services: [CoreProtocolService()],
@@ -18,7 +19,7 @@ class Core { // extends CoreProtocolServiceBase {
       ),
     );*/
 
-    final channel = ClientChannel(
+    /*final channel = ClientChannel(
       'localhost',
       port: 50051,
       options: ChannelOptions(
@@ -27,7 +28,7 @@ class Core { // extends CoreProtocolServiceBase {
           codecs: const [GzipCodec(), IdentityCodec()],
         ),
       ),
-    );
+    );*/
 
     /*final stub = CoreProtocolClient(channel);
 
@@ -83,17 +84,23 @@ class Core { // extends CoreProtocolServiceBase {
   }*/
 
   bool load(String path) {
-    var rawPath = path.toNativeUtf8();
-    var status = _ffiCoreLoad(raw, rawPath);
-    calloc.free(rawPath);
-    return status;
+    print("Skipping Core.load");
+    // var rawPath = path.toNativeUtf8();
+    // var status = _ffiCoreLoad(raw, rawPath);
+    // calloc.free(rawPath);
+    // return status;
+
+    return true;
   }
 
   bool save(String path) {
-    var rawPath = path.toNativeUtf8();
-    var status = _ffiCoreSave(raw, rawPath);
-    calloc.free(rawPath);
-    return status;
+    print("Skipping Core.save");
+    // var rawPath = path.toNativeUtf8();
+    // var status = _ffiCoreSave(raw, rawPath);
+    // calloc.free(rawPath);
+    // return status;
+
+    return true;
   }
 
   void refresh() {
@@ -231,29 +238,29 @@ void Function(RawWidget, int) _ffiKnobSetValue = core
         "ffi_knob_set_value")
     .asFunction();
 
-class FFIBuffer extends Struct {
+final class FFIBuffer extends Struct {
   external Pointer<Float> pointer;
 
   @Int64()
   external int length;
 }
 
-class RawCore extends Struct {
+final class RawCore extends Struct {
   @Int64()
   external int pointer;
 }
 
-class FFIAudioPlugin extends Struct {
+final class FFIAudioPlugin extends Struct {
   @Int64()
   external int pointer;
 }
 
-class RawWidgetPointer extends Struct {
+final class RawWidgetPointer extends Struct {
   @Int64()
   external int pointer;
 }
 
-class RawWidget extends Struct {
+final class RawWidget extends Struct {
   external RawWidgetPointer pointer;
 
   @Int64()
@@ -264,14 +271,14 @@ class RawWidget extends Struct {
   }
 }
 
-class RawWidgetTrait extends Struct {
+final class RawWidgetTrait extends Struct {
   external RawWidgetPointer pointer;
 
   @Int64()
   external int metadata;
 }
 
-class RawModule extends Struct {
+final class RawModule extends Struct {
   @Int64()
   external int pointer1;
 
@@ -279,7 +286,7 @@ class RawModule extends Struct {
   external int pointer2;
 }
 
-class RawModuleInfo extends Struct {
+final class RawModuleInfo extends Struct {
   @Int64()
   external int pointer;
 
@@ -298,7 +305,7 @@ class RawModuleInfo extends Struct {
 
   /// Returns the path of the module
   List<String> getModulePath() {
-    List<String> path = [];
+    /*List<String> path = [];
     int count = ffiModuleInfoGetPathElementsCount(this);
     for (int i = 0; i < count; i++) {
       var rawElement = ffiModuleInfoGetPathElement(this, i);
@@ -307,7 +314,9 @@ class RawModuleInfo extends Struct {
       path.add(element);
     }
 
-    return path;
+    return path;*/
+    print("Skipping RawModule.getModulePath");
+    return [];
   }
 
   /// Returns the color of the module

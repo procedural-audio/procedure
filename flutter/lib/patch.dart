@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
+import 'package:metasampler/moduleInfo.dart';
 import 'package:metasampler/views/presets.dart';
 import 'package:metasampler/window.dart';
 
@@ -59,10 +60,10 @@ extension FileExtention on FileSystemEntity {
 RawPatch Function() _ffiCreatePatch = core
     .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
     .asFunction();
-bool Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchLoad = core
+/*bool Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchLoad = core
     .lookup<NativeFunction<Bool Function(RawPatch, RawPlugins, Pointer<Utf8>)>>(
         "ffi_patch_load")
-    .asFunction();
+    .asFunction();*/
 bool Function(RawPatch, Pointer<Utf8>) _ffiPatchSave = core
     .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
         "ffi_patch_save")
@@ -71,19 +72,19 @@ Pointer<Void> Function(RawPatch) _ffiPatchGetState = core
     .lookup<NativeFunction<Pointer<Void> Function(RawPatch)>>(
         "ffi_patch_get_state")
     .asFunction();
-void Function(RawPatch, RawPlugins, Pointer<Void>) _ffiPatchSetState = core
+/*void Function(RawPatch, RawPlugins, Pointer<Void>) _ffiPatchSetState = core
     .lookup<NativeFunction<Void Function(RawPatch, RawPlugins, Pointer<Void>)>>(
         "ffi_patch_set_state")
-    .asFunction();
+    .asFunction();*/
 void Function(RawPatch) _ffiPatchDestroy = core
     .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
     .asFunction();
-RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
+/*RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
     .lookup<
         NativeFunction<
             RawNode Function(
                 RawPatch, RawPlugins, Pointer<Utf8>)>>("ffi_patch_add_module")
-    .asFunction();
+    .asFunction();*/
 bool Function(RawPatch, int) _ffiPatchRemoveNode = core
     .lookup<NativeFunction<Bool Function(RawPatch, Int32)>>(
         "ffi_patch_remove_node")
@@ -116,7 +117,7 @@ void Function(RawPatch, int, int) _ffiPatchRemoveConnector = core
     .asFunction();
 
 // TODO: Make sure this isn't leaked
-class RawPatch extends Struct {
+final class RawPatch extends Struct {
   @Int64()
   external int pointer;
 
@@ -125,10 +126,11 @@ class RawPatch extends Struct {
   }
 
   bool load(File file, Plugins plugins) {
-    var rawPath = file.path.toNativeUtf8();
+    /*var rawPath = file.path.toNativeUtf8();
     var success = _ffiPatchLoad(this, plugins.rawPlugins, rawPath);
     calloc.free(rawPath);
-    return success;
+    return success;*/
+    return false;
   }
 
   bool save(File file) {
@@ -138,12 +140,12 @@ class RawPatch extends Struct {
     return success;
   }
 
-  RawNode addModule(String id) {
+  /*RawNode addModule(String id) {
     var rawId = id.toNativeUtf8();
     RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugins, rawId);
     calloc.free(rawId);
     return rawNode;
-  }
+  }*/
 
   int getNodeCount() {
     return _ffiPatchGetNodeCount(this);
@@ -178,11 +180,11 @@ class RawPatch extends Struct {
   }
 
   void setState(Pointer<Void> state) {
-    _ffiPatchSetState(this, PLUGINS.rawPlugins, state);
+    // _ffiPatchSetState(this, PLUGINS.rawPlugins, state);
   }
 }
 
-class RawConnector extends Struct {
+final class RawConnector extends Struct {
   @Int32()
   external int startId;
   @Int32()
@@ -216,16 +218,22 @@ class Patch extends StatefulWidget {
     var rawPatch = RawPatch.create();
     var file = File(info.directory.path + "/patch.json");
 
-    if (!file.existsSync()) {
+    if (!await file.exists()) {
       return null;
     }
 
-    if (rawPatch.load(file, plugins)) {
+    print("Skipping Patch.load");
+    return Patch(
+      rawPatch: rawPatch,
+      info: info,
+    );
+
+    /*if (rawPatch.load(file, plugins)) {
       return Patch(
         rawPatch: rawPatch,
         info: info,
       );
-    }
+    }*/
 
     return null;
   }
@@ -233,7 +241,8 @@ class Patch extends StatefulWidget {
   Future<bool> save() async {
     print("Saving patch");
     var file = File(info.directory.path + "/patch.json");
-    rawPatch.save(file);
+    print("Skipping patch save");
+    // rawPatch.save(file);
     return true;
   }
 
@@ -297,7 +306,9 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    widget.moveToValue.addListener(() {
+    print("Skipping patch initState");
+
+    /*widget.moveToValue.addListener(() {
       print("MOVE VALUE LISTENER");
       moveTo(widget.moveToValue.value);
     });
@@ -358,7 +369,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
           }
         }
       }
-    }
+    }*/
   }
 
   @override
@@ -370,23 +381,37 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     timer.cancel();
   }
 
-  void addModule(String id, Offset position) {
-    var rawNode = widget.rawPatch.addModule(id);
-    rawNode.setX(position.dx);
-    rawNode.setY(position.dy);
+  void addModule(ModuleInfo info, Offset position) {
+    var node = Node(
+      info: info,
+      patch: widget,
+      connectors: connectors,
+      selectedNodes: selectedNodes,
+      onAddConnector: (start, end) {
+        addConnector(start, end);
+        setState(() {});
+      },
+      onRemoveConnector: (nodeId, pinIndex) {
+        removeConnector(nodeId, pinIndex);
+        setState(() {});
+      },
+      onDrag: (offset) {
+        setState(() {});
+      },
+    );
+
+    nodes.add(node);
   }
 
   void addConnector(Pin start, Pin end) {
-    if (widget.rawPatch.addConnector(
-      start.nodeId,
-      start.pinIndex,
-      end.nodeId,
-      end.pinIndex,
-    )) {
-      for (var node in nodes) {
-        node.refreshSize();
-      }
-    }
+    var connector = Connector(
+      start: start,
+      end: end,
+      type: start.type,
+      selectedNodes: selectedNodes,
+    );
+
+    connectors.add(connector);
   }
 
   void removeConnector(int nodeId, int pinIndex) {
@@ -404,7 +429,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var nodeCount = widget.rawPatch.getNodeCount();
+    print("Skipping node get");
+    /*var nodeCount = widget.rawPatch.getNodeCount();
     for (int i = 0; i < nodeCount; i++) {
       if (i >= nodes.length) {
         var rawNode = widget.rawPatch.getNode(i);
@@ -454,7 +480,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
           }
         }
       }
-    }
+    }*/
 
     return GestureDetector(
       onSecondaryTapDown: (details) {
@@ -548,7 +574,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
               top: rightClickOffset.dy,
               child: RightClickView(
                 onAddModule: (info) {
-                  addModule(info.id, moduleAddPosition);
+                  addModule(info, moduleAddPosition);
                   setState(() {
                     showRightClickMenu = false;
                   });

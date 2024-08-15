@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:metasampler/views/projects.dart';
 
 import '../patch.dart';
@@ -222,32 +223,34 @@ class PresetsBrowser extends StatelessWidget {
                   ))
               .toList();
 
-          return Column(children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Column(
-                    children: items,
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Column(
+                      children: items,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    size: 14,
-                    color: Colors.grey,
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.add,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      newPreset();
+                    },
                   ),
-                  onPressed: () {
-                    newPreset();
-                  },
-                ),
-              ],
-            )
-          ],);
+                ],
+              )
+            ],
+          );
         },
       ),
     );

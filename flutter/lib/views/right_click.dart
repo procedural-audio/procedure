@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'settings.dart';
 
-import '../module.dart';
 import '../plugins.dart';
+import '../moduleInfo.dart';
 
 class RightClickView extends StatefulWidget {
   RightClickView({
@@ -27,13 +27,15 @@ class _RightClickView extends State<RightClickView> {
         List<ModuleInfo> specs = [];
 
         for (var plugin in plugins) {
-          specs.addAll(plugin.list().value);
+          specs.addAll(plugin.modules().value);
         }
+
+        print("Found ${specs.length} modules");
 
         List<RightClickCategory> categories = [];
 
-        for (var spec in specs) {
-          var path = spec.path;
+        /*for (var spec in specs) {
+          var path = spec.category;
 
           if (path.length == 1) {
             var name = path[0];
@@ -119,7 +121,6 @@ class _RightClickView extends State<RightClickView> {
                   if ((element2 as RightClickElement)
                       .spec
                       .path
-                      .join("/")
                       .toLowerCase()
                       .contains(searchText.toLowerCase())) {
                     filteredWidgets.add(element2);
@@ -130,7 +131,7 @@ class _RightClickView extends State<RightClickView> {
           }
         } else {
           filteredWidgets = categories;
-        }
+        }*/
 
         return MouseRegion(
           onEnter: (event) {
@@ -197,7 +198,23 @@ class _RightClickView extends State<RightClickView> {
                   child: SingleChildScrollView(
                     controller: ScrollController(),
                     child: Column(
-                      children: filteredWidgets,
+                      children: specs
+                          .where((e) =>
+                              e.name
+                                  .toLowerCase()
+                                  .contains(searchText.toLowerCase()) ||
+                              e.category
+                                  .toLowerCase()
+                                  .contains(searchText.toLowerCase()))
+                          .map((e) {
+                        return RightClickElement(
+                          e,
+                          Icons.piano,
+                          e.color,
+                          10,
+                          widget.onAddModule,
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
@@ -320,7 +337,7 @@ class _RightClickElementState extends State<RightClickElement> {
 
   @override
   Widget build(BuildContext context) {
-    String name = widget.spec.path.last;
+    String name = widget.spec.name;
 
     return MouseRegion(
       onEnter: (event) {

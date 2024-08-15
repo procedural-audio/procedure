@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import 'package:flutter_highlight/themes/monokai-sublime.dart';
-import 'package:highlight/languages/lua.dart';
-import 'package:metasampler/ui/code_editor/code_text_field.dart';
 import '../patch.dart';
 import 'widget.dart';
 import '../main.dart';
 import 'dart:ui' as ui;
 import 'dart:ffi';
-import '../ui/code_editor/code_text_field.dart';
 import '../core.dart';
 import '../module.dart';
 
