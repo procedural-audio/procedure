@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
 
-import 'dart:math';
-import 'dart:ffi';
 import 'dart:io';
 
-import 'settings.dart';
 import 'patch.dart';
-import 'core.dart';
 import 'moduleInfo.dart';
-
-var PLUGINS = Plugins.platformDefault();
 
 class Plugin {
   Plugin(this.name, this.version, this._modules);
@@ -22,24 +15,21 @@ class Plugin {
   static Future<Plugin?> load(String path) async {
     List<ModuleInfo> modules = [];
 
-    await for (var entity in Directory(path).list(recursive: true)) {
-      if (entity.path.endsWith(".cmajormodule")) {
-        var module = await ModuleInfo.load(entity.path);
-        if (module != null) {
-          print("Loaded module ${module.name} at ${module.path}");
-          modules.add(module);
-        } else {
-          print("Failed to load module: ${entity.path}");
-        }
+    await Directory(path)
+        .list(recursive: true)
+        .where((item) => item.name.endsWith(".cmajormodule"))
+        .forEach((file) async {
+      var info = await ModuleInfo.load(file.path);
+      if (info != null) {
+        print("Loaded module ${file.name} at ${file.path}");
+        modules.add(info);
+      } else {
+        print("Failed to load module: ${file.path}");
       }
-    }
+    });
 
     return Plugin("Temp Plugin Name", 1, ValueNotifier(modules));
   }
-
-  /*void scan() async {
-    print("Scanning modules...");
-  }*/
 
   ValueNotifier<List<ModuleInfo>> modules() {
     return _modules;
@@ -47,58 +37,51 @@ class Plugin {
 }
 
 class Plugins {
-  Plugins(this.directory) {
-    scan();
+  static final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
 
-    directory.watch().listen((event) {
-      reload(event.path);
-    });
-  }
-
-  final Directory directory;
-  final ValueNotifier<List<Plugin>> _plugins = ValueNotifier([]);
-
-  static Plugins platformDefault() {
-    var path = Settings2.pluginDirectory();
-    var directory = Directory(path);
-    return Plugins(directory);
-  }
-
-  void scan() async {
+  static void scan(String path) async {
     print("Scanning plugins");
 
-    List<Plugin> plugins = [];
+    var directory = Directory(path);
+
+    List<Plugin> newPlugins = [];
     if (await directory.exists()) {
       var items = directory.list();
       await for (var item in items) {
-        print("Scanning plugin: ${item.path}");
         var plugin = await Plugin.load(item.path);
         if (plugin != null) {
-          plugins.add(plugin);
+          newPlugins.add(plugin);
         }
       }
     } else {
       print("Plugin directory doesn't exist");
     }
 
-    _plugins.value = plugins;
-
-    print("Done scanning plugins");
+    _plugins.value = newPlugins;
   }
 
-  ValueNotifier<List<Plugin>> list() {
+  static ValueNotifier<List<Plugin>> list() {
     return _plugins;
   }
 
-  void reload(String path) async {
-    print("Reload plugin at $path");
+  /*void reload(String path) async {
+    print("Reloading plugin at $path");
 
-    /*for (var plugin in _plugins.value) {
-      rawPlugins.unload(plugin);
+    var newPlugin = await Plugin.load(path);
+
+    if (newPlugin == null) {
+      print("Failed to reload plugin at $path");
+      return;
     }
 
-    scan();*/
-  }
+    _plugins.value = _plugins.value.map((plugin) {
+      if (plugin.name == newPlugin.name) {
+        return newPlugin;
+      } else {
+        return plugin;
+      }
+    }).toList();
+  }*/
 }
 
 /*class Plugin extends StatelessWidget {

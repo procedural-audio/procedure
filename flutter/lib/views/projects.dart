@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 
 import 'info.dart';
 
+import '../globals.dart';
 import '../main.dart';
 
 class ProjectsBrowser extends StatefulWidget {
@@ -27,12 +28,12 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   void newProject() async {
     print("Calling new project");
     var newName = "New Project";
-    var newPath = widget.app.assets.projects.directory.path + "/" + newName;
+    var newPath = globals.assets.projects.directory.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = "New Project " + i.toString();
-      newPath = widget.app.assets.projects.directory.path + "/" + newName;
+      newPath = globals.assets.projects.directory.path + "/" + newName;
       i++;
     }
 
@@ -47,18 +48,18 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
     await newInfo.save();
 
-    widget.app.assets.projects.list().value.add(newInfo);
-    widget.app.assets.projects.list().notifyListeners();
+    globals.assets.projects.list().value.add(newInfo);
+    globals.assets.projects.list().notifyListeners();
   }
 
   void duplicateProject(ProjectInfo info) async {
     var newName = info.name.value + " (copy)";
-    var newPath = widget.app.assets.projects.directory.path + "/" + newName;
+    var newPath = globals.assets.projects.directory.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = info.name.value + " (copy " + i.toString() + ")";
-      newPath = widget.app.assets.projects.directory.path + "/" + newName;
+      newPath = globals.assets.projects.directory.path + "/" + newName;
       i++;
     }
 
@@ -70,16 +71,16 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       newInfo.date.value = DateTime.now();
       await newInfo.save();
 
-      widget.app.assets.projects.list().value.add(newInfo);
-      widget.app.assets.projects.list().notifyListeners();
+      globals.assets.projects.list().value.add(newInfo);
+      globals.assets.projects.list().notifyListeners();
     }
   }
 
   void removeProject(ProjectInfo info) async {
     print("Removing project");
     await info.directory.delete(recursive: true);
-    widget.app.assets.projects.list().value.remove(info);
-    widget.app.assets.projects.list().notifyListeners();
+    globals.assets.projects.list().value.remove(info);
+    globals.assets.projects.list().notifyListeners();
   }
 
   @override
@@ -113,7 +114,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
             ),
             Expanded(
               child: ValueListenableBuilder<List<ProjectInfo>>(
-                valueListenable: widget.app.assets.projects.list(),
+                valueListenable: globals.assets.projects.list(),
                 builder: (context, projects, child) {
                   List<ProjectInfo> filteredProjects = [];
                   if (searchText == "") {

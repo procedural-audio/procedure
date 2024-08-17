@@ -84,8 +84,8 @@ class Preset {
     );
   }
 
-  static Future<Preset?> load(PresetInfo info, Plugins plugins) async {
-    var patch = await Patch.load(info, plugins);
+  static Future<Preset?> load(PresetInfo info) async {
+    var patch = await Patch.load(info);
     if (patch != null) {
       var interface = await UserInterface.load(info);
 

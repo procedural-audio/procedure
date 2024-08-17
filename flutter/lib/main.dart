@@ -1,46 +1,34 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/patch.dart';
-import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/plugins.dart';
+import 'package:metasampler/settings.dart';
 
-import 'dart:math';
-
+import 'globals.dart';
 import 'core.dart';
 import 'projects.dart';
-import 'plugins.dart';
 
 import 'views/info.dart';
 import 'views/projects.dart';
 
-import 'moduleInfo.dart';
-
-/*
-
-Design Notes:
-- .cmajormodule file
-  - Contains name, width, height
-  - Contains patch path
-  - Contains the GUI specification so it can be shown in the module preview
-- The Dart code passes each .cmajormodule file to the Rust code to load
-
-*/
-
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Plugins.scan(Settings2.pluginDirectory());
 
   if (args.isEmpty) {
     runApp(
       App(
-        core: Core.create(),
-        assets: Assets.platformDefault(),
         project: ValueNotifier(null),
       ),
     );
   } else {
     var addr = int.parse(args[0].split(": ").last);
+    globals.core = Core.from(addr);
+
     runApp(
       App(
-        core: Core.from(addr),
-        assets: Assets.platformDefault(),
         project: ValueNotifier(null),
       ),
     );
@@ -48,28 +36,25 @@ void main(List<String> args) {
 }
 
 class App extends StatelessWidget {
-  App({required this.core, required this.assets, required this.project}) {
-    /*PLUGINS.addListener(
-      () {
-        print("Regenerating patch");
-        var currentProject = project.value;
-        if (currentProject != null) {
-          currentProject.preset.value.patch.disableTick();
-
-          var oldPreset = currentProject.preset.value;
-          var newPreset = Preset.from(oldPreset.info);
-          var state = oldPreset.patch.rawPatch.getState();
-
-          newPreset.patch.rawPatch.setState(state);
-          currentProject.preset.value = newPreset;
-          core.setPatch(newPreset.patch);
+  App({required this.project}) {
+    Directory(Settings2.pluginDirectory()).watch(recursive: true).listen(
+      (event) {
+        if (event is FileSystemModifyEvent) {
+          if (event.contentChanged) {
+            print("Plugins directory changed");
+            Plugins.scan(Settings2.pluginDirectory());
+          }
         }
       },
-    );*/
+    );
+
+    Plugins.list().addListener(
+      () {
+        project.value?.preset.value.patch.refreshUserInterface();
+      },
+    );
   }
 
-  final Core core;
-  final Assets assets;
   final ValueNotifier<Project?> project;
 
   @override
@@ -105,7 +90,8 @@ class _Window extends State<Window> {
   bool uiVisible = false;
 
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(widget.app.core, info, unloadProject);
+    var project = await Project.load(info, unloadProject);
+
     if (project != null) {
       // widget.app.core.setPatch(project.preset.value.patch);
       widget.app.project.value = project;

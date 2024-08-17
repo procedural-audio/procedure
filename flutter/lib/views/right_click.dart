@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'settings.dart';
 
+import '../globals.dart';
 import '../plugins.dart';
 import '../moduleInfo.dart';
 
 class RightClickView extends StatefulWidget {
-  RightClickView({
-    required this.onAddModule,
-  });
+  RightClickView({required this.onAddModule});
 
   void Function(ModuleInfo) onAddModule;
 
@@ -22,7 +21,7 @@ class _RightClickView extends State<RightClickView> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Plugin>>(
-      valueListenable: PLUGINS.list(),
+      valueListenable: Plugins.list(),
       builder: (context, plugins, child) {
         List<ModuleInfo> specs = [];
 

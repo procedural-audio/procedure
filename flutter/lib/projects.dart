@@ -52,7 +52,6 @@ class Projects {
 
 class Project extends StatefulWidget {
   Project({
-    required this.core,
     required this.info,
     required this.preset,
     // required this.patch,
@@ -62,7 +61,6 @@ class Project extends StatefulWidget {
     scan();
   }
 
-  final Core core;
   final ProjectInfo info;
   final ValueNotifier<Preset> preset;
   // final ValueNotifier<Patch> patch;
@@ -70,9 +68,9 @@ class Project extends StatefulWidget {
 
   void Function() onUnload;
 
-  final ValueNotifier<List<PresetInfo>> presets = ValueNotifier([]);
+  final ValueNotifier<List<PresetInfo>> presetInfos = ValueNotifier([]);
 
-  static Project blank(Core core, void Function() onUnload) {
+  static Project blank(Plugins plugins, Core core, void Function() onUnload) {
     var projectDirectory =
         Directory(Settings2.projectsDirectory() + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
@@ -86,7 +84,6 @@ class Project extends StatefulWidget {
     );
 
     return Project(
-      core: core,
       info: info,
       preset: ValueNotifier(preset),
       // patch: ValueNotifier(patch),
@@ -114,7 +111,7 @@ class Project extends StatefulWidget {
   }
 
   static Future<Project?> load(
-      Core core, ProjectInfo info, void Function() onUnload) async {
+      ProjectInfo info, void Function() onUnload) async {
     var directory = Directory(info.directory.path + "/presets");
 
     if (!await directory.exists()) {
@@ -125,10 +122,9 @@ class Project extends StatefulWidget {
       var presetsDirectory = Directory(item.path);
       var presetInfo = await PresetInfo.load(presetsDirectory);
       if (presetInfo != null) {
-        var preset = await Preset.load(presetInfo, PLUGINS);
+        var preset = await Preset.load(presetInfo);
         if (preset != null) {
           return Project(
-            core: core,
             info: info,
             preset: ValueNotifier(preset),
             // patch: ValueNotifier(patch),
@@ -249,7 +245,7 @@ class _Project extends State<Project> {
                   child: PresetsBrowser(
                     directory:
                         Directory(widget.info.directory.path + "/presets"),
-                    presets: widget.presets,
+                    presets: widget.presetInfos,
                     onLoad: (info) {
                       widget.loadPreset(info);
                     },

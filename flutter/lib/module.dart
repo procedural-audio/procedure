@@ -2,6 +2,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:metasampler/moduleInfo.dart';
+import 'package:metasampler/plugins.dart';
 
 import 'dart:ffi';
 
@@ -223,6 +224,10 @@ class Node extends StatelessWidget {
   }) : super(key: UniqueKey()) {
     size = Offset(info.width.toDouble(), info.height.toDouble());
     name = info.name;
+
+    for (var widgetInfo in info.widgetInfos) {
+      widgets.value.add(widgetInfo.createWidget(0, 0));
+    }
   }
 
   final ModuleInfo info;
@@ -239,12 +244,33 @@ class Node extends StatelessWidget {
   Offset size = const Offset(250, 250);
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
   List<Pin> pins = [];
-  List<ModuleWidget> widgets = <ModuleWidget>[];
+  ValueNotifier<List<NodeWidget>> widgets = ValueNotifier([]);
 
   void tick() {
-    for (var widget in widgets) {
-      widget.tick();
+    // for (var widget in widgets) {
+    // widget.tick();
+    // }
+  }
+
+  void refreshUserInterface() {
+    List<NodeWidget> newWidgets = [];
+
+    print("Refreshing node widgets");
+
+    for (var plugin in Plugins.list().value) {
+      for (var moduleInfo in plugin.modules().value) {
+        if (moduleInfo.path == info.path) {
+          for (var widgetInfo in moduleInfo.widgetInfos) {
+            var newWidget = widgetInfo.createWidget(0, 0);
+            newWidgets.add(newWidget);
+          }
+        }
+      }
     }
+
+    // TODO: Copy widget state
+
+    widgets.value = newWidgets;
   }
 
   void refreshSize() {
@@ -321,9 +347,15 @@ class Node extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[] + widgets + pins,
+                      ValueListenableBuilder(
+                        valueListenable: widgets,
+                        builder: (context, w, child) {
+                          print("Refreshing widgets on UI");
+                          return Stack(
+                            fit: StackFit.expand,
+                            children: <Widget>[] + widgets.value + pins,
+                          );
+                        },
                       )
                     ],
                   ),
