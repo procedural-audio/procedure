@@ -1,5 +1,4 @@
 import 'package:ffi/ffi.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:metasampler/moduleInfo.dart';
 import 'package:metasampler/plugins.dart';
@@ -226,7 +225,7 @@ class Node extends StatelessWidget {
     name = info.name;
 
     for (var widgetInfo in info.widgetInfos) {
-      widgets.value.add(widgetInfo.createWidget(0, 0));
+      widgets.value.add(widgetInfo.createWidget());
     }
   }
 
@@ -261,8 +260,7 @@ class Node extends StatelessWidget {
       for (var moduleInfo in plugin.modules().value) {
         if (moduleInfo.path == info.path) {
           for (var widgetInfo in moduleInfo.widgetInfos) {
-            var newWidget = widgetInfo.createWidget(0, 0);
-            newWidgets.add(newWidget);
+            newWidgets.add(widgetInfo.createWidget());
           }
         }
       }
@@ -350,7 +348,6 @@ class Node extends StatelessWidget {
                       ValueListenableBuilder(
                         valueListenable: widgets,
                         builder: (context, w, child) {
-                          print("Refreshing widgets on UI");
                           return Stack(
                             fit: StackFit.expand,
                             children: <Widget>[] + widgets.value + pins,

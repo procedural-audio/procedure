@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
+import 'package:yaml/yaml.dart';
 import '../patch.dart';
 import '../views/variables.dart';
 import 'dart:ui' as ui;
@@ -9,10 +10,8 @@ import '../views/settings.dart';
 import '../moduleInfo.dart';
 
 class KnobWidget extends NodeWidget {
-  KnobWidget(WidgetInfo info) : super(info);
+  KnobWidget(YamlMap map) : super(map);
 
-  final Color color = Colors.blue;
-  final String labelText = "";
   final bool hovering = false;
   final bool dragging = false;
 
@@ -27,16 +26,23 @@ class KnobWidget extends NodeWidget {
 
   @override
   Widget build(BuildContext context) {
+    int left = map['left'] ?? 0;
+    int top = map['top'] ?? 0;
+    int width = map['width'] ?? 50;
+    int height = map['height'] ?? 50;
+
+    Color color = colorFromString(map['color']);
+
     return Positioned(
-      left: info.position.dx,
-      top: info.position.dy,
+      left: left.toDouble(),
+      top: top.toDouble(),
       child: SizedBox(
-        width: info.size.width,
-        height: info.size.height,
+        width: width.toDouble(),
+        height: height.toDouble(),
         child: Knob(
           label: "Label",
           color: color,
-          size: info.size,
+          size: Size(width.toDouble(), height.toDouble()),
           onUpdate: (v) {
             value = v;
           },

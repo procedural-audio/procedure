@@ -15,20 +15,33 @@ enum WidgetType {
   button,
 }
 
-abstract class NodeWidget extends StatelessWidget {
-  const NodeWidget(this.info, {super.key});
+Color colorFromString(String color) {
+  return switch (color) {
+    "red" => Colors.red,
+    "green" => Colors.green,
+    "blue" => Colors.blue,
+    "yellow" => Colors.yellow,
+    "purple" => Colors.purple,
+    "orange" => Colors.orange,
+    "pink" => Colors.pink,
+    "cyan" => Colors.cyan,
+    _ => Colors.grey,
+  };
+}
 
-  final WidgetInfo info;
+abstract class NodeWidget extends StatelessWidget {
+  const NodeWidget(this.map, {super.key});
+
+  final YamlMap map;
 
   void copyState(NodeWidget widget);
 }
 
 class WidgetInfo {
-  WidgetInfo({required this.type, required this.position, required this.size});
+  WidgetInfo({required this.type, required this.map});
 
   final WidgetType type;
-  final Offset position;
-  final Size size;
+  final YamlMap map;
 
   static WidgetInfo? from(YamlMap yaml) {
     var type = switch (yaml.keys.first) {
@@ -39,34 +52,21 @@ class WidgetInfo {
     };
 
     if (type == null) {
-      print("Widget missing type");
-      return null;
-    }
-
-    yaml = yaml.values.first;
-
-    int? width = yaml['width'];
-    int? height = yaml['height'];
-
-    int? left = yaml['left'];
-    int? top = yaml['top'];
-
-    if (width == null || height == null || left == null || top == null) {
+      print("Unknown widget type");
       return null;
     }
 
     return WidgetInfo(
       type: WidgetType.knob,
-      position: Offset(left.toDouble(), top.toDouble()),
-      size: Size(width.toDouble(), height.toDouble()),
+      map: yaml[yaml.keys.first],
     );
   }
 
-  NodeWidget createWidget(int nodeId, int paramId) {
+  NodeWidget createWidget() {
     return switch (type) {
-      WidgetType.knob => KnobWidget(this),
-      WidgetType.fader => KnobWidget(this),
-      WidgetType.button => KnobWidget(this),
+      WidgetType.knob => KnobWidget(map),
+      WidgetType.fader => KnobWidget(map),
+      WidgetType.button => KnobWidget(map),
     };
   }
 }
