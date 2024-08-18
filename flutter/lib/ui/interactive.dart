@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 
 import 'dart:typed_data';
 
-import '../patch.dart';
+import '../patch/patch.dart';
 import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';

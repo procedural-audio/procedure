@@ -5,7 +5,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../patch.dart';
+import '../patch/patch.dart';
 import '../common.dart';
 
 import 'dart:ffi';
@@ -237,12 +237,12 @@ class _Vars extends State<Vars> {
                                                               20, 20, 20, 1.0),
                                                       border: Border.all(
                                                           color: const Color
-                                                                  .fromRGBO(
+                                                              .fromRGBO(
                                                               80, 80, 80, 1.0),
                                                           width: 1),
                                                       borderRadius:
                                                           const BorderRadius
-                                                                  .all(
+                                                              .all(
                                                               Radius.circular(
                                                                   5))),
                                                   child: EditableText(

@@ -12,7 +12,7 @@ class _PopupWidow extends State<PopupWindow> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: left, 
+      left: left,
       bottom: bottom,
       child: Container(
         width: 800,
@@ -31,7 +31,8 @@ class _PopupWidow extends State<PopupWindow> {
             GestureDetector(
               onPanUpdate: (e) {
                 setState(() {
-                  left += e.delta.dx;;
+                  left += e.delta.dx;
+                  ;
                   bottom -= e.delta.dy;
                 });
               },
@@ -39,9 +40,7 @@ class _PopupWidow extends State<PopupWindow> {
                 height: 20,
                 decoration: const BoxDecoration(
                   color: Color.fromRGBO(50, 50, 50, 1.0),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(5)
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(5)),
                 ),
               ),
             ),

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import '../patch.dart';
+import '../patch/patch.dart';
 import '../main.dart';
 
 import 'settings.dart';

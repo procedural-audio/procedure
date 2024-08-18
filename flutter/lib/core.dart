@@ -6,8 +6,8 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/settings.dart';
 // import 'package:pa_protocol/pa_protocol.dart';
 
-import 'module.dart';
-import 'patch.dart';
+import 'module/node.dart';
+import 'patch/patch.dart';
 
 class Core {
   // extends CoreProtocolServiceBase {

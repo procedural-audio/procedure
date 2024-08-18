@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/patch.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
+import 'package:metasampler/views/presets.dart';
 
 import 'globals.dart';
 import 'core.dart';
@@ -49,8 +49,15 @@ class App extends StatelessWidget {
     );
 
     Plugins.list().addListener(
-      () {
-        project.value?.preset.value.patch.refreshUserInterface();
+      () async {
+        var presetInfo = project.value?.preset.value.info;
+
+        if (presetInfo != null) {
+          var preset = await Preset.load(presetInfo);
+          if (preset != null) {
+            project.value?.preset.value = preset;
+          }
+        }
       },
     );
   }

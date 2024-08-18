@@ -9,7 +9,7 @@ import 'package:metasampler/views/presets.dart';
 import 'package:metasampler/window.dart';
 
 import 'core.dart';
-import 'patch.dart';
+import 'patch/patch.dart';
 
 import 'views/info.dart';
 import 'ui/ui.dart';

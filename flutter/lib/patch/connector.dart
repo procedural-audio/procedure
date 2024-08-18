@@ -1,0 +1,155 @@
+import 'dart:math';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+
+import '../module/node.dart';
+import '../module/pin.dart';
+
+class Connector extends StatelessWidget {
+  Connector({
+    required this.start,
+    required this.end,
+    required this.type,
+    required this.selectedNodes,
+  }) : super(key: UniqueKey());
+
+  final Pin start;
+  final Pin end;
+  final IO type;
+  final ValueNotifier<List<Node>> selectedNodes;
+
+  Map<String, dynamic> toJson() {
+    return {
+      "startId": start.nodeId,
+      "startIndex": start.pinIndex,
+      "endId": end.nodeId,
+      "endIndex": end.pinIndex,
+      "type": type.toString(),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<List<Node>>(
+      valueListenable: selectedNodes,
+      builder: (context, selectedNodes, child) {
+        bool focused = selectedNodes.contains(start.node) ||
+            selectedNodes.contains(end.node);
+        return ValueListenableBuilder<Offset>(
+          valueListenable: start.node.position,
+          builder: (context, startModuleOffset, child) {
+            return ValueListenableBuilder<Offset>(
+              valueListenable: end.node.position,
+              builder: (context, endModuleOffset, child) {
+                return CustomPaint(
+                  painter: ConnectorPainter(
+                    Offset(
+                      start.offset.dx + startModuleOffset.dx + 15 / 2,
+                      start.offset.dy + startModuleOffset.dy + 15 / 2,
+                    ),
+                    Offset(
+                      end.offset.dx + endModuleOffset.dx + 15 / 2,
+                      end.offset.dy + endModuleOffset.dy + 15 / 2,
+                    ),
+                    type,
+                    focused,
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class NewConnector extends StatelessWidget {
+  Pin? start;
+  final ValueNotifier<Offset?> offset = ValueNotifier(null);
+  Pin? end;
+  IO type = IO.audio;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Offset?>(
+      valueListenable: offset,
+      builder: (context, offset, child) {
+        if (start != null && offset != null) {
+          var startOffset = Offset(
+            start!.offset.dx + start!.node.position.value.dx + 15 / 2,
+            start!.offset.dy + start!.node.position.value.dy + 15 / 2,
+          );
+
+          var endOffset = Offset(
+            startOffset.dx + offset.dx - 15 / 2,
+            startOffset.dy + offset.dy - 15 / 2,
+          );
+
+          return CustomPaint(
+            painter: ConnectorPainter(startOffset, endOffset, type, true),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+}
+
+class ConnectorPainter extends CustomPainter {
+  ConnectorPainter(this.initialStart, this.initialEnd, this.type, this.focused);
+
+  Offset initialStart;
+  Offset initialEnd;
+  IO type;
+  bool focused;
+
+  @override
+  void paint(Canvas canvas, ui.Size size) {
+    final paint = Paint()
+      ..color = const Color.fromRGBO(255, 255, 255, 1.0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    if (type == IO.audio) {
+      paint.color = Colors.blue.withOpacity(focused ? 1.0 : 0.3);
+    } else if (type == IO.midi) {
+      paint.color = Colors.green.withOpacity(focused ? 1.0 : 0.3);
+    } else if (type == IO.control) {
+      paint.color = Colors.red.withOpacity(focused ? 1.0 : 0.3);
+    } else if (type == IO.time) {
+      paint.color = Colors.deepPurpleAccent.withOpacity(focused ? 1.0 : 0.3);
+    }
+
+    Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);
+    Offset end = Offset(initialEnd.dx - 3, initialEnd.dy + 2);
+
+    double distance = (end - start).distance;
+    double firstOffset = min(distance, 40);
+
+    Offset start1 = Offset(start.dx + firstOffset, start.dy);
+    Offset end1 = Offset(end.dx - firstOffset, end.dy);
+    Offset center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+
+    Path path = Path();
+
+    path.moveTo(start.dx, start.dy);
+    path.quadraticBezierTo(start1.dx + 10, start1.dy, center.dx, center.dy);
+
+    path.moveTo(end.dx, end.dy);
+    path.quadraticBezierTo(end1.dx - 10, end1.dy, center.dx, center.dy);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(ConnectorPainter oldDelegate) {
+    return oldDelegate.initialStart.dx != initialStart.dx ||
+        oldDelegate.initialStart.dy != initialStart.dy ||
+        oldDelegate.initialEnd.dx != initialEnd.dy ||
+        oldDelegate.initialEnd.dy != initialEnd.dy ||
+        oldDelegate.type != type;
+  }
+}

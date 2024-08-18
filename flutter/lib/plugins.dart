@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'dart:io';
 
-import 'patch.dart';
-import 'moduleInfo.dart';
+import 'patch/patch.dart';
+import 'module/moduleInfo.dart';
 
 class Plugin {
   Plugin(this.name, this.version, this._modules);

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'settings.dart';
 
-import '../patch.dart';
+import '../patch/patch.dart';
 
 /*class InterfaceInfo {
   InterfaceInfo({

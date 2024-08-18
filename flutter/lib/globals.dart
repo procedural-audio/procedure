@@ -1,6 +1,6 @@
 import 'plugins.dart';
 import 'core.dart';
-import 'patch.dart';
+import 'patch/patch.dart';
 
 Globals globals = Globals();
 

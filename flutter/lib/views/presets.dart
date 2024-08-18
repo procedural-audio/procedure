@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:metasampler/views/projects.dart';
 
-import '../patch.dart';
+import '../patch/patch.dart';
 import '../plugins.dart';
 import '../ui/ui.dart';
 
