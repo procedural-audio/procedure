@@ -99,6 +99,30 @@ impl<S> Block for [S] {
     }
 }
 
+impl<S> Block for &[S] {
+    type Item = S;
+
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
+        self
+    }
+
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
+        unreachable!()
+    }
+}
+
+impl<S> Block for &mut [S] {
+    type Item = S;
+
+    fn as_slice<'a>(&'a self) -> &'a [Self::Item] {
+        self
+    }
+
+    fn as_slice_mut<'a>(&'a mut self) -> &'a mut [Self::Item] {
+        self
+    }
+}
+
 
 /* Raw pointer implementations */
 

@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
@@ -9,57 +10,72 @@ import 'package:metasampler/settings.dart';
 import 'module/node.dart';
 import 'patch/patch.dart';
 
+@Int64()
+typedef NativeFunctionPointer = Void Function(Int32);
+
+typedef DartFunctionPointer = void Function(int);
+
+final class CoreApi extends Struct {
+  external Pointer<NativeFunction<Pointer<Utf8> Function()>> getVersion;
+}
+
 class Core {
-  // extends CoreProtocolServiceBase {
-  Core(this.raw) {
-    /*final server = Server.create(
-      services: [CoreProtocolService()],
-      codecRegistry: CodecRegistry(
-        codecs: const [GzipCodec(), IdentityCodec()],
-      ),
-    );*/
+  static String version = "0.1.0";
 
-    /*final channel = ClientChannel(
-      'localhost',
-      port: 50051,
-      options: ChannelOptions(
-        credentials: const ChannelCredentials.insecure(),
-        codecRegistry: CodecRegistry(
-          codecs: const [GzipCodec(), IdentityCodec()],
-        ),
-      ),
-    );*/
+  static DynamicLibrary library = DynamicLibrary.open(
+    Settings2.coreLibraryDirectory(),
+  );
 
-    /*final stub = CoreProtocolClient(channel);
+  static CoreApi coreApi = Core.getApi();
 
-    var msg = CoreMsg(
-      patch: PatchMsg(
-        add: AddModule(
-          name: "module_name",
-          x: 0,
-          y: 0,
-        ),
-      ),
-      module: null,
-      widget: null,
-    );
+  static CoreApi getApi() {
+    CoreApi Function() getApi = library
+        .lookup<NativeFunction<CoreApi Function()>>("get_api")
+        .asFunction();
 
-    stub.dispatch(msg);
-    stub.getModule(Int(value: 1));*/
+    if (getApi.hashCode == 0) {
+      print("Fatal error: Core API not found");
+      exit(0);
+    }
+
+    return getApi();
   }
 
+  /*static Core setApi(CoreApi coreApi) {
+    if (version != coreApi.getVersion()) {
+      print("Fatal error: Core version mismatch");
+      exit(0);
+    }
+
+    return core;
+  }
+
+  Core(this.coreApi);*/
+
+  static String getVersion() {
+    Pointer<Utf8> Function() rawGetVersion = coreApi.getVersion.asFunction();
+    var rawVersion = rawGetVersion();
+    var version = rawVersion.toDartString();
+    calloc.free(rawVersion);
+
+    return version;
+  }
+
+  // extends CoreProtocolServiceBase {
+  // Core(this.raw) {}
+
   // Make sure this doesn't leak???
-  final RawCore raw;
+  // final RawCore raw;
   // final Plugins plugins;
   // ValueNotifier<List<Plugin>> plugins;
 
-  static Core create() {
+  /*static Core create() {
     return Core(_ffiCreateHost());
   }
 
   static Core from(int addr) {
     return Core(_ffiHackConvert(addr));
-  }
+  }*/
 
   /*@override
   Future<Status> dispatch(ServiceCall call, CoreMsg request) {
@@ -103,7 +119,7 @@ class Core {
     return true;
   }
 
-  void refresh() {
+  /*void refresh() {
     _ffiCoreRefresh(raw);
   }
 
@@ -145,14 +161,12 @@ class Core {
     } else {
       _ffiCoreSetPatchNull(raw, Pointer.fromAddress(0));
     }
-  }
+  }*/
 }
-
-var core = DynamicLibrary.open(Settings2.coreLibraryDirectory());
 
 /* Global */
 
-int Function(Pointer<Uint8>) _ffiDispatch = core
+/*int Function(Pointer<Uint8>) _ffiDispatch = core
     .lookup<NativeFunction<Int32 Function(Pointer<Uint8>)>>("ffi_dispatch")
     .asFunction();
 
@@ -345,3 +359,4 @@ int Function(RawModuleInfo) ffiModuleInfoGetColor = core
     .lookup<NativeFunction<Int64 Function(RawModuleInfo)>>(
         "ffi_module_info_get_color")
     .asFunction();
+*/

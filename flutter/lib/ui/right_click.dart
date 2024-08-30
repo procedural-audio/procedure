@@ -19,9 +19,12 @@ class _RightClickMenu extends State<RightClickMenu> {
     {
       List<Widget> category = [];
 
-      category.add(RightClickElement("Container", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Text", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("TextField", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Container", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Text", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "TextField", Icons.loop, Colors.grey, 30, widget.addPosition));
 
       widgets.add(RightClickCategory("Basic", 10, category));
     }
@@ -29,8 +32,10 @@ class _RightClickMenu extends State<RightClickMenu> {
     {
       List<Widget> category = [];
 
-      category.add(RightClickElement("Color", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Image", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Color", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Image", Icons.loop, Colors.grey, 30, widget.addPosition));
 
       widgets.add(RightClickCategory("Decoration", 10, category));
     }
@@ -38,10 +43,14 @@ class _RightClickMenu extends State<RightClickMenu> {
     {
       List<Widget> category = [];
 
-      category.add(RightClickElement("Knob", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Fader", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Pad", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Button", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Knob", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Fader", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Pad", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Button", Icons.loop, Colors.grey, 30, widget.addPosition));
 
       widgets.add(RightClickCategory("Interactive", 10, category));
     }
@@ -49,14 +58,21 @@ class _RightClickMenu extends State<RightClickMenu> {
     {
       List<Widget> category = [];
 
-      category.add(RightClickElement("Stack", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Row", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Column", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Grid", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Stack", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Row", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Column", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Grid", Icons.loop, Colors.grey, 30, widget.addPosition));
 
-      category.add(RightClickElement("Position", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Padding", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Sized", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Position", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Padding", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Sized", Icons.loop, Colors.grey, 30, widget.addPosition));
 
       widgets.add(RightClickCategory("Layout", 10, category));
     }
@@ -64,10 +80,14 @@ class _RightClickMenu extends State<RightClickMenu> {
     {
       List<Widget> category = [];
 
-      category.add(RightClickElement("Volume Meter", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Spectrum", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Line Meter", Icons.loop, Colors.grey, 30, widget.addPosition));
-      category.add(RightClickElement("Grid", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Volume Meter", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Spectrum", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Line Meter", Icons.loop, Colors.grey, 30, widget.addPosition));
+      category.add(RightClickElement(
+          "Grid", Icons.loop, Colors.grey, 30, widget.addPosition));
 
       widgets.add(RightClickCategory("Metering", 10, category));
     }
@@ -172,7 +192,8 @@ class _RightClickMenu extends State<RightClickMenu> {
             ],
           ),
           decoration: BoxDecoration(
-              color: const Color.fromRGBO(20, 20, 20, 1.0), border: Border.all(color: const Color.fromRGBO(40, 40, 40, 1.0))),
+              color: const Color.fromRGBO(20, 20, 20, 1.0),
+              border: Border.all(color: const Color.fromRGBO(40, 40, 40, 1.0))),
         ));
   }
 }
@@ -238,7 +259,9 @@ class _RightClickCategoryState extends State<RightClickCategory> {
                         ]),
                       ),
                       decoration: BoxDecoration(
-                        color: hovering ? const Color.fromRGBO(40, 40, 40, 1.0) : const Color.fromRGBO(20, 20, 20, 1.0),
+                        color: hovering
+                            ? const Color.fromRGBO(40, 40, 40, 1.0)
+                            : const Color.fromRGBO(20, 20, 20, 1.0),
                       ),
                     )))
           ] +
@@ -255,7 +278,8 @@ class RightClickElement extends StatefulWidget {
   String path = "logic/and.svg";
   final Offset addPosition;
 
-  RightClickElement(this.name, this.icon, this.color, this.indent, this.addPosition);
+  RightClickElement(
+      this.name, this.icon, this.color, this.indent, this.addPosition);
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();
@@ -319,7 +343,9 @@ class _RightClickElementState extends State<RightClickElement> {
                     ),
                   ])),
               decoration: BoxDecoration(
-                color: hovering ? const Color.fromRGBO(40, 40, 40, 1.0) : const Color.fromRGBO(20, 20, 20, 1.0),
+                color: hovering
+                    ? const Color.fromRGBO(40, 40, 40, 1.0)
+                    : const Color.fromRGBO(20, 20, 20, 1.0),
               ),
             )));
   }

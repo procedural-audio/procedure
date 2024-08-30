@@ -13,6 +13,7 @@ pub trait Sample: Copy + Clone + From<Self::Float>
     const EQUILIBRIUM: Self;
 
     fn from_f32(v: f32) -> Self;
+    fn from_usize(v: usize) -> Self;
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized;
 
@@ -28,6 +29,14 @@ pub trait Sample: Copy + Clone + From<Self::Float>
 
     fn tan(self) -> Self {
         Self::apply(self, Float::tan)
+    }
+
+    fn atan(self) -> Self {
+        Self::apply(self, Float::atan)
+    }
+
+    fn sqrt(self) -> Self {
+        todo!()
     }
 
     fn gain(&self, db: Self::Float) -> Self {
@@ -51,6 +60,10 @@ impl Sample for f32 {
 
     fn from_f32(v: f32) -> Self {
         v
+    }
+
+    fn from_usize(v: usize) -> Self {
+        v as f32
     }
 
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
@@ -81,6 +94,10 @@ impl Sample for f64 {
     const EQUILIBRIUM: Self = Self::ZERO;
 
     fn from_f32(v: f32) -> Self {
+        v as f64
+    }
+
+    fn from_usize(v: usize) -> Self {
         v as f64
     }
 

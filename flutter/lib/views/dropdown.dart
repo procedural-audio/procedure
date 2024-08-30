@@ -1,5 +1,3 @@
-import 'package:metasampler/old_widgets/dropdown.dart';
-
 import '../main.dart';
 import 'package:flutter/material.dart';
 import 'settings.dart';

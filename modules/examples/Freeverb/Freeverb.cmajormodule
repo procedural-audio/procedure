@@ -1,0 +1,8 @@
+{
+    "name":             "FreeVerb",
+    "patch":           	"Freeverb.cmajorpatch",
+    "width":		400,
+    "height":		200,
+    "category":         "midi.sources.other",
+    "color":		"blue"
+}

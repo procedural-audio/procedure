@@ -1,0 +1,7 @@
+{
+    "name":             "Filter",
+    "patch":           	"Filter.cmajorpatch",
+    "width":		500,
+    "height":		400,
+    "color":		"blue"
+}

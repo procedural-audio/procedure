@@ -139,6 +139,10 @@ impl<F: Float> Sample for Stereo<F> {
         Self::from(F::from(v))
     }
 
+    fn from_usize(v: usize) -> Self {
+        Self::from(F::from_usize(v))
+    }
+
     fn apply<Function: Fn(Self::Float) -> Self::Float>(self, f: Function) -> Self where Self: Sized {
         Self {
             left: f(self.left),

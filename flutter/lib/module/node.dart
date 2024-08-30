@@ -10,8 +10,6 @@ import '../patch/connector.dart';
 import '../patch/patch.dart';
 import '../core.dart';
 
-import '../old_widgets/widget.dart';
-
 class Node extends StatelessWidget {
   Node({
     // required this.rawNode,
@@ -177,7 +175,7 @@ class Node extends StatelessWidget {
   }
 }
 
-void callTickRecursive(ModuleWidget widget) {
+/*void callTickRecursive(ModuleWidget widget) {
   widget.tick();
 
   for (var child in widget.children) {
@@ -422,3 +420,4 @@ void Function(RawNode, double) _ffiNodeSetNodeHeight = core
     .lookup<NativeFunction<Void Function(RawNode, Float)>>(
         "ffi_node_set_height")
     .asFunction();
+*/

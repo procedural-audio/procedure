@@ -3,9 +3,9 @@
     message converter and envelopes
 */
 
-graph SineSynth  [[main]]
+graph SineSynth  [[main, name: "Sine Synth"]]
 {
-    input event std::midi::Message midiIn;
+    input event std::midi::Message midiIn [[widget: "knob"]];
     output stream float out;
 
     let voiceCount = 8;

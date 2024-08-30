@@ -58,7 +58,7 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
-RawPatch Function() _ffiCreatePatch = core
+/*RawPatch Function() _ffiCreatePatch = core
     .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
     .asFunction();
 /*bool Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchLoad = core
@@ -116,6 +116,7 @@ void Function(RawPatch, int, int) _ffiPatchRemoveConnector = core
     .lookup<NativeFunction<Void Function(RawPatch, Int32, Int32)>>(
         "ffi_patch_remove_connector")
     .asFunction();
+
 
 // TODO: Make sure this isn't leaked
 final class RawPatch extends Struct {
@@ -195,10 +196,10 @@ final class RawConnector extends Struct {
   @Int32()
   external int endIndex;
 }
-
+*/
 class Patch extends StatefulWidget {
   Patch({
-    required this.rawPatch,
+    // required this.rawPatch,
     required this.info,
   }) : super(key: UniqueKey());
 
@@ -206,7 +207,7 @@ class Patch extends StatefulWidget {
   final List<Connector> connectors = [];
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
 
-  final RawPatch rawPatch;
+  // final RawPatch rawPatch;
   final PresetInfo info;
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
@@ -215,12 +216,12 @@ class Patch extends StatefulWidget {
   static Patch from(PresetInfo info) {
     return Patch(
       info: info,
-      rawPatch: RawPatch.create(),
+      // rawPatch: RawPatch.create(),
     );
   }
 
   static Future<Patch?> load(PresetInfo info) async {
-    var rawPatch = RawPatch.create();
+    // var rawPatch = RawPatch.create();
     var file = File(info.directory.path + "/patch.json");
 
     if (!await file.exists()) {
@@ -229,7 +230,7 @@ class Patch extends StatefulWidget {
 
     print("Skipping Patch.load");
     return Patch(
-      rawPatch: rawPatch,
+      // rawPatch: rawPatch,
       info: info,
     );
 
@@ -428,7 +429,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   }
 
   void removeConnector(int nodeId, int pinIndex) {
-    widget.rawPatch.removeConnector(nodeId, pinIndex);
+    // widget.rawPatch.removeConnector(nodeId, pinIndex);
     widget.connectors.removeWhere(
       (e) =>
           (e.start.nodeId == nodeId && e.start.pinIndex == pinIndex) ||
@@ -550,7 +551,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                         e.logicalKey == LogicalKeyboardKey.backspace) {
                       print("Get key delete");
                       for (var node in widget.selectedNodes.value) {
-                        widget.rawPatch.removeNode(node.id);
+                        // widget.rawPatch.removeNode(node.id);
                         widget.nodes.removeWhere((n) => n.id == node.id);
                         widget.connectors.removeWhere((c) =>
                             c.start.nodeId == node.id ||

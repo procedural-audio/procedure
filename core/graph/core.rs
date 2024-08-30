@@ -16,7 +16,85 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::rc::Rc;
 
-// use pa_protocol::*;
+static VERSION: &str = "0.1.0";
+
+pub struct Core {
+    // pub graph: Option<Box<Graph>>,
+    // pub sample_rate: u32,
+    // pub block_size: usize,
+    // pub time: TimeMessage,
+    // pub bpm: f64,
+}
+
+impl Core {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+pub struct ModuleInfo {
+    program: cmajor_rs::Program
+}
+
+impl ModuleInfo {
+    pub fn load(path: &str) -> Self {
+        let contents = std::fs::read_to_string(path).unwrap();
+        todo!();
+    }
+}
+
+#[repr(C)]
+pub struct CoreApi {
+    get_version: unsafe extern "C" fn() -> *const i8,
+    core_create: unsafe extern "C" fn() -> *mut Core,
+    core_destroy: unsafe extern "C" fn(*mut Core),
+    module_info_load: unsafe extern "C" fn(*const i8) -> *mut ModuleInfo,
+    module_info_get: unsafe extern "C" fn(*mut ModuleInfo) -> *const i8,
+    module_info_destroy: unsafe extern "C" fn(*mut ModuleInfo),
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn get_api() -> CoreApi {
+    return CoreApi {
+        get_version,
+        core_create,
+        core_destroy,
+        module_info_load,
+        module_info_get,
+        module_info_destroy,
+    };
+}
+
+unsafe extern "C" fn get_version() -> *const i8 {
+    let s = CString::new(VERSION).unwrap();
+    let p = s.as_ptr();
+    std::mem::forget(s);
+    p
+}
+
+unsafe extern "C" fn core_create() -> *mut Core {
+    Box::into_raw(Box::new(Core::new()))
+}
+
+unsafe extern "C" fn core_destroy(core: *mut Core) {
+    drop(Box::from_raw(core));
+}
+
+unsafe extern "C" fn module_info_load(path: *const i8) -> *mut ModuleInfo {
+    let path = str_from_char(&*path);
+    let module = ModuleInfo::load(path);
+    Box::into_raw(Box::new(module))
+}
+
+unsafe extern "C" fn module_info_get(module: *mut ModuleInfo) -> *const i8 {
+    todo!()
+}
+
+unsafe extern "C" fn module_info_destroy(module: *mut ModuleInfo) {
+    drop(Box::from_raw(module));
+}
+
+// OLD FUNCTIONS BELOW
 
 #[no_mangle]
 pub unsafe fn ffi_hack_convert(data: usize) -> usize {

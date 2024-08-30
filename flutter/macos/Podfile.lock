@@ -1,15 +1,21 @@
 PODS:
   - FlutterMacOS (1.0.0)
+  - rust_lib_metasampler (0.0.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - rust_lib_metasampler (from `Flutter/ephemeral/.symlinks/plugins/rust_lib_metasampler/macos`)
 
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
+  rust_lib_metasampler:
+    :path: Flutter/ephemeral/.symlinks/plugins/rust_lib_metasampler/macos
 
 SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  rust_lib_metasampler: a87ed44f2ff54ffb70fc04ee903e53969cea5650
 
 PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
 

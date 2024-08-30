@@ -1,18 +1,35 @@
 name: Sine Synth
 patch: SineSynth.cmajorpatch
-width: 300
-height: 150
+width: 400
+height: 250
 category: audio.oscilators.other
 color: blue
-inputs: ["midiIn", "output"]
+inputs:
+    - Audio Input:
+        type: audio
+outputs:
+    - Audio Output:
+        type: audio
 widgets:
     - Knob:
         left: 40
         top: 40
-        width: 40
-        height: 40
+        width: 50
+        height: 50
+        color: red
+        label: Knob 1
     - Knob:
-        left: 80
+        left: 140
         top: 60
+        width: 50
+        height: 50
+        color: blue
+        label: Knob 2
+    - Fader:
+        left: 240
+        top: 20
         width: 40
-        height: 40
+        height: 100
+        color: blue
+        label: Fader 1
+

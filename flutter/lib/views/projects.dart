@@ -28,12 +28,12 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   void newProject() async {
     print("Calling new project");
     var newName = "New Project";
-    var newPath = globals.assets.projects.directory.path + "/" + newName;
+    var newPath = Globals.assets.projects.directory.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = "New Project " + i.toString();
-      newPath = globals.assets.projects.directory.path + "/" + newName;
+      newPath = Globals.assets.projects.directory.path + "/" + newName;
       i++;
     }
 
@@ -48,18 +48,18 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
     await newInfo.save();
 
-    globals.assets.projects.list().value.add(newInfo);
-    globals.assets.projects.list().notifyListeners();
+    Globals.assets.projects.list().value.add(newInfo);
+    Globals.assets.projects.list().notifyListeners();
   }
 
   void duplicateProject(ProjectInfo info) async {
     var newName = info.name.value + " (copy)";
-    var newPath = globals.assets.projects.directory.path + "/" + newName;
+    var newPath = Globals.assets.projects.directory.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = info.name.value + " (copy " + i.toString() + ")";
-      newPath = globals.assets.projects.directory.path + "/" + newName;
+      newPath = Globals.assets.projects.directory.path + "/" + newName;
       i++;
     }
 
@@ -71,16 +71,16 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       newInfo.date.value = DateTime.now();
       await newInfo.save();
 
-      globals.assets.projects.list().value.add(newInfo);
-      globals.assets.projects.list().notifyListeners();
+      Globals.assets.projects.list().value.add(newInfo);
+      Globals.assets.projects.list().notifyListeners();
     }
   }
 
   void removeProject(ProjectInfo info) async {
     print("Removing project");
     await info.directory.delete(recursive: true);
-    globals.assets.projects.list().value.remove(info);
-    globals.assets.projects.list().notifyListeners();
+    Globals.assets.projects.list().value.remove(info);
+    Globals.assets.projects.list().notifyListeners();
   }
 
   @override
@@ -114,7 +114,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
             ),
             Expanded(
               child: ValueListenableBuilder<List<ProjectInfo>>(
-                valueListenable: globals.assets.projects.list(),
+                valueListenable: Globals.assets.projects.list(),
                 builder: (context, projects, child) {
                   List<ProjectInfo> filteredProjects = [];
                   if (searchText == "") {

@@ -12,10 +12,19 @@ import 'projects.dart';
 import 'views/info.dart';
 import 'views/projects.dart';
 
-void main(List<String> args) {
+import 'package:metasampler/src/rust/api/simple.dart' as rust;
+import 'package:metasampler/src/rust/frb_generated.dart';
+
+Future<void> main(List<String> args) async {
+  await RustLib.init();
+
   WidgetsFlutterBinding.ensureInitialized();
 
   Plugins.scan(Settings2.pluginDirectory());
+
+  print("Rust backend says: " + rust.greet(name: "Tom"));
+
+  print("Core version is ${Core.getVersion()}");
 
   if (args.isEmpty) {
     runApp(
@@ -25,7 +34,7 @@ void main(List<String> args) {
     );
   } else {
     var addr = int.parse(args[0].split(": ").last);
-    globals.core = Core.from(addr);
+    // globals.core = Core.from(addr);
 
     runApp(
       App(
@@ -225,4 +234,6 @@ class _ModuleWheel extends State<ModuleWheel> {
     );
   }
 }
+
+
 */
