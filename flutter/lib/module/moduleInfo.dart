@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/nodeWidgets/fader.dart';
+import 'package:metasampler/src/rust/api/simple.dart';
 import 'package:yaml/yaml.dart';
 
 import '../globals.dart';
@@ -64,20 +65,20 @@ class WidgetInfo {
 
 class ModuleInfo {
   ModuleInfo({
+    required this.program,
     required this.name,
     required this.path,
     required this.category,
-    required this.patch,
     required this.width,
     required this.height,
     required this.color,
     required this.widgetInfos,
   });
 
+  final CmajorProgram program;
   final String name;
   final String path;
   final String category;
-  final String patch;
   final int width;
   final int height;
   final Color color;
@@ -97,7 +98,7 @@ class ModuleInfo {
     String name = yaml['name'] ?? "Unnamed";
     int width = yaml['width'] ?? 200;
     int height = yaml['height'] ?? 150;
-    String patchPath = yaml['patch'] ?? "";
+    YamlList sources = yaml['sources'] ?? YamlList();
     String category = yaml['category'] ?? "Uncategorized";
 
     List<dynamic> widgets = yaml['widgets'] ?? [];
@@ -114,11 +115,27 @@ class ModuleInfo {
 
     var color = colorFromString(yaml['color']);
 
+    var program = CmajorProgram.new();
+
+    for (String source in sources) {
+      var sourceFile = File(file.parent.path + "/" + source);
+      if (!await sourceFile.exists()) {
+        print("Error: Source file does not exist: $sourceFile");
+        continue;
+      }
+
+      String sourceContents = await sourceFile.readAsString();
+      if (!program.parse(contents: sourceContents, path: sourceFile.path)) {
+        print("Error: Failed to parse source file: $sourceFile");
+        return null;
+      }
+    }
+
     return ModuleInfo(
+      program: program,
       name: name,
       path: path,
       category: category,
-      patch: patchPath,
       width: width,
       height: height,
       color: color,

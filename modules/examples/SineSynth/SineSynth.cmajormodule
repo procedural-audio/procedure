@@ -1,5 +1,5 @@
 name: Sine Synth
-patch: SineSynth.cmajorpatch
+sources: ['SineSynth.cmajor']
 width: 400
 height: 250
 category: audio.oscilators.other

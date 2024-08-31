@@ -8,3 +8,31 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 String greet({required String name}) =>
     RustLib.instance.api.crateApiSimpleGreet(name: name);
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CmajorLibrary>>
+abstract class CmajorLibrary implements RustOpaqueInterface {
+  static void load({required String path}) =>
+      RustLib.instance.api.crateApiSimpleCmajorLibraryLoad(path: path);
+}
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CmajorProgram>>
+abstract class CmajorProgram implements RustOpaqueInterface {
+  factory CmajorProgram() =>
+      RustLib.instance.api.crateApiSimpleCmajorProgramNew();
+
+  bool parse({required String path, required String contents});
+}
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RawPatch>>
+abstract class RawPatch implements RustOpaqueInterface {
+  BigInt get patch;
+
+  set patch(BigInt patch);
+
+  static Future<RawPatch?> load({required String path}) =>
+      RustLib.instance.api.crateApiSimpleRawPatchLoad(path: path);
+
+  factory RawPatch() => RustLib.instance.api.crateApiSimpleRawPatchNew();
+
+  void process();
+}

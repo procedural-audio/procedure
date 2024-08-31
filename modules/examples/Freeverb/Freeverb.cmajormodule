@@ -1,6 +1,6 @@
 {
     "name":             "FreeVerb",
-    "patch":           	"Freeverb.cmajorpatch",
+    "sources":           ["Freeverb.cmajor"],
     "width":		400,
     "height":		200,
     "category":         "midi.sources.other",

@@ -12,19 +12,20 @@ import 'projects.dart';
 import 'views/info.dart';
 import 'views/projects.dart';
 
-import 'package:metasampler/src/rust/api/simple.dart' as rust;
+import 'package:metasampler/src/rust/api/simple.dart';
 import 'package:metasampler/src/rust/frb_generated.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
+  CmajorLibrary.load(
+      path:
+          "/Users/chasekanipe/Github/cmajor-rs/cmajor/x64/libCmajPerformer.dylib");
 
   WidgetsFlutterBinding.ensureInitialized();
 
   Plugins.scan(Settings2.pluginDirectory());
 
-  print("Rust backend says: " + rust.greet(name: "Tom"));
-
-  print("Core version is ${Core.getVersion()}");
+  print("Rust backend says: " + greet(name: "Tom"));
 
   if (args.isEmpty) {
     runApp(

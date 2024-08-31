@@ -1,6 +1,6 @@
 {
     "name":             "Filter",
-    "patch":           	"Filter.cmajorpatch",
+    "sources":           ['Filter.cmajor'],
     "width":		500,
     "height":		400,
     "color":		"blue"
