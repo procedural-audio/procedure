@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/patch/patch.dart';
 
+import 'info.dart';
 import 'node.dart';
-
 import '../patch/connector.dart';
 
 enum IO { audio, midi, control, time, external }
@@ -25,7 +24,7 @@ class Pin extends StatefulWidget {
   final int nodeId;
   final int pinIndex;
   final Offset offset;
-  final IO type;
+  final PinType type;
   final bool isInput;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
@@ -48,13 +47,13 @@ class _PinState extends State<Pin> {
 
     var color = Colors.white;
 
-    if (widget.type == IO.audio) {
+    if (widget.type == PinType.stream) {
       color = Colors.blue;
-    } else if (widget.type == IO.midi) {
+    } else if (widget.type == PinType.event) {
       color = Colors.green;
-    } else if (widget.type == IO.control) {
+    } else if (widget.type == PinType.value) {
       color = Colors.red;
-    } else if (widget.type == IO.time) {
+    } else if (widget.type == PinType.time) {
       color = Colors.deepPurpleAccent;
     }
 
@@ -71,15 +70,14 @@ class _PinState extends State<Pin> {
       top: widget.offset.dy,
       child: MouseRegion(
         onEnter: (e) {
-          widget.node.patch.newConnector.end = widget;
-
+          print("Setting new connector end");
+          widget.node.patch.newConnector.setEnd(widget);
           setState(() {
             hovering = true;
           });
         },
         onExit: (e) {
-          widget.node.patch.newConnector.end = null;
-
+          widget.node.patch.newConnector.setEnd(null);
           setState(() {
             hovering = false;
           });
@@ -88,43 +86,22 @@ class _PinState extends State<Pin> {
           onPanStart: (details) {
             dragging = true;
             if (!widget.isInput) {
-              widget.node.patch.newConnector.offset.value = Offset.zero;
+              widget.node.patch.newConnector.onDrag(Offset.zero);
             } else {
-              print("Started drag on output node");
+              widget.node.patch.newConnector.setStart(widget);
             }
           },
           onPanUpdate: (details) {
-            if (!widget.isInput) {
-              widget.node.patch.newConnector.start = widget;
-              widget.node.patch.newConnector.offset.value =
-                  details.localPosition;
-              widget.node.patch.newConnector.type = widget.type;
-            } else {
-              // print("Updated drag on output node");
-            }
+            widget.node.patch.newConnector.onDrag(details.localPosition);
           },
           onPanEnd: (details) {
-            if (widget.node.patch.newConnector.start != null &&
-                widget.node.patch.newConnector.end != null) {
-              widget.onAddConnector(
-                widget.node.patch.newConnector.start!,
-                widget.node.patch.newConnector.end!,
-              );
-            } else {
-              print("Connector has no end");
-            }
-
-            widget.node.patch.newConnector.start = null;
-            widget.node.patch.newConnector.end = null;
-            widget.node.patch.newConnector.offset.value = null;
+            widget.node.patch.addNewConnector();
             setState(() {
               dragging = false;
             });
           },
           onPanCancel: () {
-            widget.node.patch.newConnector.start = null;
-            widget.node.patch.newConnector.end = null;
-            widget.node.patch.newConnector.offset.value = null;
+            widget.node.patch.newConnector.reset();
             setState(() {
               dragging = false;
             });

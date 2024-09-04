@@ -4,7 +4,7 @@ import '../views/settings.dart';
 
 import '../globals.dart';
 import '../plugins.dart';
-import '../module/moduleInfo.dart';
+import '../module/info.dart';
 
 class RightClickView extends StatefulWidget {
   RightClickView({required this.onAddModule});

@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/module/moduleInfo.dart';
+import 'package:metasampler/module/info.dart';
 import 'package:metasampler/views/presets.dart';
 import 'package:metasampler/window.dart';
 
@@ -270,6 +270,15 @@ class Patch extends StatefulWidget {
     for (var node in nodes) {
       node.refreshUserInterface();
     }
+  }
+
+  void addNewConnector() {
+    if (newConnector.start != null && newConnector.end != null) {
+      newConnector.start!
+          .onAddConnector(newConnector.start!, newConnector.end!);
+    }
+
+    newConnector.reset();
   }
 
   Map<String, dynamic> getState() {

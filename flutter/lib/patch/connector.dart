@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../module/info.dart';
 import '../module/node.dart';
 import '../module/pin.dart';
 
@@ -16,7 +17,7 @@ class Connector extends StatelessWidget {
 
   final Pin start;
   final Pin end;
-  final IO type;
+  final PinType type;
   final ValueNotifier<List<Node>> selectedNodes;
 
   Map<String, dynamic> toJson() {
@@ -69,7 +70,28 @@ class NewConnector extends StatelessWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
-  IO type = IO.audio;
+  PinType type = PinType.stream;
+
+  void setStart(Pin? pin) {
+    start = pin;
+    if (pin != null) {
+      type = pin.type;
+    }
+  }
+
+  void setEnd(Pin? pin) {
+    end = pin;
+  }
+
+  void onDrag(Offset offset) {
+    this.offset.value = offset;
+  }
+
+  void reset() {
+    start = null;
+    end = null;
+    offset.value = null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +110,12 @@ class NewConnector extends StatelessWidget {
           );
 
           return CustomPaint(
-            painter: ConnectorPainter(startOffset, endOffset, type, true),
+            painter: ConnectorPainter(
+              startOffset,
+              endOffset,
+              type,
+              true,
+            ),
           );
         } else {
           return Container();
@@ -99,11 +126,16 @@ class NewConnector extends StatelessWidget {
 }
 
 class ConnectorPainter extends CustomPainter {
-  ConnectorPainter(this.initialStart, this.initialEnd, this.type, this.focused);
+  ConnectorPainter(
+    this.initialStart,
+    this.initialEnd,
+    this.type,
+    this.focused,
+  );
 
   Offset initialStart;
   Offset initialEnd;
-  IO type;
+  PinType type;
   bool focused;
 
   @override
@@ -113,13 +145,13 @@ class ConnectorPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
-    if (type == IO.audio) {
+    if (type == PinType.stream) {
       paint.color = Colors.blue.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == IO.midi) {
+    } else if (type == PinType.event) {
       paint.color = Colors.green.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == IO.control) {
+    } else if (type == PinType.value) {
       paint.color = Colors.red.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == IO.time) {
+    } else if (type == PinType.time) {
       paint.color = Colors.deepPurpleAccent.withOpacity(focused ? 1.0 : 0.3);
     }
 

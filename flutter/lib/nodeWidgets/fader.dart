@@ -5,7 +5,8 @@ import 'package:yaml/yaml.dart';
 
 import 'dart:ui' as ui;
 
-import '../module/moduleInfo.dart';
+import '../module/info.dart';
+import '../module/node.dart';
 import '../views/settings.dart';
 import '../utils.dart';
 
