@@ -2,6 +2,7 @@ use flutter_rust_bridge::frb;
 use tokio;
 
 use cmajor_rs::*;
+use tonevision_core::*;
 
 #[frb(init)]
 pub fn init_app() {
@@ -78,5 +79,26 @@ impl CmajorProgram {
         }
 
         return status;
+    }
+}
+
+#[frb(opaque)]
+pub struct CmajorPlayer {
+    player: Box<Player>
+}
+
+impl CmajorPlayer {
+    #[frb(sync)]
+    pub fn new() -> Self {
+        Self {
+            player: Box::new(Player::new())
+        }
+    }
+
+    #[frb(sync)]
+    pub fn from(player: Box<Player>) -> Self {
+        Self {
+            player
+        }
     }
 }

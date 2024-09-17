@@ -18,4 +18,4 @@ dynamic_reload = "0.8.0"
 
 [lib]
 path = "core.rs"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]

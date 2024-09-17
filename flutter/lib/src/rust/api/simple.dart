@@ -9,10 +9,22 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 String greet({required String name}) =>
     RustLib.instance.api.crateApiSimpleGreet(name: name);
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Box < Player >>>
+abstract class BoxPlayer implements RustOpaqueInterface {}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CmajorLibrary>>
 abstract class CmajorLibrary implements RustOpaqueInterface {
   static void load({required String path}) =>
       RustLib.instance.api.crateApiSimpleCmajorLibraryLoad(path: path);
+}
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CmajorPlayer>>
+abstract class CmajorPlayer implements RustOpaqueInterface {
+  static CmajorPlayer from({required BoxPlayer player}) =>
+      RustLib.instance.api.crateApiSimpleCmajorPlayerFrom(player: player);
+
+  factory CmajorPlayer() =>
+      RustLib.instance.api.crateApiSimpleCmajorPlayerNew();
 }
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CmajorProgram>>

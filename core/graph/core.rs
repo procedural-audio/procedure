@@ -18,7 +18,7 @@ use std::rc::Rc;
 
 static VERSION: &str = "0.1.0";
 
-pub struct Core {
+pub struct Player {
     // pub graph: Option<Box<Graph>>,
     // pub sample_rate: u32,
     // pub block_size: usize,
@@ -26,7 +26,7 @@ pub struct Core {
     // pub bpm: f64,
 }
 
-impl Core {
+impl Player {
     pub fn new() -> Self {
         Self {}
     }
@@ -43,6 +43,7 @@ impl ModuleInfo {
     }
 }
 
+/*
 #[repr(C)]
 pub struct CoreApi {
     get_version: unsafe extern "C" fn() -> *const i8,
@@ -789,3 +790,4 @@ pub unsafe extern "C" fn ffi_plugins_unload(plugins: &mut Plugins, path: &i8) {
     let path = str_from_char(path);
     plugins.unload(path);
 }
+*/
