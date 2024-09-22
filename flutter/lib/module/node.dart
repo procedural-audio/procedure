@@ -123,7 +123,7 @@ class Node extends StatelessWidget {
         node: this,
         nodeId: id,
         pinIndex: i - 1,
-        offset: Offset(this.size.dx - 25, outputInfo.top.toDouble()),
+        offset: Offset(size.dx - 25, outputInfo.top.toDouble()),
         type: outputInfo.type,
         isInput: true,
         connectors: connectors,

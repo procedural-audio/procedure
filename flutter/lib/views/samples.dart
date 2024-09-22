@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import '../config.dart';
 
 class SamplesView extends StatefulWidget {
-  SamplesView(this.app);
+  SamplesView(this.app, {super.key});
 
   App app;
 
@@ -27,10 +27,10 @@ class _SamplesView extends State<SamplesView> {
 
   bool fileView = true;
   late SamplesBrowserWidget view1;
-  var view2 = Samples2DWidget();
+  var view2 = const Samples2DWidget();
 
   //Directory currentDir = Directory(globals.contentPath + "/samples");
-  Directory currentDir = Directory("" + "/samples");
+  Directory currentDir = Directory("" "/samples");
 
   String searchText = "";
 
@@ -44,7 +44,7 @@ class _SamplesView extends State<SamplesView> {
           child: Container(
             child: Column(
               children: [
-                Container(
+                SizedBox(
                   height: 50,
                   width: 1000,
                   child: Stack(
@@ -98,10 +98,10 @@ class _SamplesView extends State<SamplesView> {
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(4))),
                           )),
-                      Positioned(
+                      const Positioned(
                           left: 260,
                           top: 10,
-                          child: Container(
+                          child: SizedBox(
                               height: 30,
                               width: 690,
                               child: SingleChildScrollView(
@@ -178,7 +178,7 @@ class _SamplesView extends State<SamplesView> {
 }
 
 class SamplesBrowserWidget extends StatefulWidget {
-  SamplesBrowserWidget(this.app);
+  SamplesBrowserWidget(this.app, {super.key});
 
   App app;
 
@@ -281,7 +281,7 @@ class TagWidget extends StatefulWidget {
   final String text;
   final Color color;
 
-  TagWidget(this.text, this.color);
+  const TagWidget(this.text, this.color, {super.key});
 
   @override
   State<TagWidget> createState() => _TagWidgetState(text: text, color: color);
@@ -411,15 +411,15 @@ class _FileRowState extends State<FileRow> {
         onPanEnd: onPanEnd,
         child: Row(
           children: [
-            Container(width: 0, height: 50),
-            Container(width: 50, child: Icon(icon, color: iconColor)),
-            Container(
+            const SizedBox(width: 0, height: 50),
+            SizedBox(width: 50, child: Icon(icon, color: iconColor)),
+            SizedBox(
                 width: 400,
                 child: Text(
                   name,
                   style: TextStyle(color: textColor, fontSize: 16),
                 )),
-            Container(
+            SizedBox(
                 width: 300,
                 child: Text(
                   description,
@@ -444,8 +444,8 @@ class _FileRowState extends State<FileRow> {
 }
 
 class RatingWidget extends StatelessWidget {
-  RatingWidget(
-      {required this.rating,
+  const RatingWidget(
+      {super.key, required this.rating,
       required this.color,
       required this.onRatingChange});
 
@@ -458,7 +458,7 @@ class RatingWidget extends StatelessWidget {
     const double iconSize = 15;
     const double spacing = 25;
 
-    return Container(
+    return SizedBox(
         width: 130,
         height: 50,
         child: Stack(
@@ -539,9 +539,11 @@ class RatingWidget extends StatelessWidget {
 }
 
 class Samples2DWidget extends StatelessWidget {
+  const Samples2DWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return const Stack(
       fit: StackFit.expand,
       children: [
         SamplesCloud(),
@@ -551,6 +553,8 @@ class Samples2DWidget extends StatelessWidget {
 }
 
 class SamplesCloud extends StatelessWidget {
+  const SamplesCloud({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(

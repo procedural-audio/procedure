@@ -4,7 +4,7 @@ import 'common.dart';
 import 'ui.dart';
 
 class InterfaceRoot extends UIWidget {
-  InterfaceRoot(UserInterface ui) : super(ui);
+  InterfaceRoot(UserInterface ui, {super.key}) : super(ui);
 
   @override
   final String name = "Root";
@@ -137,7 +137,7 @@ class InterfaceRoot extends UIWidget {
 /* Stack Widget */
 
 class StackUIWidget extends UIWidget {
-  StackUIWidget(UserInterface ui) : super(ui);
+  StackUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   @override
   final String name = "Stack";
@@ -230,7 +230,7 @@ class StackUIWidget extends UIWidget {
 /* Row Widget */
 
 class RowUIWidget extends UIWidget {
-  RowUIWidget(UserInterface ui) : super(ui);
+  RowUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   List<UIWidget> children = [];
 
@@ -470,7 +470,7 @@ class RowUIWidget extends UIWidget {
 }
 
 class ColumnUIWidget extends UIWidget {
-  ColumnUIWidget(UserInterface ui) : super(ui);
+  ColumnUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   List<UIWidget> children = [];
 
@@ -701,7 +701,7 @@ class ColumnUIWidget extends UIWidget {
 }
 
 class EmptyUIWidget extends UIWidget {
-  EmptyUIWidget(UserInterface ui) : super(ui);
+  EmptyUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   @override
   String name = "Empty";
@@ -738,7 +738,7 @@ class EmptyUIWidget extends UIWidget {
 /* Grid Widget */
 
 class GridUIWidget extends UIWidget {
-  GridUIWidget(UserInterface ui) : super(ui);
+  GridUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   TransformData transform = TransformData(
       width: null,

@@ -3,15 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 
-import 'dart:ui' as ui;
 
-import '../module/info.dart';
 import '../module/node.dart';
-import '../views/settings.dart';
 import '../utils.dart';
 
 class FaderWidget extends NodeWidget {
-  FaderWidget(YamlMap map) : super(map);
+  FaderWidget(YamlMap map, {super.key}) : super(map);
 
   final bool hovering = false;
   final bool dragging = false;
@@ -60,7 +57,7 @@ class FaderWidget extends NodeWidget {
 }
 
 class Fader extends StatefulWidget {
-  Fader({
+  const Fader({super.key, 
     this.initialValue = 0.5,
     required this.label,
     required this.size,

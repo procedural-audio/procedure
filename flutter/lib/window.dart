@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PopupWindow extends StatefulWidget {
+  const PopupWindow({super.key});
+
   @override
   State<StatefulWidget> createState() => _PopupWidow();
 }
@@ -32,7 +34,6 @@ class _PopupWidow extends State<PopupWindow> {
               onPanUpdate: (e) {
                 setState(() {
                   left += e.delta.dx;
-                  ;
                   bottom -= e.delta.dy;
                 });
               },

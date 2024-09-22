@@ -28,6 +28,8 @@ class CategoryElement {
 class TextBox extends StatelessWidget {
   TextEditingController controller = TextEditingController();
 
+  TextBox({super.key});
+
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -142,7 +144,7 @@ class _DropdownState extends State<Dropdown> {
 }
 
 class SearchableDropdown extends StatefulWidget {
-  SearchableDropdown({
+  SearchableDropdown({super.key, 
     required this.value,
     required this.categories,
     required this.onSelect,
@@ -200,7 +202,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
       });
     } else if (!_isOpen || open == true) {
       _overlayEntry = _createOverlayEntry();
-      Overlay.of(context)?.insert(_overlayEntry!);
+      Overlay.of(context).insert(_overlayEntry!);
       setState(() => _isOpen = true);
       _animationController?.forward();
     }
@@ -283,7 +285,7 @@ class _SearchableDropdown extends State<SearchableDropdown>
               toggleDropdown(open: false);
             },
             behavior: HitTestBehavior.opaque,
-            child: Container(
+            child: SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: Stack(
@@ -339,7 +341,7 @@ class SearchableDropdownCategory extends StatefulWidget {
   void Function(String?) onSelect;
 
   SearchableDropdownCategory(
-      {required this.name, required this.elements, required this.onSelect});
+      {super.key, required this.name, required this.elements, required this.onSelect});
 
   @override
   State<SearchableDropdownCategory> createState() =>
@@ -352,7 +354,7 @@ class _SearchableDropdownCategory extends State<SearchableDropdownCategory> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 200,
       child: Column(
         children: <Widget>[
@@ -421,7 +423,7 @@ class SearchableDropdownElement extends StatefulWidget {
   final String name;
   final void Function(String) onSelect;
 
-  const SearchableDropdownElement(this.name, this.onSelect);
+  const SearchableDropdownElement(this.name, this.onSelect, {super.key});
 
   @override
   State<SearchableDropdownElement> createState() =>
@@ -483,7 +485,7 @@ class _SearchableDropdownElement extends State<SearchableDropdownElement> {
 }
 
 class Keyboard extends StatelessWidget {
-  Keyboard({
+  Keyboard({super.key, 
     this.keyWidth = 25.0,
     this.keySpacing = 1.0,
     this.keyHeight = 50,
@@ -583,7 +585,7 @@ class Keyboard extends StatelessWidget {
 
 class KeyWidget extends StatelessWidget {
   KeyWidget(
-      {required this.index,
+      {super.key, required this.index,
       required this.color,
       required this.down,
       required this.width,

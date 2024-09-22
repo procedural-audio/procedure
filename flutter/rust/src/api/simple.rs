@@ -82,7 +82,7 @@ impl CmajorProgram {
     }
 }
 
-#[frb(opaque)]
+/*#[frb(opaque)]
 pub struct CmajorPlayer {
     player: Box<Player>
 }
@@ -101,4 +101,4 @@ impl CmajorPlayer {
             player
         }
     }
-}
+}*/

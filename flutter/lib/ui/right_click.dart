@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RightClickMenu extends StatefulWidget {
-  RightClickMenu({required this.addPosition});
+  RightClickMenu({super.key, required this.addPosition});
 
   Offset addPosition;
 
@@ -203,7 +203,7 @@ class RightClickCategory extends StatefulWidget {
   final double indent;
   final List<Widget> elements;
 
-  RightClickCategory(this.name, this.indent, this.elements);
+  const RightClickCategory(this.name, this.indent, this.elements, {super.key});
 
   @override
   State<RightClickCategory> createState() => _RightClickCategoryState();
@@ -279,7 +279,7 @@ class RightClickElement extends StatefulWidget {
   final Offset addPosition;
 
   RightClickElement(
-      this.name, this.icon, this.color, this.indent, this.addPosition);
+      this.name, this.icon, this.color, this.indent, this.addPosition, {super.key});
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();

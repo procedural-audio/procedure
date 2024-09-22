@@ -1,12 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:metasampler/views/info.dart';
 
-import 'dart:io';
-import 'dart:math';
 
-import 'settings.dart';
 
-import '../main.dart';
 
 /*class BrowserView extends StatefulWidget {
   BrowserView(this.app);

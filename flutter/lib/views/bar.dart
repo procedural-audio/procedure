@@ -1,13 +1,5 @@
-import 'package:metasampler/plugins.dart';
-import 'package:metasampler/views/presets.dart';
-import 'package:flutter/material.dart';
 
-import '../patch/patch.dart';
-import '../main.dart';
-import '../projects.dart';
 
-import 'browser.dart';
-import 'presets.dart';
 
 /*class Bar extends StatefulWidget {
   Bar({

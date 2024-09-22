@@ -464,7 +464,7 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
 
 class InfoViewTitle extends StatelessWidget {
   InfoViewTitle(
-      {required this.editing, required this.name, required this.controller});
+      {super.key, required this.editing, required this.name, required this.controller});
 
   bool editing;
   String name;
@@ -521,7 +521,7 @@ class InfoViewTitle extends StatelessWidget {
 
 class InfoViewImage extends StatefulWidget {
   InfoViewImage(
-      {required this.editing, required this.path, required this.onUpdate});
+      {super.key, required this.editing, required this.path, required this.onUpdate});
 
   bool editing;
   String path;
@@ -739,6 +739,8 @@ class _AudioPreviewState extends State<AudioPreview> {
 }
 
 class AuthorView extends StatefulWidget {
+  const AuthorView({super.key});
+
   @override
   _AuthorViewState createState() => _AuthorViewState();
 }
@@ -820,6 +822,8 @@ class WaveformPreview extends CustomPainter {
 }
 
 class TagView extends StatefulWidget {
+  const TagView({super.key});
+
   @override
   _TagViewState createState() => _TagViewState();
 }
@@ -857,7 +861,7 @@ class _TagViewState extends State<TagView> {
 }
 
 class Tag extends StatelessWidget {
-  Tag(this.name);
+  Tag(this.name, {super.key});
 
   String name;
 

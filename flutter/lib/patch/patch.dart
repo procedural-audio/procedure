@@ -1,23 +1,17 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/module/info.dart';
 import 'package:metasampler/views/presets.dart';
-import 'package:metasampler/window.dart';
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:ffi';
 import 'dart:ui' as ui;
 
-import '../core.dart';
 import '../module/pin.dart';
 import 'connector.dart';
 import '../projects.dart';
 import '../module/node.dart';
-import '../plugins.dart';
 import 'right_click.dart';
 
 /* LIBRARY */

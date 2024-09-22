@@ -1,14 +1,11 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
 // import 'package:grpc/grpc.dart';
 import 'package:metasampler/settings.dart';
 // import 'package:pa_protocol/pa_protocol.dart';
 
-import 'module/node.dart';
-import 'patch/patch.dart';
 
 @Int64()
 typedef NativeFunctionPointer = Void Function(Int32);

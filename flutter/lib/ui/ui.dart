@@ -94,7 +94,7 @@ class UserInterface extends StatelessWidget {
                   );
                 },
               ),
-              Positioned(
+              const Positioned(
                 left: 0,
                 top: 0,
                 bottom: 0,
@@ -181,7 +181,7 @@ UIWidget? createUIWidget(String name, UserInterface ui) {
 }
 
 abstract class UIWidget extends StatelessWidget {
-  UIWidget(this.ui);
+  UIWidget(this.ui, {super.key});
 
   abstract final String name;
   final UserInterface ui;

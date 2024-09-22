@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../views/settings.dart';
 
-import '../globals.dart';
 import '../plugins.dart';
 import '../module/info.dart';
 
 class RightClickView extends StatefulWidget {
-  RightClickView({required this.onAddModule});
+  RightClickView({super.key, required this.onAddModule});
 
   void Function(ModuleInfo) onAddModule;
 
@@ -235,7 +234,7 @@ class RightClickCategory extends StatefulWidget {
   final double indent;
   final List<Widget> elements;
 
-  RightClickCategory(this.name, this.indent, this.elements);
+  const RightClickCategory(this.name, this.indent, this.elements, {super.key});
 
   @override
   State<RightClickCategory> createState() => _RightClickCategoryState();
@@ -319,12 +318,12 @@ class RightClickElement extends StatefulWidget {
   final Color color;
   final void Function(ModuleInfo info) onAddModule;
 
-  RightClickElement(
+  const RightClickElement(
     this.spec,
     this.icon,
     this.color,
     this.indent,
-    this.onAddModule,
+    this.onAddModule, {super.key}
   );
 
   @override
