@@ -32,6 +32,7 @@ impl Player {
     }
 }
 
+/*
 pub struct ModuleInfo {
     program: cmajor_rs::Program
 }
@@ -43,7 +44,6 @@ impl ModuleInfo {
     }
 }
 
-/*
 #[repr(C)]
 pub struct CoreApi {
     get_version: unsafe extern "C" fn() -> *const i8,

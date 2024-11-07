@@ -134,7 +134,13 @@ class Project extends StatefulWidget {
       }
     }
 
-    return null;
+    return Project(
+      info: ProjectInfo.blank(),
+      preset: ValueNotifier(Preset.from(PresetInfo.blank(
+        directory,
+      ))),
+      onUnload: onUnload,
+    );
   }
 
   void save() async {
