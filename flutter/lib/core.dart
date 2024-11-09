@@ -6,7 +6,6 @@ import 'package:ffi/ffi.dart';
 import 'package:metasampler/settings.dart';
 // import 'package:pa_protocol/pa_protocol.dart';
 
-
 @Int64()
 typedef NativeFunctionPointer = Void Function(Int32);
 

@@ -50,7 +50,8 @@ class Projects {
 /* Project */
 
 class Project extends StatefulWidget {
-  Project({super.key, 
+  Project({
+    super.key,
     required this.info,
     required this.preset,
     // required this.patch,

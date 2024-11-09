@@ -279,7 +279,8 @@ class RightClickElement extends StatefulWidget {
   final Offset addPosition;
 
   RightClickElement(
-      this.name, this.icon, this.color, this.indent, this.addPosition, {super.key});
+      this.name, this.icon, this.color, this.indent, this.addPosition,
+      {super.key});
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();

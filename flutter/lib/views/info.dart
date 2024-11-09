@@ -464,7 +464,10 @@ class _InfoContentsWidgetState extends State<InfoContentsWidget> {
 
 class InfoViewTitle extends StatelessWidget {
   InfoViewTitle(
-      {super.key, required this.editing, required this.name, required this.controller});
+      {super.key,
+      required this.editing,
+      required this.name,
+      required this.controller});
 
   bool editing;
   String name;
@@ -521,7 +524,10 @@ class InfoViewTitle extends StatelessWidget {
 
 class InfoViewImage extends StatefulWidget {
   InfoViewImage(
-      {super.key, required this.editing, required this.path, required this.onUpdate});
+      {super.key,
+      required this.editing,
+      required this.path,
+      required this.onUpdate});
 
   bool editing;
   String path;

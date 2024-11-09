@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/main.dart';
 
-
 class MyTheme {
   static Color grey20 = const Color.fromRGBO(20, 20, 20, 1);
   static Color grey30 = const Color.fromRGBO(30, 30, 30, 1);
@@ -141,7 +140,8 @@ class _SettingsView extends State<SettingsView> {
 
 class SettingsCard extends StatelessWidget {
   const SettingsCard(
-      {super.key, required this.icon,
+      {super.key,
+      required this.icon,
       required this.text,
       required this.type,
       required this.index,

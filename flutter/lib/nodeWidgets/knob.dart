@@ -57,7 +57,8 @@ class KnobWidget extends NodeWidget {
 }
 
 class Knob extends StatefulWidget {
-  const Knob({super.key, 
+  const Knob({
+    super.key,
     this.initialValue = 0.5,
     required this.label,
     required this.size,

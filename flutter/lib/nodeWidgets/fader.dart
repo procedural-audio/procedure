@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 
-
 import '../module/node.dart';
 import '../utils.dart';
 
@@ -57,7 +56,8 @@ class FaderWidget extends NodeWidget {
 }
 
 class Fader extends StatefulWidget {
-  const Fader({super.key, 
+  const Fader({
+    super.key,
     this.initialValue = 0.5,
     required this.label,
     required this.size,

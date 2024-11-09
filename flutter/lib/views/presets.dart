@@ -107,7 +107,8 @@ class Preset {
 }
 
 class PresetsBrowser extends StatelessWidget {
-  PresetsBrowser({super.key, 
+  PresetsBrowser({
+    super.key,
     required this.directory,
     required this.presets,
     required this.onLoad,
@@ -256,7 +257,8 @@ class PresetsBrowser extends StatelessWidget {
 }
 
 class PresetItem extends StatefulWidget {
-  const PresetItem({super.key, 
+  const PresetItem({
+    super.key,
     required this.info,
     required this.onLoad,
     required this.onDuplicate,

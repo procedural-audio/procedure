@@ -445,7 +445,8 @@ class _FileRowState extends State<FileRow> {
 
 class RatingWidget extends StatelessWidget {
   const RatingWidget(
-      {super.key, required this.rating,
+      {super.key,
+      required this.rating,
       required this.color,
       required this.onRatingChange});
 

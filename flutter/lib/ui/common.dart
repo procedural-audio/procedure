@@ -178,7 +178,8 @@ class _TransformWidget extends State<TransformWidget> {
 
 class TransformWidgetEditing extends StatefulWidget {
   TransformWidgetEditing(
-      {super.key, required this.data,
+      {super.key,
+      required this.data,
       required this.child,
       required this.onUpdate,
       required this.onTap,
@@ -488,7 +489,8 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
 
 class Resizer extends StatefulWidget {
   Resizer(
-      {super.key, required this.data,
+      {super.key,
+      required this.data,
       required this.onUpdate,
       required this.child,
       required this.dragging});
@@ -913,7 +915,10 @@ class _Resizer extends State<Resizer> {
 
 class TransformWidgetEditor extends StatefulWidget {
   TransformWidgetEditor(
-      {super.key, required this.data, required this.onUpdate, required this.ui});
+      {super.key,
+      required this.data,
+      required this.onUpdate,
+      required this.ui});
 
   TransformData data;
   Function(TransformData) onUpdate;
@@ -1276,7 +1281,8 @@ class AlignmentField extends StatelessWidget {
 
 class AlignmentFieldButton extends StatelessWidget {
   AlignmentFieldButton(
-      {super.key, required this.selected,
+      {super.key,
+      required this.selected,
       required this.onTap,
       required this.iconData,
       this.borderRadius});
@@ -1305,7 +1311,12 @@ class AlignmentFieldButton extends StatelessWidget {
 }
 
 class Label extends StatefulWidget {
-  Label({super.key, required this.text, required this.child, this.width, this.height});
+  Label(
+      {super.key,
+      required this.text,
+      required this.child,
+      this.width,
+      this.height});
 
   String text;
   Widget child;
@@ -1533,7 +1544,8 @@ class EditorTitle extends StatelessWidget {
 
 class DualField extends StatefulWidget {
   DualField(
-      {super.key, required this.label,
+      {super.key,
+      required this.label,
       required this.field1,
       required this.field2,
       required this.fieldLabel1,
@@ -1698,7 +1710,8 @@ class CustomDropdown<T> extends StatefulWidget {
 
   /// if true the dropdown icon will as a leading icon, default to false
   final bool leadingIcon;
-  CustomDropdown({super.key, 
+  CustomDropdown({
+    super.key,
     this.hideIcon = false,
     required this.header,
     this.child,
@@ -2357,7 +2370,8 @@ class _FieldLabel extends State<FieldLabel> {
 }
 
 class ChildDragTarget extends StatefulWidget {
-  ChildDragTarget({super.key, 
+  ChildDragTarget({
+    super.key,
     this.width,
     this.height,
     this.child,
@@ -3011,7 +3025,8 @@ class _ExpandableControllerNotifier
 class _ExpandableThemeNotifier extends InheritedWidget {
   final ExpandableThemeData? themeData;
 
-  const _ExpandableThemeNotifier({required this.themeData, required Widget child})
+  const _ExpandableThemeNotifier(
+      {required this.themeData, required Widget child})
       : super(child: child);
 
   @override
@@ -3294,7 +3309,8 @@ class ExpandablePanel extends StatelessWidget {
 class ExpandableIcon extends StatefulWidget {
   final ExpandableThemeData? theme;
 
-  const ExpandableIcon({super.key, 
+  const ExpandableIcon({
+    super.key,
     this.theme,
     // ignore: deprecated_member_use_from_same_package
   });
@@ -3505,8 +3521,8 @@ class _ScrollOnExpandState extends State<ScrollOnExpand> {
   _expandedStateChanged() {
     if (_theme != null) {
       _isAnimating++;
-      Future.delayed(
-          _animationDuration + const Duration(milliseconds: 10), _animationComplete);
+      Future.delayed(_animationDuration + const Duration(milliseconds: 10),
+          _animationComplete);
     }
   }
 

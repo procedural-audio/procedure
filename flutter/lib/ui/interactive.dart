@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-
 import 'ui.dart';
 import 'common.dart';
 
@@ -1463,7 +1462,11 @@ class ButtonStyle {
 }
 
 class Button extends StatelessWidget {
-  const Button({super.key, required this.down, required this.onUpdate, required this.style});
+  const Button(
+      {super.key,
+      required this.down,
+      required this.onUpdate,
+      required this.style});
 
   final bool down;
   final void Function(bool) onUpdate;

@@ -10,12 +10,13 @@ import 'projects.dart';
 import 'views/info.dart';
 import 'views/projects.dart';
 
-import 'package:metasampler/src/rust/api/simple.dart';
-import 'package:metasampler/src/rust/frb_generated.dart';
+import 'package:metasampler/bindings/api/simple.dart';
+import 'package:metasampler/bindings/frb_generated.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
-  CmajorLibrary.load(path: Settings2.cmajorLibrary());
+
+  // CmajorLibrary.load(path: Settings2.cmajorLibrary());
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -230,5 +231,4 @@ class _ModuleWheel extends State<ModuleWheel> {
       ),
     );
   }
-}
-*/
+}*/

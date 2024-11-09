@@ -1,10 +1,8 @@
-
 // import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../common.dart';
-
 
 class Vars extends StatefulWidget {
   Vars(this.app, {super.key});

@@ -319,12 +319,8 @@ class RightClickElement extends StatefulWidget {
   final void Function(ModuleInfo info) onAddModule;
 
   const RightClickElement(
-    this.spec,
-    this.icon,
-    this.color,
-    this.indent,
-    this.onAddModule, {super.key}
-  );
+      this.spec, this.icon, this.color, this.indent, this.onAddModule,
+      {super.key});
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();

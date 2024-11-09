@@ -61,7 +61,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   rust_lib_metasampler:
     path: rust_builder
-  flutter_rust_bridge: 2.4.0
+  flutter_rust_bridge: 2.3.0
   #nativeshell:
     #path: ../deps/nativeshell/nativeshell_dart/
 

@@ -1,7 +1,3 @@
-
-
-
-
 /*class BrowserView extends StatefulWidget {
   BrowserView(this.app);
 

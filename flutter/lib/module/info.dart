@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/src/rust/api/simple.dart';
 import 'package:yaml/yaml.dart';
 
 import '../nodeWidgets/knob.dart';
@@ -12,7 +11,7 @@ import 'node.dart';
 
 class ModuleInfo {
   ModuleInfo({
-    required this.program,
+    // required this.program,
     required this.name,
     required this.path,
     required this.category,
@@ -24,7 +23,7 @@ class ModuleInfo {
     required this.outputInfos,
   });
 
-  final CmajorProgram program;
+  // final CmajorProgram program;
   final String name;
   final String path;
   final String category;
@@ -86,23 +85,22 @@ class ModuleInfo {
 
     var color = colorFromString(yaml['color']);
 
-    var program = CmajorProgram.new();
+    // var program = CmajorProgram.new();
 
     for (String source in sources) {
       var sourceFile = File(file.parent.path + "/" + source);
       if (await sourceFile.exists()) {
         var contents = await sourceFile.readAsString();
-        if (!program.parse(path: sourceFile.path, contents: contents)) {
+        /*if (!program.parse(path: sourceFile.path, contents: contents)) {
           print("Failed to parse program $sourceFile");
-        }
+        }*/
       } else {
         print("Error: Source file does not exist: $sourceFile");
-
       }
     }
 
     return ModuleInfo(
-      program: program,
+      // program: program,
       name: name,
       path: path,
       category: category,

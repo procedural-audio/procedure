@@ -7,7 +7,8 @@ import 'info.dart';
 const double barHeight = 35;
 
 class NewTopBar extends StatefulWidget {
-  NewTopBar({super.key, 
+  NewTopBar({
+    super.key,
     required this.loadedPreset,
     required this.projectInfo,
     required this.sidebarDisplay,

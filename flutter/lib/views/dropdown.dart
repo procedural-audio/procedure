@@ -19,7 +19,8 @@ class DropdownCheckbox extends StatefulWidget {
   final bool checked;
   final void Function(bool) onChanged;
 
-  const DropdownCheckbox({super.key, 
+  const DropdownCheckbox({
+    super.key,
     required this.name,
     required this.checked,
     required this.onChanged,
@@ -94,7 +95,8 @@ class DropdownOverlay extends StatefulWidget {
   final void Function(String) onRemove;
 
   const DropdownOverlay(
-      {super.key, required this.width,
+      {super.key,
+      required this.width,
       required this.state,
       required this.categories,
       required this.onAdd,
