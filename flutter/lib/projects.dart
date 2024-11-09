@@ -6,7 +6,6 @@ import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
 import 'package:metasampler/views/presets.dart';
-import 'package:metasampler/window.dart';
 
 import 'core.dart';
 import 'patch/patch.dart';
@@ -51,7 +50,7 @@ class Projects {
 /* Project */
 
 class Project extends StatefulWidget {
-  Project({
+  Project({super.key, 
     required this.info,
     required this.preset,
     // required this.patch,
@@ -135,7 +134,13 @@ class Project extends StatefulWidget {
       }
     }
 
-    return null;
+    return Project(
+      info: ProjectInfo.blank(),
+      preset: ValueNotifier(Preset.from(PresetInfo.blank(
+        directory,
+      ))),
+      onUnload: onUnload,
+    );
   }
 
   void save() async {
@@ -334,7 +339,7 @@ enum ProjectSidebarDisplay {
 }
 
 class ProjectSidebar extends StatelessWidget {
-  ProjectSidebar({required this.display});
+  const ProjectSidebar({super.key, required this.display});
 
   final ProjectSidebarDisplay display;
 
@@ -355,23 +360,23 @@ class ProjectSidebar extends StatelessWidget {
         children: [
           Visibility(
             visible: display == ProjectSidebarDisplay.Samples,
-            child: SamplesBrowser(),
+            child: const SamplesBrowser(),
           ),
           Visibility(
             visible: display == ProjectSidebarDisplay.Notes,
-            child: NotesBrowser(),
+            child: const NotesBrowser(),
           ),
           Visibility(
             visible: display == ProjectSidebarDisplay.Modules,
-            child: ModulesBrowser(),
+            child: const ModulesBrowser(),
           ),
           Visibility(
             visible: display == ProjectSidebarDisplay.Widgets,
-            child: WidgetsBrowser(),
+            child: const WidgetsBrowser(),
           ),
           Visibility(
             visible: display == ProjectSidebarDisplay.Settings,
-            child: Settings(),
+            child: const Settings(),
           ),
         ],
       ),

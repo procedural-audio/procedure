@@ -9,7 +9,7 @@ import '../globals.dart';
 import '../main.dart';
 
 class ProjectsBrowser extends StatefulWidget {
-  ProjectsBrowser({
+  ProjectsBrowser({super.key, 
     required this.app,
     required this.onLoadProject,
   });
@@ -179,7 +179,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 }
 
 class NewInstrumentButton extends StatelessWidget {
-  NewInstrumentButton({required this.onPressed});
+  NewInstrumentButton({super.key, required this.onPressed});
 
   void Function() onPressed;
 
@@ -205,7 +205,7 @@ class NewInstrumentButton extends StatelessWidget {
 }
 
 class SearchBar extends StatelessWidget {
-  SearchBar({required this.onFilter});
+  SearchBar({super.key, required this.onFilter});
 
   void Function(String) onFilter;
 
@@ -251,7 +251,7 @@ class TagRow {
 }
 
 class BigTags extends StatelessWidget {
-  BigTags({
+  BigTags({super.key, 
     required this.onEditPressed,
     required this.onNewPressed,
     required this.onSearch,
@@ -407,7 +407,7 @@ class BigTags extends StatelessWidget {
 }
 
 class BigTagDropdown extends StatefulWidget {
-  BigTagDropdown({
+  BigTagDropdown({super.key, 
     required this.text,
     required this.color,
     required this.iconData,
@@ -433,7 +433,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
   bool active = false;
 
   final FocusScopeNode _focusScopeNode = FocusScopeNode();
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   void toggleDropdown({bool? open}) async {
     if (_isOpen || open == false) {
@@ -477,7 +477,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
               toggleDropdown(open: false);
             },
             behavior: HitTestBehavior.opaque,
-            child: Container(
+            child: SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: Stack(
@@ -627,7 +627,7 @@ class _BigTagDropdown extends State<BigTagDropdown>
 }
 
 class ProjectPreview extends StatefulWidget {
-  ProjectPreview({
+  ProjectPreview({super.key, 
     required this.index,
     required this.editing,
     required this.project,
@@ -775,7 +775,7 @@ class _ProjectPreview extends State<ProjectPreview>
 }
 
 class ProjectPreviewDescription extends StatefulWidget {
-  ProjectPreviewDescription({
+  ProjectPreviewDescription({super.key, 
     required this.project,
     required this.onAction,
   });
@@ -1006,7 +1006,7 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
 }
 
 class CircleButton extends StatefulWidget {
-  CircleButton({
+  const CircleButton({super.key, 
     required this.icon,
     required this.onTap,
     this.color = const Color.fromRGBO(40, 40, 40, 1.0),
@@ -1057,7 +1057,7 @@ class _CircleButton extends State<CircleButton> {
 }
 
 class MoreDropdown extends StatefulWidget {
-  MoreDropdown({
+  const MoreDropdown({super.key, 
     required this.items,
     required this.onAction,
     this.color = const Color.fromRGBO(40, 40, 40, 1.0),
@@ -1124,7 +1124,7 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
               toggleDropdown(open: false);
             },
             behavior: HitTestBehavior.opaque,
-            child: Container(
+            child: SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
               child: Stack(
@@ -1202,7 +1202,7 @@ class _MoreDropdown extends State<MoreDropdown> with TickerProviderStateMixin {
 }
 
 class MoreElement extends StatefulWidget {
-  MoreElement({required this.name, required this.onTap});
+  MoreElement({super.key, required this.name, required this.onTap});
 
   String name;
   void Function(String) onTap;
@@ -1250,7 +1250,7 @@ class _MoreElement extends State<MoreElement> {
 }
 
 class TagDropdownRow extends StatefulWidget {
-  TagDropdownRow({required this.name, required this.tags, required this.onTap});
+  TagDropdownRow({super.key, required this.name, required this.tags, required this.onTap});
 
   String name;
   List<String> tags;
@@ -1298,7 +1298,7 @@ class _TagDropdownRow extends State<TagDropdownRow> {
 }
 
 class Tag extends StatefulWidget {
-  Tag({required this.name, required this.color, required this.onTap});
+  const Tag({super.key, required this.name, required this.color, required this.onTap});
 
   final String name;
   final Color color;
@@ -1329,7 +1329,7 @@ class _Tag extends State<Tag> {
           onTap: widget.onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 100),
-            padding: EdgeInsets.all(5),
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
               color: hovering

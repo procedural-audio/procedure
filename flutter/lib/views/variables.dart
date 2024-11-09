@@ -1,17 +1,13 @@
-import 'dart:math';
 
 // import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 
 import '../main.dart';
-import '../patch/patch.dart';
 import '../common.dart';
 
-import 'dart:ffi';
 
 class Vars extends StatefulWidget {
-  Vars(this.app);
+  Vars(this.app, {super.key});
 
   App app;
   final ValueNotifier<List<VarEntry>> _entries = ValueNotifier([]);

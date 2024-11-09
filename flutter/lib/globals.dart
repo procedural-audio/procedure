@@ -1,5 +1,3 @@
-import 'plugins.dart';
-import 'core.dart';
 import 'patch/patch.dart';
 
 class Globals {

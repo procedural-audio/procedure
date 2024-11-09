@@ -7,7 +7,7 @@ import 'common.dart';
 import 'dart:io';
 
 class TextUIWidget extends UIWidget {
-  TextUIWidget(UserInterface ui) : super(ui);
+  TextUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   @override
   final String name = "Text";
@@ -162,7 +162,7 @@ class TextUIWidget extends UIWidget {
 /* Image Widget */
 
 class ImageUIWidget extends UIWidget {
-  ImageUIWidget(UserInterface ui) : super(ui);
+  ImageUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   // String? path = "/home/chase/github/metasampler/content/assets/backgrounds/background_02.png";
   String? path =
@@ -281,7 +281,7 @@ class ImageUIWidget extends UIWidget {
 /* Icon Widget */
 
 class IconUIWidget extends UIWidget {
-  IconUIWidget(UserInterface ui) : super(ui);
+  IconUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   String? path =
       "/home/chase/github/metasampler/content/assets/icons/clock.svg";
@@ -403,7 +403,7 @@ class IconUIWidget extends UIWidget {
 /* Box Widget */
 
 class BoxUIWidget extends UIWidget {
-  BoxUIWidget(UserInterface ui) : super(ui);
+  BoxUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   double borderRadius = 0.0;
   double borderThickness = 0.0;

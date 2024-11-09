@@ -5,8 +5,6 @@ import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/presets.dart';
 
-import 'globals.dart';
-import 'core.dart';
 import 'projects.dart';
 
 import 'views/info.dart';
@@ -17,9 +15,7 @@ import 'package:metasampler/src/rust/frb_generated.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
-  CmajorLibrary.load(
-      path:
-          "/Users/chasekanipe/Github/cmajor-rs/cmajor/x64/libCmajPerformer.dylib");
+  CmajorLibrary.load(path: Settings2.cmajorLibrary());
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -46,7 +42,7 @@ Future<void> main(List<String> args) async {
 }
 
 class App extends StatelessWidget {
-  App({required this.project}) {
+  App({super.key, required this.project}) {
     Directory(Settings2.pluginDirectory()).watch(recursive: true).listen(
       (event) {
         if (event is FileSystemModifyEvent) {
@@ -95,7 +91,7 @@ class App extends StatelessWidget {
 }
 
 class Window extends StatefulWidget {
-  Window(this.app);
+  Window(this.app, {super.key});
 
   App app;
 

@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:metasampler/views/projects.dart';
 
 import '../patch/patch.dart';
-import '../plugins.dart';
 import '../ui/ui.dart';
 
 class PresetInfo {
@@ -109,7 +107,7 @@ class Preset {
 }
 
 class PresetsBrowser extends StatelessWidget {
-  PresetsBrowser({
+  PresetsBrowser({super.key, 
     required this.directory,
     required this.presets,
     required this.onLoad,
@@ -258,7 +256,7 @@ class PresetsBrowser extends StatelessWidget {
 }
 
 class PresetItem extends StatefulWidget {
-  PresetItem({
+  const PresetItem({super.key, 
     required this.info,
     required this.onLoad,
     required this.onDuplicate,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/main.dart';
 
-import '../patch/patch.dart';
 
 class MyTheme {
   static Color grey20 = const Color.fromRGBO(20, 20, 20, 1);
@@ -44,7 +43,7 @@ class Settings {
 }
 
 class SettingsView extends StatefulWidget {
-  SettingsView(this.app);
+  SettingsView(this.app, {super.key});
 
   App app;
 
@@ -80,8 +79,8 @@ class _SettingsView extends State<SettingsView> {
               children: [
                 Column(
                   children: [
-                    Container(
-                      child: const Center(
+                    const SizedBox(
+                      child: Center(
                         child: Text("Settings",
                             style: TextStyle(
                                 fontWeight: FontWeight.normal,
@@ -110,7 +109,7 @@ class _SettingsView extends State<SettingsView> {
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.color_lens),
+                                icon: const Icon(Icons.color_lens),
                                 iconSize: 30,
                                 color: Colors.white,
                                 onPressed: () {
@@ -141,8 +140,8 @@ class _SettingsView extends State<SettingsView> {
 }
 
 class SettingsCard extends StatelessWidget {
-  SettingsCard(
-      {required this.icon,
+  const SettingsCard(
+      {super.key, required this.icon,
       required this.text,
       required this.type,
       required this.index,

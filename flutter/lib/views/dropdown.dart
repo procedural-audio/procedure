@@ -1,4 +1,3 @@
-import '../main.dart';
 import 'package:flutter/material.dart';
 import 'settings.dart';
 
@@ -20,7 +19,7 @@ class DropdownCheckbox extends StatefulWidget {
   final bool checked;
   final void Function(bool) onChanged;
 
-  DropdownCheckbox({
+  const DropdownCheckbox({super.key, 
     required this.name,
     required this.checked,
     required this.onChanged,
@@ -94,8 +93,8 @@ class DropdownOverlay extends StatefulWidget {
   final void Function(String) onAdd;
   final void Function(String) onRemove;
 
-  DropdownOverlay(
-      {required this.width,
+  const DropdownOverlay(
+      {super.key, required this.width,
       required this.state,
       required this.categories,
       required this.onAdd,

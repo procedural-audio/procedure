@@ -3,13 +3,12 @@ import 'package:yaml/yaml.dart';
 
 import 'dart:ui' as ui;
 
-import '../module/info.dart';
 import '../module/node.dart';
 import '../views/settings.dart';
 import '../utils.dart';
 
 class KnobWidget extends NodeWidget {
-  KnobWidget(YamlMap map) : super(map);
+  KnobWidget(YamlMap map, {super.key}) : super(map);
 
   final bool hovering = false;
   final bool dragging = false;
@@ -58,7 +57,7 @@ class KnobWidget extends NodeWidget {
 }
 
 class Knob extends StatefulWidget {
-  Knob({
+  const Knob({super.key, 
     this.initialValue = 0.5,
     required this.label,
     required this.size,

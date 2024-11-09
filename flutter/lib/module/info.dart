@@ -90,15 +90,14 @@ class ModuleInfo {
 
     for (String source in sources) {
       var sourceFile = File(file.parent.path + "/" + source);
-      if (!await sourceFile.exists()) {
+      if (await sourceFile.exists()) {
+        var contents = await sourceFile.readAsString();
+        if (!program.parse(path: sourceFile.path, contents: contents)) {
+          print("Failed to parse program $sourceFile");
+        }
+      } else {
         print("Error: Source file does not exist: $sourceFile");
-        continue;
-      }
 
-      String sourceContents = await sourceFile.readAsString();
-      if (!program.parse(contents: sourceContents, path: sourceFile.path)) {
-        print("Error: Failed to parse source file: $sourceFile");
-        return null;
       }
     }
 

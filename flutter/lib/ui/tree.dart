@@ -3,7 +3,7 @@ import 'package:metasampler/ui/common.dart';
 import 'package:metasampler/ui/ui.dart';
 
 class WidgetTreeElement extends StatelessWidget {
-  WidgetTreeElement({required this.widget, required this.ui});
+  WidgetTreeElement({super.key, required this.widget, required this.ui});
 
   UIWidget widget;
   // UITree tree;
@@ -94,7 +94,7 @@ class WidgetTreeElement extends StatelessWidget {
 }
 
 class WidgetEditorMenu extends StatefulWidget {
-  WidgetEditorMenu(this.ui);
+  WidgetEditorMenu(this.ui, {super.key});
 
   UserInterface ui;
 
@@ -133,6 +133,8 @@ class _WidgetEditorMenu extends State<WidgetEditorMenu> {
 }
 
 class WidgetMenu extends StatefulWidget {
+  const WidgetMenu({super.key});
+
   @override
   State<WidgetMenu> createState() => _WidgetMenu();
 }
@@ -210,7 +212,7 @@ class _WidgetMenu extends State<WidgetMenu> {
 }
 
 class WidgetMenuSection extends StatelessWidget {
-  WidgetMenuSection({required this.title, required this.children});
+  WidgetMenuSection({super.key, required this.title, required this.children});
 
   String title;
   List<Widget> children;
@@ -232,7 +234,7 @@ class WidgetMenuSection extends StatelessWidget {
 }
 
 class WidgetMenuElement extends StatefulWidget {
-  WidgetMenuElement(this.text, this.iconData);
+  WidgetMenuElement(this.text, this.iconData, {super.key});
 
   String text;
   IconData iconData;

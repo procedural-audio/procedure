@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:metasampler/ui/ui.dart';
 
-import '../patch/patch.dart';
 import '../views/variables.dart';
 import '../main.dart';
 
@@ -96,7 +95,7 @@ class TransformData {
 }
 
 class TransformWidget extends StatefulWidget {
-  TransformWidget({required this.data, required this.child});
+  TransformWidget({super.key, required this.data, required this.child});
 
   Widget? child;
   TransformData data;
@@ -179,7 +178,7 @@ class _TransformWidget extends State<TransformWidget> {
 
 class TransformWidgetEditing extends StatefulWidget {
   TransformWidgetEditing(
-      {required this.data,
+      {super.key, required this.data,
       required this.child,
       required this.onUpdate,
       required this.onTap,
@@ -338,6 +337,7 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -488,7 +488,7 @@ class _TransformWidgetEditing extends State<TransformWidgetEditing> {
 
 class Resizer extends StatefulWidget {
   Resizer(
-      {required this.data,
+      {super.key, required this.data,
       required this.onUpdate,
       required this.child,
       required this.dragging});
@@ -913,7 +913,7 @@ class _Resizer extends State<Resizer> {
 
 class TransformWidgetEditor extends StatefulWidget {
   TransformWidgetEditor(
-      {required this.data, required this.onUpdate, required this.ui});
+      {super.key, required this.data, required this.onUpdate, required this.ui});
 
   TransformData data;
   Function(TransformData) onUpdate;
@@ -1126,7 +1126,7 @@ class _TransformWidgetEditor extends State<TransformWidgetEditor> {
 }
 
 class AlignmentField extends StatelessWidget {
-  AlignmentField({required this.alignment, required this.onUpdate});
+  AlignmentField({super.key, required this.alignment, required this.onUpdate});
 
   Alignment alignment;
   Function(Alignment) onUpdate;
@@ -1276,7 +1276,7 @@ class AlignmentField extends StatelessWidget {
 
 class AlignmentFieldButton extends StatelessWidget {
   AlignmentFieldButton(
-      {required this.selected,
+      {super.key, required this.selected,
       required this.onTap,
       required this.iconData,
       this.borderRadius});
@@ -1305,7 +1305,7 @@ class AlignmentFieldButton extends StatelessWidget {
 }
 
 class Label extends StatefulWidget {
-  Label({required this.text, required this.child, this.width, this.height});
+  Label({super.key, required this.text, required this.child, this.width, this.height});
 
   String text;
   Widget child;
@@ -1406,7 +1406,7 @@ class _Label extends State<Label> {
 }
 
 class LabelDropdown extends StatefulWidget {
-  LabelDropdown({required this.editor, required this.editorShowing});
+  LabelDropdown({super.key, required this.editor, required this.editorShowing});
 
   Widget? editor;
   ValueNotifier<bool> editorShowing;
@@ -1470,7 +1470,7 @@ class _LabelDropdown extends State<LabelDropdown>
         Positioned(
           left: 0,
           top: 0,
-          child: Container(
+          child: SizedBox(
             width: 150,
             height: 30,
             child: GestureDetector(
@@ -1502,7 +1502,7 @@ class _LabelDropdown extends State<LabelDropdown>
 }
 
 class EditorTitle extends StatelessWidget {
-  EditorTitle(this.text);
+  EditorTitle(this.text, {super.key});
 
   String text;
 
@@ -1533,7 +1533,7 @@ class EditorTitle extends StatelessWidget {
 
 class DualField extends StatefulWidget {
   DualField(
-      {required this.label,
+      {super.key, required this.label,
       required this.field1,
       required this.field2,
       required this.fieldLabel1,
@@ -1652,6 +1652,8 @@ class _DualField extends State<DualField> {
 }
 
 class DropdownOverlay extends StatefulWidget {
+  const DropdownOverlay({super.key});
+
   @override
   State<DropdownOverlay> createState() => _DropdownOverlay();
 }
@@ -1696,7 +1698,7 @@ class CustomDropdown<T> extends StatefulWidget {
 
   /// if true the dropdown icon will as a leading icon, default to false
   final bool leadingIcon;
-  CustomDropdown({
+  CustomDropdown({super.key, 
     this.hideIcon = false,
     required this.header,
     this.child,
@@ -1760,7 +1762,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>>
     // link the overlay to the button
     return CompositedTransformTarget(
       link: _layerLink,
-      child: Container(
+      child: SizedBox(
         width: style.width,
         height: style.height,
         child: GestureDetector(
@@ -1934,7 +1936,7 @@ class DropdownStyle {
 }
 
 class Section extends StatefulWidget {
-  Section({required this.title, required this.child});
+  Section({super.key, required this.title, required this.child});
 
   String title;
   Widget child;
@@ -1983,7 +1985,7 @@ class _Section extends State<Section> {
 }
 
 class SubSection extends StatefulWidget {
-  SubSection({required this.title, required this.child});
+  SubSection({super.key, required this.title, required this.child});
 
   String title;
   Widget child;
@@ -2355,7 +2357,7 @@ class _FieldLabel extends State<FieldLabel> {
 }
 
 class ChildDragTarget extends StatefulWidget {
-  ChildDragTarget({
+  ChildDragTarget({super.key, 
     this.width,
     this.height,
     this.child,
@@ -2428,11 +2430,11 @@ class _ChildDragTarget extends State<ChildDragTarget> {
             ],
           );
         },
-        onWillAccept: (data) {
+        onWillAcceptWithDetails: (data) {
           return true;
         },
-        onAccept: (name) {
-          UIWidget? child = createUIWidget(name, widget.ui);
+        onAcceptWithDetails: (name) {
+          UIWidget? child = createUIWidget(name.data, widget.ui);
 
           if (child != null) {
             print("Creating child $name");
@@ -2449,7 +2451,7 @@ class _ChildDragTarget extends State<ChildDragTarget> {
 }
 
 class VarField extends StatefulWidget {
-  VarField({required this.app, required this.varName});
+  VarField({super.key, required this.app, required this.varName});
 
   App app;
   ValueNotifier<String?> varName;
@@ -2585,7 +2587,7 @@ class _VarField extends State<VarField> with TickerProviderStateMixin {
 }
 
 class VarFieldElement extends StatefulWidget {
-  VarFieldElement(this.v, this.varName);
+  VarFieldElement(this.v, this.varName, {super.key});
 
   Var v;
   ValueNotifier<String?> varName;
@@ -2642,8 +2644,8 @@ class _VarFieldElement extends State<VarFieldElement> {
                                 const BorderRadius.all(Radius.circular(5))),
                       ),
                       const SizedBox(width: 10),
-                      Text("SOME VAR HERE",
-                          style: const TextStyle(
+                      const Text("SOME VAR HERE",
+                          style: TextStyle(
                               color: Colors.white,
                               fontSize: 13,
                               fontWeight: FontWeight.w300))
@@ -2652,12 +2654,12 @@ class _VarFieldElement extends State<VarFieldElement> {
 }
 
 class ExpandableThemeData {
-  static final ExpandableThemeData defaults = ExpandableThemeData(
+  static const ExpandableThemeData defaults = ExpandableThemeData(
     iconColor: Colors.black54,
     useInkWell: true,
     inkWellBorderRadius: BorderRadius.zero,
-    animationDuration: const Duration(milliseconds: 300),
-    scrollAnimationDuration: const Duration(milliseconds: 300),
+    animationDuration: Duration(milliseconds: 300),
+    scrollAnimationDuration: Duration(milliseconds: 300),
     crossFadePoint: 0.5,
     fadeCurve: Curves.linear,
     sizeCurve: Curves.fastOutSlowIn,
@@ -2670,13 +2672,13 @@ class ExpandableThemeData {
     tapBodyToCollapse: false,
     hasIcon: true,
     iconSize: 24.0,
-    iconPadding: const EdgeInsets.all(8.0),
+    iconPadding: EdgeInsets.all(8.0),
     iconRotationAngle: -pi,
     expandIcon: Icons.expand_more,
     collapseIcon: Icons.expand_more,
   );
 
-  static final ExpandableThemeData empty = ExpandableThemeData();
+  static const ExpandableThemeData empty = ExpandableThemeData();
 
   // Expand icon color.
   final Color? iconColor;
@@ -2843,55 +2845,57 @@ class ExpandableThemeData {
   }
 
   bool isFull() {
-    return this.iconColor != null &&
-        this.useInkWell != null &&
-        this.inkWellBorderRadius != null &&
-        this.animationDuration != null &&
-        this.scrollAnimationDuration != null &&
-        this.crossFadePoint != null &&
-        this.fadeCurve != null &&
-        this.sizeCurve != null &&
-        this.alignment != null &&
-        this.headerAlignment != null &&
-        this.bodyAlignment != null &&
-        this.iconPlacement != null &&
-        this.tapHeaderToExpand != null &&
-        this.tapBodyToExpand != null &&
-        this.tapBodyToCollapse != null &&
-        this.hasIcon != null &&
-        this.iconRotationAngle != null &&
-        this.expandIcon != null &&
-        this.collapseIcon != null;
+    return iconColor != null &&
+        useInkWell != null &&
+        inkWellBorderRadius != null &&
+        animationDuration != null &&
+        scrollAnimationDuration != null &&
+        crossFadePoint != null &&
+        fadeCurve != null &&
+        sizeCurve != null &&
+        alignment != null &&
+        headerAlignment != null &&
+        bodyAlignment != null &&
+        iconPlacement != null &&
+        tapHeaderToExpand != null &&
+        tapBodyToExpand != null &&
+        tapBodyToCollapse != null &&
+        hasIcon != null &&
+        iconRotationAngle != null &&
+        expandIcon != null &&
+        collapseIcon != null;
   }
 
+  @override
   bool operator ==(dynamic o) {
     if (identical(this, o)) {
       return true;
     } else if (o is ExpandableThemeData) {
-      return this.iconColor == o.iconColor &&
-          this.useInkWell == o.useInkWell &&
-          this.inkWellBorderRadius == o.inkWellBorderRadius &&
-          this.animationDuration == o.animationDuration &&
-          this.scrollAnimationDuration == o.scrollAnimationDuration &&
-          this.crossFadePoint == o.crossFadePoint &&
-          this.fadeCurve == o.fadeCurve &&
-          this.sizeCurve == o.sizeCurve &&
-          this.alignment == o.alignment &&
-          this.headerAlignment == o.headerAlignment &&
-          this.bodyAlignment == o.bodyAlignment &&
-          this.iconPlacement == o.iconPlacement &&
-          this.tapHeaderToExpand == o.tapHeaderToExpand &&
-          this.tapBodyToExpand == o.tapBodyToExpand &&
-          this.tapBodyToCollapse == o.tapBodyToCollapse &&
-          this.hasIcon == o.hasIcon &&
-          this.iconRotationAngle == o.iconRotationAngle &&
-          this.expandIcon == o.expandIcon &&
-          this.collapseIcon == o.collapseIcon;
+      return iconColor == o.iconColor &&
+          useInkWell == o.useInkWell &&
+          inkWellBorderRadius == o.inkWellBorderRadius &&
+          animationDuration == o.animationDuration &&
+          scrollAnimationDuration == o.scrollAnimationDuration &&
+          crossFadePoint == o.crossFadePoint &&
+          fadeCurve == o.fadeCurve &&
+          sizeCurve == o.sizeCurve &&
+          alignment == o.alignment &&
+          headerAlignment == o.headerAlignment &&
+          bodyAlignment == o.bodyAlignment &&
+          iconPlacement == o.iconPlacement &&
+          tapHeaderToExpand == o.tapHeaderToExpand &&
+          tapBodyToExpand == o.tapBodyToExpand &&
+          tapBodyToCollapse == o.tapBodyToCollapse &&
+          hasIcon == o.hasIcon &&
+          iconRotationAngle == o.iconRotationAngle &&
+          expandIcon == o.expandIcon &&
+          collapseIcon == o.collapseIcon;
     } else {
       return false;
     }
   }
 
+  @override
   int get hashCode {
     return 0; // we don't care
   }
@@ -2921,7 +2925,7 @@ class ExpandableTheme extends StatelessWidget {
   final ExpandableThemeData data;
   final Widget child;
 
-  ExpandableTheme({required this.data, required this.child});
+  const ExpandableTheme({super.key, required this.data, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -2929,7 +2933,7 @@ class ExpandableTheme extends StatelessWidget {
         context.dependOnInheritedWidgetOfExactType<_ExpandableThemeNotifier>();
     return _ExpandableThemeNotifier(
       themeData: ExpandableThemeData.combine(data, n?.themeData),
-      child: this.child,
+      child: child,
     );
   }
 }
@@ -2941,7 +2945,7 @@ class ExpandableNotifier extends StatefulWidget {
   final bool? initialExpanded;
   final Widget child;
 
-  ExpandableNotifier(
+  const ExpandableNotifier(
       {
       // An optional key
       Key? key,
@@ -2997,7 +3001,7 @@ class _ExpandableNotifierState extends State<ExpandableNotifier> {
 /// Useful for making multiple [Expandable] widgets synchronized with a single controller.
 class _ExpandableControllerNotifier
     extends InheritedNotifier<ExpandableController> {
-  _ExpandableControllerNotifier(
+  const _ExpandableControllerNotifier(
       {required ExpandableController? controller, required Widget child})
       : super(notifier: controller, child: child);
 }
@@ -3007,7 +3011,7 @@ class _ExpandableControllerNotifier
 class _ExpandableThemeNotifier extends InheritedWidget {
   final ExpandableThemeData? themeData;
 
-  _ExpandableThemeNotifier({required this.themeData, required Widget child})
+  const _ExpandableThemeNotifier({required this.themeData, required Widget child})
       : super(child: child);
 
   @override
@@ -3064,7 +3068,7 @@ class Expandable extends StatelessWidget {
 
   final ExpandableThemeData? theme;
 
-  Expandable({
+  const Expandable({
     Key? key,
     required this.collapsed,
     required this.expanded,
@@ -3095,7 +3099,7 @@ class Expandable extends StatelessWidget {
   }
 }
 
-typedef Widget ExpandableBuilder(
+typedef ExpandableBuilder = Widget Function(
     BuildContext context, Widget collapsed, Widget expanded);
 
 /// Determines the placement of the expand/collapse icon in [ExpandablePanel]
@@ -3152,7 +3156,7 @@ class ExpandablePanel extends StatelessWidget {
 
   final ExpandableThemeData? theme;
 
-  ExpandablePanel({
+  const ExpandablePanel({
     Key? key,
     this.header,
     required this.collapsed,
@@ -3264,7 +3268,7 @@ class ExpandablePanel extends StatelessWidget {
       );
     }
 
-    final panel = this.header != null ? buildWithHeader() : buildBody();
+    final panel = header != null ? buildWithHeader() : buildBody();
 
     if (controller != null) {
       return ExpandableNotifier(
@@ -3290,7 +3294,7 @@ class ExpandablePanel extends StatelessWidget {
 class ExpandableIcon extends StatefulWidget {
   final ExpandableThemeData? theme;
 
-  ExpandableIcon({
+  const ExpandableIcon({super.key, 
     this.theme,
     // ignore: deprecated_member_use_from_same_package
   });
@@ -3398,7 +3402,7 @@ class ExpandableButton extends StatelessWidget {
   final Widget? child;
   final ExpandableThemeData? theme;
 
-  ExpandableButton({this.child, this.theme});
+  const ExpandableButton({super.key, this.child, this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -3437,7 +3441,7 @@ class ScrollOnExpand extends StatefulWidget {
 
   final ExpandableThemeData? theme;
 
-  ScrollOnExpand({
+  const ScrollOnExpand({
     Key? key,
     required this.child,
     this.scrollOnExpand = true,
@@ -3502,7 +3506,7 @@ class _ScrollOnExpandState extends State<ScrollOnExpand> {
     if (_theme != null) {
       _isAnimating++;
       Future.delayed(
-          _animationDuration + Duration(milliseconds: 10), _animationComplete);
+          _animationDuration + const Duration(milliseconds: 10), _animationComplete);
     }
   }
 

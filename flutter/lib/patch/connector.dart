@@ -72,6 +72,8 @@ class NewConnector extends StatelessWidget {
   Pin? end;
   PinType type = PinType.stream;
 
+  NewConnector({super.key});
+
   void setStart(Pin? pin) {
     start = pin;
     if (pin != null) {

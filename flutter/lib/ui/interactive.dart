@@ -1,23 +1,15 @@
 import 'dart:io';
-import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/services.dart';
 
-import 'dart:typed_data';
 
-import '../patch/patch.dart';
-import '../views/variables.dart';
 import 'ui.dart';
 import 'common.dart';
-import '../main.dart';
 
 // import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class WebViewUIWidget extends UIWidget {
-  WebViewUIWidget(UserInterface ui) : super(ui);
+  WebViewUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   @override
   final String name = "Web View";
@@ -1329,7 +1321,7 @@ class TickPainter extends CustomPainter {
 /* Button Widget */
 
 class ButtonUIWidget extends UIWidget {
-  ButtonUIWidget(UserInterface ui) : super(ui);
+  ButtonUIWidget(UserInterface ui, {super.key}) : super(ui);
 
   bool down = false;
   bool isToggle = false;
@@ -1471,7 +1463,7 @@ class ButtonStyle {
 }
 
 class Button extends StatelessWidget {
-  Button({required this.down, required this.onUpdate, required this.style});
+  const Button({super.key, required this.down, required this.onUpdate, required this.style});
 
   final bool down;
   final void Function(bool) onUpdate;
