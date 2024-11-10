@@ -9,8 +9,18 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Module>>
 abstract class Module implements RustOpaqueInterface {
-  Future<Node> createNode();
+  Node createNode();
 
-  static Future<Module> load({required String path}) =>
+  List<String> get category;
+
+  int get color;
+
+  String get description;
+
+  String get name;
+
+  String get path;
+
+  static Future<Module?> load({required String path}) =>
       RustLib.instance.api.crateApiModuleModuleLoad(path: path);
 }

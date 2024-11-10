@@ -1,7 +1,9 @@
 pub mod api;
 mod frb_generated;
 
-#[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
+use cmajor_rs::*;
+
+/*#[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
 pub fn greet(name: String) -> String {
     format!("Hello, {name}!")
 }
@@ -10,4 +12,7 @@ pub fn greet(name: String) -> String {
 pub fn init_app() {
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
-}
+
+    Library::load("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib");
+
+}*/

@@ -6,6 +6,7 @@ use std::{collections::HashMap, ffi::c_void};
 
 use crate::api::cable::Cable;
 use crate::api::endpoint::Endpoint;
+use crate::api::module::Module;
 
 /// This is a single processor unit in the graph
 // #[derive(Clone)]
@@ -19,6 +20,12 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn from(module: &Module) -> Self {
+        Self {
+            id: 0
+        }
+    }
+
     // Creates as new node from a module specification
     /*pub fn create(id: u32, settings: &BuildSettings, program: &Program) -> Result<Self, String> {
         let mut engine = Engine::create("").unwrap();

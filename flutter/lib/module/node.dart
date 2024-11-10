@@ -4,6 +4,7 @@ import 'package:metasampler/module/pin.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:yaml/yaml.dart';
 
+import '../bindings/api/module.dart';
 import '../patch/connector.dart';
 import '../patch/patch.dart';
 
@@ -26,15 +27,15 @@ class Node extends StatelessWidget {
     required this.onRemoveConnector,
     required this.onDrag,
   }) : super(key: UniqueKey()) {
-    size = Offset(info.width.toDouble(), info.height.toDouble());
+    /*size = Offset(info.width.toDouble(), info.height.toDouble());
     name = info.name;
 
     for (var widgetInfo in info.widgetInfos) {
       widgets.value.add(widgetInfo.createWidget());
-    }
+    }*/
   }
 
-  final ModuleInfo info;
+  final Module info;
   final Patch patch;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
@@ -60,7 +61,7 @@ class Node extends StatelessWidget {
 
     print("Refreshing node widgets");
 
-    for (var plugin in Plugins.list().value) {
+    /*for (var plugin in Plugins.list().value) {
       for (var moduleInfo in plugin.modules().value) {
         if (moduleInfo.path == info.path) {
           for (var widgetInfo in moduleInfo.widgetInfos) {
@@ -68,7 +69,7 @@ class Node extends StatelessWidget {
           }
         }
       }
-    }
+    }*/
 
     // TODO: Copy widget state
 
@@ -101,7 +102,7 @@ class Node extends StatelessWidget {
     List<Pin> pins = [];
     int i = 0;
 
-    for (var inputInfo in info.inputInfos) {
+    /*for (var inputInfo in info.inputInfos) {
       i += 1;
       pins.add(Pin(
         node: this,
@@ -131,7 +132,7 @@ class Node extends StatelessWidget {
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
-    }
+    }*/
 
     return ValueListenableBuilder<Offset>(
       valueListenable: position,

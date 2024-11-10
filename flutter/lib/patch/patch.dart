@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import '../bindings/api/module.dart';
 import '../module/pin.dart';
 import 'connector.dart';
 import '../projects.dart';
@@ -397,7 +398,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     // timer.cancel();
   }
 
-  void addModule(ModuleInfo info, Offset position) {
+  void addModule(Module info, Offset position) {
     var node = Node(
       info: info,
       patch: widget,

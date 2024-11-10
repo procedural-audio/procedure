@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../bindings/api/module.dart';
 import '../views/settings.dart';
 
 import '../plugins.dart';
@@ -8,7 +9,7 @@ import '../module/info.dart';
 class RightClickView extends StatefulWidget {
   RightClickView({super.key, required this.onAddModule});
 
-  void Function(ModuleInfo) onAddModule;
+  void Function(Module) onAddModule;
 
   @override
   State<RightClickView> createState() => _RightClickView();
@@ -22,7 +23,7 @@ class _RightClickView extends State<RightClickView> {
     return ValueListenableBuilder<List<Plugin>>(
       valueListenable: Plugins.list(),
       builder: (context, plugins, child) {
-        List<ModuleInfo> specs = [];
+        List<Module> specs = [];
 
         for (var plugin in plugins) {
           specs.addAll(plugin.modules().value);
@@ -197,18 +198,14 @@ class _RightClickView extends State<RightClickView> {
                     controller: ScrollController(),
                     child: Column(
                       children: specs
-                          .where((e) =>
-                              e.name
-                                  .toLowerCase()
-                                  .contains(searchText.toLowerCase()) ||
-                              e.category
-                                  .toLowerCase()
-                                  .contains(searchText.toLowerCase()))
+                          .where((e) => e.name
+                              .toLowerCase()
+                              .contains(searchText.toLowerCase()))
                           .map((e) {
                         return RightClickElement(
                           e,
                           Icons.piano,
-                          e.color,
+                          Color(e.color),
                           10,
                           widget.onAddModule,
                         );
@@ -312,11 +309,11 @@ class _RightClickCategoryState extends State<RightClickCategory> {
 }
 
 class RightClickElement extends StatefulWidget {
-  final ModuleInfo spec;
+  final Module spec;
   final double indent;
   final IconData icon;
   final Color color;
-  final void Function(ModuleInfo info) onAddModule;
+  final void Function(Module info) onAddModule;
 
   const RightClickElement(
       this.spec, this.icon, this.color, this.indent, this.onAddModule,

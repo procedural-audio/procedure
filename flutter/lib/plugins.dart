@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/module.dart';
 
 import 'dart:io';
 
 import 'patch/patch.dart';
-import 'module/info.dart';
 
 class Plugin {
   Plugin(this.name, this.version, this._modules);
 
   final String name;
   final int version;
-  final ValueNotifier<List<ModuleInfo>> _modules;
+  final ValueNotifier<List<Module>> _modules;
 
   static Future<Plugin?> load(String path) async {
-    List<ModuleInfo> modules = [];
+    List<Module> modules = [];
 
     await Directory(path)
         .list(recursive: true)
-        .where((item) => item.name.endsWith(".cmajormodule"))
+        .where((item) => item.name.endsWith(".cmajorpatch"))
         .forEach((file) async {
-      var info = await ModuleInfo.load(file.path);
-      if (info != null) {
+      var module = await Module.load(path: file.path);
+      if (module != null) {
         print("Loaded module ${file.name} at ${file.path}");
-        modules.add(info);
+        modules.add(module);
       } else {
         print("Failed to load module: ${file.path}");
       }
@@ -31,7 +31,7 @@ class Plugin {
     return Plugin("Temp Plugin Name", 1, ValueNotifier(modules));
   }
 
-  ValueNotifier<List<ModuleInfo>> modules() {
+  ValueNotifier<List<Module>> modules() {
     return _modules;
   }
 }
@@ -63,25 +63,6 @@ class Plugins {
   static ValueNotifier<List<Plugin>> list() {
     return _plugins;
   }
-
-  /*void reload(String path) async {
-    print("Reloading plugin at $path");
-
-    var newPlugin = await Plugin.load(path);
-
-    if (newPlugin == null) {
-      print("Failed to reload plugin at $path");
-      return;
-    }
-
-    _plugins.value = _plugins.value.map((plugin) {
-      if (plugin.name == newPlugin.name) {
-        return newPlugin;
-      } else {
-        return plugin;
-      }
-    }).toList();
-  }*/
 }
 
 /*class Plugin extends StatelessWidget {

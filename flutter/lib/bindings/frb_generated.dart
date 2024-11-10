@@ -4,7 +4,6 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api.dart';
-import 'api/cable.dart';
 import 'api/module.dart';
 import 'api/node.dart';
 import 'dart:async';
@@ -71,7 +70,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.3.0';
 
   @override
-  int get rustContentHash => 1256183497;
+  int get rustContentHash => -1277501587;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -86,45 +85,21 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiInitApp();
 
-  Connection crateApiCableCableAutoAccessorGetDestination(
-      {required Cable that});
+  Node crateApiModuleModuleCreateNode({required Module that});
 
-  Connection crateApiCableCableAutoAccessorGetSource({required Cable that});
+  List<String> crateApiModuleModuleGetCategory({required Module that});
 
-  void crateApiCableCableAutoAccessorSetDestination(
-      {required Cable that, required Connection destination});
+  int crateApiModuleModuleGetColor({required Module that});
 
-  void crateApiCableCableAutoAccessorSetSource(
-      {required Cable that, required Connection source});
+  String crateApiModuleModuleGetDescription({required Module that});
 
-  int crateApiCableConnectionAutoAccessorGetEndpointHandle(
-      {required Connection that});
+  String crateApiModuleModuleGetName({required Module that});
 
-  int crateApiCableConnectionAutoAccessorGetNodeId({required Connection that});
+  String crateApiModuleModuleGetPath({required Module that});
 
-  void crateApiCableConnectionAutoAccessorSetEndpointHandle(
-      {required Connection that, required int endpointHandle});
+  Future<Module?> crateApiModuleModuleLoad({required String path});
 
-  void crateApiCableConnectionAutoAccessorSetNodeId(
-      {required Connection that, required int nodeId});
-
-  Future<Node> crateApiModuleModuleCreateNode({required Module that});
-
-  Future<Module> crateApiModuleModuleLoad({required String path});
-
-  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Cable;
-
-  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Cable;
-
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_CablePtr;
-
-  RustArcIncrementStrongCountFnType
-      get rust_arc_increment_strong_count_Connection;
-
-  RustArcDecrementStrongCountFnType
-      get rust_arc_decrement_strong_count_Connection;
-
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ConnectionPtr;
+  Future<Node> crateApiNodeNodeFrom({required Module module});
 
   RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Module;
 
@@ -194,230 +169,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Connection crateApiCableCableAutoAccessorGetDestination(
-      {required Cable that}) {
+  Node crateApiModuleModuleCreateNode({required Module that}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-            that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableCableAutoAccessorGetDestinationConstMeta,
-      argValues: [that],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableCableAutoAccessorGetDestinationConstMeta =>
-      const TaskConstMeta(
-        debugName: "Cable_auto_accessor_get_destination",
-        argNames: ["that"],
-      );
-
-  @override
-  Connection crateApiCableCableAutoAccessorGetSource({required Cable that}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-            that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableCableAutoAccessorGetSourceConstMeta,
-      argValues: [that],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableCableAutoAccessorGetSourceConstMeta =>
-      const TaskConstMeta(
-        debugName: "Cable_auto_accessor_get_source",
-        argNames: ["that"],
-      );
-
-  @override
-  void crateApiCableCableAutoAccessorSetDestination(
-      {required Cable that, required Connection destination}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-            that, serializer);
-        sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            destination, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableCableAutoAccessorSetDestinationConstMeta,
-      argValues: [that, destination],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableCableAutoAccessorSetDestinationConstMeta =>
-      const TaskConstMeta(
-        debugName: "Cable_auto_accessor_set_destination",
-        argNames: ["that", "destination"],
-      );
-
-  @override
-  void crateApiCableCableAutoAccessorSetSource(
-      {required Cable that, required Connection source}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-            that, serializer);
-        sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            source, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableCableAutoAccessorSetSourceConstMeta,
-      argValues: [that, source],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableCableAutoAccessorSetSourceConstMeta =>
-      const TaskConstMeta(
-        debugName: "Cable_auto_accessor_set_source",
-        argNames: ["that", "source"],
-      );
-
-  @override
-  int crateApiCableConnectionAutoAccessorGetEndpointHandle(
-      {required Connection that}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_u_32,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableConnectionAutoAccessorGetEndpointHandleConstMeta,
-      argValues: [that],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta
-      get kCrateApiCableConnectionAutoAccessorGetEndpointHandleConstMeta =>
-          const TaskConstMeta(
-            debugName: "Connection_auto_accessor_get_endpoint_handle",
-            argNames: ["that"],
-          );
-
-  @override
-  int crateApiCableConnectionAutoAccessorGetNodeId({required Connection that}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_u_32,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableConnectionAutoAccessorGetNodeIdConstMeta,
-      argValues: [that],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableConnectionAutoAccessorGetNodeIdConstMeta =>
-      const TaskConstMeta(
-        debugName: "Connection_auto_accessor_get_node_id",
-        argNames: ["that"],
-      );
-
-  @override
-  void crateApiCableConnectionAutoAccessorSetEndpointHandle(
-      {required Connection that, required int endpointHandle}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            that, serializer);
-        sse_encode_u_32(endpointHandle, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableConnectionAutoAccessorSetEndpointHandleConstMeta,
-      argValues: [that, endpointHandle],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta
-      get kCrateApiCableConnectionAutoAccessorSetEndpointHandleConstMeta =>
-          const TaskConstMeta(
-            debugName: "Connection_auto_accessor_set_endpoint_handle",
-            argNames: ["that", "endpointHandle"],
-          );
-
-  @override
-  void crateApiCableConnectionAutoAccessorSetNodeId(
-      {required Connection that, required int nodeId}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-            that, serializer);
-        sse_encode_u_32(nodeId, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiCableConnectionAutoAccessorSetNodeIdConstMeta,
-      argValues: [that, nodeId],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiCableConnectionAutoAccessorSetNodeIdConstMeta =>
-      const TaskConstMeta(
-        debugName: "Connection_auto_accessor_set_node_id",
-        argNames: ["that", "nodeId"],
-      );
-
-  @override
-  Future<Node> crateApiModuleModuleCreateNode({required Module that}) {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
             that, serializer);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 11, port: port_);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
       },
       codec: SseCodec(
         decodeSuccessData:
@@ -437,17 +195,142 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<Module> crateApiModuleModuleLoad({required String path}) {
+  List<String> crateApiModuleModuleGetCategory({required Module that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiModuleModuleGetCategoryConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleGetCategoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "Module_get_category",
+        argNames: ["that"],
+      );
+
+  @override
+  int crateApiModuleModuleGetColor({required Module that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_u_32,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiModuleModuleGetColorConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleGetColorConstMeta =>
+      const TaskConstMeta(
+        debugName: "Module_get_color",
+        argNames: ["that"],
+      );
+
+  @override
+  String crateApiModuleModuleGetDescription({required Module that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiModuleModuleGetDescriptionConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleGetDescriptionConstMeta =>
+      const TaskConstMeta(
+        debugName: "Module_get_description",
+        argNames: ["that"],
+      );
+
+  @override
+  String crateApiModuleModuleGetName({required Module that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiModuleModuleGetNameConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleGetNameConstMeta =>
+      const TaskConstMeta(
+        debugName: "Module_get_name",
+        argNames: ["that"],
+      );
+
+  @override
+  String crateApiModuleModuleGetPath({required Module that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiModuleModuleGetPathConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleGetPathConstMeta =>
+      const TaskConstMeta(
+        debugName: "Module_get_path",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<Module?> crateApiModuleModuleLoad({required String path}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(path, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 9, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule,
+            sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule,
         decodeErrorData: null,
       ),
       constMeta: kCrateApiModuleModuleLoadConstMeta,
@@ -461,19 +344,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: ["path"],
       );
 
-  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Cable =>
-      wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable;
+  @override
+  Future<Node> crateApiNodeNodeFrom({required Module module}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            module, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 10, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData:
+            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiNodeNodeFromConstMeta,
+      argValues: [module],
+      apiImpl: this,
+    ));
+  }
 
-  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Cable =>
-      wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable;
-
-  RustArcIncrementStrongCountFnType
-      get rust_arc_increment_strong_count_Connection => wire
-          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection;
-
-  RustArcDecrementStrongCountFnType
-      get rust_arc_decrement_strong_count_Connection => wire
-          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection;
+  TaskConstMeta get kCrateApiNodeNodeFromConstMeta => const TaskConstMeta(
+        debugName: "Node_from",
+        argNames: ["module"],
+      );
 
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_Module => wire
@@ -488,22 +383,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Node =>
       wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode;
-
-  @protected
-  Cable
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return CableImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Connection
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ConnectionImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
 
   @protected
   Module
@@ -522,59 +401,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Cable
-      dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return CableImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Connection
-      dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ConnectionImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Cable
-      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return CableImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Connection
-      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ConnectionImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
   Module
       dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
           dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ModuleImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Cable
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return CableImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Connection
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ConnectionImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -600,9 +431,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Module
+      dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+        raw);
+  }
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  Module?
+      dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+            raw);
   }
 
   @protected
@@ -630,24 +487,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Cable
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return CableImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Connection
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ConnectionImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
   Module
       sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
           SseDeserializer deserializer) {
@@ -666,65 +505,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Cable
-      sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return CableImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Connection
-      sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ConnectionImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Cable
-      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return CableImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Connection
-      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ConnectionImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
   Module
       sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
           SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return ModuleImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Cable
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return CableImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Connection
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ConnectionImpl.frbInternalSseDecode(
         sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
@@ -754,10 +539,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Module
+      sse_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+        deserializer));
+  }
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <String>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  Module?
+      sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          deserializer));
+    } else {
+      return null;
+    }
   }
 
   @protected
@@ -797,24 +617,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as CableImpl).frbInternalSseEncode(move: true), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          Connection self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as ConnectionImpl).frbInternalSseEncode(move: true), serializer);
-  }
-
-  @protected
-  void
       sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
           Module self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -833,65 +635,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-      sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as CableImpl).frbInternalSseEncode(move: false), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          Connection self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as ConnectionImpl).frbInternalSseEncode(move: false), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as CableImpl).frbInternalSseEncode(move: false), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          Connection self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as ConnectionImpl).frbInternalSseEncode(move: false), serializer);
-  }
-
-  @protected
-  void
       sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
           Module self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
         (self as ModuleImpl).frbInternalSseEncode(move: false), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
-          Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as CableImpl).frbInternalSseEncode(move: null), serializer);
-  }
-
-  @protected
-  void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerConnection(
-          Connection self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as ConnectionImpl).frbInternalSseEncode(move: null), serializer);
   }
 
   @protected
@@ -919,11 +667,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void
+      sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          Module self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+        self, serializer);
+  }
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void
+      sse_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          Module? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerModule(
+          self, serializer);
+    }
   }
 
   @protected
@@ -963,80 +742,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
-class CableImpl extends RustOpaque implements Cable {
-  // Not to be used by end users
-  CableImpl.frbInternalDcoDecode(List<dynamic> wire)
-      : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  CableImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
-      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_Cable,
-    rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_Cable,
-    rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_CablePtr,
-  );
-
-  Connection get destination =>
-      RustLib.instance.api.crateApiCableCableAutoAccessorGetDestination(
-        that: this,
-      );
-
-  Connection get source =>
-      RustLib.instance.api.crateApiCableCableAutoAccessorGetSource(
-        that: this,
-      );
-
-  set destination(Connection destination) =>
-      RustLib.instance.api.crateApiCableCableAutoAccessorSetDestination(
-          that: this, destination: destination);
-
-  set source(Connection source) => RustLib.instance.api
-      .crateApiCableCableAutoAccessorSetSource(that: this, source: source);
-}
-
-@sealed
-class ConnectionImpl extends RustOpaque implements Connection {
-  // Not to be used by end users
-  ConnectionImpl.frbInternalDcoDecode(List<dynamic> wire)
-      : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  ConnectionImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
-      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_Connection,
-    rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_Connection,
-    rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_ConnectionPtr,
-  );
-
-  int get endpointHandle =>
-      RustLib.instance.api.crateApiCableConnectionAutoAccessorGetEndpointHandle(
-        that: this,
-      );
-
-  int get nodeId =>
-      RustLib.instance.api.crateApiCableConnectionAutoAccessorGetNodeId(
-        that: this,
-      );
-
-  set endpointHandle(int endpointHandle) =>
-      RustLib.instance.api.crateApiCableConnectionAutoAccessorSetEndpointHandle(
-          that: this, endpointHandle: endpointHandle);
-
-  set nodeId(int nodeId) => RustLib.instance.api
-      .crateApiCableConnectionAutoAccessorSetNodeId(that: this, nodeId: nodeId);
-}
-
-@sealed
 class ModuleImpl extends RustOpaque implements Module {
   // Not to be used by end users
   ModuleImpl.frbInternalDcoDecode(List<dynamic> wire)
@@ -1055,8 +760,29 @@ class ModuleImpl extends RustOpaque implements Module {
         RustLib.instance.api.rust_arc_decrement_strong_count_ModulePtr,
   );
 
-  Future<Node> createNode() =>
-      RustLib.instance.api.crateApiModuleModuleCreateNode(
+  Node createNode() => RustLib.instance.api.crateApiModuleModuleCreateNode(
+        that: this,
+      );
+
+  List<String> get category =>
+      RustLib.instance.api.crateApiModuleModuleGetCategory(
+        that: this,
+      );
+
+  int get color => RustLib.instance.api.crateApiModuleModuleGetColor(
+        that: this,
+      );
+
+  String get description =>
+      RustLib.instance.api.crateApiModuleModuleGetDescription(
+        that: this,
+      );
+
+  String get name => RustLib.instance.api.crateApiModuleModuleGetName(
+        that: this,
+      );
+
+  String get path => RustLib.instance.api.crateApiModuleModuleGetPath(
         that: this,
       );
 }

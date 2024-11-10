@@ -6,6 +6,5 @@
     "description":      "A simple synth using the SineOscillator",
     "manufacturer":     "Cmajor Software Ltd",
     "isInstrument":     true,
-
     "source":           "SineSynth.cmajor"
 }
