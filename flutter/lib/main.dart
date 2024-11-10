@@ -10,8 +10,8 @@ import 'projects.dart';
 import 'views/info.dart';
 import 'views/projects.dart';
 
-import 'package:metasampler/bindings/api/simple.dart';
 import 'package:metasampler/bindings/frb_generated.dart';
+import 'package:metasampler/bindings/api.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
