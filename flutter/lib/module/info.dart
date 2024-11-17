@@ -9,7 +9,7 @@ import '../utils.dart';
 
 import 'node.dart';
 
-class ModuleInfo {
+/*class ModuleInfo {
   ModuleInfo({
     // required this.program,
     required this.name,
@@ -112,7 +112,7 @@ class ModuleInfo {
       outputInfos: outputInfos,
     );
   }
-}
+}*/
 
 enum WidgetType {
   knob,
@@ -151,52 +151,5 @@ class WidgetInfo {
       WidgetType.fader => FaderWidget(map),
       WidgetType.button => KnobWidget(map),
     };
-  }
-}
-
-enum PinType {
-  value,
-  stream,
-  event,
-  time,
-}
-
-class PinInfo {
-  PinInfo({
-    required this.name,
-    required this.type,
-    required this.top,
-  });
-
-  final String name;
-  final PinType type;
-  final int top;
-
-  static PinInfo? from(YamlMap yaml) {
-    String name = yaml.keys.first;
-    YamlMap map = yaml[name];
-
-    print(map);
-
-    var type = switch (map['type'] ?? "value") {
-      "value" => PinType.value,
-      "stream" => PinType.stream,
-      "event" => PinType.event,
-      "time" => PinType.time,
-      _ => null,
-    };
-
-    if (type == null) {
-      print("Unknown pin type $type");
-      return null;
-    }
-
-    int top = map['top'] ?? 0;
-
-    return PinInfo(
-      name: name,
-      type: type,
-      top: top,
-    );
   }
 }

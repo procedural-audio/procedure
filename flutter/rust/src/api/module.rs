@@ -1,8 +1,13 @@
-use cmajor_rs::*;
+use cmajor::*;
+use cmajor::endpoint::EndpointInfo;
 
 use flutter_rust_bridge::*;
 
+use std::ffi::c_void;
+use std::sync::Mutex;
+
 use crate::api::node::Node;
+use crate::api::endpoint::*;
 
 #[frb(opaque)]
 pub struct Module {
@@ -11,7 +16,11 @@ pub struct Module {
     version: String,
     category: Vec<String>,
     description: String,
-    program: Program
+    // program: Mutex<Program>,
+    width: u32,
+    height: u32,
+    inputs: Vec<Endpoint>,
+    outputs: Vec<Endpoint>
 }
 
 impl Module {
@@ -43,17 +52,40 @@ impl Module {
             .unwrap()
             .to_string()];
 
-        let mut program = Program::new();
-        let mut messages = DiagnosticMessageList::new();
+        let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
+
+        let mut program = cmajor.create_program();
         let parent = std::path::Path::new(path.as_str()).parent().unwrap();
+
         for source in &sources {
             let path = parent.join(source);
             let contents = std::fs::read_to_string(path).unwrap();
-            if (!program.parse(&mut messages, &contents, source)) {
-                println!("Parse failed");
-                return None;
-            }
+            program.parse(&contents).unwrap();
         }
+
+        let mut engine = cmajor
+            .create_default_engine()
+            .build();
+
+        engine.load(&program).unwrap();
+
+        let mut inputs = Vec::new();
+        let mut outputs = Vec::new();
+
+        /*for endpoint in engine.get_input_endpoints() {
+            inputs.push(EndpointInfo::from(&endpoint)); 
+        }
+
+        for endpoint in engine.get_output_endpoints() {
+            outputs.push(EndpointInfo::from(&endpoint)); 
+        }*/
+
+        // let details = engine.get_program_details();
+        // println!("Details: {}", details);
+
+        let width = 300;
+        let height = 200;
+
 
         Some(Self {
             path,
@@ -61,7 +93,11 @@ impl Module {
             version,
             category,
             description,
-            program
+            // program: Mutex::new(program),
+            width,
+            height,
+            inputs,
+            outputs
         })
     }
 
@@ -90,8 +126,38 @@ impl Module {
         0xFF0000
     }
 
+    #[frb(sync, getter)]
+    pub fn get_width(&self) -> u32 {
+        self.width
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_height(&self) -> u32 {
+        self.height
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_inputs(&self) -> Vec<Endpoint> {
+        self.inputs.clone()
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_outputs(&self) -> Vec<Endpoint> {
+        self.outputs.clone()
+    }
+
     #[frb(sync)]
     pub fn create_node(&self) -> Node {
         Node::from(self)
     }
 }
+
+/*fn get_external_variable(v: &ExternalVariable) -> Value {
+    println!("Get external variable");
+    todo!()
+}
+
+fn get_external_function(s: *const i8, ts: Span<Type>) -> *const c_void {
+    println!("Get external function");
+    todo!()
+}*/

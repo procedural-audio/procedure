@@ -35,162 +35,12 @@ class Assets {
   }
 }
 
-class Images {
-  Images(this.directory);
-
-  final Directory directory;
-
-  Image? loadImage(String name) {
-    print("Loading image asset");
-    return null;
-  }
-}
-
 extension FileExtention on FileSystemEntity {
   String get name {
     return path.split("/").last;
   }
 }
 
-/*RawPatch Function() _ffiCreatePatch = core
-    .lookup<NativeFunction<RawPatch Function()>>("ffi_create_patch")
-    .asFunction();
-/*bool Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchLoad = core
-    .lookup<NativeFunction<Bool Function(RawPatch, RawPlugins, Pointer<Utf8>)>>(
-        "ffi_patch_load")
-    .asFunction();*/
-bool Function(RawPatch, Pointer<Utf8>) _ffiPatchSave = core
-    .lookup<NativeFunction<Bool Function(RawPatch, Pointer<Utf8>)>>(
-        "ffi_patch_save")
-    .asFunction();
-Pointer<Void> Function(RawPatch) _ffiPatchGetState = core
-    .lookup<NativeFunction<Pointer<Void> Function(RawPatch)>>(
-        "ffi_patch_get_state")
-    .asFunction();
-/*void Function(RawPatch, RawPlugins, Pointer<Void>) _ffiPatchSetState = core
-    .lookup<NativeFunction<Void Function(RawPatch, RawPlugins, Pointer<Void>)>>(
-        "ffi_patch_set_state")
-    .asFunction();*/
-void Function(RawPatch) _ffiPatchDestroy = core
-    .lookup<NativeFunction<Void Function(RawPatch)>>("ffi_patch_destroy")
-    .asFunction();
-/*RawNode Function(RawPatch, RawPlugins, Pointer<Utf8>) _ffiPatchAddModule = core
-    .lookup<
-        NativeFunction<
-            RawNode Function(
-                RawPatch, RawPlugins, Pointer<Utf8>)>>("ffi_patch_add_module")
-    .asFunction();*/
-bool Function(RawPatch, int) _ffiPatchRemoveNode = core
-    .lookup<NativeFunction<Bool Function(RawPatch, Int32)>>(
-        "ffi_patch_remove_node")
-    .asFunction();
-int Function(RawPatch) _ffiPatchGetNodeCount = core
-    .lookup<NativeFunction<Int64 Function(RawPatch)>>(
-        "ffi_patch_get_node_count")
-    .asFunction();
-RawNode Function(RawPatch, int) _ffiPatchGetNode = core
-    .lookup<NativeFunction<RawNode Function(RawPatch, Int64)>>(
-        "ffi_patch_get_node")
-    .asFunction();
-int Function(RawPatch) _ffiPatchGetConnectorCount = core
-    .lookup<NativeFunction<Int64 Function(RawPatch)>>(
-        "ffi_patch_get_connector_count")
-    .asFunction();
-RawConnector Function(RawPatch, int) _ffiPatchGetConnector = core
-    .lookup<NativeFunction<RawConnector Function(RawPatch, Int64)>>(
-        "ffi_patch_get_connector")
-    .asFunction();
-bool Function(RawPatch, int, int, int, int) _ffiPatchAddConnector = core
-    .lookup<
-        NativeFunction<
-            Bool Function(RawPatch, Int32, Int32, Int32,
-                Int32)>>("ffi_patch_add_connector")
-    .asFunction();
-void Function(RawPatch, int, int) _ffiPatchRemoveConnector = core
-    .lookup<NativeFunction<Void Function(RawPatch, Int32, Int32)>>(
-        "ffi_patch_remove_connector")
-    .asFunction();
-
-
-// TODO: Make sure this isn't leaked
-final class RawPatch extends Struct {
-  @Int64()
-  external int pointer;
-
-  static RawPatch create() {
-    return _ffiCreatePatch();
-  }
-
-  bool load(File file, Plugins plugins) {
-    /*var rawPath = file.path.toNativeUtf8();
-    var success = _ffiPatchLoad(this, plugins.rawPlugins, rawPath);
-    calloc.free(rawPath);
-    return success;*/
-    return false;
-  }
-
-  bool save(File file) {
-    var rawPath = file.path.toNativeUtf8();
-    var success = _ffiPatchSave(this, rawPath);
-    calloc.free(rawPath);
-    return success;
-  }
-
-  /*RawNode addModule(String id) {
-    var rawId = id.toNativeUtf8();
-    RawNode rawNode = _ffiPatchAddModule(this, PLUGINS.rawPlugins, rawId);
-    calloc.free(rawId);
-    return rawNode;
-  }*/
-
-  int getNodeCount() {
-    return _ffiPatchGetNodeCount(this);
-  }
-
-  RawNode getNode(int id) {
-    return _ffiPatchGetNode(this, id);
-  }
-
-  int getConnectorCount() {
-    return _ffiPatchGetConnectorCount(this);
-  }
-
-  RawConnector getConnector(int index) {
-    return _ffiPatchGetConnector(this, index);
-  }
-
-  bool addConnector(int startId, int startIndex, int endId, int endIndex) {
-    return _ffiPatchAddConnector(this, startId, startIndex, endId, endIndex);
-  }
-
-  void removeConnector(int nodeId, int pinIndex) {
-    return _ffiPatchRemoveConnector(this, nodeId, pinIndex);
-  }
-
-  Pointer<Void> getState() {
-    return _ffiPatchGetState(this);
-  }
-
-  bool removeNode(int id) {
-    return _ffiPatchRemoveNode(this, id);
-  }
-
-  void setState(Pointer<Void> state) {
-    // _ffiPatchSetState(this, PLUGINS.rawPlugins, state);
-  }
-}
-
-final class RawConnector extends Struct {
-  @Int32()
-  external int startId;
-  @Int32()
-  external int startIndex;
-  @Int32()
-  external int endId;
-  @Int32()
-  external int endIndex;
-}
-*/
 class Patch extends StatefulWidget {
   Patch({
     // required this.rawPatch,
@@ -259,12 +109,12 @@ class Patch extends StatefulWidget {
     moveToValue.value = Offset(x, y);
   }
 
-  void refreshUserInterface(ModuleInfo info) {
+  /*void refreshUserInterface(ModuleInfo info) {
     print("Refreshing user interface");
     for (var node in nodes) {
       node.refreshUserInterface();
     }
-  }
+  }*/
 
   void addNewConnector() {
     if (newConnector.start != null && newConnector.end != null) {
@@ -277,7 +127,7 @@ class Patch extends StatefulWidget {
 
   Map<String, dynamic> getState() {
     return {
-      "nodes": nodes.map((e) => {e.info.path, e.getState()}).toList(),
+      "nodes": nodes.map((e) => {e.module.path, e.getState()}).toList(),
       "connectors": connectors.map((e) => e.toJson()).toList(),
     };
   }
@@ -398,9 +248,9 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     // timer.cancel();
   }
 
-  void addModule(Module info, Offset position) {
+  void addModule(Module module, Offset position) {
     var node = Node(
-      info: info,
+      module: module,
       patch: widget,
       connectors: widget.connectors,
       selectedNodes: widget.selectedNodes,

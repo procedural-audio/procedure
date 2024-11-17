@@ -1,4 +1,4 @@
-use cmajor_rs::*;
+use cmajor::*;
 
 use flutter_rust_bridge::*;
 

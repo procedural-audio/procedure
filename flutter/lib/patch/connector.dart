@@ -2,7 +2,9 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/module.dart';
 
+import '../bindings/api/endpoint.dart';
 import '../module/info.dart';
 import '../module/node.dart';
 import '../module/pin.dart';
@@ -17,7 +19,7 @@ class Connector extends StatelessWidget {
 
   final Pin start;
   final Pin end;
-  final PinType type;
+  final EndpointType type;
   final ValueNotifier<List<Node>> selectedNodes;
 
   Map<String, dynamic> toJson() {
@@ -70,7 +72,7 @@ class NewConnector extends StatelessWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
-  PinType type = PinType.stream;
+  EndpointType type = EndpointType.value;
 
   NewConnector({super.key});
 
@@ -137,7 +139,7 @@ class ConnectorPainter extends CustomPainter {
 
   Offset initialStart;
   Offset initialEnd;
-  PinType type;
+  EndpointType type;
   bool focused;
 
   @override
@@ -147,14 +149,12 @@ class ConnectorPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
-    if (type == PinType.stream) {
+    if (type == EndpointType.stream) {
       paint.color = Colors.blue.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == PinType.event) {
+    } else if (type == EndpointType.event) {
       paint.color = Colors.green.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == PinType.value) {
+    } else if (type == EndpointType.value) {
       paint.color = Colors.red.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == PinType.time) {
-      paint.color = Colors.deepPurpleAccent.withOpacity(focused ? 1.0 : 0.3);
     }
 
     Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);

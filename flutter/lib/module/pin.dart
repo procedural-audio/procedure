@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/module.dart';
 
+import '../bindings/api/endpoint.dart';
 import 'info.dart';
 import 'node.dart';
 import '../patch/connector.dart';
@@ -24,7 +26,7 @@ class Pin extends StatefulWidget {
   final int nodeId;
   final int pinIndex;
   final Offset offset;
-  final PinType type;
+  final EndpointType type;
   final bool isInput;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
@@ -47,14 +49,12 @@ class _PinState extends State<Pin> {
 
     var color = Colors.white;
 
-    if (widget.type == PinType.stream) {
+    if (widget.type == EndpointType.stream) {
       color = Colors.blue;
-    } else if (widget.type == PinType.event) {
+    } else if (widget.type == EndpointType.event) {
       color = Colors.green;
-    } else if (widget.type == PinType.value) {
+    } else if (widget.type == EndpointType.value) {
       color = Colors.red;
-    } else if (widget.type == PinType.time) {
-      color = Colors.deepPurpleAccent;
     }
 
     bool connected = false;

@@ -4,7 +4,7 @@ use crate::api::cable::*;
 use crate::api::endpoint::*;
 use crate::api::node::*;
 
-use cmajor_rs::EndpointType;
+use cmajor::*;
 
 use flutter_rust_bridge::*;
 

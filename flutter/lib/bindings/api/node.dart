@@ -7,8 +7,6 @@ import '../frb_generated.dart';
 import 'module.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `cosf`, `get_external_function`, `get_external_variable`, `handle`, `powf`
-
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>
 abstract class Node implements RustOpaqueInterface {
   static Future<Node> from({required Module module}) =>

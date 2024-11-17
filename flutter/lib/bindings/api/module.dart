@@ -4,6 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -17,9 +18,17 @@ abstract class Module implements RustOpaqueInterface {
 
   String get description;
 
+  int get height;
+
+  List<Endpoint> get inputs;
+
   String get name;
 
+  List<Endpoint> get outputs;
+
   String get path;
+
+  int get width;
 
   static Future<Module?> load({required String path}) =>
       RustLib.instance.api.crateApiModuleModuleLoad(path: path);

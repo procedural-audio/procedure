@@ -1,4 +1,4 @@
-use cmajor_rs::*;
+use cmajor::*;
 
 use flutter_rust_bridge::*;
 
@@ -99,7 +99,7 @@ impl Node {
     }*/
 }
 
-fn handle(
+/*fn handle(
     context: *const c_void,
     generated_code: *const i8,
     generated_code_size: usize,
@@ -127,4 +127,4 @@ extern "C" fn cosf(f: f32) -> f32 {
 #[no_mangle]
 extern "C" fn powf(f: f32, n: f32) -> f32 {
     f32::powf(f, n)
-}
+}*/

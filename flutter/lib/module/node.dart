@@ -19,7 +19,7 @@ abstract class NodeWidget extends StatelessWidget {
 
 class Node extends StatelessWidget {
   Node({
-    required this.info,
+    required this.module,
     required this.patch,
     required this.connectors,
     required this.selectedNodes,
@@ -35,7 +35,7 @@ class Node extends StatelessWidget {
     }*/
   }
 
-  final Module info;
+  final Module module;
   final Patch patch;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
@@ -44,9 +44,7 @@ class Node extends StatelessWidget {
   final void Function(Offset) onDrag;
 
   int id = 1;
-  String name = "Name";
   Color color = Colors.grey;
-  Offset size = const Offset(250, 250);
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
   ValueNotifier<List<NodeWidget>> widgets = ValueNotifier([]);
 
@@ -102,13 +100,13 @@ class Node extends StatelessWidget {
     List<Pin> pins = [];
     int i = 0;
 
-    /*for (var inputInfo in info.inputInfos) {
+    for (var inputInfo in module.inputs) {
       i += 1;
       pins.add(Pin(
         node: this,
         nodeId: id,
         pinIndex: i - 1,
-        offset: Offset(5, inputInfo.top.toDouble()),
+        offset: Offset(5, 0.toDouble()),
         type: inputInfo.type,
         isInput: true,
         connectors: connectors,
@@ -118,13 +116,13 @@ class Node extends StatelessWidget {
       ));
     }
 
-    for (var outputInfo in info.outputInfos) {
+    for (var outputInfo in module.outputs) {
       i += 1;
       pins.add(Pin(
         node: this,
         nodeId: id,
         pinIndex: i - 1,
-        offset: Offset(size.dx - 25, outputInfo.top.toDouble()),
+        offset: Offset(module.width - 25, 0.toDouble()),
         type: outputInfo.type,
         isInput: true,
         connectors: connectors,
@@ -132,7 +130,7 @@ class Node extends StatelessWidget {
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
-    }*/
+    }
 
     return ValueListenableBuilder<Offset>(
       valueListenable: position,
@@ -166,8 +164,8 @@ class Node extends StatelessWidget {
               builder: (context, selectedNodes, child) {
                 bool selected = selectedNodes.contains(this);
                 return Container(
-                  width: size.dx,
-                  height: size.dy,
+                  width: module.width.toDouble(),
+                  height: module.height.toDouble(),
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(40, 40, 40, 1.0),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -186,7 +184,7 @@ class Node extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: Text(
-                            name,
+                            module.name,
                             style: TextStyle(
                               color: color,
                               fontSize: 16,
