@@ -100,7 +100,7 @@ class Node extends StatelessWidget {
     List<Pin> pins = [];
     int i = 0;
 
-    for (var inputInfo in module.inputs) {
+    /*for (var inputInfo in module.inputs) {
       i += 1;
       pins.add(Pin(
         node: this,
@@ -130,7 +130,7 @@ class Node extends StatelessWidget {
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
-    }
+    }*/
 
     return ValueListenableBuilder<Offset>(
       valueListenable: position,
@@ -164,8 +164,8 @@ class Node extends StatelessWidget {
               builder: (context, selectedNodes, child) {
                 bool selected = selectedNodes.contains(this);
                 return Container(
-                  width: module.width.toDouble(),
-                  height: module.height.toDouble(),
+                  width: module.size.$1.toDouble(),
+                  height: module.size.$2.toDouble(),
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(40, 40, 40, 1.0),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),

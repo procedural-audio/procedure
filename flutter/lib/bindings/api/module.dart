@@ -4,32 +4,61 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
-import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Module>>
-abstract class Module implements RustOpaqueInterface {
-  Node createNode();
+// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `get_sources`
 
-  List<String> get category;
+class Module {
+  final String path;
+  final String name;
+  final String version;
+  final List<String> category;
+  final String description;
+  final (int, int) size;
+  final int color;
+  final List<String> sources;
 
-  int get color;
+  const Module({
+    required this.path,
+    required this.name,
+    required this.version,
+    required this.category,
+    required this.description,
+    required this.size,
+    required this.color,
+    required this.sources,
+  });
 
-  String get description;
-
-  int get height;
-
-  List<Endpoint> get inputs;
-
-  String get name;
-
-  List<Endpoint> get outputs;
-
-  String get path;
-
-  int get width;
+  Node createNode() => RustLib.instance.api.crateApiModuleModuleCreateNode(
+        that: this,
+      );
 
   static Future<Module?> load({required String path}) =>
       RustLib.instance.api.crateApiModuleModuleLoad(path: path);
+
+  @override
+  int get hashCode =>
+      path.hashCode ^
+      name.hashCode ^
+      version.hashCode ^
+      category.hashCode ^
+      description.hashCode ^
+      size.hashCode ^
+      color.hashCode ^
+      sources.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Module &&
+          runtimeType == other.runtimeType &&
+          path == other.path &&
+          name == other.name &&
+          version == other.version &&
+          category == other.category &&
+          description == other.description &&
+          size == other.size &&
+          color == other.color &&
+          sources == other.sources;
 }

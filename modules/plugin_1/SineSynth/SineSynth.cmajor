@@ -5,8 +5,8 @@
 
 graph SineSynth  [[main, name: "Sine Synth"]]
 {
-    input event std::midi::Message midiIn [[widget: "knob"]];
-    output stream float out;
+    input event std::midi::Message midiIn [[ top: 10, widget: "knob"]];
+    output stream float out [[ top: 10 ]];
 
     let voiceCount = 8;
 

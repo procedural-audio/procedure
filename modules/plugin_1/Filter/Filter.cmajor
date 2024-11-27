@@ -1,10 +1,10 @@
 graph Filter [[ main ]]
 {
-    input filter.frequency [[ mid: 1000 ]];
-    input filter.q;
+    input filter.frequency [[ top: 10, mid: 1000 ]];
+    input filter.q [[ top: 35 ]];
 
-    input stream float<2> in;
-    output stream float<2> out;
+    input stream float<2> in [[ top: 60 ]];
+    output stream float<2> out [[ top: 10 ]];
 
     node filter = std::filters (float<2>)::tpt::svf::Processor;
 

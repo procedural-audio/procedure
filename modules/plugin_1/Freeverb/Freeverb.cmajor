@@ -8,16 +8,16 @@
     Big shout out to Jezar, the original author of Freeverb :)
 */
 
-graph Freeverb   [[ main ]]
+graph Freeverb   [[ main, width: 300, height: 200 ]]
 {
-    input stream float audioIn;
-    output stream float<2> audioOut;
+    input stream float audioIn [[ top: 10 ]];
+    output stream float<2> audioOut [[ top: 10 ]];
 
-    input parameterScaler.roomSize  [[ name: "Room Size",       min: 0, max: 100, init:  80, text: "Tiny|Small|Medium|Large|Hall" ]];
-    input parameterScaler.damping   [[ name: "Damping Factor",  min: 0, max: 100, init:  50, unit: "%",  step: 1 ]];
-    input parameterScaler.width     [[ name: "Width",           min: 0, max: 100, init: 100, unit: "%",  step: 1 ]];
-    input parameterScaler.wetLevel  [[ name: "Wet Level",       min: 0, max: 100, init:  33, unit: "%",  step: 1 ]];
-    input parameterScaler.dryLevel  [[ name: "Dry Level",       min: 0, max: 100, init:  40, unit: "%",  step: 1 ]];
+    input parameterScaler.roomSize  [[ name: "Room Size",       top: 10, min: 0, max: 100, init:  80, text: "Tiny|Small|Medium|Large|Hall" ]];
+    input parameterScaler.damping   [[ name: "Damping Factor",  top: 35, min: 0, max: 100, init:  50, unit: "%",  step: 1 ]];
+    input parameterScaler.width     [[ name: "Width",           top: 60, min: 0, max: 100, init: 100, unit: "%",  step: 1 ]];
+    input parameterScaler.wetLevel  [[ name: "Wet Level",       top: 85, min: 0, max: 100, init:  33, unit: "%",  step: 1 ]];
+    input parameterScaler.dryLevel  [[ name: "Dry Level",       top: 110, min: 0, max: 100, init:  40, unit: "%",  step: 1 ]];
 
     //==============================================================================
     node parameterScaler   = ParameterScaler;

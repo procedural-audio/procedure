@@ -12,7 +12,7 @@
 //  license: see LICENSE.md for more details.
 
 
-graph ElectricPiano  [[ main ]]
+graph ElectricPiano  [[ main, name: "Electric Piano", width: 300, height: 200 ]]
 {
     input event std::midi::Message midiIn  [[ name: "MIDI input" ]];
     input paramsProcessor.*;
