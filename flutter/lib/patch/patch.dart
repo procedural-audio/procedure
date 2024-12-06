@@ -7,7 +7,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import '../bindings/api/module.dart';
 import '../module/pin.dart';
 import 'connector.dart';
 import '../projects.dart';
@@ -274,7 +273,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     var connector = Connector(
       start: start,
       end: end,
-      type: start.type,
+      type: start.endpoint.type,
       selectedNodes: widget.selectedNodes,
     );
 
@@ -283,11 +282,11 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
   void removeConnector(int nodeId, int pinIndex) {
     // widget.rawPatch.removeConnector(nodeId, pinIndex);
-    widget.connectors.removeWhere(
+    /*widget.connectors.removeWhere(
       (e) =>
           (e.start.nodeId == nodeId && e.start.pinIndex == pinIndex) ||
           (e.end.nodeId == nodeId && e.end.pinIndex == pinIndex),
-    );
+    );*/
 
     for (var node in widget.nodes) {
       node.refreshSize();
@@ -403,13 +402,13 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                     if (e.logicalKey == LogicalKeyboardKey.delete ||
                         e.logicalKey == LogicalKeyboardKey.backspace) {
                       print("Get key delete");
-                      for (var node in widget.selectedNodes.value) {
+                      /*for (var node in widget.selectedNodes.value) {
                         // widget.rawPatch.removeNode(node.id);
                         widget.nodes.removeWhere((n) => n.id == node.id);
                         widget.connectors.removeWhere((c) =>
                             c.start.nodeId == node.id ||
                             c.end.nodeId == node.id);
-                      }
+                      }*/
 
                       widget.selectedNodes.value = [];
                       setState(() {});

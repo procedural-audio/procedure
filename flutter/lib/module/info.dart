@@ -1,13 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/ui/common.dart';
 import 'package:yaml/yaml.dart';
 
-import '../nodeWidgets/knob.dart';
-import '../nodeWidgets/fader.dart';
-import '../utils.dart';
-
-import 'node.dart';
+import '../bindings/api/endpoint.dart';
+import '../bindings/api/node.dart';
 
 /*class ModuleInfo {
   ModuleInfo({
@@ -114,7 +113,7 @@ import 'node.dart';
   }
 }*/
 
-enum WidgetType {
+/*enum WidgetType {
   knob,
   fader,
   button,
@@ -151,5 +150,73 @@ class WidgetInfo {
       WidgetType.fader => FaderWidget(map),
       WidgetType.button => KnobWidget(map),
     };
+  }
+}*/
+
+class Module {
+  Module({
+    required this.path,
+    required this.name,
+    required this.version,
+    required this.description,
+    required this.category,
+    required this.color,
+    required this.size,
+    required this.sources,
+    required this.inputs,
+    required this.outputs,
+  });
+
+  String path;
+  String name;
+  String version;
+  String description;
+  List<String> category;
+  Color color;
+  Size size;
+  List<String> sources;
+  List<Endpoint> inputs;
+  List<Endpoint> outputs;
+
+  static Future<Module?> load(String path) async {
+    var contents = await File(path).readAsString();
+    var json = jsonDecode(contents);
+
+    List<String> sources = [];
+
+    /*
+
+    // Add multiple sources
+    List<String> sourcePaths = json['source'] ?? List<String>.empty();
+
+    for (var path in sourcePaths) {
+      var sourcePath = File(path).parent.path + "/" + path;
+      sources.add(await File(sourcePath).readAsString());
+    }
+    */
+
+    var sourceName = json['source'];
+    if (sourceName != null) {
+      var sourcePath = File(path).parent.path + "/" + sourceName;
+      sources.add(await File(sourcePath).readAsString());
+    }
+
+    double width = double.tryParse(json['width'].toString()) ?? 200;
+    double height = double.tryParse(json['height'].toString()) ?? 150;
+
+    var node = Node.from(sources: sources);
+
+    return Module(
+      path: path,
+      name: json['name'] ?? "Unnamed",
+      version: json['version'] ?? "0.0.0",
+      description: json['description'] ?? "Empty description",
+      category: json['category'] ?? List<String>.empty(),
+      color: Colors.grey,
+      size: Size(width, height),
+      sources: sources,
+      inputs: node.inputs,
+      outputs: node.outputs,
+    );
   }
 }

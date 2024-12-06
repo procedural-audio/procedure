@@ -1,37 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/module.dart';
+
+import 'dart:convert';
+
+import 'node.dart';
 
 import '../bindings/api/endpoint.dart';
-import 'info.dart';
-import 'node.dart';
 import '../patch/connector.dart';
-
-enum IO { audio, midi, control, time, external }
 
 class Pin extends StatefulWidget {
   Pin({
     required this.node,
-    required this.nodeId,
-    required this.pinIndex,
-    required this.offset,
-    required this.type,
+    required this.endpoint,
     required this.isInput,
     required this.connectors,
     required this.selectedNodes,
     required this.onAddConnector,
     required this.onRemoveConnector,
-  }) : super(key: UniqueKey());
+  }) : super(key: UniqueKey()) {
+    var annotation = jsonDecode(endpoint.annotation);
+    var top = double.tryParse(annotation['top'].toString()) ?? 0.0;
+
+    // Initialize the pin offset
+    if (isInput) {
+      offset = Offset(5, top);
+    } else {
+      offset = Offset(node.module.size.width - 25, top);
+    }
+
+    // Initialize the pin color
+    if (endpoint.type == EndpointType.stream) {
+      color = Colors.blue;
+    } else if (endpoint.type == EndpointType.event) {
+      color = Colors.green;
+    } else if (endpoint.type == EndpointType.value) {
+      color = Colors.red;
+    }
+  }
 
   final Node node;
-  final int nodeId;
-  final int pinIndex;
-  final Offset offset;
-  final EndpointType type;
+  final Endpoint endpoint;
   final bool isInput;
   final List<Connector> connectors;
   final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
+
+  Offset offset = Offset(0, 0);
+  Color color = Colors.white;
 
   @override
   _PinState createState() => _PinState();
@@ -43,20 +58,6 @@ class _PinState extends State<Pin> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.type == IO.external) {
-      return Container();
-    }
-
-    var color = Colors.white;
-
-    if (widget.type == EndpointType.stream) {
-      color = Colors.blue;
-    } else if (widget.type == EndpointType.event) {
-      color = Colors.green;
-    } else if (widget.type == EndpointType.value) {
-      color = Colors.red;
-    }
-
     bool connected = false;
     for (var connector in widget.connectors) {
       if (connector.start == widget || connector.end == widget) {
@@ -85,8 +86,8 @@ class _PinState extends State<Pin> {
         child: GestureDetector(
           onPanStart: (details) {
             dragging = true;
-            if (!widget.isInput) {
-              widget.node.patch.newConnector.onDrag(Offset.zero);
+            if (widget.isInput) {
+              widget.node.patch.newConnector.onDrag(details.localPosition);
             } else {
               widget.node.patch.newConnector.setStart(widget);
             }
@@ -107,7 +108,7 @@ class _PinState extends State<Pin> {
             });
           },
           onDoubleTap: () {
-            widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
+            // widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
           },
           child: ValueListenableBuilder<List<Node>>(
             valueListenable: widget.selectedNodes,
@@ -118,10 +119,12 @@ class _PinState extends State<Pin> {
                 height: 15,
                 decoration: BoxDecoration(
                   color: hovering || dragging || connected
-                      ? (selected || hovering ? color : color.withOpacity(0.5))
+                      ? (selected || hovering
+                          ? widget.color
+                          : widget.color.withOpacity(0.5))
                       : Colors.transparent,
                   border: Border.all(
-                    color: color,
+                    color: widget.color,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(10),

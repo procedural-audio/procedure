@@ -4,9 +4,30 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'endpoint.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
+/// This is a single processor unit in the graph
+class Node {
+  final List<Endpoint> inputs;
+  final List<Endpoint> outputs;
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>
-abstract class Node implements RustOpaqueInterface {}
+  const Node({
+    required this.inputs,
+    required this.outputs,
+  });
+
+  static Node from({required List<String> sources}) =>
+      RustLib.instance.api.crateApiNodeNodeFrom(sources: sources);
+
+  @override
+  int get hashCode => inputs.hashCode ^ outputs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Node &&
+          runtimeType == other.runtimeType &&
+          inputs == other.inputs &&
+          outputs == other.outputs;
+}

@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/module/info.dart';
 import 'package:metasampler/module/pin.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:yaml/yaml.dart';
 
-import '../bindings/api/module.dart';
 import '../patch/connector.dart';
 import '../patch/patch.dart';
 
@@ -26,14 +27,7 @@ class Node extends StatelessWidget {
     required this.onAddConnector,
     required this.onRemoveConnector,
     required this.onDrag,
-  }) : super(key: UniqueKey()) {
-    /*size = Offset(info.width.toDouble(), info.height.toDouble());
-    name = info.name;
-
-    for (var widgetInfo in info.widgetInfos) {
-      widgets.value.add(widgetInfo.createWidget());
-    }*/
-  }
+  }) : super(key: UniqueKey());
 
   final Module module;
   final Patch patch;
@@ -44,7 +38,6 @@ class Node extends StatelessWidget {
   final void Function(Offset) onDrag;
 
   int id = 1;
-  Color color = Colors.grey;
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
   ValueNotifier<List<NodeWidget>> widgets = ValueNotifier([]);
 
@@ -98,17 +91,13 @@ class Node extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Pin> pins = [];
-    int i = 0;
 
-    /*for (var inputInfo in module.inputs) {
-      i += 1;
+    for (var endpoint in module.inputs) {
+      print("Building input pin");
       pins.add(Pin(
         node: this,
-        nodeId: id,
-        pinIndex: i - 1,
-        offset: Offset(5, 0.toDouble()),
-        type: inputInfo.type,
         isInput: true,
+        endpoint: endpoint,
         connectors: connectors,
         selectedNodes: selectedNodes,
         onAddConnector: onAddConnector,
@@ -116,21 +105,18 @@ class Node extends StatelessWidget {
       ));
     }
 
-    for (var outputInfo in module.outputs) {
-      i += 1;
+    for (var endpoint in module.outputs) {
+      print("Building output pin");
       pins.add(Pin(
         node: this,
-        nodeId: id,
-        pinIndex: i - 1,
-        offset: Offset(module.width - 25, 0.toDouble()),
-        type: outputInfo.type,
-        isInput: true,
+        endpoint: endpoint,
+        isInput: false,
         connectors: connectors,
         selectedNodes: selectedNodes,
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
-    }*/
+    }
 
     return ValueListenableBuilder<Offset>(
       valueListenable: position,
@@ -154,8 +140,6 @@ class Node extends StatelessWidget {
             onPanUpdate: (details) {
               var x = position.value.dx + details.delta.dx;
               var y = position.value.dy + details.delta.dy;
-              // rawNode.setX(x);
-              // rawNode.setY(y);
               position.value = Offset(x, y);
               onDrag(details.localPosition);
             },
@@ -164,8 +148,8 @@ class Node extends StatelessWidget {
               builder: (context, selectedNodes, child) {
                 bool selected = selectedNodes.contains(this);
                 return Container(
-                  width: module.size.$1.toDouble(),
-                  height: module.size.$2.toDouble(),
+                  width: module.size.width,
+                  height: module.size.height,
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(40, 40, 40, 1.0),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -186,7 +170,7 @@ class Node extends StatelessWidget {
                           child: Text(
                             module.name,
                             style: TextStyle(
-                              color: color,
+                              color: module.color,
                               fontSize: 16,
                             ),
                           ),

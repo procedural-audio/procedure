@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../bindings/api/module.dart';
 import '../views/settings.dart';
 
 import '../plugins.dart';
@@ -205,7 +204,7 @@ class _RightClickView extends State<RightClickView> {
                         return RightClickElement(
                           e,
                           Icons.piano,
-                          Color(e.color),
+                          e.color,
                           10,
                           widget.onAddModule,
                         );

@@ -5,18 +5,68 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'endpoint.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>
-abstract class Endpoint implements RustOpaqueInterface {
-  EndpointType get type;
+class Endpoint {
+  final EndpointType kind;
+  final String annotation;
+
+  const Endpoint({
+    required this.kind,
+    required this.annotation,
+  });
+
+  EndpointType get type => RustLib.instance.api.crateApiEndpointEndpointGetType(
+        that: this,
+      );
+
+  @override
+  int get hashCode => kind.hashCode ^ annotation.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Endpoint &&
+          runtimeType == other.runtimeType &&
+          kind == other.kind &&
+          annotation == other.annotation;
 }
 
-enum EndpointType {
-  stream,
-  value,
-  event,
+@freezed
+sealed class EndpointType with _$EndpointType {
+  const EndpointType._();
+
+  const factory EndpointType.stream(
+    StreamType field0,
+  ) = EndpointType_Stream;
+  const factory EndpointType.value(
+    ValueType field0,
+  ) = EndpointType_Value;
+  const factory EndpointType.event(
+    EventType field0,
+  ) = EndpointType_Event;
+}
+
+enum EventType {
+  midi,
+  bool,
+  int64,
+  ;
+}
+
+enum StreamType {
+  float32,
+  float64,
+  ;
+}
+
+enum ValueType {
+  float64,
+  int64,
+  bool,
   ;
 }

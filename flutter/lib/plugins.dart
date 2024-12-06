@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/module.dart';
 
 import 'dart:io';
 
+import 'module/info.dart';
 import 'patch/patch.dart';
 
 class Plugin {
@@ -19,7 +19,7 @@ class Plugin {
         .list(recursive: true)
         .where((item) => item.name.endsWith(".cmajorpatch"))
         .forEach((file) async {
-      var module = await Module.load(path: file.path);
+      var module = await Module.load(file.path);
       if (module != null) {
         print("Loaded module ${file.name} at ${file.path}");
         modules.add(module);

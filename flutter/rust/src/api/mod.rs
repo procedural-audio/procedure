@@ -1,7 +1,6 @@
 pub mod cable;
 pub mod endpoint;
 pub mod graph;
-pub mod module;
 pub mod node;
 
 use cmajor::*;

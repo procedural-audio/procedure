@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/module.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../module/info.dart';
@@ -24,10 +23,10 @@ class Connector extends StatelessWidget {
 
   Map<String, dynamic> toJson() {
     return {
-      "startId": start.nodeId,
-      "startIndex": start.pinIndex,
-      "endId": end.nodeId,
-      "endIndex": end.pinIndex,
+      // "startId": start.nodeId,
+      // "startIndex": start.pinIndex,
+      // "endId": end.nodeId,
+      // "endIndex": end.pinIndex,
       "type": type.toString(),
     };
   }
@@ -72,14 +71,14 @@ class NewConnector extends StatelessWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
-  EndpointType type = EndpointType.value;
+  EndpointType type = EndpointType.stream(StreamType.float32);
 
   NewConnector({super.key});
 
   void setStart(Pin? pin) {
     start = pin;
     if (pin != null) {
-      type = pin.type;
+      type = pin.endpoint.type;
     }
   }
 
