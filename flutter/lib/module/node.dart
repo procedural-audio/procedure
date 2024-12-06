@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:metasampler/module/info.dart';
 import 'package:metasampler/module/pin.dart';
-import 'package:metasampler/plugins.dart';
 import 'package:yaml/yaml.dart';
 
 import '../patch/connector.dart';
@@ -22,8 +21,6 @@ class Node extends StatelessWidget {
   Node({
     required this.module,
     required this.patch,
-    required this.connectors,
-    required this.selectedNodes,
     required this.onAddConnector,
     required this.onRemoveConnector,
     required this.onDrag,
@@ -31,8 +28,6 @@ class Node extends StatelessWidget {
 
   final Module module;
   final Patch patch;
-  final List<Connector> connectors;
-  final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
   final void Function(Offset) onDrag;
@@ -67,17 +62,7 @@ class Node extends StatelessWidget {
     widgets.value = newWidgets;
   }
 
-  void refreshSize() {
-    /*var newSize = Offset(
-      rawNode.getWidth(patch) + 0.0,
-      rawNode.getHeight(patch) + 0.0,
-    );
-
-    if (newSize.dx != size.dx || newSize.dy != size.dy) {
-      size = newSize;
-      position.notifyListeners();
-    }*/
-  }
+  void refreshSize() {}
 
   Map<String, dynamic> getState() {
     return {
@@ -95,11 +80,10 @@ class Node extends StatelessWidget {
     for (var endpoint in module.inputs) {
       print("Building input pin");
       pins.add(Pin(
-        node: this,
-        isInput: true,
         endpoint: endpoint,
-        connectors: connectors,
-        selectedNodes: selectedNodes,
+        node: this,
+        patch: patch,
+        isInput: true,
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
@@ -108,11 +92,10 @@ class Node extends StatelessWidget {
     for (var endpoint in module.outputs) {
       print("Building output pin");
       pins.add(Pin(
-        node: this,
         endpoint: endpoint,
+        node: this,
+        patch: patch,
         isInput: false,
-        connectors: connectors,
-        selectedNodes: selectedNodes,
         onAddConnector: onAddConnector,
         onRemoveConnector: onRemoveConnector,
       ));
@@ -126,15 +109,15 @@ class Node extends StatelessWidget {
           top: p.dy,
           child: GestureDetector(
             onTap: () {
-              if (selectedNodes.value.contains(this)) {
-                selectedNodes.value = [];
+              if (patch.selectedNodes.value.contains(this)) {
+                patch.selectedNodes.value = [];
               } else {
-                selectedNodes.value = [this];
+                patch.selectedNodes.value = [this];
               }
             },
             onPanStart: (details) {
-              if (!selectedNodes.value.contains(this)) {
-                selectedNodes.value = [this];
+              if (!patch.selectedNodes.value.contains(this)) {
+                patch.selectedNodes.value = [this];
               }
             },
             onPanUpdate: (details) {
@@ -144,7 +127,7 @@ class Node extends StatelessWidget {
               onDrag(details.localPosition);
             },
             child: ValueListenableBuilder<List<Node>>(
-              valueListenable: selectedNodes,
+              valueListenable: patch.selectedNodes,
               builder: (context, selectedNodes, child) {
                 bool selected = selectedNodes.contains(this);
                 return Container(

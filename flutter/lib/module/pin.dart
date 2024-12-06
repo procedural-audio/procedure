@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:convert';
 
+import '../patch/patch.dart';
 import 'node.dart';
 
 import '../bindings/api/endpoint.dart';
@@ -11,9 +12,8 @@ class Pin extends StatefulWidget {
   Pin({
     required this.node,
     required this.endpoint,
+    required this.patch,
     required this.isInput,
-    required this.connectors,
-    required this.selectedNodes,
     required this.onAddConnector,
     required this.onRemoveConnector,
   }) : super(key: UniqueKey()) {
@@ -28,20 +28,23 @@ class Pin extends StatefulWidget {
     }
 
     // Initialize the pin color
-    if (endpoint.type == EndpointType.stream) {
-      color = Colors.blue;
-    } else if (endpoint.type == EndpointType.event) {
-      color = Colors.green;
-    } else if (endpoint.type == EndpointType.value) {
-      color = Colors.red;
-    }
+    endpoint.type.when(
+      stream: (streamType) {
+        color = Colors.blue;
+      },
+      event: (eventType) {
+        color = Colors.green;
+      },
+      value: (valueType) {
+        color = Colors.red;
+      },
+    );
   }
 
-  final Node node;
   final Endpoint endpoint;
+  final Node node;
+  final Patch patch;
   final bool isInput;
-  final List<Connector> connectors;
-  final ValueNotifier<List<Node>> selectedNodes;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
 
@@ -58,14 +61,6 @@ class _PinState extends State<Pin> {
 
   @override
   Widget build(BuildContext context) {
-    bool connected = false;
-    for (var connector in widget.connectors) {
-      if (connector.start == widget || connector.end == widget) {
-        connected = true;
-        break;
-      }
-    }
-
     return Positioned(
       left: widget.offset.dx,
       top: widget.offset.dy,
@@ -110,25 +105,39 @@ class _PinState extends State<Pin> {
           onDoubleTap: () {
             // widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
           },
-          child: ValueListenableBuilder<List<Node>>(
-            valueListenable: widget.selectedNodes,
-            builder: (context, selectedNodes, child) {
-              bool selected = selectedNodes.contains(widget.node);
-              return Container(
-                width: 15,
-                height: 15,
-                decoration: BoxDecoration(
-                  color: hovering || dragging || connected
-                      ? (selected || hovering
-                          ? widget.color
-                          : widget.color.withOpacity(0.5))
-                      : Colors.transparent,
-                  border: Border.all(
-                    color: widget.color,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          child: ValueListenableBuilder<List<Connector>>(
+            valueListenable: widget.patch.connectors,
+            builder: (context, connectors, child) {
+              bool connected = false;
+              for (var connector in connectors) {
+                if (connector.start == widget || connector.end == widget) {
+                  connected = true;
+                  break;
+                }
+              }
+
+              return ValueListenableBuilder<List<Node>>(
+                valueListenable: widget.patch.selectedNodes,
+                builder: (context, selectedNodes, child) {
+                  bool is_selected = selectedNodes.contains(widget.node);
+
+                  return Container(
+                    width: 15,
+                    height: 15,
+                    decoration: BoxDecoration(
+                      color: hovering || dragging || connected
+                          ? (is_selected || hovering
+                              ? widget.color
+                              : widget.color.withOpacity(0.5))
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: widget.color,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  );
+                },
               );
             },
           ),

@@ -46,8 +46,8 @@ class Patch extends StatefulWidget {
     required this.info,
   }) : super(key: UniqueKey());
 
-  final List<Node> nodes = [];
-  final List<Connector> connectors = [];
+  final ValueNotifier<List<Node>> nodes = ValueNotifier([]);
+  final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
 
   // final RawPatch rawPatch;
@@ -64,7 +64,6 @@ class Patch extends StatefulWidget {
   }
 
   static Future<Patch?> load(PresetInfo info) async {
-    // var rawPatch = RawPatch.create();
     var file = File(info.directory.path + "/patch.json");
 
     if (!await file.exists()) {
@@ -126,8 +125,8 @@ class Patch extends StatefulWidget {
 
   Map<String, dynamic> getState() {
     return {
-      "nodes": nodes.map((e) => {e.module.path, e.getState()}).toList(),
-      "connectors": connectors.map((e) => e.toJson()).toList(),
+      "nodes": nodes.value.map((e) => {e.module.path, e.getState()}).toList(),
+      "connectors": connectors.value.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -175,69 +174,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     super.initState();
 
     print("Skipping patch initState");
-
-    /*widget.moveToValue.addListener(() {
-      print("MOVE VALUE LISTENER");
-      moveTo(widget.moveToValue.value);
-    });
-
-    animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    )..addListener(() {
-        print("Moving 3");
-        controller.value = animation.value;
-      });
-
-    timer = Timer.periodic(
-      const Duration(milliseconds: 20),
-      tick,
-    );
-
-    var count = widget.rawPatch.getNodeCount();
-    for (var i = 0; i < count; i++) {
-      var rawNode = widget.rawPatch.getNode(i);
-      nodes.add(
-        Node(
-          rawNode: rawNode,
-          patch: widget,
-          connectors: connectors,
-          selectedNodes: selectedNodes,
-          onAddConnector: (start, end) {
-            addConnector(start, end);
-            setState(() {});
-          },
-          onRemoveConnector: (nodeId, pinIndex) {
-            removeConnector(nodeId, pinIndex);
-            setState(() {});
-          },
-          onDrag: (offset) {
-            setState(() {});
-          },
-        ),
-      );
-    }
-
-    count = widget.rawPatch.getConnectorCount();
-    for (var i = 0; i < count; i++) {
-      var rawConnector = widget.rawPatch.getConnector(i);
-      for (var startNode in nodes) {
-        if (startNode.id == rawConnector.startId) {
-          var startPin = startNode.pins[rawConnector.startIndex];
-          for (var endNode in nodes) {
-            if (endNode.id == rawConnector.endId) {
-              var endPin = endNode.pins[rawConnector.endIndex];
-              connectors.add(Connector(
-                start: startPin,
-                end: endPin,
-                type: startPin.type,
-                selectedNodes: selectedNodes,
-              ));
-            }
-          }
-        }
-      }
-    }*/
   }
 
   @override
@@ -251,8 +187,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     var node = Node(
       module: module,
       patch: widget,
-      connectors: widget.connectors,
-      selectedNodes: widget.selectedNodes,
       onAddConnector: (start, end) {
         addConnector(start, end);
         setState(() {});
@@ -266,7 +200,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       },
     );
 
-    widget.nodes.add(node);
+    widget.nodes.value.add(node);
+    widget.nodes.notifyListeners();
   }
 
   void addConnector(Pin start, Pin end) {
@@ -274,10 +209,11 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       start: start,
       end: end,
       type: start.endpoint.type,
-      selectedNodes: widget.selectedNodes,
+      patch: widget,
     );
 
-    widget.connectors.add(connector);
+    widget.connectors.value.add(connector);
+    widget.connectors.notifyListeners();
   }
 
   void removeConnector(int nodeId, int pinIndex) {
@@ -288,65 +224,13 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
           (e.end.nodeId == nodeId && e.end.pinIndex == pinIndex),
     );*/
 
-    for (var node in widget.nodes) {
+    for (var node in widget.nodes.value) {
       node.refreshSize();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    /*var nodeCount = widget.rawPatch.getNodeCount();
-    for (int i = 0; i < nodeCount; i++) {
-      if (i >= nodes.length) {
-        var rawNode = widget.rawPatch.getNode(i);
-        var node = Node(
-          rawNode: rawNode,
-          patch: widget,
-          connectors: connectors,
-          selectedNodes: selectedNodes,
-          onAddConnector: (start, end) {
-            addConnector(start, end);
-            setState(() {});
-          },
-          onRemoveConnector: (nodeId, pinIndex) {
-            removeConnector(nodeId, pinIndex);
-            setState(() {});
-          },
-          onDrag: (offset) {
-            setState(() {});
-          },
-        );
-        nodes.add(node);
-      }
-    }
-
-    var connectorCount = widget.rawPatch.getConnectorCount();
-    for (int i = 0; i < connectorCount; i++) {
-      if (i >= connectors.length) {
-        var rawConnector = widget.rawPatch.getConnector(i);
-
-        for (var startNode in nodes) {
-          if (startNode.id == rawConnector.startId) {
-            for (var endNode in nodes) {
-              if (endNode.id == rawConnector.endId) {
-                var startPin = startNode.pins[rawConnector.startIndex];
-                var endPin = endNode.pins[rawConnector.endIndex];
-
-                var connector = Connector(
-                  start: startPin,
-                  end: endPin,
-                  type: startPin.type,
-                  selectedNodes: selectedNodes,
-                );
-
-                connectors.add(connector);
-              }
-            }
-          }
-        }
-      }
-    }*/
-
     return GestureDetector(
       onSecondaryTapDown: (details) {
         // Offset offset = controller.toScene(details.localPosition);
@@ -410,7 +294,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                             c.end.nodeId == node.id);
                       }*/
 
-                      widget.selectedNodes.value = [];
+                      // widget.selectedNodes.value = [];
                       setState(() {});
                     }
                   },
@@ -420,10 +304,22 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                     child: CustomPaint(
                       painter: Grid(),
                       child: Listener(
-                        child: Stack(
-                          children: <Widget>[widget.newConnector] +
-                              widget.nodes +
-                              widget.connectors,
+                        // Listen for new nodes
+                        child: ValueListenableBuilder<List<Node>>(
+                          valueListenable: widget.nodes,
+                          builder: (context, nodes, child) {
+                            // Listen for new connectors
+                            return ValueListenableBuilder<List<Connector>>(
+                              valueListenable: widget.connectors,
+                              builder: (context, connectors, child) {
+                                return Stack(
+                                  children: <Widget>[widget.newConnector] +
+                                      nodes +
+                                      connectors,
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                     ),

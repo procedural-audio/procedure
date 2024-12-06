@@ -204,19 +204,24 @@ class Module {
     double width = double.tryParse(json['width'].toString()) ?? 200;
     double height = double.tryParse(json['height'].toString()) ?? 150;
 
-    var node = Node.from(sources: sources);
+    try {
+      var node = Node.from(sources: sources);
 
-    return Module(
-      path: path,
-      name: json['name'] ?? "Unnamed",
-      version: json['version'] ?? "0.0.0",
-      description: json['description'] ?? "Empty description",
-      category: json['category'] ?? List<String>.empty(),
-      color: Colors.grey,
-      size: Size(width, height),
-      sources: sources,
-      inputs: node.inputs,
-      outputs: node.outputs,
-    );
+      return Module(
+        path: path,
+        name: json['name'] ?? "Unnamed",
+        version: json['version'] ?? "0.0.0",
+        description: json['description'] ?? "Empty description",
+        category: json['category'] ?? List<String>.empty(),
+        color: Colors.grey,
+        size: Size(width, height),
+        sources: sources,
+        inputs: node.inputs,
+        outputs: node.outputs,
+      );
+    } catch (e) {
+      print("Failed to create node: $e");
+      return null;
+    }
   }
 }

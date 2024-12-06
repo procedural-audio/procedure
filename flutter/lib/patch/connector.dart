@@ -7,19 +7,20 @@ import '../bindings/api/endpoint.dart';
 import '../module/info.dart';
 import '../module/node.dart';
 import '../module/pin.dart';
+import 'patch.dart';
 
 class Connector extends StatelessWidget {
   Connector({
     required this.start,
     required this.end,
     required this.type,
-    required this.selectedNodes,
+    required this.patch,
   }) : super(key: UniqueKey());
 
   final Pin start;
   final Pin end;
   final EndpointType type;
-  final ValueNotifier<List<Node>> selectedNodes;
+  final Patch patch;
 
   Map<String, dynamic> toJson() {
     return {
@@ -34,7 +35,7 @@ class Connector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Node>>(
-      valueListenable: selectedNodes,
+      valueListenable: patch.selectedNodes,
       builder: (context, selectedNodes, child) {
         bool focused = selectedNodes.contains(start.node) ||
             selectedNodes.contains(end.node);
@@ -54,7 +55,7 @@ class Connector extends StatelessWidget {
                       end.offset.dx + endModuleOffset.dx + 15 / 2,
                       end.offset.dy + endModuleOffset.dy + 15 / 2,
                     ),
-                    type,
+                    start.color,
                     focused,
                   ),
                 );
@@ -116,7 +117,7 @@ class NewConnector extends StatelessWidget {
             painter: ConnectorPainter(
               startOffset,
               endOffset,
-              type,
+              start!.color,
               true,
             ),
           );
@@ -132,13 +133,13 @@ class ConnectorPainter extends CustomPainter {
   ConnectorPainter(
     this.initialStart,
     this.initialEnd,
-    this.type,
+    this.color,
     this.focused,
   );
 
   Offset initialStart;
   Offset initialEnd;
-  EndpointType type;
+  Color color;
   bool focused;
 
   @override
@@ -148,13 +149,7 @@ class ConnectorPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
-    if (type == EndpointType.stream) {
-      paint.color = Colors.blue.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == EndpointType.event) {
-      paint.color = Colors.green.withOpacity(focused ? 1.0 : 0.3);
-    } else if (type == EndpointType.value) {
-      paint.color = Colors.red.withOpacity(focused ? 1.0 : 0.3);
-    }
+    paint.color = color.withOpacity(focused ? 1.0 : 0.3);
 
     Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);
     Offset end = Offset(initialEnd.dx - 3, initialEnd.dy + 2);
@@ -183,6 +178,6 @@ class ConnectorPainter extends CustomPainter {
         oldDelegate.initialStart.dy != initialStart.dy ||
         oldDelegate.initialEnd.dx != initialEnd.dy ||
         oldDelegate.initialEnd.dy != initialEnd.dy ||
-        oldDelegate.type != type;
+        oldDelegate.color != color;
   }
 }
