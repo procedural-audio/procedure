@@ -1,0 +1,20 @@
+/**
+    A simple synth using sine oscillators, showing use of the voice allocator,
+    message converter and envelopes
+*/
+
+// Determine the note frequency from the pitch (midi note)
+processor Mul [[ main ]]
+{
+    input value float32 a [[ top: 10 ]];
+    input value float32 b [[ top: 10 + 25 ]];
+    output value float32 c [[ top: 10 ]];
+
+    void main()
+    {
+        loop {
+            c <- a * b;
+            advance();
+        }
+    }
+}

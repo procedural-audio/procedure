@@ -15,11 +15,32 @@ class Plugin {
   static Future<Plugin?> load(String path) async {
     List<Module> modules = [];
 
-    await Directory(path)
+    var directory = Directory(path);
+
+    directory
         .list(recursive: true)
         .where((item) => item.name.endsWith(".cmajorpatch"))
         .forEach((file) async {
-      var module = await Module.load(file.path);
+      var module = await Module.loadFromPatch(file.path);
+      if (module != null) {
+        print("Loaded cmajor patch ${file.name} at ${file.path}");
+        modules.add(module);
+      } else {
+        print("Failed to load cmajor patch: ${file.path}");
+      }
+    });
+
+    directory
+        .list(recursive: true)
+        .where((item) => item.name.endsWith(".module"))
+        .forEach((file) async {
+      var name = file.name.replaceAll(".module", "");
+
+      var category = file.parent.path
+          .replaceFirst(directory.path, "")
+          .split("/")
+        ..remove("");
+      var module = await Module.load(name, category, file.path);
       if (module != null) {
         print("Loaded module ${file.name} at ${file.path}");
         modules.add(module);
@@ -28,7 +49,7 @@ class Plugin {
       }
     });
 
-    return Plugin("Temp Plugin Name", 1, ValueNotifier(modules));
+    return Plugin(directory.name, 1, ValueNotifier(modules));
   }
 
   ValueNotifier<List<Module>> modules() {

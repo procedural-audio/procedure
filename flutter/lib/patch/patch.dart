@@ -125,8 +125,8 @@ class Patch extends StatefulWidget {
 
   Map<String, dynamic> getState() {
     return {
-      "nodes": nodes.value.map((e) => {e.module.path, e.getState()}).toList(),
-      "connectors": connectors.value.map((e) => e.toJson()).toList(),
+      // "nodes": nodes.value.map((e) => {e.module.path, e.getState()}).toList(),
+      // "connectors": connectors.value.map((e) => e.toJson()).toList(),
     };
   }
 

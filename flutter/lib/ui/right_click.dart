@@ -124,77 +124,81 @@ class _RightClickMenu extends State<RightClickMenu> {
     }
 
     return MouseRegion(
-        onEnter: (event) {
-          // globals.patchingScaleEnabled = false;
-          // globals.window.patchingView.refresh();
-        },
-        onExit: (event) {
-          // globals.patchingScaleEnabled = true;
-          // globals.window.patchingView.refresh();
-        },
-        child: Container(
-          width: 300,
-          child: Column(
-            children: [
-              /* Title */
-              Container(
-                height: 35,
-                padding: const EdgeInsets.all(10.0),
-                child: const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Widgets",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal),
-                  ),
-                ),
-              ),
-
-              /* Search bar */
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-                child: Container(
-                  height: 20,
-                  child: TextField(
-                    maxLines: 1,
-                    style: const TextStyle(
-                      color: Colors.black,
+      onEnter: (event) {
+        // globals.patchingScaleEnabled = false;
+        // globals.window.patchingView.refresh();
+      },
+      onExit: (event) {
+        // globals.patchingScaleEnabled = true;
+        // globals.window.patchingView.refresh();
+      },
+      child: Container(
+        width: 300,
+        child: Column(
+          children: [
+            /* Title */
+            Container(
+              height: 35,
+              padding: const EdgeInsets.all(10.0),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Widgets",
+                  style: TextStyle(
+                      color: Colors.white,
                       fontSize: 14,
-                    ),
-                    decoration: const InputDecoration(
-                        fillColor: Color.fromARGB(255, 112, 35, 30),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3)),
-                    onChanged: (data) {
-                      setState(() {
-                        searchText = data;
-                      });
-                    },
-                  ),
-                  decoration: const BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.all(Radius.circular(5.0))),
+                      fontWeight: FontWeight.normal),
                 ),
               ),
+            ),
 
-              /* List */
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 300),
-                child: SingleChildScrollView(
-                  controller: ScrollController(),
-                  child: Column(
-                    children: filteredWidgets,
+            /* Search bar */
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+              child: Container(
+                height: 20,
+                child: TextField(
+                  maxLines: 1,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
                   ),
+                  decoration: const InputDecoration(
+                      fillColor: Color.fromARGB(255, 112, 35, 30),
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3)),
+                  onChanged: (data) {
+                    setState(() {
+                      searchText = data;
+                    });
+                  },
+                ),
+                decoration: const BoxDecoration(
+                    color: Colors.white70,
+                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
+              ),
+            ),
+
+            /* List */
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 300),
+              child: SingleChildScrollView(
+                controller: ScrollController(),
+                child: Column(
+                  children: filteredWidgets,
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(20, 20, 20, 1.0),
+          border: Border.all(
+            color: const Color.fromRGBO(40, 40, 40, 1.0),
           ),
-          decoration: BoxDecoration(
-              color: const Color.fromRGBO(20, 20, 20, 1.0),
-              border: Border.all(color: const Color.fromRGBO(40, 40, 40, 1.0))),
-        ));
+        ),
+      ),
+    );
   }
 }
 
@@ -218,52 +222,56 @@ class _RightClickCategoryState extends State<RightClickCategory> {
     return Column(
       children: <Widget>[
             MouseRegion(
-                onEnter: (event) {
+              onEnter: (event) {
+                setState(() {
+                  hovering = true;
+                });
+              },
+              onExit: (event) {
+                setState(() {
+                  hovering = false;
+                });
+              },
+              child: GestureDetector(
+                onTap: () {
                   setState(() {
-                    hovering = true;
+                    expanded = !expanded;
                   });
                 },
-                onExit: (event) {
-                  setState(() {
-                    hovering = false;
-                  });
-                },
-                child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        expanded = !expanded;
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
-                      height: 24,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Row(children: [
-                          Icon(
-                            expanded
-                                ? Icons.arrow_drop_up
-                                : Icons.arrow_drop_down,
-                            //color: Colors.white,
-                            color: const Color.fromRGBO(200, 200, 200, 1.0),
-                            size: 20,
-                          ),
-                          Text(
-                            widget.name,
-                            style: const TextStyle(
-                                //color: Colors.white,
-                                color: Color.fromRGBO(200, 200, 200, 1.0),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300),
-                          )
-                        ]),
-                      ),
-                      decoration: BoxDecoration(
-                        color: hovering
-                            ? const Color.fromRGBO(40, 40, 40, 1.0)
-                            : const Color.fromRGBO(20, 20, 20, 1.0),
-                      ),
-                    )))
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
+                  height: 24,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        Icon(
+                          expanded
+                              ? Icons.arrow_drop_up
+                              : Icons.arrow_drop_down,
+                          //color: Colors.white,
+                          color: const Color.fromRGBO(200, 200, 200, 1.0),
+                          size: 20,
+                        ),
+                        Text(
+                          widget.name,
+                          style: const TextStyle(
+                              //color: Colors.white,
+                              color: Color.fromRGBO(200, 200, 200, 1.0),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300),
+                        )
+                      ],
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: hovering
+                        ? const Color.fromRGBO(40, 40, 40, 1.0)
+                        : const Color.fromRGBO(20, 20, 20, 1.0),
+                  ),
+                ),
+              ),
+            )
           ] +
           (expanded ? widget.elements : []),
     );
@@ -295,59 +303,64 @@ class _RightClickElementState extends State<RightClickElement> {
     //print(iconPath);
 
     return MouseRegion(
-        onEnter: (event) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (event) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: () {
-              /*if (globals.host.graph.addModule(widget.name, widget.addPosition)) {
+      onEnter: (event) {
+        setState(() {
+          hovering = true;
+        });
+      },
+      onExit: (event) {
+        setState(() {
+          hovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTap: () {
+          /*if (globals.host.graph.addModule(widget.name, widget.addPosition)) {
                 gGridState?.refresh();
               } else {
                 print("Couldn't add module");
               }*/
-              print("Add widget here");
-            },
-            child: Container(
-              padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
-              height: 22,
-              child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Row(children: [
-                    Icon(
-                      widget.icon,
-                      color: widget.color,
-                      size: 16,
-                    ),
-                    /*SvgPicture.file(
+          print("Add widget here");
+        },
+        child: Container(
+          padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
+          height: 22,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: [
+                Icon(
+                  widget.icon,
+                  color: widget.color,
+                  size: 16,
+                ),
+                /*SvgPicture.file(
                   File(iconPath),
                   height: 16,
                   width: 16,
                   color: widget.color,
                   fit: BoxFit.fill,
                 ),*/
-                    Container(
-                      width: 5,
-                    ),
-                    Text(
-                      widget.name,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300),
-                    ),
-                  ])),
-              decoration: BoxDecoration(
-                color: hovering
-                    ? const Color.fromRGBO(40, 40, 40, 1.0)
-                    : const Color.fromRGBO(20, 20, 20, 1.0),
-              ),
-            )));
+                Container(
+                  width: 5,
+                ),
+                Text(
+                  widget.name,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+          ),
+          decoration: BoxDecoration(
+            color: hovering
+                ? const Color.fromRGBO(40, 40, 40, 1.0)
+                : const Color.fromRGBO(20, 20, 20, 1.0),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:metasampler/module/info.dart';
 import 'package:metasampler/module/pin.dart';
@@ -32,7 +30,6 @@ class Node extends StatelessWidget {
   final void Function(int, int) onRemoveConnector;
   final void Function(Offset) onDrag;
 
-  int id = 1;
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
   ValueNotifier<List<NodeWidget>> widgets = ValueNotifier([]);
 
@@ -66,7 +63,7 @@ class Node extends StatelessWidget {
 
   Map<String, dynamic> getState() {
     return {
-      "id": id,
+      // "id": id,
       "x": position.value.dx,
       "y": position.value.dy,
       "widgets": widgets.value.map((widget) => widget.getState()).toList(),

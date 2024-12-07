@@ -5,6 +5,68 @@ import '../views/settings.dart';
 import '../plugins.dart';
 import '../module/info.dart';
 
+void add_module_to_category(
+  Module module,
+  double indent,
+  List<String> categoryNames,
+  List<RightClickCategory> categories,
+  void Function(Module) onAddModule,
+) {
+  if (categoryNames.length == 0) {
+    categoryNames = ["Miscellaneous"];
+  }
+
+  for (var category in categories) {
+    if (category.name == categoryNames[0]) {
+      if (categoryNames.length == 1) {
+        category.elements.add(
+          RightClickElement(
+            module,
+            indent,
+            onAddModule,
+          ),
+        );
+        return;
+      } else {
+        add_module_to_category(
+          module,
+          indent + 10,
+          categoryNames.sublist(1),
+          category.categories,
+          onAddModule,
+        );
+        return;
+      }
+    }
+  }
+
+  RightClickCategory newCategory = RightClickCategory(
+    categoryNames[0],
+    indent,
+  );
+
+  if (categoryNames.length == 1) {
+    // print("Adding " + module.name + " to category " + categoryNames.toString());
+    newCategory.elements.add(
+      RightClickElement(
+        module,
+        indent + 10,
+        onAddModule,
+      ),
+    );
+  } else {
+    add_module_to_category(
+      module,
+      indent + 10,
+      categoryNames.sublist(1),
+      newCategory.categories,
+      onAddModule,
+    );
+  }
+
+  categories.add(newCategory);
+}
+
 class RightClickView extends StatefulWidget {
   RightClickView({super.key, required this.onAddModule});
 
@@ -19,206 +81,109 @@ class _RightClickView extends State<RightClickView> {
 
   @override
   Widget build(BuildContext context) {
+    // Build the plugin list
     return ValueListenableBuilder<List<Plugin>>(
       valueListenable: Plugins.list(),
       builder: (context, plugins, child) {
-        List<Module> specs = [];
+        return Stack(
+          children: plugins.map((plugin) {
+            // Build the module list
+            return ValueListenableBuilder<List<Module>>(
+              valueListenable: plugin.modules(),
+              builder: (context, modules, child) {
+                List<RightClickCategory> categories = [];
 
-        for (var plugin in plugins) {
-          specs.addAll(plugin.modules().value);
-        }
-
-        print("Found ${specs.length} modules");
-
-        List<RightClickCategory> categories = [];
-
-        /*for (var spec in specs) {
-          var path = spec.category;
-
-          if (path.length == 1) {
-            var name = path[0];
-          } else if (path.length == 2) {
-            var categoryName = path[0];
-            var elementName = path[1];
-
-            var element = RightClickElement(
-              spec,
-              Icons.piano,
-              spec.color,
-              20,
-              widget.onAddModule,
-            );
-
-            bool foundCategory = false;
-            for (var category in categories) {
-              if (category.name == categoryName) {
-                foundCategory = true;
-                category.elements.add(element);
-                break;
-              }
-            }
-
-            if (!foundCategory) {
-              categories.add(RightClickCategory(categoryName, 10, [element]));
-            }
-          } else if (path.length == 3) {
-            var categoryName = path[0];
-            var subCategoryName = path[1];
-            var elementName = path[2];
-
-            var element = RightClickElement(
-              spec,
-              Icons.piano,
-              spec.color,
-              30,
-              widget.onAddModule,
-            );
-
-            bool foundCategory = false;
-            for (var category in categories) {
-              if (category.name == categoryName) {
-                foundCategory = true;
-                bool foundSubCategory = false;
-                for (var subCategory in category.elements) {
-                  if (subCategory is RightClickCategory) {
-                    if (subCategory.name == subCategoryName) {
-                      foundSubCategory = true;
-                      subCategory.elements.add(element);
-                      break;
-                    }
-                  }
+                for (var module in modules) {
+                  add_module_to_category(
+                    module,
+                    4,
+                    module.category,
+                    categories,
+                    widget.onAddModule,
+                  );
                 }
 
-                if (!foundSubCategory) {
-                  category.elements
-                      .add(RightClickCategory(subCategoryName, 20, [element]));
-                }
-                break;
-              }
-            }
-
-            if (!foundCategory) {
-              categories.add(RightClickCategory(categoryName, 10, [
-                RightClickCategory(subCategoryName, 20, [element])
-              ]));
-            }
-          }
-        }
-
-        categories.sort((a, b) => a.name.compareTo(b.name));
-
-        List<Widget> filteredWidgets = [];
-
-        if (searchText != "") {
-          for (var category in categories) {
-            bool addedCategory = false;
-            for (var element in category.elements) {
-              bool addedSubCategory = false;
-              if (element.runtimeType == RightClickCategory) {
-                for (var element2 in (element as RightClickCategory).elements) {
-                  if ((element2 as RightClickElement)
-                      .spec
-                      .path
-                      .toLowerCase()
-                      .contains(searchText.toLowerCase())) {
-                    filteredWidgets.add(element2);
-                  }
-                }
-              }
-            }
-          }
-        } else {
-          filteredWidgets = categories;
-        }*/
-
-        return MouseRegion(
-          onEnter: (event) {
-            // widget.app.patchingScaleEnabled = false;
-          },
-          onExit: (event) {
-            // widget.app.patchingScaleEnabled = true;
-          },
-          child: Container(
-            width: 300,
-            child: Column(
-              children: [
-                /* Title */
-                Container(
-                  height: 35,
-                  padding: const EdgeInsets.all(10.0),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Modules",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-
-                /* Search bar */
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+                return MouseRegion(
+                  onEnter: (event) {
+                    // widget.app.patchingScaleEnabled = false;
+                  },
+                  onExit: (event) {
+                    // widget.app.patchingScaleEnabled = true;
+                  },
                   child: Container(
-                    height: 20,
-                    child: TextField(
-                      maxLines: 1,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                      ),
-                      decoration: const InputDecoration(
-                        fillColor: Color.fromARGB(255, 112, 35, 30),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
-                      ),
-                      onChanged: (data) {
-                        setState(() {
-                          searchText = data;
-                        });
-                      },
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white70,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5.0),
-                      ),
-                    ),
-                  ),
-                ),
-
-                /* List */
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 300),
-                  child: SingleChildScrollView(
-                    controller: ScrollController(),
+                    width: 300,
                     child: Column(
-                      children: specs
-                          .where((e) => e.name
-                              .toLowerCase()
-                              .contains(searchText.toLowerCase()))
-                          .map((e) {
-                        return RightClickElement(
-                          e,
-                          Icons.piano,
-                          e.color,
-                          10,
-                          widget.onAddModule,
-                        );
-                      }).toList(),
+                      children: [
+                        /* Title */
+                        Container(
+                          height: 35,
+                          padding: const EdgeInsets.all(10.0),
+                          child: const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Modules",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        /* Search bar */
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+                          child: Container(
+                            height: 20,
+                            child: TextField(
+                              maxLines: 1,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                              ),
+                              decoration: const InputDecoration(
+                                fillColor: Color.fromARGB(255, 112, 35, 30),
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(10, 10, 0, 3),
+                              ),
+                              onChanged: (data) {
+                                setState(() {
+                                  searchText = data;
+                                });
+                              },
+                            ),
+                            decoration: const BoxDecoration(
+                              color: Colors.white70,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5.0),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        /* List */
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 300),
+                          child: SingleChildScrollView(
+                            controller: ScrollController(),
+                            child: Column(
+                              children: categories,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    decoration: BoxDecoration(
+                      color: MyTheme.grey20,
+                      border: Border.all(color: MyTheme.grey40),
                     ),
                   ),
-                ),
-              ],
-            ),
-            decoration: BoxDecoration(
-              color: MyTheme.grey20,
-              border: Border.all(color: MyTheme.grey40),
-            ),
-          ),
+                );
+              },
+            );
+          }).toList(),
         );
       },
     );
@@ -228,9 +193,10 @@ class _RightClickView extends State<RightClickView> {
 class RightClickCategory extends StatefulWidget {
   final String name;
   final double indent;
-  final List<Widget> elements;
+  final List<RightClickCategory> categories = [];
+  final List<RightClickElement> elements = [];
 
-  const RightClickCategory(this.name, this.indent, this.elements, {super.key});
+  RightClickCategory(this.name, this.indent, {super.key});
 
   @override
   State<RightClickCategory> createState() => _RightClickCategoryState();
@@ -302,20 +268,17 @@ class _RightClickCategoryState extends State<RightClickCategory> {
               ),
             ),
           ] +
-          (expanded ? widget.elements : []),
+          (expanded ? <Widget>[] + widget.elements + widget.categories : []),
     );
   }
 }
 
 class RightClickElement extends StatefulWidget {
-  final Module spec;
+  final Module module;
   final double indent;
-  final IconData icon;
-  final Color color;
   final void Function(Module info) onAddModule;
 
-  const RightClickElement(
-      this.spec, this.icon, this.color, this.indent, this.onAddModule,
+  const RightClickElement(this.module, this.indent, this.onAddModule,
       {super.key});
 
   @override
@@ -327,7 +290,7 @@ class _RightClickElementState extends State<RightClickElement> {
 
   @override
   Widget build(BuildContext context) {
-    String name = widget.spec.name;
+    String name = widget.module.name;
 
     return MouseRegion(
       onEnter: (event) {
@@ -344,7 +307,7 @@ class _RightClickElementState extends State<RightClickElement> {
       },
       child: GestureDetector(
         onTap: () {
-          widget.onAddModule(widget.spec);
+          widget.onAddModule(widget.module);
         },
         child: Container(
           padding: EdgeInsets.fromLTRB(widget.indent, 0, 0, 0),
@@ -357,7 +320,7 @@ class _RightClickElementState extends State<RightClickElement> {
                   width: 15,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: widget.color,
+                    color: widget.module.color,
                     borderRadius: const BorderRadius.all(
                       Radius.circular(5.0),
                     ),

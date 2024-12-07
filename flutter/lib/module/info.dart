@@ -155,10 +155,8 @@ class WidgetInfo {
 
 class Module {
   Module({
-    required this.path,
     required this.name,
-    required this.version,
-    required this.description,
+    // required this.description,
     required this.category,
     required this.color,
     required this.size,
@@ -167,10 +165,8 @@ class Module {
     required this.outputs,
   });
 
-  String path;
   String name;
-  String version;
-  String description;
+  // String description;
   List<String> category;
   Color color;
   Size size;
@@ -178,43 +174,33 @@ class Module {
   List<Endpoint> inputs;
   List<Endpoint> outputs;
 
-  static Future<Module?> load(String path) async {
+  static Future<Module?> loadFromPatch(String path) async {
     var contents = await File(path).readAsString();
     var json = jsonDecode(contents);
+    var name = json['name'] ?? "Unnamed";
+    var sourcePath = File(path).parent.path + "/" + json['source'];
+    var category = <String>[]; // TODO: Parse the module category
+    return await Module.load(name, category, sourcePath);
+  }
 
-    List<String> sources = [];
+  static Future<Module?> load(
+      String name, List<String> category, String path) async {
+    List<String> sources = [await File(path).readAsString()];
 
-    /*
+    print("Got category $category");
 
-    // Add multiple sources
-    List<String> sourcePaths = json['source'] ?? List<String>.empty();
-
-    for (var path in sourcePaths) {
-      var sourcePath = File(path).parent.path + "/" + path;
-      sources.add(await File(sourcePath).readAsString());
-    }
-    */
-
-    var sourceName = json['source'];
-    if (sourceName != null) {
-      var sourcePath = File(path).parent.path + "/" + sourceName;
-      sources.add(await File(sourcePath).readAsString());
-    }
-
-    double width = double.tryParse(json['width'].toString()) ?? 200;
-    double height = double.tryParse(json['height'].toString()) ?? 150;
+    // double width = double.tryParse(json['width'].toString()) ?? 200;
+    // double height = double.tryParse(json['height'].toString()) ?? 150;
 
     try {
       var node = Node.from(sources: sources);
 
       return Module(
-        path: path,
-        name: json['name'] ?? "Unnamed",
-        version: json['version'] ?? "0.0.0",
-        description: json['description'] ?? "Empty description",
-        category: json['category'] ?? List<String>.empty(),
+        name: name,
+        // description: json['description'] ?? "Empty description",
+        category: category,
         color: Colors.grey,
-        size: Size(width, height),
+        size: Size(200, 150),
         sources: sources,
         inputs: node.inputs,
         outputs: node.outputs,
