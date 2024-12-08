@@ -6,9 +6,9 @@
 // Determine the note frequency from the pitch (midi note)
 processor Sub [[ main ]]
 {
-    input value float32 a [[ top: 10 ]];
-    input value float32 b [[ top: 10 + 25 ]];
-    output value float32 c [[ top: 10 ]];
+    input value float32 a [[ pinTop: 10 ]];
+    input value float32 b [[ pinTop: 10 + 25 ]];
+    output value float32 c [[ pinTop: 10 ]];
 
     void main()
     {

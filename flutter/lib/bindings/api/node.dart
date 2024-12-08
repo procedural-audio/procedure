@@ -7,27 +7,12 @@ import '../frb_generated.dart';
 import 'endpoint.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// This is a single processor unit in the graph
-class Node {
-  final List<Endpoint> inputs;
-  final List<Endpoint> outputs;
-
-  const Node({
-    required this.inputs,
-    required this.outputs,
-  });
-
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>
+abstract class Node implements RustOpaqueInterface {
   static Node from({required List<String> sources}) =>
       RustLib.instance.api.crateApiNodeNodeFrom(sources: sources);
 
-  @override
-  int get hashCode => inputs.hashCode ^ outputs.hashCode;
+  List<Endpoint> get inputs;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Node &&
-          runtimeType == other.runtimeType &&
-          inputs == other.inputs &&
-          outputs == other.outputs;
+  List<Endpoint> get outputs;
 }

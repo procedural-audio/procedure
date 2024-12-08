@@ -70,7 +70,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.3.0';
 
   @override
-  int get rustContentHash => -1488295715;
+  int get rustContentHash => 366580807;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -85,9 +85,19 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiInitApp();
 
-  EndpointType crateApiEndpointEndpointGetType({required Endpoint that});
+  EndpointKind crateApiEndpointEndpointGetType({required Endpoint that});
 
   Node crateApiNodeNodeFrom({required List<String> sources});
+
+  List<Endpoint> crateApiNodeNodeGetInputs({required Node that});
+
+  List<Endpoint> crateApiNodeNodeGetOutputs({required Node that});
+
+  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Node;
+
+  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Node;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_NodePtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -145,7 +155,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  EndpointType crateApiEndpointEndpointGetType({required Endpoint that}) {
+  EndpointKind crateApiEndpointEndpointGetType({required Endpoint that}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
@@ -153,7 +163,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
       },
       codec: SseCodec(
-        decodeSuccessData: sse_decode_endpoint_type,
+        decodeSuccessData: sse_decode_endpoint_kind,
         decodeErrorData: null,
       ),
       constMeta: kCrateApiEndpointEndpointGetTypeConstMeta,
@@ -177,7 +187,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
       },
       codec: SseCodec(
-        decodeSuccessData: sse_decode_node,
+        decodeSuccessData:
+            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode,
         decodeErrorData: null,
       ),
       constMeta: kCrateApiNodeNodeFromConstMeta,
@@ -187,9 +198,87 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   TaskConstMeta get kCrateApiNodeNodeFromConstMeta => const TaskConstMeta(
-        debugName: "node_from",
+        debugName: "Node_from",
         argNames: ["sources"],
       );
+
+  @override
+  List<Endpoint> crateApiNodeNodeGetInputs({required Node that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_endpoint,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiNodeNodeGetInputsConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNodeNodeGetInputsConstMeta => const TaskConstMeta(
+        debugName: "Node_get_inputs",
+        argNames: ["that"],
+      );
+
+  @override
+  List<Endpoint> crateApiNodeNodeGetOutputs({required Node that}) {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+            that, serializer);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_endpoint,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiNodeNodeGetOutputsConstMeta,
+      argValues: [that],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiNodeNodeGetOutputsConstMeta => const TaskConstMeta(
+        debugName: "Node_get_outputs",
+        argNames: ["that"],
+      );
+
+  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Node =>
+      wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode;
+
+  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Node =>
+      wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode;
+
+  @protected
+  Node
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NodeImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Node
+      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NodeImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Node
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return NodeImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
 
   @protected
   String dco_decode_String(dynamic raw) {
@@ -207,12 +296,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Endpoint dco_decode_endpoint(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return Endpoint(
-      kind: dco_decode_endpoint_type(arr[0]),
-      direction: dco_decode_endpoint_direction(arr[1]),
-      annotation: dco_decode_String(arr[2]),
+      handle: dco_decode_u_32(arr[0]),
+      kind: dco_decode_endpoint_kind(arr[1]),
+      direction: dco_decode_endpoint_direction(arr[2]),
+      annotation: dco_decode_String(arr[3]),
     );
   }
 
@@ -223,19 +313,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  EndpointType dco_decode_endpoint_type(dynamic raw) {
+  EndpointKind dco_decode_endpoint_kind(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     switch (raw[0]) {
       case 0:
-        return EndpointType_Stream(
+        return EndpointKind_Stream(
           dco_decode_stream_type(raw[1]),
         );
       case 1:
-        return EndpointType_Value(
+        return EndpointKind_Value(
           dco_decode_value_type(raw[1]),
         );
       case 2:
-        return EndpointType_Event(
+        return EndpointKind_Event(
           dco_decode_event_type(raw[1]),
         );
       default:
@@ -274,21 +364,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Node dco_decode_node(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return Node(
-      inputs: dco_decode_list_endpoint(arr[0]),
-      outputs: dco_decode_list_endpoint(arr[1]),
-    );
-  }
-
-  @protected
   StreamType dco_decode_stream_type(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return StreamType.values[raw as int];
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
   }
 
   @protected
@@ -304,9 +388,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
   ValueType dco_decode_value_type(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ValueType.values[raw as int];
+  }
+
+  @protected
+  Node
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NodeImpl.frbInternalSseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  Node
+      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NodeImpl.frbInternalSseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  Node
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return NodeImpl.frbInternalSseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
   @protected
@@ -325,11 +442,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   Endpoint sse_decode_endpoint(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_kind = sse_decode_endpoint_type(deserializer);
+    var var_handle = sse_decode_u_32(deserializer);
+    var var_kind = sse_decode_endpoint_kind(deserializer);
     var var_direction = sse_decode_endpoint_direction(deserializer);
     var var_annotation = sse_decode_String(deserializer);
     return Endpoint(
-        kind: var_kind, direction: var_direction, annotation: var_annotation);
+        handle: var_handle,
+        kind: var_kind,
+        direction: var_direction,
+        annotation: var_annotation);
   }
 
   @protected
@@ -341,20 +462,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  EndpointType sse_decode_endpoint_type(SseDeserializer deserializer) {
+  EndpointKind sse_decode_endpoint_kind(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var tag_ = sse_decode_i_32(deserializer);
     switch (tag_) {
       case 0:
         var var_field0 = sse_decode_stream_type(deserializer);
-        return EndpointType_Stream(var_field0);
+        return EndpointKind_Stream(var_field0);
       case 1:
         var var_field0 = sse_decode_value_type(deserializer);
-        return EndpointType_Value(var_field0);
+        return EndpointKind_Value(var_field0);
       case 2:
         var var_field0 = sse_decode_event_type(deserializer);
-        return EndpointType_Event(var_field0);
+        return EndpointKind_Event(var_field0);
       default:
         throw UnimplementedError('');
     }
@@ -405,18 +526,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Node sse_decode_node(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_inputs = sse_decode_list_endpoint(deserializer);
-    var var_outputs = sse_decode_list_endpoint(deserializer);
-    return Node(inputs: var_inputs, outputs: var_outputs);
-  }
-
-  @protected
   StreamType sse_decode_stream_type(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return StreamType.values[inner];
+  }
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
   }
 
   @protected
@@ -431,6 +550,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
   ValueType sse_decode_value_type(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
@@ -441,6 +566,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          Node self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+        (self as NodeImpl).frbInternalSseEncode(move: true), serializer);
+  }
+
+  @protected
+  void
+      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          Node self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+        (self as NodeImpl).frbInternalSseEncode(move: false), serializer);
+  }
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          Node self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+        (self as NodeImpl).frbInternalSseEncode(move: null), serializer);
   }
 
   @protected
@@ -459,7 +611,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_endpoint(Endpoint self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_endpoint_type(self.kind, serializer);
+    sse_encode_u_32(self.handle, serializer);
+    sse_encode_endpoint_kind(self.kind, serializer);
     sse_encode_endpoint_direction(self.direction, serializer);
     sse_encode_String(self.annotation, serializer);
   }
@@ -472,16 +625,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_endpoint_type(EndpointType self, SseSerializer serializer) {
+  void sse_encode_endpoint_kind(EndpointKind self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     switch (self) {
-      case EndpointType_Stream(field0: final field0):
+      case EndpointKind_Stream(field0: final field0):
         sse_encode_i_32(0, serializer);
         sse_encode_stream_type(field0, serializer);
-      case EndpointType_Value(field0: final field0):
+      case EndpointKind_Value(field0: final field0):
         sse_encode_i_32(1, serializer);
         sse_encode_value_type(field0, serializer);
-      case EndpointType_Event(field0: final field0):
+      case EndpointKind_Event(field0: final field0):
         sse_encode_i_32(2, serializer);
         sse_encode_event_type(field0, serializer);
       default:
@@ -528,16 +681,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_node(Node self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_endpoint(self.inputs, serializer);
-    sse_encode_list_endpoint(self.outputs, serializer);
-  }
-
-  @protected
   void sse_encode_stream_type(StreamType self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
   }
 
   @protected
@@ -552,6 +704,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
   void sse_encode_value_type(ValueType self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
@@ -562,4 +720,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
   }
+}
+
+@sealed
+class NodeImpl extends RustOpaque implements Node {
+  // Not to be used by end users
+  NodeImpl.frbInternalDcoDecode(List<dynamic> wire)
+      : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  NodeImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_Node,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_Node,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_NodePtr,
+  );
+
+  List<Endpoint> get inputs => RustLib.instance.api.crateApiNodeNodeGetInputs(
+        that: this,
+      );
+
+  List<Endpoint> get outputs => RustLib.instance.api.crateApiNodeNodeGetOutputs(
+        that: this,
+      );
 }

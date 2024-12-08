@@ -12,28 +12,35 @@ part 'endpoint.freezed.dart';
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
 
 class Endpoint {
-  final EndpointType kind;
+  final int handle;
+  final EndpointKind kind;
   final EndpointDirection direction;
   final String annotation;
 
   const Endpoint({
+    required this.handle,
     required this.kind,
     required this.direction,
     required this.annotation,
   });
 
-  EndpointType get type => RustLib.instance.api.crateApiEndpointEndpointGetType(
+  EndpointKind get type => RustLib.instance.api.crateApiEndpointEndpointGetType(
         that: this,
       );
 
   @override
-  int get hashCode => kind.hashCode ^ direction.hashCode ^ annotation.hashCode;
+  int get hashCode =>
+      handle.hashCode ^
+      kind.hashCode ^
+      direction.hashCode ^
+      annotation.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Endpoint &&
           runtimeType == other.runtimeType &&
+          handle == other.handle &&
           kind == other.kind &&
           direction == other.direction &&
           annotation == other.annotation;
@@ -46,18 +53,18 @@ enum EndpointDirection {
 }
 
 @freezed
-sealed class EndpointType with _$EndpointType {
-  const EndpointType._();
+sealed class EndpointKind with _$EndpointKind {
+  const EndpointKind._();
 
-  const factory EndpointType.stream(
+  const factory EndpointKind.stream(
     StreamType field0,
-  ) = EndpointType_Stream;
-  const factory EndpointType.value(
+  ) = EndpointKind_Stream;
+  const factory EndpointKind.value(
     ValueType field0,
-  ) = EndpointType_Value;
-  const factory EndpointType.event(
+  ) = EndpointKind_Value;
+  const factory EndpointKind.event(
     EventType field0,
-  ) = EndpointType_Event;
+  ) = EndpointKind_Event;
 }
 
 enum EventType {

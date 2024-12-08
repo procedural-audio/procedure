@@ -15,7 +15,7 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$EndpointType {
+mixin _$EndpointKind {
   Enum get field0 => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
@@ -41,74 +41,74 @@ mixin _$EndpointType {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(EndpointType_Stream value) stream,
-    required TResult Function(EndpointType_Value value) value,
-    required TResult Function(EndpointType_Event value) event,
+    required TResult Function(EndpointKind_Stream value) stream,
+    required TResult Function(EndpointKind_Value value) value,
+    required TResult Function(EndpointKind_Event value) event,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EndpointType_Stream value)? stream,
-    TResult? Function(EndpointType_Value value)? value,
-    TResult? Function(EndpointType_Event value)? event,
+    TResult? Function(EndpointKind_Stream value)? stream,
+    TResult? Function(EndpointKind_Value value)? value,
+    TResult? Function(EndpointKind_Event value)? event,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(EndpointType_Stream value)? stream,
-    TResult Function(EndpointType_Value value)? value,
-    TResult Function(EndpointType_Event value)? event,
+    TResult Function(EndpointKind_Stream value)? stream,
+    TResult Function(EndpointKind_Value value)? value,
+    TResult Function(EndpointKind_Event value)? event,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $EndpointTypeCopyWith<$Res> {
-  factory $EndpointTypeCopyWith(
-          EndpointType value, $Res Function(EndpointType) then) =
-      _$EndpointTypeCopyWithImpl<$Res, EndpointType>;
+abstract class $EndpointKindCopyWith<$Res> {
+  factory $EndpointKindCopyWith(
+          EndpointKind value, $Res Function(EndpointKind) then) =
+      _$EndpointKindCopyWithImpl<$Res, EndpointKind>;
 }
 
 /// @nodoc
-class _$EndpointTypeCopyWithImpl<$Res, $Val extends EndpointType>
-    implements $EndpointTypeCopyWith<$Res> {
-  _$EndpointTypeCopyWithImpl(this._value, this._then);
+class _$EndpointKindCopyWithImpl<$Res, $Val extends EndpointKind>
+    implements $EndpointKindCopyWith<$Res> {
+  _$EndpointKindCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
-abstract class _$$EndpointType_StreamImplCopyWith<$Res> {
-  factory _$$EndpointType_StreamImplCopyWith(_$EndpointType_StreamImpl value,
-          $Res Function(_$EndpointType_StreamImpl) then) =
-      __$$EndpointType_StreamImplCopyWithImpl<$Res>;
+abstract class _$$EndpointKind_StreamImplCopyWith<$Res> {
+  factory _$$EndpointKind_StreamImplCopyWith(_$EndpointKind_StreamImpl value,
+          $Res Function(_$EndpointKind_StreamImpl) then) =
+      __$$EndpointKind_StreamImplCopyWithImpl<$Res>;
   @useResult
   $Res call({StreamType field0});
 }
 
 /// @nodoc
-class __$$EndpointType_StreamImplCopyWithImpl<$Res>
-    extends _$EndpointTypeCopyWithImpl<$Res, _$EndpointType_StreamImpl>
-    implements _$$EndpointType_StreamImplCopyWith<$Res> {
-  __$$EndpointType_StreamImplCopyWithImpl(_$EndpointType_StreamImpl _value,
-      $Res Function(_$EndpointType_StreamImpl) _then)
+class __$$EndpointKind_StreamImplCopyWithImpl<$Res>
+    extends _$EndpointKindCopyWithImpl<$Res, _$EndpointKind_StreamImpl>
+    implements _$$EndpointKind_StreamImplCopyWith<$Res> {
+  __$$EndpointKind_StreamImplCopyWithImpl(_$EndpointKind_StreamImpl _value,
+      $Res Function(_$EndpointKind_StreamImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$EndpointType_StreamImpl(
+    return _then(_$EndpointKind_StreamImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -119,35 +119,35 @@ class __$$EndpointType_StreamImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$EndpointType_StreamImpl extends EndpointType_Stream {
-  const _$EndpointType_StreamImpl(this.field0) : super._();
+class _$EndpointKind_StreamImpl extends EndpointKind_Stream {
+  const _$EndpointKind_StreamImpl(this.field0) : super._();
 
   @override
   final StreamType field0;
 
   @override
   String toString() {
-    return 'EndpointType.stream(field0: $field0)';
+    return 'EndpointKind.stream(field0: $field0)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$EndpointType_StreamImpl &&
+            other is _$EndpointKind_StreamImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, field0);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$EndpointType_StreamImplCopyWith<_$EndpointType_StreamImpl> get copyWith =>
-      __$$EndpointType_StreamImplCopyWithImpl<_$EndpointType_StreamImpl>(
+  _$$EndpointKind_StreamImplCopyWith<_$EndpointKind_StreamImpl> get copyWith =>
+      __$$EndpointKind_StreamImplCopyWithImpl<_$EndpointKind_StreamImpl>(
           this, _$identity);
 
   @override
@@ -187,9 +187,9 @@ class _$EndpointType_StreamImpl extends EndpointType_Stream {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(EndpointType_Stream value) stream,
-    required TResult Function(EndpointType_Value value) value,
-    required TResult Function(EndpointType_Event value) event,
+    required TResult Function(EndpointKind_Stream value) stream,
+    required TResult Function(EndpointKind_Value value) value,
+    required TResult Function(EndpointKind_Event value) event,
   }) {
     return stream(this);
   }
@@ -197,9 +197,9 @@ class _$EndpointType_StreamImpl extends EndpointType_Stream {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EndpointType_Stream value)? stream,
-    TResult? Function(EndpointType_Value value)? value,
-    TResult? Function(EndpointType_Event value)? event,
+    TResult? Function(EndpointKind_Stream value)? stream,
+    TResult? Function(EndpointKind_Value value)? value,
+    TResult? Function(EndpointKind_Event value)? event,
   }) {
     return stream?.call(this);
   }
@@ -207,9 +207,9 @@ class _$EndpointType_StreamImpl extends EndpointType_Stream {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(EndpointType_Stream value)? stream,
-    TResult Function(EndpointType_Value value)? value,
-    TResult Function(EndpointType_Event value)? event,
+    TResult Function(EndpointKind_Stream value)? stream,
+    TResult Function(EndpointKind_Value value)? value,
+    TResult Function(EndpointKind_Event value)? event,
     required TResult orElse(),
   }) {
     if (stream != null) {
@@ -219,46 +219,46 @@ class _$EndpointType_StreamImpl extends EndpointType_Stream {
   }
 }
 
-abstract class EndpointType_Stream extends EndpointType {
-  const factory EndpointType_Stream(final StreamType field0) =
-      _$EndpointType_StreamImpl;
-  const EndpointType_Stream._() : super._();
+abstract class EndpointKind_Stream extends EndpointKind {
+  const factory EndpointKind_Stream(final StreamType field0) =
+      _$EndpointKind_StreamImpl;
+  const EndpointKind_Stream._() : super._();
 
   @override
   StreamType get field0;
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EndpointType_StreamImplCopyWith<_$EndpointType_StreamImpl> get copyWith =>
+  _$$EndpointKind_StreamImplCopyWith<_$EndpointKind_StreamImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$EndpointType_ValueImplCopyWith<$Res> {
-  factory _$$EndpointType_ValueImplCopyWith(_$EndpointType_ValueImpl value,
-          $Res Function(_$EndpointType_ValueImpl) then) =
-      __$$EndpointType_ValueImplCopyWithImpl<$Res>;
+abstract class _$$EndpointKind_ValueImplCopyWith<$Res> {
+  factory _$$EndpointKind_ValueImplCopyWith(_$EndpointKind_ValueImpl value,
+          $Res Function(_$EndpointKind_ValueImpl) then) =
+      __$$EndpointKind_ValueImplCopyWithImpl<$Res>;
   @useResult
   $Res call({ValueType field0});
 }
 
 /// @nodoc
-class __$$EndpointType_ValueImplCopyWithImpl<$Res>
-    extends _$EndpointTypeCopyWithImpl<$Res, _$EndpointType_ValueImpl>
-    implements _$$EndpointType_ValueImplCopyWith<$Res> {
-  __$$EndpointType_ValueImplCopyWithImpl(_$EndpointType_ValueImpl _value,
-      $Res Function(_$EndpointType_ValueImpl) _then)
+class __$$EndpointKind_ValueImplCopyWithImpl<$Res>
+    extends _$EndpointKindCopyWithImpl<$Res, _$EndpointKind_ValueImpl>
+    implements _$$EndpointKind_ValueImplCopyWith<$Res> {
+  __$$EndpointKind_ValueImplCopyWithImpl(_$EndpointKind_ValueImpl _value,
+      $Res Function(_$EndpointKind_ValueImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$EndpointType_ValueImpl(
+    return _then(_$EndpointKind_ValueImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -269,35 +269,35 @@ class __$$EndpointType_ValueImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$EndpointType_ValueImpl extends EndpointType_Value {
-  const _$EndpointType_ValueImpl(this.field0) : super._();
+class _$EndpointKind_ValueImpl extends EndpointKind_Value {
+  const _$EndpointKind_ValueImpl(this.field0) : super._();
 
   @override
   final ValueType field0;
 
   @override
   String toString() {
-    return 'EndpointType.value(field0: $field0)';
+    return 'EndpointKind.value(field0: $field0)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$EndpointType_ValueImpl &&
+            other is _$EndpointKind_ValueImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, field0);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$EndpointType_ValueImplCopyWith<_$EndpointType_ValueImpl> get copyWith =>
-      __$$EndpointType_ValueImplCopyWithImpl<_$EndpointType_ValueImpl>(
+  _$$EndpointKind_ValueImplCopyWith<_$EndpointKind_ValueImpl> get copyWith =>
+      __$$EndpointKind_ValueImplCopyWithImpl<_$EndpointKind_ValueImpl>(
           this, _$identity);
 
   @override
@@ -337,9 +337,9 @@ class _$EndpointType_ValueImpl extends EndpointType_Value {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(EndpointType_Stream value) stream,
-    required TResult Function(EndpointType_Value value) value,
-    required TResult Function(EndpointType_Event value) event,
+    required TResult Function(EndpointKind_Stream value) stream,
+    required TResult Function(EndpointKind_Value value) value,
+    required TResult Function(EndpointKind_Event value) event,
   }) {
     return value(this);
   }
@@ -347,9 +347,9 @@ class _$EndpointType_ValueImpl extends EndpointType_Value {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EndpointType_Stream value)? stream,
-    TResult? Function(EndpointType_Value value)? value,
-    TResult? Function(EndpointType_Event value)? event,
+    TResult? Function(EndpointKind_Stream value)? stream,
+    TResult? Function(EndpointKind_Value value)? value,
+    TResult? Function(EndpointKind_Event value)? event,
   }) {
     return value?.call(this);
   }
@@ -357,9 +357,9 @@ class _$EndpointType_ValueImpl extends EndpointType_Value {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(EndpointType_Stream value)? stream,
-    TResult Function(EndpointType_Value value)? value,
-    TResult Function(EndpointType_Event value)? event,
+    TResult Function(EndpointKind_Stream value)? stream,
+    TResult Function(EndpointKind_Value value)? value,
+    TResult Function(EndpointKind_Event value)? event,
     required TResult orElse(),
   }) {
     if (value != null) {
@@ -369,46 +369,46 @@ class _$EndpointType_ValueImpl extends EndpointType_Value {
   }
 }
 
-abstract class EndpointType_Value extends EndpointType {
-  const factory EndpointType_Value(final ValueType field0) =
-      _$EndpointType_ValueImpl;
-  const EndpointType_Value._() : super._();
+abstract class EndpointKind_Value extends EndpointKind {
+  const factory EndpointKind_Value(final ValueType field0) =
+      _$EndpointKind_ValueImpl;
+  const EndpointKind_Value._() : super._();
 
   @override
   ValueType get field0;
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EndpointType_ValueImplCopyWith<_$EndpointType_ValueImpl> get copyWith =>
+  _$$EndpointKind_ValueImplCopyWith<_$EndpointKind_ValueImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$EndpointType_EventImplCopyWith<$Res> {
-  factory _$$EndpointType_EventImplCopyWith(_$EndpointType_EventImpl value,
-          $Res Function(_$EndpointType_EventImpl) then) =
-      __$$EndpointType_EventImplCopyWithImpl<$Res>;
+abstract class _$$EndpointKind_EventImplCopyWith<$Res> {
+  factory _$$EndpointKind_EventImplCopyWith(_$EndpointKind_EventImpl value,
+          $Res Function(_$EndpointKind_EventImpl) then) =
+      __$$EndpointKind_EventImplCopyWithImpl<$Res>;
   @useResult
   $Res call({EventType field0});
 }
 
 /// @nodoc
-class __$$EndpointType_EventImplCopyWithImpl<$Res>
-    extends _$EndpointTypeCopyWithImpl<$Res, _$EndpointType_EventImpl>
-    implements _$$EndpointType_EventImplCopyWith<$Res> {
-  __$$EndpointType_EventImplCopyWithImpl(_$EndpointType_EventImpl _value,
-      $Res Function(_$EndpointType_EventImpl) _then)
+class __$$EndpointKind_EventImplCopyWithImpl<$Res>
+    extends _$EndpointKindCopyWithImpl<$Res, _$EndpointKind_EventImpl>
+    implements _$$EndpointKind_EventImplCopyWith<$Res> {
+  __$$EndpointKind_EventImplCopyWithImpl(_$EndpointKind_EventImpl _value,
+      $Res Function(_$EndpointKind_EventImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? field0 = null,
   }) {
-    return _then(_$EndpointType_EventImpl(
+    return _then(_$EndpointKind_EventImpl(
       null == field0
           ? _value.field0
           : field0 // ignore: cast_nullable_to_non_nullable
@@ -419,35 +419,35 @@ class __$$EndpointType_EventImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$EndpointType_EventImpl extends EndpointType_Event {
-  const _$EndpointType_EventImpl(this.field0) : super._();
+class _$EndpointKind_EventImpl extends EndpointKind_Event {
+  const _$EndpointKind_EventImpl(this.field0) : super._();
 
   @override
   final EventType field0;
 
   @override
   String toString() {
-    return 'EndpointType.event(field0: $field0)';
+    return 'EndpointKind.event(field0: $field0)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$EndpointType_EventImpl &&
+            other is _$EndpointKind_EventImpl &&
             (identical(other.field0, field0) || other.field0 == field0));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, field0);
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$EndpointType_EventImplCopyWith<_$EndpointType_EventImpl> get copyWith =>
-      __$$EndpointType_EventImplCopyWithImpl<_$EndpointType_EventImpl>(
+  _$$EndpointKind_EventImplCopyWith<_$EndpointKind_EventImpl> get copyWith =>
+      __$$EndpointKind_EventImplCopyWithImpl<_$EndpointKind_EventImpl>(
           this, _$identity);
 
   @override
@@ -487,9 +487,9 @@ class _$EndpointType_EventImpl extends EndpointType_Event {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(EndpointType_Stream value) stream,
-    required TResult Function(EndpointType_Value value) value,
-    required TResult Function(EndpointType_Event value) event,
+    required TResult Function(EndpointKind_Stream value) stream,
+    required TResult Function(EndpointKind_Value value) value,
+    required TResult Function(EndpointKind_Event value) event,
   }) {
     return event(this);
   }
@@ -497,9 +497,9 @@ class _$EndpointType_EventImpl extends EndpointType_Event {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(EndpointType_Stream value)? stream,
-    TResult? Function(EndpointType_Value value)? value,
-    TResult? Function(EndpointType_Event value)? event,
+    TResult? Function(EndpointKind_Stream value)? stream,
+    TResult? Function(EndpointKind_Value value)? value,
+    TResult? Function(EndpointKind_Event value)? event,
   }) {
     return event?.call(this);
   }
@@ -507,9 +507,9 @@ class _$EndpointType_EventImpl extends EndpointType_Event {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(EndpointType_Stream value)? stream,
-    TResult Function(EndpointType_Value value)? value,
-    TResult Function(EndpointType_Event value)? event,
+    TResult Function(EndpointKind_Stream value)? stream,
+    TResult Function(EndpointKind_Value value)? value,
+    TResult Function(EndpointKind_Event value)? event,
     required TResult orElse(),
   }) {
     if (event != null) {
@@ -519,17 +519,17 @@ class _$EndpointType_EventImpl extends EndpointType_Event {
   }
 }
 
-abstract class EndpointType_Event extends EndpointType {
-  const factory EndpointType_Event(final EventType field0) =
-      _$EndpointType_EventImpl;
-  const EndpointType_Event._() : super._();
+abstract class EndpointKind_Event extends EndpointKind {
+  const factory EndpointKind_Event(final EventType field0) =
+      _$EndpointKind_EventImpl;
+  const EndpointKind_Event._() : super._();
 
   @override
   EventType get field0;
 
-  /// Create a copy of EndpointType
+  /// Create a copy of EndpointKind
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$EndpointType_EventImplCopyWith<_$EndpointType_EventImpl> get copyWith =>
+  _$$EndpointKind_EventImplCopyWith<_$EndpointKind_EventImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

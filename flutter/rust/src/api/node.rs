@@ -6,12 +6,15 @@ use flutter_rust_bridge::*;
 
 use crate::api::endpoint::Endpoint;
 
+use std::sync::{Arc, RwLock};
+
 /// This is a single processor unit in the graph
 // #[derive(Clone)]
-#[frb(non_opaque)]
+#[frb(opaque)]
 pub struct Node {
-    pub inputs: Vec<Endpoint>,
-    pub outputs: Vec<Endpoint>
+    inputs: Vec<Endpoint>,
+    outputs: Vec<Endpoint>,
+    performer: Arc<RwLock<Performer>>,
 }
 
 impl Node {
@@ -41,13 +44,16 @@ impl Node {
         let mut outputs = Vec::new();
 
         for info in infos {
-            let id = info.id();
             let is_input = info.direction() == EndpointDirection::Input;
-
-            if is_input {
-                inputs.push(Endpoint::from(info));
-            } else {
-                outputs.push(Endpoint::from(info));
+            match Endpoint::from(&mut engine, info) {
+                Ok(endpoint) => {
+                    if is_input {
+                        inputs.push(endpoint);
+                    } else {
+                        outputs.push(endpoint);
+                    }
+                },
+                Err(e) => println!("{}", e),
             }
         }
 
@@ -56,6 +62,16 @@ impl Node {
             .unwrap()
             .performer();
 
-        Self { inputs, outputs }
+        Self { inputs, outputs, performer: Arc::new(RwLock::new(performer)) }
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_inputs(&self) -> Vec<Endpoint> {
+        self.inputs.clone()
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_outputs(&self) -> Vec<Endpoint> {
+        self.outputs.clone()
     }
 }

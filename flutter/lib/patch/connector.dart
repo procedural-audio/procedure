@@ -19,7 +19,7 @@ class Connector extends StatelessWidget {
 
   final Pin start;
   final Pin end;
-  final EndpointType type;
+  final EndpointKind type;
   final Patch patch;
 
   Map<String, dynamic> toJson() {
@@ -72,7 +72,7 @@ class NewConnector extends StatelessWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
-  EndpointType type = EndpointType.stream(StreamType.float32);
+  EndpointKind type = EndpointKind.stream(StreamType.float32);
 
   NewConnector({super.key});
 
