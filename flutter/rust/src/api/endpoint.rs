@@ -29,12 +29,19 @@ pub enum EventType {
     Int64,
 }
 
+#[derive(Copy, Clone)]
+pub enum EndpointDirection {
+    Input,
+    Output,
+}
+
 #[derive(Clone)]
 #[frb(non_opaque)]
 pub struct Endpoint {
     // handle: EndpointHandle,
     // info: EndpointInfo,
     pub kind: EndpointType,
+    pub direction: EndpointDirection,
     pub annotation: String,
 }
 
@@ -97,8 +104,14 @@ impl Endpoint {
             },
         };
 
+        let direction = match info.direction() {
+            cmajor::endpoint::EndpointDirection::Input => EndpointDirection::Input,
+            cmajor::endpoint::EndpointDirection::Output => EndpointDirection::Output,
+        };
+
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
-        Self { kind, annotation }
+
+        Self { kind, direction, annotation }
     }
 
     #[frb(sync, getter)]

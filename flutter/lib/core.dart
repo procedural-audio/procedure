@@ -112,48 +112,4 @@ class Core {
 
     return true;
   }
-
-  /*void refresh() {
-    _ffiCoreRefresh(raw);
-  }
-
-  bool addConnector(int a, int b, int c, int d) {
-    return _ffiCoreAddConnector(raw, a, b, c, d);
-  }
-
-  bool removeConnector(int a, int b) {
-    return _ffiCoreRemoveConnector(raw, a, b);
-  }
-
-  int getConnectorCount() {
-    return _ffiCoreGetConnectorCount(raw);
-  }
-
-  int getConnectorStartId(int a) {
-    return _ffiCoreGetConnectorStartId(raw, a);
-  }
-
-  int getConnectorEndId(int a) {
-    return _ffiCoreGetConnectorEndId(raw, a);
-  }
-
-  int getConnectorStartIndex(int a) {
-    return _ffiCoreGetConnectorStartIndex(raw, a);
-  }
-
-  int getConnectorEndIndex(int a) {
-    return _ffiCoreGetConnectorEndIndex(raw, a);
-  }
-
-  RawNode getNode(int a) {
-    return _ffiCoreGetNode(raw, a);
-  }
-
-  void setPatch(Patch? patch) {
-    if (patch != null) {
-      _ffiCoreSetPatch(raw, patch.rawPatch);
-    } else {
-      _ffiCoreSetPatchNull(raw, Pointer.fromAddress(0));
-    }
-  }*/
 }

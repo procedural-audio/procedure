@@ -1,15 +1,45 @@
-import 'package:flutter/material.dart';
-import 'package:metasampler/module/info.dart';
-import 'package:metasampler/module/pin.dart';
-import 'package:yaml/yaml.dart';
+import 'dart:convert';
 
-import '../patch/connector.dart';
+import 'package:flutter/material.dart';
+import 'package:metasampler/module/module.dart';
+import 'package:metasampler/module/pin.dart';
+import 'package:metasampler/nodeWidgets/fader.dart';
+
+import '../bindings/api/endpoint.dart';
+import '../nodeWidgets/knob.dart';
 import '../patch/patch.dart';
 
-abstract class NodeWidget extends StatelessWidget {
-  const NodeWidget(this.map, {super.key});
+abstract class NodeWidget<T> extends StatelessWidget {
+  const NodeWidget(this.node, this.endpoint, {super.key});
 
-  final YamlMap map;
+  void setValue(T value) {
+    node.writeEndpoint(endpoint, value);
+  }
+
+  T getValue() {
+    return node.readEndpoint(endpoint);
+  }
+
+  final Node node;
+  final Endpoint endpoint;
+
+  static NodeWidget? from(Node node, Endpoint endpoint) {
+    Map<String, dynamic> map = jsonDecode(endpoint.annotation);
+
+    if (map['widget'] != null) {
+      String type = map['widget'];
+      switch (type) {
+        case "knob":
+          return KnobWidget.from(node, endpoint, map);
+        case "fader":
+          return FaderWidget.from(node, endpoint, map);
+        default:
+          print("Unknown widget type: $type");
+      }
+    }
+
+    return null;
+  }
 
   Map<String, dynamic> getState();
   void setState(Map<String, dynamic> state);
@@ -22,7 +52,40 @@ class Node extends StatelessWidget {
     required this.onAddConnector,
     required this.onRemoveConnector,
     required this.onDrag,
-  }) : super(key: UniqueKey());
+  }) : super(key: UniqueKey()) {
+    // Add input pins and widgets to list
+    for (var endpoint in module.inputs) {
+      var widget = NodeWidget.from(this, endpoint);
+      if (widget != null) {
+        widgets.add(widget);
+      }
+
+      pins.add(
+        Pin(
+          endpoint: endpoint,
+          node: this,
+          patch: patch,
+          isInput: true,
+          onAddConnector: onAddConnector,
+          onRemoveConnector: onRemoveConnector,
+        ),
+      );
+    }
+
+    // Add output pins to list
+    for (var endpoint in module.outputs) {
+      pins.add(
+        Pin(
+          endpoint: endpoint,
+          node: this,
+          patch: patch,
+          isInput: false,
+          onAddConnector: onAddConnector,
+          onRemoveConnector: onRemoveConnector,
+        ),
+      );
+    }
+  }
 
   final Module module;
   final Patch patch;
@@ -30,8 +93,15 @@ class Node extends StatelessWidget {
   final void Function(int, int) onRemoveConnector;
   final void Function(Offset) onDrag;
 
+  List<Pin> pins = [];
+  List<NodeWidget> widgets = [];
+
   ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
-  ValueNotifier<List<NodeWidget>> widgets = ValueNotifier([]);
+
+  void writeEndpoint(Endpoint endpoint, dynamic value) {}
+  dynamic readEndpoint(Endpoint endpoint) {
+    return null;
+  }
 
   void tick() {
     // for (var widget in widgets) {
@@ -53,10 +123,6 @@ class Node extends StatelessWidget {
         }
       }
     }*/
-
-    // TODO: Copy widget state
-
-    widgets.value = newWidgets;
   }
 
   void refreshSize() {}
@@ -66,38 +132,12 @@ class Node extends StatelessWidget {
       // "id": id,
       "x": position.value.dx,
       "y": position.value.dy,
-      "widgets": widgets.value.map((widget) => widget.getState()).toList(),
+      "widgets": widgets.map((widget) => widget.getState()).toList(),
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Pin> pins = [];
-
-    for (var endpoint in module.inputs) {
-      print("Building input pin");
-      pins.add(Pin(
-        endpoint: endpoint,
-        node: this,
-        patch: patch,
-        isInput: true,
-        onAddConnector: onAddConnector,
-        onRemoveConnector: onRemoveConnector,
-      ));
-    }
-
-    for (var endpoint in module.outputs) {
-      print("Building output pin");
-      pins.add(Pin(
-        endpoint: endpoint,
-        node: this,
-        patch: patch,
-        isInput: false,
-        onAddConnector: onAddConnector,
-        onRemoveConnector: onRemoveConnector,
-      ));
-    }
-
     return ValueListenableBuilder<Offset>(
       valueListenable: position,
       builder: (context, p, child) {
@@ -156,14 +196,9 @@ class Node extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ValueListenableBuilder(
-                        valueListenable: widgets,
-                        builder: (context, w, child) {
-                          return Stack(
-                            fit: StackFit.expand,
-                            children: <Widget>[] + widgets.value + pins,
-                          );
-                        },
+                      Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[] + widgets + pins,
                       )
                     ],
                   ),

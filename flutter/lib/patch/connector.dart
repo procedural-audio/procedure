@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../module/info.dart';
+import '../module/module.dart';
 import '../module/node.dart';
 import '../module/pin.dart';
 import 'patch.dart';

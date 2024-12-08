@@ -185,10 +185,24 @@ impl SseDecode for crate::api::endpoint::Endpoint {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_kind = <crate::api::endpoint::EndpointType>::sse_decode(deserializer);
+        let mut var_direction = <crate::api::endpoint::EndpointDirection>::sse_decode(deserializer);
         let mut var_annotation = <String>::sse_decode(deserializer);
         return crate::api::endpoint::Endpoint {
             kind: var_kind,
+            direction: var_direction,
             annotation: var_annotation,
+        };
+    }
+}
+
+impl SseDecode for crate::api::endpoint::EndpointDirection {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::endpoint::EndpointDirection::Input,
+            1 => crate::api::endpoint::EndpointDirection::Output,
+            _ => unreachable!("Invalid variant for EndpointDirection: {}", inner),
         };
     }
 }
@@ -365,6 +379,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::endpoint::Endpoint {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.kind.into_into_dart().into_dart(),
+            self.direction.into_into_dart().into_dart(),
             self.annotation.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -378,6 +393,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::Endpoint>
     for crate::api::endpoint::Endpoint
 {
     fn into_into_dart(self) -> crate::api::endpoint::Endpoint {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EndpointDirection {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Input => 0.into_dart(),
+            Self::Output => 1.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::endpoint::EndpointDirection
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::EndpointDirection>
+    for crate::api::endpoint::EndpointDirection
+{
+    fn into_into_dart(self) -> crate::api::endpoint::EndpointDirection {
         self
     }
 }
@@ -504,7 +540,24 @@ impl SseEncode for crate::api::endpoint::Endpoint {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::api::endpoint::EndpointType>::sse_encode(self.kind, serializer);
+        <crate::api::endpoint::EndpointDirection>::sse_encode(self.direction, serializer);
         <String>::sse_encode(self.annotation, serializer);
+    }
+}
+
+impl SseEncode for crate::api::endpoint::EndpointDirection {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::endpoint::EndpointDirection::Input => 0,
+                crate::api::endpoint::EndpointDirection::Output => 1,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 

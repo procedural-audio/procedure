@@ -6,14 +6,33 @@
 // Determine the note frequency from the pitch (midi note)
 processor Lfo [[ main ]]
 {
-    input value float32 a [[ top: 10 ]];
-    input value float32 b [[ top: 10 + 25 ]];
-    output value float32 c [[ top: 10 ]];
+    input value float32 waveform [[
+        pinTop: 10,
+        widget: "knob",
+        left: 40,
+        top: 40,
+        min: 0.0,
+        max: 1.0,
+        default: 0.5
+    ]];
+
+    input value float32 rate [[
+        pinTop: 10 + 25,
+        widget: "fader",
+        left: 80,
+        top: 40,
+        height: 100,
+        min: 0.01,
+        max: 100,
+        default: 0.5
+    ]];
+
+    output value float32 out [[ pinTop: 10 ]];
 
     void main()
     {
         loop {
-            c <- a - b;
+            out <- waveform - rate;
             advance();
         }
     }

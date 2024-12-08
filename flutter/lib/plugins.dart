@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:io';
 
-import 'module/info.dart';
+import 'module/module.dart';
 import 'patch/patch.dart';
 
 class Plugin {

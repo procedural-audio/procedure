@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/module/info.dart';
+import 'package:metasampler/module/module.dart';
 import 'package:metasampler/views/presets.dart';
 
 import 'dart:async';

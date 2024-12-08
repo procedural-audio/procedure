@@ -3,40 +3,65 @@ import 'package:yaml/yaml.dart';
 
 import 'dart:ui' as ui;
 
+import '../bindings/api/endpoint.dart';
+import '../module/module.dart';
 import '../module/node.dart';
 import '../views/settings.dart';
 import '../utils.dart';
 
-class KnobWidget extends NodeWidget {
-  KnobWidget(YamlMap map, {super.key}) : super(map);
+class KnobWidget extends NodeWidget<double> {
+  KnobWidget(
+    Node node,
+    Endpoint endpoint,
+    double value, {
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+    required this.label,
+    required this.color,
+    super.key,
+  }) : super(node, endpoint) {
+    setValue(value);
+  }
 
-  final bool hovering = false;
-  final bool dragging = false;
-
-  double value = 0.5;
+  final int left;
+  final int top;
+  final int width;
+  final int height;
+  final String label;
+  final Color color;
 
   @override
   Map<String, dynamic> getState() {
     return {
-      'value': value,
+      'value': getValue(),
     };
   }
 
   @override
   void setState(Map<String, dynamic> state) {
-    value = state['value'];
+    setValue(state['value']);
+  }
+
+  static KnobWidget from(
+      Node node, Endpoint endpoint, Map<String, dynamic> map) {
+    return KnobWidget(
+      node,
+      endpoint,
+      map['default'] ?? 0.5,
+      left: map['left'] ?? 0,
+      top: map['top'] ?? 0,
+      width: map['width'] ?? 50,
+      height: map['height'] ?? 50,
+      label: map['label'] ?? "",
+      color: colorFromString(map['color'] ?? "grey"),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    int left = map['left'] ?? 0;
-    int top = map['top'] ?? 0;
-    int width = map['width'] ?? 50;
-    int height = map['height'] ?? 50;
-    String label = map['label'] ?? "Label";
-
-    Color color = colorFromString(map['color']);
-
+    double initialValue = getValue();
     return Positioned(
       left: left.toDouble(),
       top: top.toDouble(),
@@ -44,11 +69,12 @@ class KnobWidget extends NodeWidget {
         width: width.toDouble(),
         height: height.toDouble(),
         child: Knob(
+          initialValue: initialValue,
           label: label,
           color: color,
           size: Size(width.toDouble(), height.toDouble()),
           onUpdate: (v) {
-            value = v;
+            setValue(v);
           },
         ),
       ),

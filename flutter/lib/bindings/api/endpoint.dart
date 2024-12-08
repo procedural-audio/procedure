@@ -8,15 +8,17 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'endpoint.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
 
 class Endpoint {
   final EndpointType kind;
+  final EndpointDirection direction;
   final String annotation;
 
   const Endpoint({
     required this.kind,
+    required this.direction,
     required this.annotation,
   });
 
@@ -25,7 +27,7 @@ class Endpoint {
       );
 
   @override
-  int get hashCode => kind.hashCode ^ annotation.hashCode;
+  int get hashCode => kind.hashCode ^ direction.hashCode ^ annotation.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -33,7 +35,14 @@ class Endpoint {
       other is Endpoint &&
           runtimeType == other.runtimeType &&
           kind == other.kind &&
+          direction == other.direction &&
           annotation == other.annotation;
+}
+
+enum EndpointDirection {
+  input,
+  output,
+  ;
 }
 
 @freezed

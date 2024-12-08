@@ -207,12 +207,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Endpoint dco_decode_endpoint(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
     return Endpoint(
       kind: dco_decode_endpoint_type(arr[0]),
-      annotation: dco_decode_String(arr[1]),
+      direction: dco_decode_endpoint_direction(arr[1]),
+      annotation: dco_decode_String(arr[2]),
     );
+  }
+
+  @protected
+  EndpointDirection dco_decode_endpoint_direction(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return EndpointDirection.values[raw as int];
   }
 
   @protected
@@ -319,8 +326,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Endpoint sse_decode_endpoint(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_kind = sse_decode_endpoint_type(deserializer);
+    var var_direction = sse_decode_endpoint_direction(deserializer);
     var var_annotation = sse_decode_String(deserializer);
-    return Endpoint(kind: var_kind, annotation: var_annotation);
+    return Endpoint(
+        kind: var_kind, direction: var_direction, annotation: var_annotation);
+  }
+
+  @protected
+  EndpointDirection sse_decode_endpoint_direction(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return EndpointDirection.values[inner];
   }
 
   @protected
@@ -443,7 +460,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_endpoint(Endpoint self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_endpoint_type(self.kind, serializer);
+    sse_encode_endpoint_direction(self.direction, serializer);
     sse_encode_String(self.annotation, serializer);
+  }
+
+  @protected
+  void sse_encode_endpoint_direction(
+      EndpointDirection self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected

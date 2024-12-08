@@ -18,7 +18,7 @@ class Pin extends StatefulWidget {
     required this.onRemoveConnector,
   }) : super(key: UniqueKey()) {
     var annotation = jsonDecode(endpoint.annotation);
-    var top = double.tryParse(annotation['top'].toString()) ?? 0.0;
+    var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
     // Initialize the pin offset
     if (isInput) {

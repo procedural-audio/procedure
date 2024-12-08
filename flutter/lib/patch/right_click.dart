@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../views/settings.dart';
-
 import '../plugins.dart';
-import '../module/info.dart';
+import '../module/module.dart';
 
 void add_module_to_category(
   Module module,
