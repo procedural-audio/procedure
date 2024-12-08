@@ -16,7 +16,7 @@ abstract class NodeWidget<T> extends StatelessWidget {
     node.writeEndpoint(endpoint, value);
   }
 
-  T getValue() {
+  T? getValue() {
     return node.readEndpoint(endpoint);
   }
 

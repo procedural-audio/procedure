@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:yaml/yaml.dart';
 
 import 'dart:ui' as ui;
 
 import '../bindings/api/endpoint.dart';
-import '../module/module.dart';
 import '../module/node.dart';
 import '../views/settings.dart';
 import '../utils.dart';
@@ -61,7 +59,7 @@ class KnobWidget extends NodeWidget<double> {
 
   @override
   Widget build(BuildContext context) {
-    double initialValue = getValue();
+    double initialValue = getValue() ?? 0.5;
     return Positioned(
       left: left.toDouble(),
       top: top.toDouble(),

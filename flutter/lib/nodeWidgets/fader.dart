@@ -1,10 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:yaml/yaml.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../module/module.dart';
 import '../module/node.dart';
 import '../utils.dart';
 
@@ -20,7 +18,9 @@ class FaderWidget extends NodeWidget<double> {
     required this.label,
     required this.color,
     super.key,
-  }) : super(node, endpoint);
+  }) : super(node, endpoint) {
+    setValue(value);
+  }
 
   final int left;
   final int top;
@@ -58,7 +58,7 @@ class FaderWidget extends NodeWidget<double> {
 
   @override
   Widget build(BuildContext context) {
-    double initialValue = getValue();
+    double initialValue = getValue() ?? 0.5;
     return Positioned(
       left: left.toDouble(),
       top: top.toDouble(),
