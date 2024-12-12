@@ -4,7 +4,7 @@
 */
 
 // Determine the note frequency from the pitch (midi note)
-processor Div [[ main ]]
+processor Div [[ main, width: 80, height: 60 ]]
 {
     input value float32 a [[ pinTop: 10 ]];
     input value float32 b [[ pinTop: 10 + 25 ]];

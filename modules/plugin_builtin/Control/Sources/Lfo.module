@@ -4,7 +4,7 @@
 */
 
 // Determine the note frequency from the pitch (midi note)
-processor Lfo [[ main ]]
+processor Lfo [[ main, width: 300, height: 200 ]]
 {
     input value float32 waveform [[
         pinTop: 10,
