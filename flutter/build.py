@@ -93,13 +93,19 @@ def initialize_juce(juce_folder_path):
     else:
         print(f"JUCE repository found")
 
-def build_host(build_folder, component_source_folder):
+def build_host(build_folder, host_source_folder, framework_folder):
     try:
         # Ensure JUCE is present in the build folder
         initialize_juce(build_folder + "juce")
 
+        # Ensure the flutter framework is present in the build folder
+        initialize_framework(build_folder + "framework")
+
         # Expand JUCE_PATH to a full path
         juce_dir_full_path = os.path.abspath(os.path.join(build_folder, "juce"))
+
+        # Expand FRAMEWORK_PATH to a full path
+        framework_dir_full_path = os.path.abspath(os.path.join(build_folder, "framework"))
 
         # Set up CMake build
         cmake_build_dir = os.path.join(build_folder, "host")
@@ -109,8 +115,9 @@ def build_host(build_folder, component_source_folder):
         subprocess.run([
             "cmake",
             "-B", cmake_build_dir,
-            "-S", component_source_folder,
-            f"-DJUCE_PATH={juce_dir_full_path}"
+            "-S", host_source_folder,
+            f"-DJUCE_PATH={juce_dir_full_path}",
+            f"-DFRAMEWORK_PATH={framework_dir_full_path}",
         ], check=True)
 
         # Build the project
@@ -121,8 +128,7 @@ def build_host(build_folder, component_source_folder):
         print(f"Error building JUCE component: {e}")
 
 if __name__ == "__main__":
-    initialize_framework(FRAMEWORK_PATH)
-    build_host("build/", "host/")
+    build_host("build/", "host", "framework")
 
     system_os = platform.system()
     print(system_os)

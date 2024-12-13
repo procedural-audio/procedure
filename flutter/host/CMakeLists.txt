@@ -3,7 +3,18 @@ set (CMAKE_CXX_STANDARD 14)
 
 project(NODUS_HOST VERSION 0.0.1)
 
-add_subdirectory(/Users/chasekanipe/Github/nodus/flutter/build/juce juce)
+if(EXISTS "${FRAMEWORK_PATH}")
+    # include_subdirectory("${FRAMEWORK_PATH}" "${CMAKE_BINARY_DIR}/juce")
+    include_directories("${FRAMEWORK_PATH}/Versions/A/Headers/")
+else()
+    message(FATAL_ERROR "Framework not found at ${FRAMEWORK_PATH}")
+endif()
+
+if(EXISTS "${JUCE_PATH}/CMakeLists.txt")
+    add_subdirectory("${JUCE_PATH}" "${CMAKE_BINARY_DIR}/juce")
+else()
+    message(FATAL_ERROR "JUCE not found at ${JUCE_PATH}")
+endif()
 
 if(WIN32)
     add_subdirectory(windows)

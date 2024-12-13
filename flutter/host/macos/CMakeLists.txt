@@ -1,7 +1,7 @@
 # add_subdirectory(common)
 
 include_directories(common)
-add_subdirectory(plugin)
+# add_subdirectory(plugin)
 add_subdirectory(standalone)
 
 # add_subdirectory(server)

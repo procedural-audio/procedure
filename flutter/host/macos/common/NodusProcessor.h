@@ -1,12 +1,12 @@
 #pragma once
 
-#include "FlutterEngine.h"
+#include "FlutterEmbedder.h"
 #include <JuceHeader.h>
 
 #include "nodus.h"
 #include "AudioPlugin.h"
 
-#import "FlutterChannels.h"
+// #import "FlutterChannels.h"
 
 struct FFIHost {};
 
@@ -48,9 +48,8 @@ public:
     void addAudioPlugin(int moduleId, juce::String name);
     
 public:
-    FlutterViewController* flutterViewController { nullptr };
-    
-    FlutterBasicMessageChannel* audioPluginsChannel;
+    // FlutterViewController* flutterViewController { nullptr };
+    // FlutterBasicMessageChannel* audioPluginsChannel;
     
 private:
     FFIHost* core = nullptr;
@@ -64,14 +63,14 @@ private:
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
     void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, NoteMessage*, uint32_t) = nullptr;
     
-    void (^audioPluginsCallback)(id _Nullable, FlutterReply  _Nonnull) = ^(id _Nullable encoded, FlutterReply _Nonnull callback) {
+    /*void (^audioPluginsCallback)(id _Nullable, FlutterReply  _Nonnull) = ^(id _Nullable encoded, FlutterReply _Nonnull callback) {
         if (encoded) {
             NSString *message = encoded;
             pluginsMessage(juce::String([message UTF8String]));
         } else {
             puts("Got null message");
         }
-    };
+    };*/
     
     juce::AudioPluginFormatManager pluginFormatManager;
     

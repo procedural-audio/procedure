@@ -1,8 +1,8 @@
 #include "NodusProcessor.h"
 #include "NodusEditor.h"
 
-#import "FlutterViewController.h"
-#import "FlutterChannels.h"
+// #import "FlutterViewController.h"
+// #import "FlutterChannels.h"
 
 #include <dlfcn.h>
 
@@ -32,7 +32,7 @@ NodusProcessor::NodusProcessor()
         handle = dlopen(libPath, RTLD_LAZY | RTLD_DEEPBIND);
     #endif*/
 
-    if (handle) {
+    /*if (handle) {
         ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
         ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
         ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
@@ -93,14 +93,14 @@ NodusProcessor::NodusProcessor()
                 std::cout << path << std::endl;
             }
         }
-    }
+    }*/
 
     puts("Done creating processor");
 }
 
 NodusProcessor::~NodusProcessor()
 {
-    [flutterViewController release];
+    // [flutterViewController release];
     // ffiDestroyHost(host);
     // dlclose(handle);
 }
@@ -303,7 +303,7 @@ bool NodusProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 
 void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
+    /*juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -358,7 +358,7 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
         } else {
             ffiHostProcess(core, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
         }
-    }
+    }*/
     
     /*for (auto& plugin : plugins) {
         plugin->processBlock(buffer, midiMessages);

@@ -2,7 +2,7 @@
 #include "NodusEditor.h"
 #include "JuceHeader.h"
 
-class GuiAppApplication  : public juce::JUCEApplication, public juce::AudioIODeviceCallback, public juce::MidiInputCallback {
+class GuiAppApplication final : public juce::JUCEApplication, public juce::AudioIODeviceCallback, public juce::MidiInputCallback {
 public:
     GuiAppApplication() {
     }

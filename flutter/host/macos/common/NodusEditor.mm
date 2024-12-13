@@ -1,7 +1,7 @@
 #include "NodusProcessor.h"
 #include "NodusEditor.h"
 
-#import "FlutterViewController.h"
+// #import "FlutterViewController.h"
 
 #include "AudioPlugin.h"
 
@@ -13,7 +13,7 @@ NodusEditor::NodusEditor (NodusProcessor& p)
     setResizeLimits(400, 300, 2000, 1000);
     
     addAndMakeVisible(flutterView);
-    flutterView.setView(audioProcessor.flutterViewController.view);
+    // flutterView.setView(audioProcessor.flutterViewController.view);
 }
 
 NodusEditor::~NodusEditor()
