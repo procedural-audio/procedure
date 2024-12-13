@@ -4,6 +4,7 @@ import platform
 import requests
 import zipfile
 import os
+import shutil
 
 BUILD_PATH = "build/"
 FRAMEWORK_PATH = BUILD_PATH + "framework/"
@@ -39,6 +40,36 @@ def get_framework_revision() -> str:
     except json.JSONDecodeError:
         print("Error: Failed to parse JSON output from the 'flutter' command.")
 
+def extract_zip_preserve_symlinks(zip_path, extract_to):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        for zip_info in zip_ref.infolist():
+            file_path = os.path.join(extract_to, zip_info.filename)
+            # Normalize the path (removes trailing slashes)
+            file_path = os.path.normpath(file_path)
+
+            # Check if the file is a symbolic link
+            is_symlink = (zip_info.external_attr >> 16) & 0o120000 == 0o120000
+            if is_symlink:
+                # Read the symlink target
+                with zip_ref.open(zip_info) as symlink_file:
+                    target = symlink_file.read().decode('utf-8')
+
+                # Ensure the parent directory exists
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+                # Create the symlink
+                os.symlink(target, file_path)
+            else:
+                # For directories
+                if zip_info.is_dir():
+                    os.makedirs(file_path, exist_ok=True)
+                else:
+                    # For regular files, ensure the directory exists
+                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                    with zip_ref.open(zip_info) as source, open(file_path, 'wb') as target_file:
+                        target_file.write(source.read())
+
+
 def download_framework(output_dir, revision):
     url = f"https://storage.googleapis.com/flutter_infra_release/flutter/{revision}/darwin-x64/FlutterEmbedder.framework.zip"
     try:
@@ -53,10 +84,11 @@ def download_framework(output_dir, revision):
             file.write(response.content)
         print(f"Downloaded zip file saved as {zip_path}")
 
+        extract_zip_preserve_symlinks(zip_path, output_dir)
         # Extract the zip file
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(output_dir)
-        print(f"Extracted files to {output_dir}")
+        #with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        #    zip_ref.extractall(output_dir)
+        #print(f"Extracted files to {output_dir}")
 
         # Clean up the zip file
         os.remove(zip_path)
@@ -127,8 +159,32 @@ def build_host(build_folder, host_source_folder, framework_folder):
     except subprocess.CalledProcessError as e:
         print(f"Error building JUCE component: {e}")
 
+def build_app(build_folder):
+    build_host(build_folder, "host", "framework")
+
+    source_app = build_folder + "host/macos/standalone/NodusStandalone_artefacts/NodusStandalone.app"
+    package_path = build_folder + "package"
+    destination_app = os.path.join(package_path, "NodusStandalone.app")
+
+    source_framework = build_folder + "framework"
+    destination_framework = source_app + "/Contents/Frameworks/FlutterEmbedder.framework"
+
+    os.makedirs(package_path, exist_ok=True)
+
+    if os.path.exists(destination_app):
+        shutil.rmtree(destination_app)
+
+    shutil.copytree(source_app, destination_app)
+
+    if os.path.exists(destination_framework):
+        shutil.rmtree(destination_framework)
+
+    print(source_framework)
+    print(destination_framework)
+    shutil.copytree(source_framework, destination_framework)
+
 if __name__ == "__main__":
-    build_host("build/", "host", "framework")
+    build_app("build/")
 
     system_os = platform.system()
     print(system_os)

@@ -24,6 +24,12 @@ target_sources(NodusStandalone
         ../common/AudioPlugin.cpp
 )
 
+set_target_properties(NodusStandalone PROPERTIES
+    MACOSX_RPATH ON
+    BUILD_RPATH "@executable_path/../Frameworks"
+    INSTALL_RPATH "@executable_path/../Frameworks"
+)
+
 target_compile_definitions(NodusStandalone
     PUBLIC
         JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call

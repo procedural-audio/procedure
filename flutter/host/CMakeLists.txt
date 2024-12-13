@@ -3,11 +3,15 @@ set (CMAKE_CXX_STANDARD 14)
 
 project(NODUS_HOST VERSION 0.0.1)
 
-if(EXISTS "${FRAMEWORK_PATH}")
-    # include_subdirectory("${FRAMEWORK_PATH}" "${CMAKE_BINARY_DIR}/juce")
-    include_directories("${FRAMEWORK_PATH}/Versions/A/Headers/")
+file(REAL_PATH "${FRAMEWORK_PATH}/Headers" HEADER_PATH)
+file(REAL_PATH "${FRAMEWORK_PATH}/FlutterEmbedder" EMBEDDER_PATH)
+
+message(WARNING "HEADER_PATH: ${HEADER_PATH}")
+
+if(EXISTS "${HEADER_PATH}")
+    include_directories("${HEADER_PATH}")
 else()
-    message(FATAL_ERROR "Framework not found at ${FRAMEWORK_PATH}")
+    message(FATAL_ERROR "Framework not found at ${HEADER_PATH}")
 endif()
 
 if(EXISTS "${JUCE_PATH}/CMakeLists.txt")
@@ -23,3 +27,9 @@ elseif(APPLE)
 elseif(UNIX)
     add_subdirectory(linux)
 endif()
+
+target_link_libraries(NodusStandalone
+    PRIVATE
+    "${EMBEDDER_PATH}"
+)
+
