@@ -2,6 +2,7 @@
 
 #include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
+#import <AppKit/AppKit.h>
 
 #undef Point
 #undef Component
@@ -36,13 +37,23 @@ public:
 
     void addToDesktop()
     {
-        // Ensure the component has a peer. The peer is created when the component is added to a window.
         if (getPeer() == nullptr)
             juce::Component::addToDesktop(0);
 
-        // On macOS, getNativeHandle() returns an NSView*.
         nativeView = (void*)getPeer()->getNativeHandle();
         jassert(nativeView != nullptr);
+
+        // Set up CAMetalLayer on the nativeView
+        NSView* nsView = (NSView*)nativeView;
+        nsView.wantsLayer = YES;
+        metalLayer = [CAMetalLayer layer];
+        metalLayer.device = MTLCreateSystemDefaultDevice();
+        metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+        metalLayer.contentsScale = (CGFloat)getDesktopScaleFactor(); 
+        metalLayer.drawableSize = CGSizeMake((CGFloat)getWidth() * metalLayer.contentsScale,
+                                             (CGFloat)getHeight() * metalLayer.contentsScale);
+        [nsView setLayer:metalLayer];
+        [nsView setWantsLayer:YES];
 
         initFlutterEngine();
     }
@@ -58,59 +69,82 @@ public:
         {
             FlutterWindowMetricsEvent metrics = {};
             metrics.struct_size = sizeof(metrics);
-            metrics.width = (size_t) getWidth();
-            metrics.height = (size_t) getHeight();
-            metrics.pixel_ratio = 1.0; // Adjust if you have a HiDPI display
+            metrics.width = (size_t)getWidth();
+            metrics.height = (size_t)getHeight();
+            metrics.pixel_ratio = (double)getDesktopScaleFactor();
 
             FlutterEngineSendWindowMetricsEvent(engine, &metrics);
+
+            std::cout << "Resized to " << metrics.width << "x" << metrics.height << " @ " << metrics.pixel_ratio << "x" << std::endl;
+
+            if (metalLayer)
+            {
+                metalLayer.contentsScale = (CGFloat)getDesktopScaleFactor();
+                metalLayer.drawableSize = CGSizeMake((CGFloat)getWidth() * metalLayer.contentsScale,
+                                                     (CGFloat)getHeight() * metalLayer.contentsScale);
+            CGFloat scale = (CGFloat)getDesktopScaleFactor();
+            metalLayer.contentsScale = scale;
+            metalLayer.drawableSize = CGSizeMake((CGFloat)getWidth() * scale,
+                                             (CGFloat)getHeight() * scale);
+            }
         }
     }
 
 private:
+    static FlutterMetalTexture getNextDrawableTextureCallback(void* user_data, const FlutterFrameInfo* frame_info) {
+        std::cout << "getNextDrawableTextureCallback" << std::endl;
+        FlutterComponent* comp = (FlutterComponent*)user_data;
+        FlutterMetalTexture texture_desc = {};
+        texture_desc.struct_size = sizeof(FlutterMetalTexture);
+
+        if (!comp->metalLayer)
+        {
+            // If there's no metalLayer, return an empty texture (engine won't draw)
+            return texture_desc;
+        }
+
+        id<CAMetalDrawable> drawable = [comp->metalLayer nextDrawable];
+        if (!drawable)
+        {
+            std::cout << "No drawable available this frame" << std::endl;
+            // No drawable available this frame
+            return texture_desc;
+        }
+
+        // Retain the drawable so we can release it in the destruction callback
+        CFRetain((__bridge CFTypeRef)(drawable));
+
+        texture_desc.texture_id = 1; // Some arbitrary ID
+        texture_desc.texture = (__bridge const void*)drawable.texture;
+        texture_desc.user_data = (__bridge void*)drawable;
+        texture_desc.destruction_callback = [](void* user_data) {
+            // Release the drawable when Flutter is done with it
+            if (user_data) CFRelease(user_data);
+        };
+
+        return texture_desc;
+    }
+
     void initFlutterEngine()
     {
         if (engine != nullptr)
             return; // Already initialized
 
-        // Create a Metal device and command queue
-        id<MTLDevice> mtlDevice = MTLCreateSystemDefaultDevice();
+        id<MTLDevice> mtlDevice = metalLayer.device;
         id<MTLCommandQueue> commandQueue = [mtlDevice newCommandQueue];
 
         FlutterRendererConfig rendererConfig = {};
         rendererConfig.type = kMetal;
         rendererConfig.metal.struct_size = sizeof(FlutterMetalRendererConfig);
-        rendererConfig.metal.device = (const void*)mtlDevice; // id<MTLDevice>
-        rendererConfig.metal.present_command_queue = (const void*)commandQueue; // id<MTLCommandQueue>
+        rendererConfig.metal.device = (const void*)mtlDevice;
+        rendererConfig.metal.present_command_queue = (const void*)commandQueue;
 
-        // When not using a custom compositor, Flutter needs callbacks to get surfaces.
-        // Since we're just embedding a single view, we can provide basic callbacks.
-        // However, in recent versions of the embedder API, these are only needed
-        // if you're not using a compositor. For a minimal example, assume we do not have one:
-        rendererConfig.metal.get_next_drawable_callback = [](void* user_data,
-                                                             const FlutterFrameInfo* frame_info) -> FlutterMetalTexture {
-            // Flutter requests a texture to render into. We must return a FlutterMetalTexture.
-            // In a real application, you'd create or re-use a CAMetalLayer drawable's texture here.
-            // This code is incomplete and must be filled in with real logic.
-
-            // For demonstration, pretend we have a CAMetalLayer and get its next drawable:
-            FlutterMetalTexture emptyTexture = {};
-            emptyTexture.struct_size = sizeof(FlutterMetalTexture);
-
-            // The embedder expects a valid texture. You must set:
-            // emptyTexture.texture = <id<MTLTexture>>;
-            // emptyTexture.texture_id = some_int64_id;
-            // emptyTexture.destruction_callback = ...;
-            // For now, we just return something invalid, as implementing a full Metal pipeline is non-trivial.
-            // You must integrate with a CAMetalLayer and present actual textures.
-            return emptyTexture;
-        };
-
+        rendererConfig.metal.get_next_drawable_callback = getNextDrawableTextureCallback;
         rendererConfig.metal.present_drawable_callback = [](void* user_data, const FlutterMetalTexture* texture) -> bool {
-            // Present the texture. Typically, you'd take the texture_id or user_data and present the drawable.
+            // Present is optional when using a custom compositor, but here we just return true.
+            // In a more complete example, you'd handle presenting the drawable if needed.
             return true;
         };
-
-        // No external textures in this example
         rendererConfig.metal.external_texture_frame_callback = nullptr;
 
         FlutterProjectArgs projectArgs = {};
@@ -119,22 +153,20 @@ private:
         projectArgs.icu_data_path = icuDataPathUTF8.toRawUTF8();
         projectArgs.custom_dart_entrypoint = dartEntrypointUTF8.toRawUTF8();
 
-        // Attach to the view. On macOS, engine expects the NSView pointer via FlutterEngineRun
-        // using FlutterProjectArgs. We have to specify the 'embedder has platform task runner' or
-        // we rely on default. For simplicity, skip custom task runners.
-
-        // Run the engine:
-        FlutterEngineResult result = FlutterEngineRun(
-            FLUTTER_ENGINE_VERSION, &rendererConfig,
-            &projectArgs, this, &engine);
+        // Pass "this" as user_data so we can access metalLayer in get_next_drawable_callback
+        FlutterEngineResult result = FlutterEngineRun(FLUTTER_ENGINE_VERSION,
+                                                      &rendererConfig,
+                                                      &projectArgs,
+                                                      this,
+                                                      &engine);
 
         jassert(result == kSuccess);
-
-        resized(); // Send initial sizing info
+        resized(); // Update initial size
     }
 
     FLUTTER_API_SYMBOL(FlutterEngine) engine = nullptr;
     void* nativeView = nullptr;
+    CAMetalLayer* metalLayer = nullptr;
 
     juce::String icuDataPathUTF8;
     juce::String assetsPathUTF8;
