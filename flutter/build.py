@@ -169,19 +169,22 @@ def build_app(build_folder):
     source_framework = build_folder + "framework"
     destination_framework = source_app + "/Contents/Frameworks/FlutterEmbedder.framework"
 
+    rust_framework = "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/flutter_juce.app/Contents/Frameworks/rust_lib_metasampler.framework/"
+    destination_rust_framework = source_app + "/Contents/Frameworks/rust_lib_metasampler.framework"
+
     os.makedirs(package_path, exist_ok=True)
 
     if os.path.exists(destination_app):
         shutil.rmtree(destination_app)
-
     shutil.copytree(source_app, destination_app)
 
     if os.path.exists(destination_framework):
         shutil.rmtree(destination_framework)
-
-    print(source_framework)
-    print(destination_framework)
     shutil.copytree(source_framework, destination_framework)
+
+    if os.path.exists(destination_rust_framework):
+        shutil.rmtree(destination_rust_framework)
+    shutil.copytree(rust_framework, destination_rust_framework)
 
 if __name__ == "__main__":
     build_app("build/")
