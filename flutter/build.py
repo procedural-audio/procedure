@@ -93,10 +93,36 @@ def initialize_juce(juce_folder_path):
     else:
         print(f"JUCE repository found")
 
+def build_host(build_folder, component_source_folder):
+    try:
+        # Ensure JUCE is present in the build folder
+        initialize_juce(build_folder + "juce")
+
+        # Expand JUCE_PATH to a full path
+        juce_dir_full_path = os.path.abspath(os.path.join(build_folder, "juce"))
+
+        # Set up CMake build
+        cmake_build_dir = os.path.join(build_folder, "host")
+        os.makedirs(cmake_build_dir, exist_ok=True)
+
+        # Configure the build
+        subprocess.run([
+            "cmake",
+            "-B", cmake_build_dir,
+            "-S", component_source_folder,
+            f"-DJUCE_PATH={juce_dir_full_path}"
+        ], check=True)
+
+        # Build the project
+        subprocess.run(["cmake", "--build", cmake_build_dir], check=True)
+        print("JUCE component built successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error building JUCE component: {e}")
 
 if __name__ == "__main__":
     initialize_framework(FRAMEWORK_PATH)
-    initialize_juce(JUCE_PATH)
+    build_host("build/", "host/")
 
     system_os = platform.system()
     print(system_os)
