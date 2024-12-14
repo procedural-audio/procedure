@@ -1,10 +1,11 @@
 #pragma once
 
-#include "FlutterEmbedder.h"
 #include <JuceHeader.h>
 
 #include "nodus.h"
-#include "AudioPlugin.h"
+
+// #include <Metal/Metal.h>
+// #import <AppKit/AppKit.h>
 
 // #import "FlutterChannels.h"
 
@@ -50,7 +51,7 @@ public:
 public:
     // FlutterViewController* flutterViewController { nullptr };
     // FlutterBasicMessageChannel* audioPluginsChannel;
-    
+
 private:
     FFIHost* core = nullptr;
     
@@ -71,7 +72,8 @@ private:
             puts("Got null message");
         }
     };*/
-    
+
+
     juce::AudioPluginFormatManager pluginFormatManager;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NodusProcessor)

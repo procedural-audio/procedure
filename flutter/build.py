@@ -110,6 +110,23 @@ def initialize_framework(path):
                 return
     download_framework(path, revision)
 
+def build_flutter(flutter_folder):
+    try:
+        subprocess.run([
+            "flutter", "config", "--build-dir", flutter_folder
+        ], check=True)
+        print(f"Successfully set flutter build directory to {flutter_folder}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error setting flutter build folder: {e}")
+
+    try:
+        subprocess.run([
+            "flutter", "build", "macos"
+        ], check=True)
+        print(f"Successfully built flutter for macos")
+    except subprocess.CalledProcessError as e:
+        print(f"Error building flutter: {e}")
+
 def initialize_juce(juce_folder_path):
     juce_repo_url = "https://github.com/juce-framework/JUCE"
 
@@ -125,19 +142,19 @@ def initialize_juce(juce_folder_path):
     else:
         print(f"JUCE repository found")
 
-def build_host(build_folder, host_source_folder, framework_folder):
+def build_host(build_folder, host_source_folder, flutter_framework_build):
     try:
         # Ensure JUCE is present in the build folder
         initialize_juce(build_folder + "juce")
 
         # Ensure the flutter framework is present in the build folder
-        initialize_framework(build_folder + "framework")
+        # initialize_framework(build_folder + "framework")
 
         # Expand JUCE_PATH to a full path
         juce_dir_full_path = os.path.abspath(os.path.join(build_folder, "juce"))
 
         # Expand FRAMEWORK_PATH to a full path
-        framework_dir_full_path = os.path.abspath(os.path.join(build_folder, "framework"))
+        framework_dir_full_path = os.path.abspath(flutter_framework_build)
 
         # Set up CMake build
         cmake_build_dir = os.path.join(build_folder, "host")
@@ -160,31 +177,52 @@ def build_host(build_folder, host_source_folder, framework_folder):
         print(f"Error building JUCE component: {e}")
 
 def build_app(build_folder):
-    build_host(build_folder, "host", "framework")
-
-    source_app = build_folder + "host/macos/standalone/NodusStandalone_artefacts/NodusStandalone.app"
-    package_path = build_folder + "package"
-    destination_app = os.path.join(package_path, "NodusStandalone.app")
-
-    source_framework = build_folder + "framework"
-    destination_framework = source_app + "/Contents/Frameworks/FlutterEmbedder.framework"
-
-    rust_framework = "/Users/chasekanipe/Github/nodus/build/out/flutter/macos/Build/Products/Release/flutter_juce.app/Contents/Frameworks/rust_lib_metasampler.framework/"
-    destination_rust_framework = source_app + "/Contents/Frameworks/rust_lib_metasampler.framework"
-
+    host_source_folder = "host"
+    # Create the package directory
+    package_path = os.path.join(build_folder, "package")
     os.makedirs(package_path, exist_ok=True)
+
+    # Build the flutter app
+    flutter_build_folder = os.path.join(build_folder, "flutter")
+    build_flutter(flutter_build_folder)
+
+    # Build the hosts
+    flutter_framework_build = os.path.join(flutter_build_folder, "macos/Build/Products/Release/FlutterMacOS.framework")
+    build_host(build_folder, host_source_folder, flutter_framework_build)
+
+    # Package hosts
+    source_app = os.path.join(build_folder, "host/macos/standalone/NodusStandalone_artefacts/NodusStandalone.app")
+    destination_app = os.path.join(package_path, "NodusStandalone.app")
 
     if os.path.exists(destination_app):
         shutil.rmtree(destination_app)
     shutil.copytree(source_app, destination_app)
 
-    if os.path.exists(destination_framework):
-        shutil.rmtree(destination_framework)
-    shutil.copytree(source_framework, destination_framework)
+    # Package the app framework
+    app_framework_build = os.path.join(flutter_build_folder, "macos/Build/Products/Release/App.framework")
+    app_framework_destination = os.path.join(package_path, "NodusStandalone.app/Contents/Frameworks/App.framework")
+
+    if os.path.exists(app_framework_destination):
+        shutil.rmtree(app_framework_destination)
+    shutil.copytree(app_framework_build, app_framework_destination)
+
+    # Package the embedder framework
+    flutter_framework_destination = os.path.join(package_path, "NodusStandalone.app/Contents/Frameworks/FlutterMacOS.framework")
+
+    if os.path.exists(flutter_framework_destination):
+        shutil.rmtree(flutter_framework_destination)
+    shutil.copytree(flutter_framework_build, flutter_framework_destination)
+
+    # Package the rust framework
+    rust_framework_build = os.path.join(flutter_build_folder, "macos/Build/Products/Release/rust_lib_metasampler/rust_lib_metasampler.framework")
+    destination_frameworks = os.path.join(destination_app, "Contents/Frameworks")
+    os.makedirs(destination_frameworks, exist_ok=True)
+
+    destination_rust_framework = os.path.join(destination_frameworks, "rust_lib_metasampler.framework")
 
     if os.path.exists(destination_rust_framework):
         shutil.rmtree(destination_rust_framework)
-    shutil.copytree(rust_framework, destination_rust_framework)
+    shutil.copytree(rust_framework_build, destination_rust_framework)
 
 if __name__ == "__main__":
     build_app("build/")

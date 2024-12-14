@@ -4,9 +4,7 @@ set (CMAKE_CXX_STANDARD 14)
 project(NODUS_HOST VERSION 0.0.1)
 
 file(REAL_PATH "${FRAMEWORK_PATH}/Headers" HEADER_PATH)
-file(REAL_PATH "${FRAMEWORK_PATH}/FlutterEmbedder" EMBEDDER_PATH)
-
-message(WARNING "HEADER_PATH: ${HEADER_PATH}")
+file(REAL_PATH "${FRAMEWORK_PATH}/FlutterMacOS" LIBRARY_PATH)
 
 if(EXISTS "${HEADER_PATH}")
     include_directories("${HEADER_PATH}")
@@ -30,6 +28,6 @@ endif()
 
 target_link_libraries(NodusStandalone
     PRIVATE
-    "${EMBEDDER_PATH}"
+    "${LIBRARY_PATH}"
 )
 

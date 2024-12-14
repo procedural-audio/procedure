@@ -1,23 +1,30 @@
-#include "NodusProcessor.h"
 #include "NodusEditor.h"
+#include "NodusProcessor.h"
 
 // #import "FlutterViewController.h"
 
 #include "AudioPlugin.h"
 
-NodusEditor::NodusEditor (NodusProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+/*NodusEditor::NodusEditor (NodusProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    setSize (800, 600);
-    setResizable(true, true);
-    setResizeLimits(400, 300, 2000, 1000);
+    setOpaque(true);
+    setSize(800, 600);
     
-    addAndMakeVisible(flutterView);
-    // flutterView.setView(audioProcessor.flutterViewController.view);
-}
+    // Create and host the NSView inside a NSViewComponent
+    nativeView = [ [MetalView alloc] initWithFrame:NSMakeRect(0,0,(CGFloat)getWidth(),(CGFloat)getHeight())];
+    nsViewComp.setView (nativeView);
+    addAndMakeVisible(nsViewComp);
 
+    initializeFlutter();
+}*/
+/*
 NodusEditor::~NodusEditor()
 {
+    if (flutterEngine != nullptr)
+    {
+        FlutterEngineShutdown(flutterEngine);
+    }
+
 }
 
 void NodusEditor::paint (juce::Graphics& g)
@@ -27,5 +34,14 @@ void NodusEditor::paint (juce::Graphics& g)
 
 void NodusEditor::resized()
 {
-    flutterView.setBounds(getLocalBounds());
+    if (flutterEngine)
+    {
+        FlutterWindowMetricsEvent metrics = {};
+        metrics.struct_size = sizeof(FlutterWindowMetricsEvent);
+        metrics.width = static_cast<size_t>(getWidth());
+        metrics.height = static_cast<size_t>(getHeight());
+        metrics.pixel_ratio = juce::Desktop::getInstance().getDisplays().getMainDisplay().scale;
+        FlutterEngineSendWindowMetricsEvent(flutterEngine, &metrics);
+    }
 }
+*/

@@ -1,5 +1,5 @@
-#include "NodusProcessor.h"
 #include "NodusEditor.h"
+#include "NodusProcessor.h"
 
 // #import "FlutterViewController.h"
 // #import "FlutterChannels.h"
@@ -20,8 +20,10 @@ NodusProcessor::NodusProcessor()
 {
     puts("Created processor");
 
-    auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
-    handle = dlopen(libPath, RTLD_LAZY);
+    // Initialize Flutter engine
+
+    // auto libPath = "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
+    // handle = dlopen(libPath, RTLD_LAZY);
 
     /*#ifdef __MINGW32__
         EDITTHIS();
