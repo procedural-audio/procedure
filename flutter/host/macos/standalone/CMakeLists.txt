@@ -19,7 +19,6 @@ juce_generate_juce_header(NodusStandalone)
 target_sources(NodusStandalone
     PRIVATE
         main.mm
-        ../common/NodusEditor.mm
         ../common/NodusProcessor.mm
         ../common/AudioPlugin.cpp
 )

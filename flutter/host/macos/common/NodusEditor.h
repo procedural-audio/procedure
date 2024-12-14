@@ -43,10 +43,6 @@ private:
     FlutterViewController* flutterViewController = nullptr;
     FlutterDartProject* flutterProject = nullptr;
 
-    juce::String icuDataPathUTF8 = "/Users/chasekanipe/Github/nodus/flutter/build/framework/Versions/A/Resources/icudtl.dat";
-    juce::String assetsPathUTF8 = "/Users/chasekanipe/Github/nodus/build/out/flutter/flutter_assets";
-    juce::String dartEntrypointUTF8 = "main";
-
     void initializeFlutter()
     {
         // Determine paths to Flutter assets and ICU data. 
