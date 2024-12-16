@@ -8,6 +8,11 @@ use cmajor::*;
 
 use flutter_rust_bridge::*;
 
+#[no_mangle]
+pub extern "C" fn patch_render_callback(audio: *const *mut f32, channels: u32, frames: u32, midi: *const u8, size: u32) {
+    println!("Processing midi an the graph");
+}
+
 #[frb(opaque)]
 pub struct Graph {
     nodes: Vec<Node>,
@@ -15,16 +20,14 @@ pub struct Graph {
 }
 
 impl Graph {
-    /*pub fn add_node(&mut self, node: Node) {
-        self.nodes.push(node);
-        self.sort_nodes_topologically().unwrap();
+    pub fn from(nodes: &Vec<Node>, cables: &Vec<Cable>) -> Self {
+        Self {
+            nodes: nodes.clone(),
+            cables: cables.clone(),
+        }
     }
 
-    pub fn add_cable(&mut self, cable: Cable) {
-        self.cables.push(cable);
-        self.sort_nodes_topologically().unwrap();
-    }
-
+    /*
     pub fn prepare(&mut self, block_size: u32) {
         for node in &mut self.nodes {
             node.prepare(block_size);

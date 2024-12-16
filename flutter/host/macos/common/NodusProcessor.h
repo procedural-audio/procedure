@@ -59,6 +59,8 @@ private:
 
     void * handle = nullptr;
 
+    void (*patchRenderCallback) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t) = nullptr;
+
     FFIHost* (*ffiCreateHost)() = nullptr;
     void (*ffiDestroyHost)(FFIHost*) = nullptr;
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;

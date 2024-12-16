@@ -9,7 +9,7 @@ use crate::api::endpoint::Endpoint;
 use std::sync::{Arc, RwLock};
 
 /// This is a single processor unit in the graph
-// #[derive(Clone)]
+#[derive(Clone)]
 #[frb(opaque)]
 pub struct Node {
     inputs: Vec<Endpoint>,

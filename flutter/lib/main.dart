@@ -16,6 +16,8 @@ import 'package:metasampler/bindings/api.dart';
 Future<void> main(List<String> args) async {
   await RustLib.init();
 
+  print("In flutter main with arguments: " + args.toString());
+
   // CmajorLibrary.load(path: Settings2.cmajorLibrary());
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +33,7 @@ Future<void> main(List<String> args) async {
       ),
     );
   } else {
-    var addr = int.parse(args[0].split(": ").last);
+    // var addr = int.tryParse(args[0].split(": ").last);
     // globals.core = Core.from(addr);
 
     runApp(
@@ -130,12 +132,9 @@ class _Window extends State<Window> {
   }
 
   void unloadProject() async {
-    /*Navigator.pop(context);
-
+    Navigator.pop(context);
+    // TODO: Save the project here
     widget.app.project.value = null;
-    widget.app.core.setPatch(null);
-
-    setState(() {});*/
   }
 
   @override
@@ -146,89 +145,3 @@ class _Window extends State<Window> {
     );
   }
 }
-
-/*class ModuleWheel extends StatefulWidget {
-  ModuleWheel(this.modules);
-
-  List<String> modules;
-
-  @override
-  _ModuleWheel createState() => _ModuleWheel();
-}
-
-class _ModuleWheel extends State<ModuleWheel> {
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> children = [];
-
-    const double width = 300;
-    const double height = 200;
-    const double elementWidth = 80;
-    const double elementHeight = 32;
-
-    const double radius = 80;
-    double gap = 2 * pi / widget.modules.length;
-    double angle = 0.0;
-
-    for (var module in widget.modules) {
-      double x = sin(angle) * radius - (elementWidth / 2);
-      double y = cos(angle) * radius - (elementHeight / 2);
-
-      children.add(
-        Positioned(
-          left: x + width / 2,
-          top: y + height / 2,
-          child: Container(
-            width: elementWidth,
-            height: elementHeight,
-            alignment: Alignment.center,
-            child: Text(
-              module,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-            ),
-            decoration: const BoxDecoration(
-              color: Color.fromRGBO(60, 60, 60, 0.5),
-              borderRadius: BorderRadius.all(
-                Radius.circular(5),
-              ),
-            ),
-          ),
-        ),
-      );
-
-      angle += gap;
-    }
-
-    return Container(
-      width: width,
-      height: height,
-      //color: const Color.fromRGBO(40, 40, 40, 0.5),
-      child: Stack(
-        children: children +
-            [
-              Positioned(
-                left: width / 2 - 8,
-                top: height / 2 - 8,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(100, 100, 100, 0.5),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(10),
-                    ),
-                    border: Border.all(
-                      color: const Color.fromRGBO(200, 200, 200, 0.5),
-                      width: 2.0,
-                    ),
-                  ),
-                ),
-              )
-            ],
-      ),
-    );
-  }
-}*/

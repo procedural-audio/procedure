@@ -96,7 +96,7 @@ class Node extends StatelessWidget {
   List<Pin> pins = [];
   List<NodeWidget> widgets = [];
 
-  ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
+  final ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
 
   void writeEndpoint(Endpoint endpoint, dynamic value) {}
   dynamic readEndpoint(Endpoint endpoint) {

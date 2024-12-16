@@ -12,8 +12,7 @@
 class NodusEditor  : public juce::AudioProcessorEditor
 {
 public:
-    NodusEditor (NodusProcessor& p)
-        : AudioProcessorEditor (&p), audioProcessor (p)
+    NodusEditor (NodusProcessor& p) : AudioProcessorEditor (&p), audioProcessor (p)
     {
         initializeFlutter();
         addAndMakeVisible(nsViewComp);
@@ -36,7 +35,6 @@ public:
 
 private:
     NodusProcessor& audioProcessor;
-
     juce::NSViewComponent nsViewComp;
 
     FlutterEngine* engine = nullptr;
@@ -59,6 +57,9 @@ private:
             [flutterProject setAssetsPath:assetsPath];
         if ([flutterProject respondsToSelector:@selector(setICUDataPath:)])
             [flutterProject setICUDataPath:icuDataPath];
+
+        flutterProject.dartEntrypointArguments = @[@"argument1", @"argument2"];
+
         // If there's an API for setting the AOT snapshot or Dart entrypoint, do it here.
         // e.g. [flutterProject setVMData:appAotPath]; // Pseudocode, depends on Flutter version.
 

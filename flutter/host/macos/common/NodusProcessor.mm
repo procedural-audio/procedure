@@ -6,6 +6,10 @@
 
 #include <dlfcn.h>
 
+/*void setAudioMidiCallback(void (*callback) (float**, uint32_t, uint32_t, uint8_t*, uint32_t)) {
+    // set the audio/midi callback
+}*/
+
 NodusProcessor::NodusProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -19,6 +23,20 @@ NodusProcessor::NodusProcessor()
 #endif
 {
     puts("Created processor");
+
+    auto handle = dlopen("../Frameworks/rust_lib_metasampler.framework/rust_lib_metasampler", RTLD_LAZY);
+
+    if (!handle) {
+        printf("Failed to open library: %s\n", dlerror());
+    }
+
+    patchRenderCallback = (void (*) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t)) dlsym(handle, "patch_render_callback");
+
+    if (!patchRenderCallback) {
+        printf("Failed to find patch render callback: %s\n", dlerror());
+    }
+
+    dlclose(handle);
 
     // Initialize Flutter engine
 
@@ -265,7 +283,7 @@ void NodusProcessor::changeProgramName (int index, const juce::String& newName)
 //==============================================================================
 void NodusProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    std::cout << "prepareToPlay(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
+    std::cout << "preparing to play(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
     if (ffiHostPrepare != nullptr && core != nullptr) {
         ffiHostPrepare(core, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
@@ -305,7 +323,11 @@ bool NodusProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 
 void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    /*juce::ScopedNoDenormals noDenormals;
+    printf("In process block\n");
+
+    buffer.clear();
+    midiMessages.clear();
+
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -320,7 +342,7 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
 
     events.clear();
 
-    for (auto data : midiMessages) {
+    /*for (auto data : midiMessages) {
         auto message = data.getMessage();
 
         if (message.isNoteOn()) {
@@ -352,15 +374,12 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
             event.value.noteOff = NoteOff {};
             events.push_back(event);
         }
-    }
-
-    if (ffiHostProcess != nullptr && core != nullptr) {
-        if (events.size() == 0) {
-            ffiHostProcess(core, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
-        } else {
-            ffiHostProcess(core, buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), &*events.begin(), events.size());
-        }
     }*/
+
+    if (patchRenderCallback) {
+        printf("Calling patch render callback\n");
+        patchRenderCallback(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
+    }
     
     /*for (auto& plugin : plugins) {
         plugin->processBlock(buffer, midiMessages);
