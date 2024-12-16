@@ -30,10 +30,13 @@ NodusProcessor::NodusProcessor()
         printf("Failed to open library: %s\n", dlerror());
     }
 
-    patchRenderCallback = (void (*) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t)) dlsym(handle, "patch_render_callback");
+    preparePatch = (void (*) (double, uint32_t)) dlsym(handle, "prepare_patch");
+    processPatch = (void (*) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t)) dlsym(handle, "process_patch");
 
-    if (!patchRenderCallback) {
-        printf("Failed to find patch render callback: %s\n", dlerror());
+    if (!preparePatch || !processPatch) {
+        preparePatch = nullptr;
+        processPatch = nullptr;
+        printf("Failed to find patch callbacks: %s\n", dlerror());
     }
 
     dlclose(handle);
@@ -285,10 +288,11 @@ void NodusProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     std::cout << "preparing to play(" << sampleRate << ", " << samplesPerBlock << ")" << std::endl;
 
-    if (ffiHostPrepare != nullptr && core != nullptr) {
-        ffiHostPrepare(core, (uint32_t) sampleRate, (uint32_t) samplesPerBlock);
+    if (preparePatch)
+    {
+        preparePatch(sampleRate, samplesPerBlock);
     }
-    
+
     /*for (auto& plugin : plugins) {
         std::cout << "Preparing plugin " << plugin->getName() << std::endl;
         plugin->prepareToPlay(sampleRate, samplesPerBlock);
@@ -323,8 +327,6 @@ bool NodusProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 
 void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    printf("In process block\n");
-
     buffer.clear();
     midiMessages.clear();
 
@@ -376,9 +378,8 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
         }
     }*/
 
-    if (patchRenderCallback) {
-        printf("Calling patch render callback\n");
-        patchRenderCallback(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
+    if (processPatch) {
+        processPatch(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
     }
     
     /*for (auto& plugin : plugins) {

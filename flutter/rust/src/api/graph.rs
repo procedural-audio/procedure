@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use crate::api::cable::*;
 use crate::api::endpoint::*;
@@ -8,9 +10,28 @@ use cmajor::*;
 
 use flutter_rust_bridge::*;
 
+lazy_static::lazy_static! {
+    static ref GRAPH: Mutex<Option<Graph>> = Mutex::new(None);
+}
+
 #[no_mangle]
-pub extern "C" fn patch_render_callback(audio: *const *mut f32, channels: u32, frames: u32, midi: *const u8, size: u32) {
-    println!("Processing midi an the graph");
+pub extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
+    if let Ok(mut graph) = GRAPH.try_lock() {
+        if let Some(graph) = &mut *graph {
+            // graph.prepare(sample_rate, block_size);
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *const u8, size: u32) {
+    if let Ok(mut graph) = GRAPH.try_lock() {
+        if let Some(graph) = &mut *graph {
+            // let audio = unsafe { std::slice::from_raw_parts(audio, channels as usize) };
+            // let midi = unsafe { std::slice::from_raw_parts(midi, size as usize) };
+            // graph.process(audio, midi);
+        }
+    }
 }
 
 #[frb(opaque)]
@@ -24,6 +45,12 @@ impl Graph {
         Self {
             nodes: nodes.clone(),
             cables: cables.clone(),
+        }
+    }
+
+    pub fn prepare(&mut self, sample_rate: f64, block_size: u32) {
+        for node in &mut self.nodes {
+            // node.prepare(sample_rate, block_size);
         }
     }
 

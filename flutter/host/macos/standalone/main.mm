@@ -46,12 +46,12 @@ public:
         juce::ignoreUnused (commandLine);
     }
 
-    void audioDeviceAboutToStart(AudioIODevice *device) {
+    void audioDeviceAboutToStart(AudioIODevice *device) override {
         puts("Audio device about to start");
         processor.prepareToPlay(device->getCurrentSampleRate(), device->getCurrentBufferSizeSamples());
     }
 
-    void audioDeviceIOCallback(const float **inputChannelData, int numInputChannels, float **outputChannelData, int numOutputChannels, int numSamples) {
+    void audioDeviceIOCallbackWithContext(const float *const *inputChannelData, int numInputChannels, float *const *outputChannelData, int numOutputChannels, int numSamples, const juce::AudioIODeviceCallbackContext &context) override {
         auto audioBuffer = juce::AudioBuffer<float>(outputChannelData, numOutputChannels, numSamples);
         midiBuffer.clear();
         collector.removeNextBlockOfMessages(midiBuffer, numSamples);
