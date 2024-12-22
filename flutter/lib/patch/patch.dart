@@ -13,6 +13,8 @@ import '../projects.dart';
 import '../module/node.dart';
 import 'right_click.dart';
 
+import '../bindings/api/graph.dart' as api;
+
 /* LIBRARY */
 
 class Assets {

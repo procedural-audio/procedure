@@ -16,7 +16,7 @@ class Module {
     required this.category,
     required this.color,
     required this.size,
-    required this.sources,
+    required this.source,
     required this.inputs,
     required this.outputs,
   });
@@ -26,7 +26,7 @@ class Module {
   List<String> category;
   Color color;
   Size size;
-  List<String> sources;
+  String source;
   List<Endpoint> inputs;
   List<Endpoint> outputs;
 
@@ -89,7 +89,7 @@ class Module {
     }
 
     try {
-      var node = Node.from(sources: [source]);
+      var node = Node.from(source: source);
 
       return Module(
         name: name,
@@ -97,7 +97,7 @@ class Module {
         category: category,
         color: color,
         size: Size(width, height),
-        sources: [source],
+        source: source,
         inputs: node.inputs,
         outputs: node.outputs,
       );

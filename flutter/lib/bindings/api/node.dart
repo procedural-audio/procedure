@@ -7,12 +7,22 @@ import '../frb_generated.dart';
 import 'endpoint.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These types are ignored because they are not used by any `pub` functions: `ParameterChange`, `Voices`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`
+// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare`, `process`
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>
 abstract class Node implements RustOpaqueInterface {
-  static Node from({required List<String> sources}) =>
-      RustLib.instance.api.crateApiNodeNodeFrom(sources: sources);
+  int get id;
+
+  set id(int id);
+
+  static Node from({required String source}) =>
+      RustLib.instance.api.crateApiNodeNodeFrom(source: source);
 
   List<Endpoint> get inputs;
 
   List<Endpoint> get outputs;
+
+  void setParameter({required int id, required double value});
 }

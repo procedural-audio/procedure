@@ -6,10 +6,6 @@
 
 #include <dlfcn.h>
 
-/*void setAudioMidiCallback(void (*callback) (float**, uint32_t, uint32_t, uint8_t*, uint32_t)) {
-    // set the audio/midi callback
-}*/
-
 NodusProcessor::NodusProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()

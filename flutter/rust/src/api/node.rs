@@ -2,32 +2,44 @@ use cmajor::*;
 use cmajor::performer::*;
 use cmajor::endpoint::*;
 
+use std::sync::mpsc::*;
+use std::sync::{Arc, RwLock, Mutex};
+
 use flutter_rust_bridge::*;
 
 use crate::api::endpoint::Endpoint;
 
-use std::sync::{Arc, RwLock};
+#[derive(Copy, Clone)]
+pub struct ParameterChange {
+    id: u32
+}
+
+pub enum Voices {
+    Mono(Performer),
+    Poly(Vec<Performer>)
+}
 
 /// This is a single processor unit in the graph
-#[derive(Clone)]
 #[frb(opaque)]
 pub struct Node {
+    pub id: u32,
+    source: String,
     inputs: Vec<Endpoint>,
     outputs: Vec<Endpoint>,
-    performer: Arc<RwLock<Performer>>,
+    sender: Sender<ParameterChange>,
+    reciever: Mutex<Receiver<ParameterChange>>,
+    voices: Mutex<Voices>,
 }
 
 impl Node {
     #[frb(sync)]
-    pub fn from(sources: &Vec<String>) -> Self {
+    pub fn from(source: &str) -> Self {
         let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
 
         let mut program = cmajor.create_program();
-        for source in sources {
-            program
-                .parse(source)
-                .unwrap();
-        }
+        program
+            .parse(source)
+            .unwrap();
 
         let mut engine = cmajor
             .create_default_engine()
@@ -57,12 +69,63 @@ impl Node {
             }
         }
 
-        let performer = engine
+        let engine = engine
             .link()
-            .unwrap()
-            .performer();
+            .unwrap();
 
-        Self { inputs, outputs, performer: Arc::new(RwLock::new(performer)) }
+        // Allocate a performer for each voice
+        let performer = engine.performer();
+
+        let (sender, reciever) = std::sync::mpsc::channel();
+
+        Self {
+            id: 0,
+            source: source.to_string(),
+            inputs,
+            outputs,
+            sender,
+            reciever: Mutex::new(reciever),
+            voices: Mutex::new(Voices::Mono(performer))
+        }
+    }
+
+    #[frb(ignore)]
+    pub fn prepare(&self, sample_rate: f64, block_size: u32) {
+        if let Ok(mut voices) = self.voices.try_lock() {
+            match *voices {
+                Voices::Mono(ref mut voice) => {
+                    voice.set_block_size(block_size);
+                },
+                Voices::Poly(ref mut voices) => {
+                    for voice in voices{
+                        voice.set_block_size(block_size);
+                    }
+                }
+            }
+        }
+    }
+
+    // This method is not mutable
+    #[frb(ignore)]
+    pub fn process(&self) {
+        if let Ok(messages) = self.reciever.try_lock() {
+            for msg in messages.try_iter() {
+                // Update the parameter on each voice
+            }
+        }
+        
+        if let Ok(mut voices) = self.voices.try_lock() {
+            match *voices {
+                Voices::Mono(ref mut voice) => {
+                    voice.advance();
+                },
+                Voices::Poly(ref mut voices) => {
+                    for voice in voices{
+                        voice.advance();
+                    }
+                }
+            }
+        }
     }
 
     #[frb(sync, getter)]
@@ -73,5 +136,10 @@ impl Node {
     #[frb(sync, getter)]
     pub fn get_outputs(&self) -> Vec<Endpoint> {
         self.outputs.clone()
+    }
+
+    #[frb(sync)]
+    pub fn set_parameter(&self, id: u32, value: f64) {
+        self.sender.send(ParameterChange { id }).unwrap();
     }
 }

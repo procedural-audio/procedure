@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::sync::mpsc::*;
+use std::sync::RwLock;
 
 use crate::api::cable::*;
 use crate::api::endpoint::*;
@@ -11,25 +13,62 @@ use cmajor::*;
 use flutter_rust_bridge::*;
 
 lazy_static::lazy_static! {
-    static ref GRAPH: Mutex<Option<Graph>> = Mutex::new(None);
+    static ref GRAPH: RwLock<Option<Graph>> = RwLock::new(None);
 }
 
+#[frb(sync)]
+pub fn set_patch(graph: Graph) {
+    *GRAPH.write().unwrap() = Some(graph);
+}
+
+#[frb(sync)]
+pub fn clear_patch() {
+    *GRAPH.write().unwrap() = None;
+}
+
+#[frb(ignore)]
 #[no_mangle]
-pub extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
-    if let Ok(mut graph) = GRAPH.try_lock() {
+pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
+    if let Ok(mut graph) = GRAPH.write() {
         if let Some(graph) = &mut *graph {
-            // graph.prepare(sample_rate, block_size);
+            graph.prepare(sample_rate, block_size);
         }
     }
 }
 
+#[frb(ignore)]
 #[no_mangle]
-pub extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *const u8, size: u32) {
-    if let Ok(mut graph) = GRAPH.try_lock() {
-        if let Some(graph) = &mut *graph {
-            // let audio = unsafe { std::slice::from_raw_parts(audio, channels as usize) };
-            // let midi = unsafe { std::slice::from_raw_parts(midi, size as usize) };
-            // graph.process(audio, midi);
+pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *mut u8, size: u32) {
+    if let Ok(graph) = GRAPH.read() {
+        if let Some(graph) = &*graph {
+            let mut buffer_1 = [0.0f32];
+            let mut buffer_2 = [0.0];
+            let mut buffer_3 = [0.0];
+            let mut buffer_4 = [0.0];
+            let mut buffer_5 = [0.0];
+            let mut buffer_6 = [0.0];
+            let mut buffer_7 = [0.0];
+            let mut buffer_8 = [0.0];
+
+            let mut buffer = [
+                buffer_1.as_mut_slice(),
+                buffer_2.as_mut_slice(),
+                buffer_3.as_mut_slice(),
+                buffer_4.as_mut_slice(),
+                buffer_5.as_mut_slice(),
+                buffer_6.as_mut_slice(),
+                buffer_7.as_mut_slice(),
+                buffer_8.as_mut_slice(),
+            ];
+
+            for i in 0..usize::min(channels as usize, buffer.len()) {
+                buffer[i] = unsafe {
+                    std::slice::from_raw_parts_mut(*audio.offset(i as isize), frames as usize)
+                };
+            }
+
+            let midi = unsafe { std::slice::from_raw_parts_mut(midi, size as usize) };
+            graph.process(buffer.as_mut_slice(), midi);
         }
     }
 }
@@ -41,33 +80,59 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn from(nodes: &Vec<Node>, cables: &Vec<Cable>) -> Self {
+    #[frb(sync)]
+    pub fn new() -> Self {
         Self {
-            nodes: nodes.clone(),
-            cables: cables.clone(),
+            nodes: Vec::new(),
+            cables: Vec::new(),
         }
     }
 
+    #[frb(sync)]
+    pub fn from(nodes: Vec<Node>, cables: Vec<Cable>) -> Self {
+        Self {
+            nodes,
+            cables,
+        }
+    }
+
+    #[frb(ignore)]
     pub fn prepare(&mut self, sample_rate: f64, block_size: u32) {
-        for node in &mut self.nodes {
-            // node.prepare(sample_rate, block_size);
-        }
-    }
+        // Sort the nodes topologically
+        self.sort_nodes_topologically().unwrap();
 
-    /*
-    pub fn prepare(&mut self, block_size: u32) {
-        for node in &mut self.nodes {
-            node.prepare(block_size);
-        }
-    }
-
-    pub fn process(&mut self) {
+        // Prepare each node
         for node in &self.nodes {
-            // Todo: Process the node
+            node.prepare(sample_rate, block_size);
         }
-    }*/
+    }
 
-    /*pub fn process_node(&self, node: &mut Node) {
+    #[frb(ignore)]
+    pub fn process(&self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+        // This method isn't mutable since it works through mutexes
+
+        // Copy audio to input nodes
+        // Copy midi to input nodes
+
+        // Process each node
+        for node in &self.nodes {
+            node.process();
+        }
+
+        // Clear the midi output
+        midi.fill(0);
+
+        // Clear the audio output
+        for channel in audio.iter_mut() {
+            channel.fill(0.0);
+        }
+
+        // Copy midi from output nodes
+        // Copy audio from output nodes
+    }
+
+    #[frb(ignore)]
+    fn process_node(&self, node: &mut Node) {
        self 
             .cables
             // All the cables
@@ -83,29 +148,14 @@ impl Graph {
                     .find(| n | n.id == cable.source.node_id)
                     .unwrap();
 
-                match cable.endpoint_type {
-                    EndpointType::Value => {
-                        // self.performer.set_input_value(destination.handle, source.value, 0);
-                        println!("Setting value from source to destination");
-                    },
-                    EndpointType::Stream => {
-                        // self.performer.set_input_frames(destination.handle, source.value, self.block_size);
-                        println!("Setting stream from source to destination");
-                    },
-                    EndpointType::Event => {
-                        // self.performer.add_input_event(destination.handle, 0, source.value);
-                        println!("Setting event from source to destination");
-                    },
-                    EndpointType::Unknown => {
-                        panic!("Unknown endpoint type");
-                    }
-                }
+                // Get the source endpoint for this cable
 
                 // node.performer.copy_output_frames(handle, dest, size)
                 // self.performer.set_input_frames(handle, frames, size);
             });
     }
 
+    #[frb(ignore)]
     fn sort_nodes_topologically(&mut self) -> Result<(), String> {
         let node_count = self.nodes.len();
 
@@ -175,5 +225,5 @@ impl Graph {
         }
 
         Ok(())
-    }*/
+    }
 }

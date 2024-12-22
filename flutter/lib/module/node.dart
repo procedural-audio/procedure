@@ -6,6 +6,7 @@ import 'package:metasampler/module/pin.dart';
 import 'package:metasampler/nodeWidgets/fader.dart';
 
 import '../bindings/api/endpoint.dart';
+import '../bindings/api/node.dart' as api;
 import '../nodeWidgets/knob.dart';
 import '../patch/patch.dart';
 
@@ -85,6 +86,8 @@ class Node extends StatelessWidget {
         ),
       );
     }
+
+    rawNode = api.Node.from(source: module.source);
   }
 
   final Module module;
@@ -92,6 +95,7 @@ class Node extends StatelessWidget {
   final void Function(Pin, Pin) onAddConnector;
   final void Function(int, int) onRemoveConnector;
   final void Function(Offset) onDrag;
+  late final api.Node rawNode;
 
   List<Pin> pins = [];
   List<NodeWidget> widgets = [];

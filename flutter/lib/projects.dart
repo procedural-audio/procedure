@@ -10,6 +10,8 @@ import 'package:metasampler/views/presets.dart';
 import 'core.dart';
 import 'patch/patch.dart';
 
+import 'bindings/api/graph.dart' as api;
+
 import 'views/info.dart';
 import 'ui/ui.dart';
 

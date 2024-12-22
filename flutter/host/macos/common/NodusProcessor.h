@@ -48,13 +48,10 @@ public:
     void pluginsMessage(juce::String message);
     void addAudioPlugin(int moduleId, juce::String name);
     
-public:
-    // FlutterViewController* flutterViewController { nullptr };
     // FlutterBasicMessageChannel* audioPluginsChannel;
 
 private:
     FFIHost* core = nullptr;
-    
     std::vector<NoteMessage> events;
 
     void * handle = nullptr;
@@ -75,7 +72,6 @@ private:
             puts("Got null message");
         }
     };*/
-
 
     juce::AudioPluginFormatManager pluginFormatManager;
     
