@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'dart:convert';
 
-import '../patch/patch.dart';
 import 'node.dart';
 
-import '../bindings/api/endpoint.dart';
+import '../patch/patch.dart';
 import '../patch/connector.dart';
+
+import '../bindings/api/endpoint.dart';
 
 class Pin extends StatefulWidget {
   Pin({
+    required this.index,
     required this.node,
     required this.endpoint,
     required this.patch,
@@ -41,6 +43,7 @@ class Pin extends StatefulWidget {
     );
   }
 
+  int index;
   final Endpoint endpoint;
   final Node node;
   final Patch patch;

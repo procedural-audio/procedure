@@ -598,11 +598,9 @@ impl SseDecode for crate::api::cable::Cable {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_source = <crate::api::cable::Connection>::sse_decode(deserializer);
         let mut var_destination = <crate::api::cable::Connection>::sse_decode(deserializer);
-        let mut var_endpointType = <u32>::sse_decode(deserializer);
         return crate::api::cable::Cable {
             source: var_source,
             destination: var_destination,
-            endpoint_type: var_endpointType,
         };
     }
 }
@@ -611,10 +609,10 @@ impl SseDecode for crate::api::cable::Connection {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_nodeId = <u32>::sse_decode(deserializer);
-        let mut var_endpointHandle = <u32>::sse_decode(deserializer);
+        let mut var_pinIndex = <u32>::sse_decode(deserializer);
         return crate::api::cable::Connection {
             node_id: var_nodeId,
-            endpoint_handle: var_endpointHandle,
+            pin_index: var_pinIndex,
         };
     }
 }
@@ -880,7 +878,6 @@ impl flutter_rust_bridge::IntoDart for crate::api::cable::Cable {
         [
             self.source.into_into_dart().into_dart(),
             self.destination.into_into_dart().into_dart(),
-            self.endpoint_type.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -896,7 +893,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::cable::Connection {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.node_id.into_into_dart().into_dart(),
-            self.endpoint_handle.into_into_dart().into_dart(),
+            self.pin_index.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1099,7 +1096,6 @@ impl SseEncode for crate::api::cable::Cable {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::api::cable::Connection>::sse_encode(self.source, serializer);
         <crate::api::cable::Connection>::sse_encode(self.destination, serializer);
-        <u32>::sse_encode(self.endpoint_type, serializer);
     }
 }
 
@@ -1107,7 +1103,7 @@ impl SseEncode for crate::api::cable::Connection {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <u32>::sse_encode(self.node_id, serializer);
-        <u32>::sse_encode(self.endpoint_handle, serializer);
+        <u32>::sse_encode(self.pin_index, serializer);
     }
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:metasampler/bindings/api/cable.dart';
 import 'package:metasampler/module/module.dart';
 import 'package:metasampler/views/presets.dart';
 
@@ -185,6 +186,28 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     // timer.cancel();
   }
 
+  void updateGraph() {
+    var nodes = widget.nodes.value.map((e) => e.rawNode).toList();
+
+    List<Cable> cables = [];
+    for (var connector in widget.connectors.value) {
+      // TODO: Create a cable from the connector
+      var startId = connector.start.node.id;
+      var startIndex = connector.start.index;
+      var endId = connector.end.node.id;
+      var endIndex = connector.end.index;
+
+      var source = Connection(nodeId: startId, pinIndex: startIndex);
+      var end = Connection(nodeId: endId, pinIndex: endIndex);
+
+      var cable = Cable(source: source, destination: end);
+      cables.add(cable);
+    }
+
+    var graph = api.Graph.from(nodes: nodes, cables: cables);
+    api.setPatch(graph: graph);
+  }
+
   void addModule(Module module, Offset position) {
     var node = Node(
       module: module,
@@ -204,6 +227,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
     widget.nodes.value.add(node);
     widget.nodes.notifyListeners();
+    updateGraph();
   }
 
   void addConnector(Pin start, Pin end) {
@@ -216,6 +240,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
     widget.connectors.value.add(connector);
     widget.connectors.notifyListeners();
+    updateGraph();
   }
 
   void removeConnector(int nodeId, int pinIndex) {
@@ -229,6 +254,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     for (var node in widget.nodes.value) {
       node.refreshSize();
     }
+
+    updateGraph();
   }
 
   @override

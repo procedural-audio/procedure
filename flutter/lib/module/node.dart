@@ -10,6 +10,8 @@ import '../bindings/api/node.dart' as api;
 import '../nodeWidgets/knob.dart';
 import '../patch/patch.dart';
 
+int NODE_ID = 0;
+
 abstract class NodeWidget<T> extends StatelessWidget {
   const NodeWidget(this.node, this.endpoint, {super.key});
 
@@ -54,6 +56,8 @@ class Node extends StatelessWidget {
     required this.onRemoveConnector,
     required this.onDrag,
   }) : super(key: UniqueKey()) {
+    int pinIndex = 0;
+
     // Add input pins and widgets to list
     for (var endpoint in module.inputs) {
       var widget = NodeWidget.from(this, endpoint);
@@ -63,6 +67,7 @@ class Node extends StatelessWidget {
 
       pins.add(
         Pin(
+          index: pinIndex++,
           endpoint: endpoint,
           node: this,
           patch: patch,
@@ -77,6 +82,7 @@ class Node extends StatelessWidget {
     for (var endpoint in module.outputs) {
       pins.add(
         Pin(
+          index: pinIndex++,
           endpoint: endpoint,
           node: this,
           patch: patch,
@@ -90,6 +96,7 @@ class Node extends StatelessWidget {
     rawNode = api.Node.from(source: module.source);
   }
 
+  final int id = NODE_ID++;
   final Module module;
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;

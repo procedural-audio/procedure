@@ -526,12 +526,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Cable dco_decode_cable(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return Cable(
       source: dco_decode_connection(arr[0]),
       destination: dco_decode_connection(arr[1]),
-      endpointType: dco_decode_u_32(arr[2]),
     );
   }
 
@@ -543,7 +542,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return Connection(
       nodeId: dco_decode_u_32(arr[0]),
-      endpointHandle: dco_decode_u_32(arr[1]),
+      pinIndex: dco_decode_u_32(arr[1]),
     );
   }
 
@@ -743,19 +742,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_source = sse_decode_connection(deserializer);
     var var_destination = sse_decode_connection(deserializer);
-    var var_endpointType = sse_decode_u_32(deserializer);
-    return Cable(
-        source: var_source,
-        destination: var_destination,
-        endpointType: var_endpointType);
+    return Cable(source: var_source, destination: var_destination);
   }
 
   @protected
   Connection sse_decode_connection(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_nodeId = sse_decode_u_32(deserializer);
-    var var_endpointHandle = sse_decode_u_32(deserializer);
-    return Connection(nodeId: var_nodeId, endpointHandle: var_endpointHandle);
+    var var_pinIndex = sse_decode_u_32(deserializer);
+    return Connection(nodeId: var_nodeId, pinIndex: var_pinIndex);
   }
 
   @protected
@@ -981,14 +976,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_connection(self.source, serializer);
     sse_encode_connection(self.destination, serializer);
-    sse_encode_u_32(self.endpointType, serializer);
   }
 
   @protected
   void sse_encode_connection(Connection self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self.nodeId, serializer);
-    sse_encode_u_32(self.endpointHandle, serializer);
+    sse_encode_u_32(self.pinIndex, serializer);
   }
 
   @protected

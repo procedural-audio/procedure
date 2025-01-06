@@ -18,8 +18,6 @@ Future<void> main(List<String> args) async {
 
   print("In flutter main with arguments: " + args.toString());
 
-  // CmajorLibrary.load(path: Settings2.cmajorLibrary());
-
   WidgetsFlutterBinding.ensureInitialized();
 
   Plugins.scan(Settings2.pluginDirectory());

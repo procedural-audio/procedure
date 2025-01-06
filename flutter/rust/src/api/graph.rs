@@ -18,11 +18,13 @@ lazy_static::lazy_static! {
 
 #[frb(sync)]
 pub fn set_patch(graph: Graph) {
+    println!("Updated patch");
     *GRAPH.write().unwrap() = Some(graph);
 }
 
 #[frb(sync)]
 pub fn clear_patch() {
+    println!("Cleared patch");
     *GRAPH.write().unwrap() = None;
 }
 

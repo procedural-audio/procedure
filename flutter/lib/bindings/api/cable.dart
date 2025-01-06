@@ -11,17 +11,14 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 class Cable {
   final Connection source;
   final Connection destination;
-  final int endpointType;
 
   const Cable({
     required this.source,
     required this.destination,
-    required this.endpointType,
   });
 
   @override
-  int get hashCode =>
-      source.hashCode ^ destination.hashCode ^ endpointType.hashCode;
+  int get hashCode => source.hashCode ^ destination.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -29,21 +26,20 @@ class Cable {
       other is Cable &&
           runtimeType == other.runtimeType &&
           source == other.source &&
-          destination == other.destination &&
-          endpointType == other.endpointType;
+          destination == other.destination;
 }
 
 class Connection {
   final int nodeId;
-  final int endpointHandle;
+  final int pinIndex;
 
   const Connection({
     required this.nodeId,
-    required this.endpointHandle,
+    required this.pinIndex,
   });
 
   @override
-  int get hashCode => nodeId.hashCode ^ endpointHandle.hashCode;
+  int get hashCode => nodeId.hashCode ^ pinIndex.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -51,5 +47,5 @@ class Connection {
       other is Connection &&
           runtimeType == other.runtimeType &&
           nodeId == other.nodeId &&
-          endpointHandle == other.endpointHandle;
+          pinIndex == other.pinIndex;
 }
