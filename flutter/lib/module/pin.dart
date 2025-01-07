@@ -69,7 +69,7 @@ class _PinState extends State<Pin> {
       top: widget.offset.dy,
       child: MouseRegion(
         onEnter: (e) {
-          print("Setting new connector end");
+          // print("Setting new connector end");
           widget.node.patch.newConnector.setEnd(widget);
           setState(() {
             hovering = true;

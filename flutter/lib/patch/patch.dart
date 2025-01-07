@@ -187,11 +187,11 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   }
 
   void updateGraph() {
-    var nodes = widget.nodes.value.map((e) => e.rawNode).toList();
+    // Create a new graph
+    var graph = api.Graph.new();
 
-    List<Cable> cables = [];
+    // Add all the cables to the graph
     for (var connector in widget.connectors.value) {
-      // TODO: Create a cable from the connector
       var startId = connector.start.node.id;
       var startIndex = connector.start.index;
       var endId = connector.end.node.id;
@@ -201,22 +201,15 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       var end = Connection(nodeId: endId, pinIndex: endIndex);
 
       var cable = Cable(source: source, destination: end);
-      cables.add(cable);
-    }
-
-    var graph = api.Graph.new();
-
-    // Add all the cables to the graph
-    for (var cable in cables) {
       graph.addCable(cable: cable);
     }
 
     // Add all the nodes to the graph
-    for (var node in nodes) {
-      graph.addNode(node: node);
+    for (var node in widget.nodes.value) {
+      graph.addNode(node: node.rawNode);
     }
 
-    // Update the graph
+    // Update the playback graph
     api.setPatch(graph: graph);
   }
 

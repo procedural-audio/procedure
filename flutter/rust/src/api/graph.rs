@@ -20,7 +20,8 @@ lazy_static::lazy_static! {
 
 #[frb(sync)]
 pub fn set_patch(graph: Graph) {
-    println!("Updated patch");
+    println!("Updated patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
+
     *GRAPH.write().unwrap() = Some(graph.clone());
 }
 
