@@ -204,7 +204,19 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       cables.add(cable);
     }
 
-    var graph = api.Graph.from(nodes: nodes, cables: cables);
+    var graph = api.Graph.new();
+
+    // Add all the cables to the graph
+    for (var cable in cables) {
+      graph.addCable(cable: cable);
+    }
+
+    // Add all the nodes to the graph
+    for (var node in nodes) {
+      graph.addNode(node: node);
+    }
+
+    // Update the graph
     api.setPatch(graph: graph);
   }
 

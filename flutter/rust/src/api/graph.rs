@@ -12,6 +12,8 @@ use cmajor::*;
 
 use flutter_rust_bridge::*;
 
+use super::node;
+
 lazy_static::lazy_static! {
     static ref GRAPH: RwLock<Option<Graph>> = RwLock::new(None);
 }
@@ -19,7 +21,7 @@ lazy_static::lazy_static! {
 #[frb(sync)]
 pub fn set_patch(graph: Graph) {
     println!("Updated patch");
-    *GRAPH.write().unwrap() = Some(graph);
+    *GRAPH.write().unwrap() = Some(graph.clone());
 }
 
 #[frb(sync)]
@@ -41,6 +43,8 @@ pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
 #[frb(ignore)]
 #[no_mangle]
 pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *mut u8, size: u32) {
+    // TODO: Update patch from pending patch if it exists
+
     if let Ok(graph) = GRAPH.read() {
         if let Some(graph) = &*graph {
             let mut buffer_1 = [0.0f32];
@@ -76,6 +80,7 @@ pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, fr
 }
 
 #[frb(opaque)]
+#[derive(Clone)]
 pub struct Graph {
     nodes: Vec<Node>,
     cables: Vec<Cable>,
@@ -91,12 +96,22 @@ impl Graph {
     }
 
     #[frb(sync)]
-    pub fn from(nodes: Vec<Node>, cables: Vec<Cable>) -> Self {
-        Self {
-            nodes,
-            cables,
-        }
+    pub fn add_cable(&mut self, cable: &Cable) {
+        self.cables.push(cable.clone());
     }
+
+    #[frb(sync)]
+    pub fn add_node(&mut self, node: &Node) {
+        self.nodes.push(node.clone());
+    }
+
+    /*#[frb(sync)]
+    pub fn from(nodes: &Vec<Node>, cables: &Vec<Cable>) -> Self {
+        Self {
+            nodes: nodes.clone(),
+            cables: cables.clone(),
+        }
+    }*/
 
     #[frb(ignore)]
     pub fn prepare(&mut self, sample_rate: f64, block_size: u32) {

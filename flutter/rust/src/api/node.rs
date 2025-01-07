@@ -21,14 +21,15 @@ pub enum Voices {
 
 /// This is a single processor unit in the graph
 #[frb(opaque)]
+#[derive(Clone)]
 pub struct Node {
     pub id: u32,
     source: String,
     inputs: Vec<Endpoint>,
     outputs: Vec<Endpoint>,
     sender: Sender<ParameterChange>,
-    reciever: Mutex<Receiver<ParameterChange>>,
-    voices: Mutex<Voices>,
+    reciever: Arc<Mutex<Receiver<ParameterChange>>>,
+    voices: Arc<Mutex<Voices>>,
 }
 
 impl Node {
@@ -84,8 +85,8 @@ impl Node {
             inputs,
             outputs,
             sender,
-            reciever: Mutex::new(reciever),
-            voices: Mutex::new(Voices::Mono(performer))
+            reciever: Arc::new(Mutex::new(reciever)),
+            voices: Arc::new(Mutex::new(Voices::Mono(performer)))
         }
     }
 
