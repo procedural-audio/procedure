@@ -11,39 +11,21 @@ part 'endpoint.freezed.dart';
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
 
-class Endpoint {
-  final int handle;
-  final EndpointKind kind;
-  final EndpointDirection direction;
-  final String annotation;
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>
+abstract class Endpoint implements RustOpaqueInterface {
+  String get annotation;
 
-  const Endpoint({
-    required this.handle,
-    required this.kind,
-    required this.direction,
-    required this.annotation,
-  });
+  EndpointDirection get direction;
 
-  EndpointKind get type => RustLib.instance.api.crateApiEndpointEndpointGetType(
-        that: this,
-      );
+  EndpointKind get kind;
 
-  @override
-  int get hashCode =>
-      handle.hashCode ^
-      kind.hashCode ^
-      direction.hashCode ^
-      annotation.hashCode;
+  set annotation(String annotation);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Endpoint &&
-          runtimeType == other.runtimeType &&
-          handle == other.handle &&
-          kind == other.kind &&
-          direction == other.direction &&
-          annotation == other.annotation;
+  set direction(EndpointDirection direction);
+
+  set kind(EndpointKind kind);
+
+  EndpointKind get type;
 }
 
 enum EndpointDirection {

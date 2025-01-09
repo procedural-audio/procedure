@@ -35,17 +35,10 @@ pub enum EndpointDirection {
     Output,
 }
 
-/*pub enum Endpoint2 {
-    Input(EndpointKind),
-    Output(EndpointKind),
-}*/
-
 #[derive(Clone)]
-#[frb(non_opaque)]
+#[frb(opaque)]
 pub struct Endpoint {
-    // handle: EndpointHandle,
-    // info: EndpointInfo,
-    pub handle: u32,
+    handle: EndpointHandle,
     pub kind: EndpointKind,
     pub direction: EndpointDirection,
     pub annotation: String,
@@ -58,6 +51,7 @@ impl Endpoint {
 
         // let endpoint = engine.endpoint::<OutputStream<f32>>(id).unwrap();
         // let handle: u32 = endpoint.0.handle().into();
+        let handle = engine.handle(id).unwrap();
 
         let kind = match &info {
             EndpointInfo::Stream(endpoint) => {
@@ -122,7 +116,7 @@ impl Endpoint {
 
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 
-        Ok(Self { handle: 0, kind, direction, annotation })
+        Ok(Self { handle, kind, direction, annotation })
     }
 
     #[frb(sync, getter)]
@@ -130,10 +124,3 @@ impl Endpoint {
         self.kind
     }
 }
-
-/*#[frb]
-#[derive(Clone)]
-pub struct EndpointInfo {
-    pub kind: EndpointKind,
-    pub top: Option<u32>,
-}*/
