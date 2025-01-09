@@ -1,4 +1,5 @@
 use cmajor::*;
+use cmajor::engine::{Engine, Linked};
 use cmajor::performer::*;
 use cmajor::endpoint::*;
 
@@ -14,9 +15,32 @@ pub struct ParameterChange {
     id: u32
 }
 
+#[frb(ignore)]
+pub struct Voice {
+    performer: Mutex<Performer>,
+    inputs: Vec<u32>,
+    outputs: Vec<u32>
+}
+
+impl Voice {
+    #[frb(ignore)]
+    pub fn from(engine: &Engine<Linked>) -> Self {
+        let performer = Mutex::new(engine.performer());
+        let inputs = Vec::new();
+        let outputs = Vec::new();
+
+        Self {
+            performer,
+            inputs,
+            outputs
+        }
+    }
+}
+
+#[frb(ignore)]
 pub enum Voices {
-    Mono(Performer),
-    Poly(Vec<Performer>)
+    Mono(Voice),
+    Poly(Vec<Voice>)
 }
 
 /// This is a single processor unit in the graph
@@ -29,12 +53,12 @@ pub struct Node {
     outputs: Vec<Endpoint>,
     sender: Sender<ParameterChange>,
     reciever: Arc<Mutex<Receiver<ParameterChange>>>,
-    voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Voices>,
 }
 
 impl Node {
     #[frb(sync)]
-    pub fn from(source: &str) -> Self {
+    pub fn from(source: &str, id: u32) -> Self {
         let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
 
         let mut program = cmajor.create_program();
@@ -74,25 +98,28 @@ impl Node {
             .link()
             .unwrap();
 
-        // Allocate a performer for each voice
-        let performer = engine.performer();
+        let voices = if id == 0 {
+            Voices::Mono(Voice::from(&engine))
+        } else {
+            Voices::Mono(Voice::from(&engine))
+        };
 
         let (sender, reciever) = std::sync::mpsc::channel();
 
         Self {
-            id: 0,
+            id,
             source: source.to_string(),
             inputs,
             outputs,
             sender,
             reciever: Arc::new(Mutex::new(reciever)),
-            voices: Arc::new(Mutex::new(Voices::Mono(performer)))
+            voices: Arc::new(voices)
         }
     }
 
     #[frb(ignore)]
     pub fn prepare(&self, sample_rate: f64, block_size: u32) {
-        if let Ok(mut voices) = self.voices.try_lock() {
+        /*if let Ok(mut voices) = self.voices.try_lock() {
             match *voices {
                 Voices::Mono(ref mut voice) => {
                     voice.set_block_size(block_size);
@@ -103,7 +130,7 @@ impl Node {
                     }
                 }
             }
-        }
+        }*/
     }
 
     // This method is not mutable
@@ -115,7 +142,7 @@ impl Node {
             }
         }
         
-        if let Ok(mut voices) = self.voices.try_lock() {
+        /*if let Ok(mut voices) = self.voices.try_lock() {
             match *voices {
                 Voices::Mono(ref mut voice) => {
                     voice.advance();
@@ -126,7 +153,7 @@ impl Node {
                     }
                 }
             }
-        }
+        }*/
     }
 
     #[frb(sync, getter)]

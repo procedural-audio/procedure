@@ -10,7 +10,7 @@ import '../bindings/api/node.dart' as api;
 import '../nodeWidgets/knob.dart';
 import '../patch/patch.dart';
 
-int NODE_ID = 0;
+int NODE_ID = 1;
 
 abstract class NodeWidget<T> extends StatelessWidget {
   const NodeWidget(this.node, this.endpoint, {super.key});
@@ -93,7 +93,7 @@ class Node extends StatelessWidget {
       );
     }
 
-    rawNode = api.Node.from(source: module.source);
+    rawNode = api.Node.from(source: module.source, id: id);
   }
 
   final int id = NODE_ID++;

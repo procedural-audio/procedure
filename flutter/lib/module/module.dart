@@ -89,7 +89,7 @@ class Module {
     }
 
     try {
-      var node = Node.from(source: source);
+      var node = Node.from(source: source, id: 0);
 
       return Module(
         name: name,

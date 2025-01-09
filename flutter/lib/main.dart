@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/graph.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/presets.dart';
@@ -133,6 +134,7 @@ class _Window extends State<Window> {
     Navigator.pop(context);
     // TODO: Save the project here
     widget.app.project.value = null;
+    clearPatch();
   }
 
   @override

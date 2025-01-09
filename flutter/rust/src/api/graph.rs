@@ -12,15 +12,22 @@ use cmajor::*;
 
 use flutter_rust_bridge::*;
 
+use super::cable;
 use super::node;
 
 lazy_static::lazy_static! {
     static ref GRAPH: RwLock<Option<Graph>> = RwLock::new(None);
+    // static ref GRAPH_PLAYING: RwLock<Option<Graph>> = RwLock::new(None);
+    // static ref GRAPH_PENDING: RwLock<Option<Graph>> = RwLock::new(None);
 }
 
 #[frb(sync)]
-pub fn set_patch(graph: Graph) {
+pub fn set_patch(mut graph: Graph) {
     println!("Updated patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
+    
+    // Prepare the graph for playback
+    graph.sort_nodes_topologically().unwrap();
+
     *GRAPH.write().unwrap() = Some(graph.clone());
 }
 
@@ -44,7 +51,6 @@ pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
 #[no_mangle]
 pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *mut u8, size: u32) {
     // TODO: Update patch from pending patch if it exists
-
     if let Ok(graph) = GRAPH.read() {
         if let Some(graph) = &*graph {
             let mut buffer_1 = [0.0f32];
@@ -115,9 +121,6 @@ impl Graph {
 
     #[frb(ignore)]
     pub fn prepare(&mut self, sample_rate: f64, block_size: u32) {
-        // Sort the nodes topologically
-        self.sort_nodes_topologically().unwrap();
-
         // Prepare each node
         for node in &self.nodes {
             node.prepare(sample_rate, block_size);
@@ -128,11 +131,14 @@ impl Graph {
     pub fn process(&self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
         // This method isn't mutable since it works through mutexes
 
-        // Copy audio to input nodes
-        // Copy midi to input nodes
+        // TODO: Copy audio to input nodes
+        // TODO: Copy midi to input nodes
 
         // Process each node
         for node in &self.nodes {
+            // TODO: Copy input data to this node
+
+            // Process the node
             node.process();
         }
 
@@ -144,8 +150,8 @@ impl Graph {
             channel.fill(0.0);
         }
 
-        // Copy midi from output nodes
-        // Copy audio from output nodes
+        // TODO: Copy midi from output nodes
+        // TODO: Copy audio from output nodes
     }
 
     #[frb(ignore)]
@@ -241,6 +247,70 @@ impl Graph {
             }
         }
 
+        println!("Node order:");
+        for node in &self.nodes {
+            println!(" > Node {}", node.id);
+        }
+
         Ok(())
     }
+}
+
+pub enum Action {
+    Process(Node),
+    Copy {
+        src_node: Node,
+        src_endpoint: u32,
+        dst_node: Node,
+        dst_endpoint: u32
+    }
+}
+
+#[frb(ignore)]
+fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
+    let mut actions = Vec::new();
+
+    // Generate actions for each node
+    for node in &graph.nodes {
+        generate_node_actions(&mut actions, node, graph);
+    }
+
+    return actions;
+}
+
+#[frb(ignore)]
+fn generate_node_actions(actions: &mut Vec<Action>, node: &Node, graph: &Graph) {
+    for cable in &graph.cables {
+        // Process each input connection
+        if cable.destination.node_id == node.id {
+            let src_node = graph
+                .nodes
+                .iter()
+                .find(| n | n.id == cable.source.node_id)
+                .unwrap();
+
+            let src_idx = cable.source.pin_index;
+            let dst_idx = cable.destination.pin_index;
+        }
+
+        // Process the node
+        actions.push(Action::Process(node.clone()));
+    }
+}
+
+#[frb(ignore)]
+fn generate_connection_actions(actions: &mut Vec<Action>, src_node: &Node, src_idx: u32, dst_node: &Node, dst_idx: u32) {
+    // Generate connection actions
+    match &*src_node.voices {
+        Voices::Mono(ref performer) => {
+            // let voice = performer.lock().unwrap();
+
+            // Generate actions for mono voices
+        },
+        Voices::Poly(ref performers) => {
+            // Generate actions for poly voices
+        }
+    }
+
+    todo!()
 }
