@@ -55,6 +55,7 @@ impl Endpoint {
     #[frb(ignore)]
     pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo) -> Result<Self, &'static str> {
         let id = info.id();
+
         // let endpoint = engine.endpoint::<OutputStream<f32>>(id).unwrap();
         // let handle: u32 = endpoint.0.handle().into();
 

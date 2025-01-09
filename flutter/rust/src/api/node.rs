@@ -1,5 +1,5 @@
 use cmajor::*;
-use cmajor::engine::{Engine, Linked};
+use cmajor::engine::{Engine, Loaded, Linked};
 use cmajor::performer::*;
 use cmajor::endpoint::*;
 
@@ -16,31 +16,9 @@ pub struct ParameterChange {
 }
 
 #[frb(ignore)]
-pub struct Voice {
-    performer: Mutex<Performer>,
-    inputs: Vec<u32>,
-    outputs: Vec<u32>
-}
-
-impl Voice {
-    #[frb(ignore)]
-    pub fn from(engine: &Engine<Linked>) -> Self {
-        let performer = Mutex::new(engine.performer());
-        let inputs = Vec::new();
-        let outputs = Vec::new();
-
-        Self {
-            performer,
-            inputs,
-            outputs
-        }
-    }
-}
-
-#[frb(ignore)]
 pub enum Voices {
-    Mono(Voice),
-    Poly(Vec<Voice>)
+    Mono(Mutex<Performer>),
+    Poly(Vec<Mutex<Performer>>)
 }
 
 /// This is a single processor unit in the graph
@@ -99,9 +77,9 @@ impl Node {
             .unwrap();
 
         let voices = if id == 0 {
-            Voices::Mono(Voice::from(&engine))
+            Voices::Mono(Mutex::new(engine.performer()))
         } else {
-            Voices::Mono(Voice::from(&engine))
+            Voices::Mono(Mutex::new(engine.performer()))
         };
 
         let (sender, reciever) = std::sync::mpsc::channel();
