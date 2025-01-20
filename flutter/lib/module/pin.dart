@@ -17,7 +17,7 @@ class Pin extends StatefulWidget {
     required this.patch,
     required this.isInput,
     required this.onAddConnector,
-    required this.onRemoveConnector,
+    required this.onRemoveConnections,
   }) : super(key: UniqueKey()) {
     var annotation = jsonDecode(endpoint.annotation);
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
@@ -49,7 +49,7 @@ class Pin extends StatefulWidget {
   final Patch patch;
   final bool isInput;
   final void Function(Pin, Pin) onAddConnector;
-  final void Function(int, int) onRemoveConnector;
+  final void Function(Pin) onRemoveConnections;
 
   Offset offset = Offset(0, 0);
   Color color = Colors.white;
@@ -106,7 +106,7 @@ class _PinState extends State<Pin> {
             });
           },
           onDoubleTap: () {
-            // widget.onRemoveConnector(widget.nodeId, widget.pinIndex);
+            widget.onRemoveConnections(widget);
           },
           child: ValueListenableBuilder<List<Connector>>(
             valueListenable: widget.patch.connectors,

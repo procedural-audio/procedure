@@ -221,8 +221,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
         addConnector(start, end);
         setState(() {});
       },
-      onRemoveConnector: (nodeId, pinIndex) {
-        removeConnector(nodeId, pinIndex);
+      onRemoveConnections: (pin) {
+        removeConnections(pin);
         setState(() {});
       },
       onDrag: (offset) {
@@ -248,17 +248,14 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     updateGraph();
   }
 
-  void removeConnector(int nodeId, int pinIndex) {
-    // widget.rawPatch.removeConnector(nodeId, pinIndex);
-    /*widget.connectors.removeWhere(
-      (e) =>
-          (e.start.nodeId == nodeId && e.start.pinIndex == pinIndex) ||
-          (e.end.nodeId == nodeId && e.end.pinIndex == pinIndex),
-    );*/
+  void removeConnections(Pin pin) {
+    widget.connectors.value.removeWhere(
+      (e) => e.start == pin || e.end == pin,
+    );
 
-    for (var node in widget.nodes.value) {
+    /*for (var node in widget.nodes.value) {
       node.refreshSize();
-    }
+    }*/
 
     updateGraph();
   }

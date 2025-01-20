@@ -14,6 +14,7 @@ use crate::api::node::*;
 use cmajor::*;
 
 use flutter_rust_bridge::*;
+use for_generated::futures::io::FillBuf;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -196,8 +197,8 @@ impl Graph {
 }
 
 #[frb(ignore)]
-trait CopyAction {
-    fn copy(&mut self);
+trait ExecuteAction {
+    fn execute(&mut self);
 }
 
 #[frb(ignore)]
@@ -209,13 +210,29 @@ struct CopyStream<T: StreamType> {
     buffer: Vec<T>,
 }
 
-impl<T: StreamType> CopyAction for CopyStream<T> {
-    fn copy(&mut self) {
+impl<T: StreamType> ExecuteAction for CopyStream<T> {
+    fn execute(&mut self) {
         self.src_performer
             .try_lock()
             .unwrap()
             .read(self.src_handle, self.buffer.as_mut_slice());
 
+        self.dst_performer
+            .try_lock()
+            .unwrap()
+            .write(self.dst_handle, self.buffer.as_slice());
+    }
+}
+
+#[frb(ignore)]
+struct ClearStream<T: StreamType + Default> {
+    dst_performer: Arc<Mutex<Performer>>,
+    dst_handle: Endpoint<InputStream<T>>,
+    buffer: Vec<T>,
+}
+
+impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
+    fn execute(&mut self) {
         self.dst_performer
             .try_lock()
             .unwrap()
@@ -231,11 +248,11 @@ struct CopyValue<T> {
     dst_handle: Endpoint<InputValue<T>>,
 }
 
-impl<T> CopyAction for CopyValue<T>
+impl<T> ExecuteAction for CopyValue<T>
 where
     T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
 {
-    fn copy(&mut self) {
+    fn execute(&mut self) {
         let mut src_performer = self.src_performer
             .try_lock()
             .unwrap();
@@ -258,8 +275,8 @@ struct CopyEvent {
     dst_handle: Endpoint<InputEvent>,
 }
 
-impl CopyAction for CopyEvent {
-    fn copy(&mut self) {
+impl ExecuteAction for CopyEvent {
+    fn execute(&mut self) {
         let mut src_performer = self.src_performer
             .try_lock()
             .unwrap();
@@ -283,6 +300,12 @@ enum Action {
     CopyStreamInt32(CopyStream<i32>),
     CopyStreamInt64(CopyStream<i64>),
 
+    // Clear streams
+    ClearStreamFloat32(ClearStream<f32>),
+    ClearStreamFloat64(ClearStream<f64>),
+    ClearStreamInt32(ClearStream<i32>),
+    ClearStreamInt64(ClearStream<i64>),
+
     // Copy events
     CopyEvent(CopyEvent),
 
@@ -304,8 +327,6 @@ enum Action {
         channel: usize,
     }
 
-    // Output {}
-    // Input {}
     // Clear {}
 }
 
@@ -329,20 +350,26 @@ impl Action {
             },
 
             // Copy streams
-            Action::CopyStreamFloat32(action) => action.copy(),
-            Action::CopyStreamFloat64(action) => action.copy(),
-            Action::CopyStreamInt32(action) => action.copy(),
-            Action::CopyStreamInt64(action) => action.copy(),
+            Action::CopyStreamFloat32(action) => action.execute(),
+            Action::CopyStreamFloat64(action) => action.execute(),
+            Action::CopyStreamInt32(action) => action.execute(),
+            Action::CopyStreamInt64(action) => action.execute(),
+
+            // Fill streams
+            Action::ClearStreamFloat32(action) => action.execute(),
+            Action::ClearStreamFloat64(action) => action.execute(),
+            Action::ClearStreamInt32(action) => action.execute(),
+            Action::ClearStreamInt64(action) => action.execute(),
 
             // Copy event
-            Action::CopyEvent(action) => action.copy(),
+            Action::CopyEvent(action) => action.execute(),
 
             // Copy values
-            Action::CopyValueFloat32(action) => action.copy(),
-            Action::CopyValueFloat64(action) => action.copy(),
-            Action::CopyValueInt32(action) => action.copy(),
-            Action::CopyValueInt64(action) => action.copy(),
-            Action::CopyValueBool(action) => action.copy(),
+            Action::CopyValueFloat32(action) => action.execute(),
+            Action::CopyValueFloat64(action) => action.execute(),
+            Action::CopyValueInt32(action) => action.execute(),
+            Action::CopyValueInt64(action) => action.execute(),
+            Action::CopyValueBool(action) => action.execute(),
             Action::InputStream { performer, handle, channel } => {
                 match performer.try_lock() {
                     Ok(performer) => {
@@ -382,7 +409,7 @@ fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
 #[frb(ignore)]
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
     // Copy node input data
-    for cable in &graph.cables {
+    /*for cable in &graph.cables {
         if cable.destination.node_id == dst_node.id {
             let src_node = graph
                 .nodes
@@ -394,6 +421,39 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
             let dst_idx = cable.destination.pin_index as usize;
 
             generate_connection_actions(actions, src_node, src_idx, dst_node, dst_idx);
+        }
+    }*/
+
+    for (i, dst_endpoint) in dst_node.get_inputs().iter().enumerate() {
+        let mut filled = false;
+
+        graph
+            .cables
+            .iter()
+            .filter(| cable | cable.destination.node_id == dst_node.id && cable.destination.pin_index == i as u32)
+            .for_each(| cable | {
+                let src_node = graph
+                    .nodes
+                    .iter()
+                    .find(| n | n.id == cable.source.node_id)
+                    .unwrap();
+
+                let outputs = src_node
+                    .get_outputs();
+
+                let src_endpoint = outputs
+                    .get(cable.source.pin_index as usize - outputs.len())
+                    .unwrap();
+
+                println!(" - Copy {}:{} to {}:{}", src_node.id, cable.source.pin_index as usize - outputs.len(), dst_node.id, i);
+
+                generate_connection_actions(actions, src_node, src_endpoint, dst_node, dst_endpoint);
+                filled = true;
+            });
+        
+        if !filled {
+            println!(" - Fill input {} of node {}", i, dst_node.id);
+            generate_fill_endpoint_action(actions, dst_node, dst_endpoint);
         }
     }
 
@@ -412,6 +472,82 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
     }
 
     generate_io_actions(actions, dst_node);
+}
+
+#[frb(ignore)]
+fn generate_fill_endpoint_action(actions: &mut Vec<Action>, node: &Node, endpoint: &NodeEndpoint) {
+    match node.voices {
+        Voices::Mono(ref performer) => {
+            generate_fill_handle_action(actions, performer, endpoint.endpoint);
+        },
+        Voices::Poly(ref performers) => {
+            for performer in performers.iter() {
+                generate_fill_handle_action(actions, performer, endpoint.endpoint);
+            }
+        }
+    }
+}
+
+#[frb(ignore)]
+fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<Performer>>, handle: EndpointHandle) {
+    match handle {
+        EndpointHandle::Input(handle) => {
+            if let InputHandle::Stream(handle) = handle {
+                match handle {
+                    InputStreamHandle::Float32(handle) => {
+                        let buffer = vec![0.0; 1024];
+                        actions.push(
+                            Action::ClearStreamFloat32(
+                                ClearStream {
+                                    dst_performer: performer.clone(),
+                                    dst_handle: handle,
+                                    buffer
+                                }
+                            )
+                        );
+                    },
+                    InputStreamHandle::Float64(handle) => {
+                        let buffer = vec![0.0; 1024];
+                        actions.push(
+                            Action::ClearStreamFloat64(
+                                ClearStream {
+                                    dst_performer: performer.clone(),
+                                    dst_handle: handle,
+                                    buffer
+                                }
+                            )
+                        );
+                    },
+                    InputStreamHandle::Int32(handle) => {
+                        let buffer = vec![0; 1024];
+                        actions.push(
+                            Action::ClearStreamInt32(
+                                ClearStream {
+                                    dst_performer: performer.clone(),
+                                    dst_handle: handle,
+                                    buffer
+                                }
+                            )
+                        );
+                    },
+                    InputStreamHandle::Int64(handle) => {
+                        let buffer = vec![0; 1024];
+                        actions.push(
+                            Action::ClearStreamInt64(
+                                ClearStream {
+                                    dst_performer: performer.clone(),
+                                    dst_handle: handle,
+                                    buffer
+                                }
+                            )
+                        );
+                    }
+                    InputStreamHandle::Input { endpoint, channel } => ()
+                }
+            }
+        },
+        _ => ()
+    }
 }
 
 #[frb(ignore)]
@@ -485,57 +621,35 @@ fn generate_io_actions(actions: &mut Vec<Action>, node: &Node) {
 fn generate_connection_actions(
     actions: &mut Vec<Action>,
     src_node: &Node,
-    src_idx: usize,
+    src_endpoint: &NodeEndpoint,
     dst_node: &Node,
-    dst_idx: usize) {
+    dst_endpoint: &NodeEndpoint) {
 
     // Generate connection actions
     match &src_node.voices {
         Voices::Mono(ref src_performer) => {
-            let src_input_count = src_node
-                .get_inputs()
-                .len();
-
-            println!(" - Copy from {}:{} to {}:{}", src_node.id, src_idx - src_input_count, dst_node.id, dst_idx);
-
-            let src_handle = src_node
-                .get_outputs()
-                .get(src_idx - src_input_count)
-                .unwrap()
-                .endpoint;
-
             match &dst_node.voices {
                 // Copy mono => mono frames
                 Voices::Mono(ref dst_performer) => {
-                    let dst_handle = dst_node
-                        .get_inputs()
-                        .get(dst_idx)
-                        .unwrap()
-                        .endpoint;
-
                     generate_copy_action(
                         actions,
                         src_performer.clone(),
-                        src_handle,
+                        src_endpoint.endpoint,
                         dst_performer.clone(),
-                        dst_handle);
+                        dst_endpoint.endpoint
+                    );
                 },
                 // Copy mono => poly frames
                 Voices::Poly(ref performers) => {
                     // Generate actions for poly voices
                     for dst_performer in performers {
-                        let dst_handle = dst_node
-                            .get_inputs()
-                            .get(dst_idx)
-                            .unwrap()
-                            .endpoint;
-
                         generate_copy_action(
                             actions,
                             src_performer.clone(),
-                            src_handle,
+                            src_endpoint.endpoint,
                             dst_performer.clone(),
-                            dst_handle);
+                            dst_endpoint.endpoint
+                        );
                     }
                 }
             }

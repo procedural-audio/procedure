@@ -53,7 +53,7 @@ class Node extends StatelessWidget {
     required this.module,
     required this.patch,
     required this.onAddConnector,
-    required this.onRemoveConnector,
+    required this.onRemoveConnections,
     required this.onDrag,
   }) : super(key: UniqueKey()) {
     int pinIndex = 0;
@@ -73,7 +73,7 @@ class Node extends StatelessWidget {
           patch: patch,
           isInput: true,
           onAddConnector: onAddConnector,
-          onRemoveConnector: onRemoveConnector,
+          onRemoveConnections: onRemoveConnections,
         ),
       );
     }
@@ -88,7 +88,7 @@ class Node extends StatelessWidget {
           patch: patch,
           isInput: false,
           onAddConnector: onAddConnector,
-          onRemoveConnector: onRemoveConnector,
+          onRemoveConnections: onRemoveConnections,
         ),
       );
     }
@@ -100,7 +100,7 @@ class Node extends StatelessWidget {
   final Module module;
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
-  final void Function(int, int) onRemoveConnector;
+  final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onDrag;
   late final api.Node rawNode;
 
