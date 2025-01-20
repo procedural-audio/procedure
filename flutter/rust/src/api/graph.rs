@@ -424,6 +424,7 @@ fn generate_io_actions(actions: &mut Vec<Action>, node: &Node) {
                     if let InputStreamHandle::Input { endpoint, channel } = handle {
                         match node.voices {
                             Voices::Mono(ref performer) => {
+                                println!(" - Input channel {} to node {}", channel, node.id);
                                 actions.push(
                                     Action::InputStream {
                                         performer: performer.clone(),
@@ -452,6 +453,7 @@ fn generate_io_actions(actions: &mut Vec<Action>, node: &Node) {
                     if let OutputStreamHandle::Output { endpoint, channel } = handle {
                         match node.voices {
                             Voices::Mono(ref performer) => {
+                                println!(" - Output node {} to channel {}", node.id, channel);
                                 actions.push(
                                     Action::OutputStream {
                                         performer: performer.clone(),

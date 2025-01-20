@@ -1,5 +1,5 @@
 use cmajor::*;
-use cmajor::engine::{Engine, Loaded, Linked};
+use cmajor::engine::{Engine, Loaded, Linked, Error};
 use cmajor::endpoint::*;
 use cmajor::performer::*;
 
@@ -42,9 +42,10 @@ impl Node {
         let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
 
         let mut program = cmajor.create_program();
-        program
-            .parse(source)
-            .unwrap();
+        if let Err(e) = program.parse(source) {
+            println!("{}", e);
+            return None;
+        }
 
         let mut engine = match cmajor
             .create_default_engine()
@@ -52,7 +53,13 @@ impl Node {
             .load(&program) {
                 Ok(engine) => engine,
                 Err(e) => {
-                    println!("{}", e);
+                    match e {
+                        Error::FailedToLoad(_engine, message) => {
+                            println!("{}", message);
+                        },
+                        _ => println!("{}", e),
+                    }
+
                     return None;
                 }
             };
@@ -83,7 +90,13 @@ impl Node {
             .link() {
                 Ok(engine) => engine,
                 Err(e) => {
-                    println!("{}", e);
+                    match e {
+                        Error::FailedToLink(_engine, message) => {
+                            println!("{}", message);
+                        },
+                        _ => println!("{}", e),
+                    }
+
                     return None;
                 }
             };

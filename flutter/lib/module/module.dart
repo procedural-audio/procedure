@@ -91,7 +91,6 @@ class Module {
     try {
       var node = Node.from(source: source, id: 0);
       if (node == null) {
-        print("Failed to create node");
         return null;
       }
 
