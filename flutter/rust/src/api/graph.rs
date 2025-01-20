@@ -12,6 +12,7 @@ use crate::api::node::*;
 use cmajor::*;
 
 use flutter_rust_bridge::*;
+use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputStream;
 use performer::InputValue;
@@ -30,7 +31,7 @@ lazy_static::lazy_static! {
 
 #[frb(sync)]
 pub fn set_patch(mut graph: Graph) {
-    println!("Updated patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
+    println!("Updating patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
     
     // Prepare the graph for playback
     graph.sort_nodes_topologically().unwrap();
@@ -49,11 +50,7 @@ pub fn clear_patch() {
 #[frb(ignore)]
 #[no_mangle]
 pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
-    if let Ok(mut actions) = ACTIONS.try_write() {
-        /*if let Some(graph) = &mut *graph {
-            graph.prepare(sample_rate, block_size);
-        }*/
-    }
+    println!("Should re-generate the graph here");
 }
 
 #[frb(ignore)]
@@ -121,65 +118,6 @@ impl Graph {
     #[frb(sync)]
     pub fn add_node(&mut self, node: &Node) {
         self.nodes.push(node.clone());
-    }
-
-    #[frb(ignore)]
-    pub fn prepare(&mut self, sample_rate: f64, block_size: u32) {
-        // Prepare each node
-        for node in &self.nodes {
-            node.prepare(sample_rate, block_size);
-        }
-    }
-
-    #[frb(ignore)]
-    pub fn process(&self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        // This method isn't mutable since it works through mutexes
-
-        // TODO: Copy audio to input nodes
-        // TODO: Copy midi to input nodes
-
-        // Process each node
-        for node in &self.nodes {
-            // TODO: Copy input data to this node
-
-            // Process the node
-            node.process();
-        }
-
-        // Clear the midi output
-        midi.fill(0);
-
-        // Clear the audio output
-        for channel in audio.iter_mut() {
-            channel.fill(0.0);
-        }
-
-        // TODO: Copy midi from output nodes
-        // TODO: Copy audio from output nodes
-    }
-
-    #[frb(ignore)]
-    fn process_node(&self, node: &mut Node) {
-       self 
-            .cables
-            // All the cables
-            .iter()
-            // Cables that input to this node
-            .filter(| cable | cable.destination.node_id == node.id)
-            // Iterate over each input cable to this node
-            .for_each(| cable | {
-                // Get the source node for this cable
-                let source_node = self
-                    .nodes
-                    .iter()
-                    .find(| n | n.id == cable.source.node_id)
-                    .unwrap();
-
-                // Get the source endpoint for this cable
-
-                // node.performer.copy_output_frames(handle, dest, size)
-                // self.performer.set_input_frames(handle, frames, size);
-            });
     }
 
     #[frb(ignore)]
@@ -255,39 +193,64 @@ impl Graph {
     }
 }
 
+trait CopyAction {
+    fn copy(&mut self);
+}
+
+struct CopyStream<T: StreamType> {
+    src_performer: Arc<Mutex<Performer>>,
+    src_handle: Endpoint<OutputStream<T>>,
+    dst_performer: Arc<Mutex<Performer>>,
+    dst_handle: Endpoint<InputStream<T>>,
+    buffer: Vec<T>,
+}
+
+impl<T: StreamType> CopyAction for CopyStream<T> {
+    fn copy(&mut self) {
+        self.src_performer
+            .try_lock()
+            .unwrap()
+            .read(self.src_handle, self.buffer.as_mut_slice());
+
+        self.dst_performer
+            .try_lock()
+            .unwrap()
+            .write(self.dst_handle, self.buffer.as_slice());
+    }
+}
+
+use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
+
+struct CopyValue<T> {
+    src_performer: Arc<Mutex<Performer>>,
+    src_handle: Endpoint<OutputValue<T>>,
+    dst_performer: Arc<Mutex<Performer>>,
+    dst_handle: Endpoint<InputValue<T>>,
+}
+
+impl<'a, T: Copy + GetOutputValue> CopyAction for CopyValue<T> {
+    fn copy(&mut self) {
+        let mut src_performer = self.src_performer
+            .try_lock()
+            .unwrap();
+        let mut dst_performer = self.dst_performer
+            .try_lock()
+            .unwrap();
+
+        let value = src_performer.get(self.src_handle);
+        // dst_performer.set(self.dst_handle, value);
+    }
+}
+
 #[frb(ignore)]
-pub enum Action {
+enum Action {
     Process(Arc<Mutex<Performer>>),
-    
+
     // Copy streams
-    CopyStreamFloat32 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputStream<f32>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputStream<f32>>,
-        buffer: Vec<f32>,
-    },
-    CopyStreamFloat64 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputStream<f64>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputStream<f64>>,
-        buffer: Vec<f64>,
-    },
-    CopyStreamInt32 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputStream<i32>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputStream<i32>>,
-        buffer: Vec<i32>,
-    },
-    CopyStreamInt64 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputStream<i64>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputStream<i64>>,
-        buffer: Vec<i64>,
-    },
+    CopyStreamFloat32(CopyStream<f32>),
+    CopyStreamFloat64(CopyStream<f64>),
+    CopyStreamInt32(CopyStream<i32>),
+    CopyStreamInt64(CopyStream<i64>),
 
     // Copy values
     CopyValueFloat32 {
@@ -341,50 +304,11 @@ impl Action {
                     Err(_) => println!("Failed to lock performer"),
                 }
             },
-            Action::CopyStreamFloat32 { src_performer, src_handle, dst_performer, dst_handle, buffer } => {
-                src_performer
-                    .try_lock()
-                    .unwrap()
-                    .read(*src_handle, buffer);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .write(*dst_handle, buffer);
-            }
-            Action::CopyStreamFloat64 { src_performer, src_handle, dst_performer, dst_handle, buffer } => {
-                src_performer
-                    .try_lock()
-                    .unwrap()
-                    .read(*src_handle, buffer);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .write(*dst_handle, buffer);
-            }
-            Action::CopyStreamInt32 { src_performer, src_handle, dst_performer, dst_handle, buffer } => {
-                src_performer
-                    .try_lock()
-                    .unwrap()
-                    .read(*src_handle, buffer);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .write(*dst_handle, buffer);
-            }
-            Action::CopyStreamInt64 { src_performer, src_handle, dst_performer, dst_handle, buffer } => {
-                src_performer
-                    .try_lock()
-                    .unwrap()
-                    .read(*src_handle, buffer);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .write(*dst_handle, buffer);
-            }
+            Action::CopyStreamFloat32(action) => action.copy(),
+            Action::CopyStreamFloat64(action) => action.copy(),
+            Action::CopyStreamInt32(action) => action.copy(),
+            Action::CopyStreamInt64(action) => action.copy(),
+            
             Action::CopyValueFloat32 { src_performer, src_handle, dst_performer, dst_handle } => {
                 let value = src_performer
                     .try_lock()
@@ -521,12 +445,30 @@ fn generate_connection_actions(
                         .unwrap()
                         .endpoint;
 
-                    generate_copy_action(actions, src_performer.clone(), src_handle, dst_performer.clone(), dst_handle);
+                    generate_copy_action(
+                        actions,
+                        src_performer.clone(),
+                        src_handle,
+                        dst_performer.clone(),
+                        dst_handle);
                 },
                 // Copy mono => poly frames
                 Voices::Poly(ref performers) => {
                     // Generate actions for poly voices
-                    todo!()
+                    for dst_performer in performers {
+                        let dst_handle = dst_node
+                            .get_inputs()
+                            .get(dst_idx)
+                            .unwrap()
+                            .endpoint;
+
+                        generate_copy_action(
+                            actions,
+                            src_performer.clone(),
+                            src_handle,
+                            dst_performer.clone(),
+                            dst_handle);
+                    }
                 }
             }
         },
@@ -554,43 +496,60 @@ fn generate_copy_action(
                     match (src, dst) {
                         (OutputStreamHandle::Float32(src_handle), InputStreamHandle::Float32(dst_handle)) => {
                             let buffer = vec![0.0; max_frames];
-                            actions.push(Action::CopyStreamFloat32 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                                buffer,
-                            });
+                            actions.push(
+                                Action::CopyStreamFloat32(
+                                    CopyStream {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                        buffer,
+                                    }
+                                )
+                            );
                         },
                         (OutputStreamHandle::Float64(src_handle), InputStreamHandle::Float64(dst_handle)) => {
                             let buffer = vec![0.0; max_frames];
-                            actions.push(Action::CopyStreamFloat64 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                                buffer,
-                            });
+                            actions.push(
+                                Action::CopyStreamFloat64(
+                                    CopyStream {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                        buffer,
+                                    }
+                                )
+                            );
                         },
                         (OutputStreamHandle::Int32(src_handle), InputStreamHandle::Int32(dst_handle)) => {
                             let buffer = vec![0; max_frames];
-                            actions.push(Action::CopyStreamInt32 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                                buffer,
-                            });
+                            actions.push(
+                                Action::CopyStreamInt32(
+                                    CopyStream {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                        buffer,
+                                    }
+                                )
+                            );
+
                         },
                         (OutputStreamHandle::Int64(src_handle), InputStreamHandle::Int64(dst_handle)) => {
                             let buffer = vec![0; max_frames];
-                            actions.push(Action::CopyStreamInt64 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                                buffer,
-                            });
+                            actions.push(
+                                Action::CopyStreamInt64(
+                                    CopyStream {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                        buffer,
+                                    }
+                                )
+                            );
                         },
                         _ => println!("Connection not between streams of the same type")
                     }

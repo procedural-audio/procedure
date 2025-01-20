@@ -119,8 +119,7 @@ impl NodeEndpoint {
                 }
             },
             EndpointInfo::Event(endpoint) => {
-                // Todo
-                todo!()
+                return Err("unsupported endpoint type event");
             },
             EndpointInfo::Value(endpoint) => {
                 match endpoint.direction() {
