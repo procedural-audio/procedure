@@ -40,14 +40,14 @@ pub enum OutputValueHandle {
 pub enum InputHandle {
     Stream(InputStreamHandle),
     Value(InputValueHandle),
-    // Event(InputEventHandle),
+    Event(Endpoint<InputEvent>),
 }
 
 #[derive(Copy, Clone)]
 pub enum OutputHandle {
     Stream(OutputStreamHandle),
     Value(OutputValueHandle),
-    // Event(EventHandle),
+    Event(Endpoint<OutputEvent>),
 }
 
 #[derive(Copy, Clone)]
@@ -74,52 +74,73 @@ impl NodeEndpoint {
                         match endpoint.ty() {
                             Type::Primitive(primitive) => match primitive {
                                 Primitive::Float32 => InputHandle::Stream(
-                                    InputStreamHandle::Float32(engine.endpoint(id).unwrap())
+                                    InputStreamHandle::Float32(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Float64 => InputHandle::Stream(
-                                    InputStreamHandle::Float64(engine.endpoint(id).unwrap())
+                                    InputStreamHandle::Float64(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Int32 => InputHandle::Stream(
-                                    InputStreamHandle::Int32(engine.endpoint(id).unwrap())
+                                    InputStreamHandle::Int32(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Int64 => InputHandle::Stream(
-                                    InputStreamHandle::Int64(engine.endpoint(id).unwrap())
+                                    InputStreamHandle::Int64(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
-                                Primitive::Void => return Err("unsupported endpoint type void stream"),
-                                Primitive::Bool => return Err("unsupported endpoint type bool stream"),
+                                _ => return Err("unsupported input stream type"),
                             },
-                            Type::String => return Err("unsupported endpoint type string stream"),
-                            Type::Array(array) => return Err("unsupported endpoint type array stream"),
-                            Type::Object(object) => return Err("unsupported endpoint type object stream"),
+                            _ => return Err("unsupported input stream type"),
                         }
                     ),
                     EndpointDirection::Output => EndpointHandle::Output(
                         match endpoint.ty() {
                             Type::Primitive(primitive) => match primitive {
                                 Primitive::Float32 => OutputHandle::Stream(
-                                    OutputStreamHandle::Float32(engine.endpoint(id).unwrap())
+                                    OutputStreamHandle::Float32(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Float64 => OutputHandle::Stream(
-                                    OutputStreamHandle::Float64(engine.endpoint(id).unwrap())
+                                    OutputStreamHandle::Float64(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Int32 => OutputHandle::Stream(
-                                    OutputStreamHandle::Int32(engine.endpoint(id).unwrap())
+                                    OutputStreamHandle::Int32(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
                                 Primitive::Int64 => OutputHandle::Stream(
-                                    OutputStreamHandle::Int64(engine.endpoint(id).unwrap())
+                                    OutputStreamHandle::Int64(
+                                        engine.endpoint(id).unwrap()
+                                    )
                                 ),
-                                Primitive::Void => return Err("unsupported endpoint type void stream"),
-                                Primitive::Bool => return Err("unsupported endpoint type bool stream"),
+                                _ => return Err("unsupported output stream type"),
                             },
-                            Type::String => return Err("unsupported endpoint type string stream"),
-                            Type::Array(array) => return Err("unsupported endpoint type array stream"),
-                            Type::Object(object) => return Err("unsupported endpoint type object stream"),
+                            _ => return Err("unsupported output stream type"),
                         }
                     ),
                 }
             },
             EndpointInfo::Event(endpoint) => {
-                return Err("unsupported endpoint type event");
+                match endpoint.direction() {
+                    EndpointDirection::Input => EndpointHandle::Input(
+                        InputHandle::Event(
+                            engine.endpoint(id).unwrap()
+                        )
+                    ),
+                    EndpointDirection::Output => EndpointHandle::Output(
+                        OutputHandle::Event(
+                            engine.endpoint(id).unwrap()
+                        )
+                    ),
+                }
             },
             EndpointInfo::Value(endpoint) => {
                 match endpoint.direction() {
@@ -207,6 +228,9 @@ impl NodeEndpoint {
                         InputValueHandle::Bool(_) => ValueType::Bool,
                     }
                 ),
+                InputHandle::Event(e) => EndpointKind::Event(
+                    EventType::Void
+                ),
             },
             EndpointHandle::Output(handle) => match handle {
                 OutputHandle::Stream(stream) => EndpointKind::Stream(
@@ -225,6 +249,9 @@ impl NodeEndpoint {
                         OutputValueHandle::Int64(_) => ValueType::Int64,
                         OutputValueHandle::Bool(_) => ValueType::Bool,
                     }
+                ),
+                OutputHandle::Event(e) => EndpointKind::Event(
+                    EventType::Void
                 ),
             },
         }

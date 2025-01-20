@@ -1,4 +1,6 @@
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
+use std::marker::PhantomData;
 use std::process::Output;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -14,11 +16,16 @@ use cmajor::*;
 use flutter_rust_bridge::*;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
+use performer::InputEvent;
 use performer::InputStream;
 use performer::InputValue;
+use performer::OutputEvent;
 use performer::OutputStream;
 use performer::OutputValue;
 use performer::Performer;
+
+use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
+
 
 use super::cable;
 use super::node;
@@ -172,7 +179,6 @@ impl Graph {
             // Graph has at least one cycle
             return Err("The graph contains a cycle and cannot be topologically sorted.".to_string());
         }
-
         // Create a mapping from old index to new index
         let mut index_map = vec![0; node_count]; // index_map[old_index] = new_index
         for (new_index, &old_index) in sorted_indices.iter().enumerate() {
@@ -219,8 +225,6 @@ impl<T: StreamType> CopyAction for CopyStream<T> {
     }
 }
 
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
-
 struct CopyValue<T> {
     src_performer: Arc<Mutex<Performer>>,
     src_handle: Endpoint<OutputValue<T>>,
@@ -228,7 +232,33 @@ struct CopyValue<T> {
     dst_handle: Endpoint<InputValue<T>>,
 }
 
-impl<'a, T: Copy + GetOutputValue> CopyAction for CopyValue<T> {
+impl<T> CopyAction for CopyValue<T>
+where
+    T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
+{
+    fn copy(&mut self) {
+        let mut src_performer = self.src_performer
+            .try_lock()
+            .unwrap();
+
+        let temp = src_performer.get(self.src_handle);
+
+        let mut dst_performer = self.dst_performer
+            .try_lock()
+            .unwrap();
+
+        dst_performer.set(self.dst_handle, temp);
+    }
+}
+
+struct CopyEvent {
+    src_performer: Arc<Mutex<Performer>>,
+    src_handle: Endpoint<OutputEvent>,
+    dst_performer: Arc<Mutex<Performer>>,
+    dst_handle: Endpoint<InputEvent>,
+}
+
+impl CopyAction for CopyEvent {
     fn copy(&mut self) {
         let mut src_performer = self.src_performer
             .try_lock()
@@ -237,14 +267,16 @@ impl<'a, T: Copy + GetOutputValue> CopyAction for CopyValue<T> {
             .try_lock()
             .unwrap();
 
-        let value = src_performer.get(self.src_handle);
-        // dst_performer.set(self.dst_handle, value);
+        src_performer.fetch(self.src_handle, | _i, event | {
+            dst_performer.post(self.dst_handle, event).unwrap();
+        }).unwrap();
     }
 }
 
 #[frb(ignore)]
 enum Action {
     Process(Arc<Mutex<Performer>>),
+    // Copy(Box<dyn CopyAction>),
 
     // Copy streams
     CopyStreamFloat32(CopyStream<f32>),
@@ -252,37 +284,15 @@ enum Action {
     CopyStreamInt32(CopyStream<i32>),
     CopyStreamInt64(CopyStream<i64>),
 
+    // Copy events
+    CopyEvent(CopyEvent),
+
     // Copy values
-    CopyValueFloat32 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputValue<f32>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputValue<f32>>,
-    },
-    CopyValueFloat64 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputValue<f64>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputValue<f64>>,
-    },
-    CopyValueInt32 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputValue<i32>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputValue<i32>>,
-    },
-    CopyValueInt64 {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputValue<i64>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputValue<i64>>,
-    },
-    CopyValueBool {
-        src_performer: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputValue<bool>>,
-        dst_performer: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputValue<bool>>,
-    },
+    CopyValueFloat32(CopyValue<f32>),
+    CopyValueFloat64(CopyValue<f64>),
+    CopyValueInt32(CopyValue<i32>),
+    CopyValueInt64(CopyValue<i64>),
+    CopyValueBool(CopyValue<bool>),
 
     // Output {}
     // Input {}
@@ -304,66 +314,24 @@ impl Action {
                     Err(_) => println!("Failed to lock performer"),
                 }
             },
+
+            // Action::Copy(action) => action.copy(),
+            
+            // Copy streams
             Action::CopyStreamFloat32(action) => action.copy(),
             Action::CopyStreamFloat64(action) => action.copy(),
             Action::CopyStreamInt32(action) => action.copy(),
             Action::CopyStreamInt64(action) => action.copy(),
-            
-            Action::CopyValueFloat32 { src_performer, src_handle, dst_performer, dst_handle } => {
-                let value = src_performer
-                    .try_lock()
-                    .unwrap()
-                    .get(*src_handle);
 
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .set(*dst_handle, value);
-            }
-            Action::CopyValueFloat64 { src_performer, src_handle, dst_performer, dst_handle } => {
-                let value = src_performer
-                    .try_lock()
-                    .unwrap()
-                    .get(*src_handle);
+            // Copy event
+            Action::CopyEvent(action) => action.copy(),
 
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .set(*dst_handle, value);
-            }
-            Action::CopyValueInt32 { src_performer, src_handle, dst_performer, dst_handle } => {
-                let value = src_performer
-                    .try_lock()
-                    .unwrap()
-                    .get(*src_handle);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .set(*dst_handle, value);
-            }
-            Action::CopyValueInt64 { src_performer, src_handle, dst_performer, dst_handle } => {
-                let value = src_performer
-                    .try_lock()
-                    .unwrap()
-                    .get(*src_handle);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .set(*dst_handle, value);
-            }
-            Action::CopyValueBool { src_performer, src_handle, dst_performer, dst_handle } => {
-                let value = src_performer
-                    .try_lock()
-                    .unwrap()
-                    .get(*src_handle);
-
-                dst_performer
-                    .try_lock()
-                    .unwrap()
-                    .set(*dst_handle, value);
-            }
+            // Copy values
+            Action::CopyValueFloat32(action) => action.copy(),
+            Action::CopyValueFloat64(action) => action.copy(),
+            Action::CopyValueInt32(action) => action.copy(),
+            Action::CopyValueInt64(action) => action.copy(),
+            Action::CopyValueBool(action) => action.copy(),
         }
     }
 }
@@ -503,7 +471,7 @@ fn generate_copy_action(
                                         src_handle,
                                         dst_performer,
                                         dst_handle,
-                                        buffer,
+                                        buffer
                                     }
                                 )
                             );
@@ -517,7 +485,7 @@ fn generate_copy_action(
                                         src_handle,
                                         dst_performer,
                                         dst_handle,
-                                        buffer,
+                                        buffer
                                     }
                                 )
                             );
@@ -554,47 +522,79 @@ fn generate_copy_action(
                         _ => println!("Connection not between streams of the same type")
                     }
                 },
+                (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => {
+                    actions.push(
+                        Action::CopyEvent(
+                            CopyEvent {
+                                src_performer,
+                                src_handle,
+                                dst_performer,
+                                dst_handle,
+                            }
+                        )
+                    );
+                },
                 (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => {
                     match (src_handle, dst_handle) {
                         (OutputValueHandle::Float32(src_handle), InputValueHandle::Float32(dst_handle)) => {
-                            actions.push(Action::CopyValueFloat32 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                            });
+                            actions.push(
+                                Action::CopyValueFloat32(
+                                    CopyValue {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                    }
+                                )
+                            );
                         },
                         (OutputValueHandle::Float64(src_handle), InputValueHandle::Float64(dst_handle)) => {
-                            actions.push(Action::CopyValueFloat64 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                            });
+                            actions.push(
+                                Action::CopyValueFloat64(
+                                    CopyValue {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                    }
+                                )
+                            );
                         },
                         (OutputValueHandle::Int32(src_handle), InputValueHandle::Int32(dst_handle)) => {
-                            actions.push(Action::CopyValueInt32 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                            });
+                            actions.push(
+                                Action::CopyValueInt32(
+                                    CopyValue {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                    }
+                                )
+                            );
                         },
                         (OutputValueHandle::Int64(src_handle), InputValueHandle::Int64(dst_handle)) => {
-                            actions.push(Action::CopyValueInt64 {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                            });
+                            actions.push(
+                                Action::CopyValueInt64(
+                                    CopyValue {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                    }
+                                )
+                            );
                         },
                         (OutputValueHandle::Bool(src_handle), InputValueHandle::Bool(dst_handle)) => {
-                            actions.push(Action::CopyValueBool {
-                                src_performer,
-                                src_handle,
-                                dst_performer,
-                                dst_handle,
-                            });
+                            actions.push(
+                                Action::CopyValueBool(
+                                    CopyValue {
+                                        src_performer,
+                                        src_handle,
+                                        dst_performer,
+                                        dst_handle,
+                                    }
+                                )
+                            );
                         },
                         _ => println!("Connection not between values of the same type")
                     }
