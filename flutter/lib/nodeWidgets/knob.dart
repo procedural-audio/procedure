@@ -10,7 +10,7 @@ import '../utils.dart';
 class KnobWidget extends NodeWidget<double> {
   KnobWidget(
     Node node,
-    Endpoint endpoint,
+    NodeEndpoint endpoint,
     double value, {
     required this.left,
     required this.top,
@@ -43,7 +43,10 @@ class KnobWidget extends NodeWidget<double> {
   }
 
   static KnobWidget from(
-      Node node, Endpoint endpoint, Map<String, dynamic> map) {
+    Node node,
+    NodeEndpoint endpoint,
+    Map<String, dynamic> map,
+  ) {
     return KnobWidget(
       node,
       endpoint,

@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.3.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1941814778;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -641891484;
 
 // Section: executor
 
@@ -112,14 +112,14 @@ fn wire__crate__api__init_app_impl(
         },
     )
 }
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_annotation_impl(
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_get_annotation",
+            debug_name: "NodeEndpoint_auto_accessor_get_annotation",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -134,7 +134,7 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_annotation_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
@@ -158,14 +158,14 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_annotation_impl(
         },
     )
 }
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_direction_impl(
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_endpoint_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_get_direction",
+            debug_name: "NodeEndpoint_auto_accessor_get_endpoint",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -180,7 +180,7 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_direction_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
@@ -198,20 +198,20 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_direction_impl(
                     }
                 }
                 let api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok(api_that_guard.direction.clone())?;
+                let output_ok = Result::<_, ()>::Ok(api_that_guard.endpoint.clone())?;
                 Ok(output_ok)
             })())
         },
     )
 }
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_kind_impl(
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_get_kind",
+            debug_name: "NodeEndpoint_auto_accessor_set_annotation",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -226,53 +226,7 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_get_kind_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
-            >>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, false,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
-                        _ => unreachable!(),
-                    }
-                }
-                let api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok(api_that_guard.kind.clone())?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_annotation_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_set_annotation",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
             >>::sse_decode(&mut deserializer);
             let api_annotation = <String>::sse_decode(&mut deserializer);
             deserializer.end();
@@ -301,14 +255,14 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_annotation_impl(
         },
     )
 }
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_direction_impl(
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_endpoint_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_set_direction",
+            debug_name: "NodeEndpoint_auto_accessor_set_endpoint",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -323,10 +277,9 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_direction_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
             >>::sse_decode(&mut deserializer);
-            let api_direction =
-                <crate::api::endpoint::EndpointDirection>::sse_decode(&mut deserializer);
+            let api_endpoint = <EndpointHandle>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let mut api_that_guard = None;
@@ -345,7 +298,7 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_direction_impl(
                 let mut api_that_guard = api_that_guard.unwrap();
                 let output_ok = Result::<_, ()>::Ok({
                     {
-                        api_that_guard.direction = api_direction;
+                        api_that_guard.endpoint = api_endpoint;
                     };
                 })?;
                 Ok(output_ok)
@@ -353,14 +306,14 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_direction_impl(
         },
     )
 }
-fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_kind_impl(
+fn wire__crate__api__endpoint__NodeEndpoint_get_type_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_auto_accessor_set_kind",
+            debug_name: "NodeEndpoint_get_type",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -375,58 +328,7 @@ fn wire__crate__api__endpoint__Endpoint_auto_accessor_set_kind_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
-            >>::sse_decode(&mut deserializer);
-            let api_kind = <crate::api::endpoint::EndpointKind>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, true,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
-                        _ => unreachable!(),
-                    }
-                }
-                let mut api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok({
-                    {
-                        api_that_guard.kind = api_kind;
-                    };
-                })?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__endpoint__Endpoint_get_type_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Endpoint_get_type",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
@@ -444,7 +346,55 @@ fn wire__crate__api__endpoint__Endpoint_get_type_impl(
                     }
                 }
                 let api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok(crate::api::endpoint::Endpoint::get_type(
+                let output_ok = Result::<_, ()>::Ok(crate::api::endpoint::NodeEndpoint::get_type(
+                    &*api_that_guard,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__endpoint__NodeEndpoint_is_input_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "NodeEndpoint_is_input",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::api::endpoint::NodeEndpoint::is_input(
                     &*api_that_guard,
                 ))?;
                 Ok(output_ok)
@@ -817,7 +767,7 @@ fn wire__crate__api__node__Node_auto_accessor_set_voices_impl(
             let api_that = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
             >>::sse_decode(&mut deserializer);
-            let api_voices = <Arc<Voices>>::sse_decode(&mut deserializer);
+            let api_voices = <Voices>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let mut api_that_guard = None;
@@ -1024,10 +974,7 @@ fn wire__crate__api__node__Node_set_parameter_impl(
 // Section: related_funcs
 
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
-    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<Voices>>
-);
-flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
-    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>
@@ -1035,24 +982,20 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>
 );
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>
+);
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>
+);
 
 // Section: dart2rust
 
-impl SseDecode for Arc<Voices> {
+impl SseDecode for EndpointHandle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <RustOpaqueMoi<
-            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<Voices>>,
-        >>::sse_decode(deserializer);
-        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
-    }
-}
-
-impl SseDecode for Endpoint {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <RustOpaqueMoi<
-            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>,
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>,
         >>::sse_decode(deserializer);
         return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
@@ -1078,18 +1021,28 @@ impl SseDecode for Node {
     }
 }
 
-impl SseDecode
-    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<Voices>>>
-{
+impl SseDecode for NodeEndpoint {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <usize>::sse_decode(deserializer);
-        return decode_rust_opaque_moi(inner);
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
+    }
+}
+
+impl SseDecode for Voices {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
 }
 
 impl SseDecode
-    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1114,11 +1067,36 @@ impl SseDecode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpa
     }
 }
 
+impl SseDecode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <Vec<u8>>::sse_decode(deserializer);
         return String::from_utf8(inner).unwrap();
+    }
+}
+
+impl SseDecode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u8().unwrap() != 0
     }
 }
 
@@ -1142,18 +1120,6 @@ impl SseDecode for crate::api::cable::Connection {
         return crate::api::cable::Connection {
             node_id: var_nodeId,
             pin_index: var_pinIndex,
-        };
-    }
-}
-
-impl SseDecode for crate::api::endpoint::EndpointDirection {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <i32>::sse_decode(deserializer);
-        return match inner {
-            0 => crate::api::endpoint::EndpointDirection::Input,
-            1 => crate::api::endpoint::EndpointDirection::Output,
-            _ => unreachable!("Invalid variant for EndpointDirection: {}", inner),
         };
     }
 }
@@ -1187,9 +1153,12 @@ impl SseDecode for crate::api::endpoint::EventType {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <i32>::sse_decode(deserializer);
         return match inner {
-            0 => crate::api::endpoint::EventType::Midi,
-            1 => crate::api::endpoint::EventType::Bool,
-            2 => crate::api::endpoint::EventType::Int64,
+            0 => crate::api::endpoint::EventType::Float32,
+            1 => crate::api::endpoint::EventType::Float64,
+            2 => crate::api::endpoint::EventType::Int32,
+            3 => crate::api::endpoint::EventType::Int64,
+            4 => crate::api::endpoint::EventType::Void,
+            5 => crate::api::endpoint::EventType::Bool,
             _ => unreachable!("Invalid variant for EventType: {}", inner),
         };
     }
@@ -1209,13 +1178,13 @@ impl SseDecode for i32 {
     }
 }
 
-impl SseDecode for Vec<Endpoint> {
+impl SseDecode for Vec<NodeEndpoint> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut len_ = <i32>::sse_decode(deserializer);
         let mut ans_ = vec![];
         for idx_ in 0..len_ {
-            ans_.push(<Endpoint>::sse_decode(deserializer));
+            ans_.push(<NodeEndpoint>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -1240,6 +1209,8 @@ impl SseDecode for crate::api::endpoint::StreamType {
         return match inner {
             0 => crate::api::endpoint::StreamType::Float32,
             1 => crate::api::endpoint::StreamType::Float64,
+            2 => crate::api::endpoint::StreamType::Int32,
+            3 => crate::api::endpoint::StreamType::Int64,
             _ => unreachable!("Invalid variant for StreamType: {}", inner),
         };
     }
@@ -1276,18 +1247,14 @@ impl SseDecode for crate::api::endpoint::ValueType {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <i32>::sse_decode(deserializer);
         return match inner {
-            0 => crate::api::endpoint::ValueType::Float64,
-            1 => crate::api::endpoint::ValueType::Int64,
-            2 => crate::api::endpoint::ValueType::Bool,
+            0 => crate::api::endpoint::ValueType::Float32,
+            1 => crate::api::endpoint::ValueType::Float64,
+            2 => crate::api::endpoint::ValueType::Int32,
+            3 => crate::api::endpoint::ValueType::Int64,
+            4 => crate::api::endpoint::ValueType::Void,
+            5 => crate::api::endpoint::ValueType::Bool,
             _ => unreachable!("Invalid variant for ValueType: {}", inner),
         };
-    }
-}
-
-impl SseDecode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_u8().unwrap() != 0
     }
 }
 
@@ -1314,54 +1281,45 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         1 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__endpoint__Endpoint_auto_accessor_get_annotation_impl(
+        3 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        4 => wire__crate__api__endpoint__Endpoint_auto_accessor_get_direction_impl(
+        4 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        5 => wire__crate__api__endpoint__Endpoint_auto_accessor_get_kind_impl(
+        5 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__endpoint__Endpoint_auto_accessor_set_annotation_impl(
+        6 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__endpoint__Endpoint_auto_accessor_set_direction_impl(
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        8 => wire__crate__api__endpoint__Endpoint_auto_accessor_set_kind_impl(
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        9 => wire__crate__api__endpoint__Endpoint_get_type_impl(ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__graph__Graph_add_cable_impl(ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__graph__Graph_add_node_impl(ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__graph__Graph_new_impl(ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
-        16 => {
+        7 => wire__crate__api__endpoint__NodeEndpoint_get_type_impl(ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__endpoint__NodeEndpoint_is_input_impl(ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__graph__Graph_add_cable_impl(ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__graph__Graph_add_node_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__graph__Graph_new_impl(ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
+        15 => {
             wire__crate__api__node__Node_auto_accessor_get_voices_impl(ptr, rust_vec_len, data_len)
         }
-        17 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
-        18 => {
+        16 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
+        17 => {
             wire__crate__api__node__Node_auto_accessor_set_voices_impl(ptr, rust_vec_len, data_len)
         }
-        19 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__node__Node_set_parameter_impl(ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__node__Node_set_parameter_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1369,31 +1327,16 @@ fn pde_ffi_dispatcher_sync_impl(
 // Section: rust2dart
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for FrbWrapper<Arc<Voices>> {
+impl flutter_rust_bridge::IntoDart for FrbWrapper<EndpointHandle> {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
             .into_dart()
     }
 }
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<Arc<Voices>> {}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<EndpointHandle> {}
 
-impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Arc<Voices>>> for Arc<Voices> {
-    fn into_into_dart(self) -> FrbWrapper<Arc<Voices>> {
-        self.into()
-    }
-}
-
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for FrbWrapper<Endpoint> {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
-            .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<Endpoint> {}
-
-impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Endpoint>> for Endpoint {
-    fn into_into_dart(self) -> FrbWrapper<Endpoint> {
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<EndpointHandle>> for EndpointHandle {
+    fn into_into_dart(self) -> FrbWrapper<EndpointHandle> {
         self.into()
     }
 }
@@ -1424,6 +1367,36 @@ impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<
 
 impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Node>> for Node {
     fn into_into_dart(self) -> FrbWrapper<Node> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<NodeEndpoint> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<NodeEndpoint> {}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<NodeEndpoint>> for NodeEndpoint {
+    fn into_into_dart(self) -> FrbWrapper<NodeEndpoint> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<Voices> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<Voices> {}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Voices>> for Voices {
+    fn into_into_dart(self) -> FrbWrapper<Voices> {
         self.into()
     }
 }
@@ -1463,27 +1436,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::cable::Connection>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EndpointDirection {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        match self {
-            Self::Input => 0.into_dart(),
-            Self::Output => 1.into_dart(),
-            _ => unreachable!(),
-        }
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::endpoint::EndpointDirection
-{
-}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::EndpointDirection>
-    for crate::api::endpoint::EndpointDirection
-{
-    fn into_into_dart(self) -> crate::api::endpoint::EndpointDirection {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EndpointKind {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -1517,9 +1469,12 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::EndpointKind>
 impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EventType {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            Self::Midi => 0.into_dart(),
-            Self::Bool => 1.into_dart(),
-            Self::Int64 => 2.into_dart(),
+            Self::Float32 => 0.into_dart(),
+            Self::Float64 => 1.into_dart(),
+            Self::Int32 => 2.into_dart(),
+            Self::Int64 => 3.into_dart(),
+            Self::Void => 4.into_dart(),
+            Self::Bool => 5.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1541,6 +1496,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::endpoint::StreamType {
         match self {
             Self::Float32 => 0.into_dart(),
             Self::Float64 => 1.into_dart(),
+            Self::Int32 => 2.into_dart(),
+            Self::Int64 => 3.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1560,9 +1517,12 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::StreamType>
 impl flutter_rust_bridge::IntoDart for crate::api::endpoint::ValueType {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            Self::Float64 => 0.into_dart(),
-            Self::Int64 => 1.into_dart(),
-            Self::Bool => 2.into_dart(),
+            Self::Float32 => 0.into_dart(),
+            Self::Float64 => 1.into_dart(),
+            Self::Int32 => 2.into_dart(),
+            Self::Int64 => 3.into_dart(),
+            Self::Void => 4.into_dart(),
+            Self::Bool => 5.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1579,17 +1539,10 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::ValueType>
     }
 }
 
-impl SseEncode for Arc<Voices> {
+impl SseEncode for EndpointHandle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < Voices >>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
-    }
-}
-
-impl SseEncode for Endpoint {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
     }
 }
 
@@ -1613,19 +1566,22 @@ impl SseEncode for Node {
     }
 }
 
-impl SseEncode
-    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc<Voices>>>
-{
+impl SseEncode for NodeEndpoint {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        let (ptr, size) = self.sse_encode_raw();
-        <usize>::sse_encode(ptr, serializer);
-        <i32>::sse_encode(size, serializer);
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+    }
+}
+
+impl SseEncode for Voices {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
     }
 }
 
 impl SseEncode
-    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1653,10 +1609,37 @@ impl SseEncode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpa
     }
 }
 
+impl SseEncode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<u8>>::sse_encode(self.into_bytes(), serializer);
+    }
+}
+
+impl SseEncode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u8(self as _).unwrap();
     }
 }
 
@@ -1673,22 +1656,6 @@ impl SseEncode for crate::api::cable::Connection {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <u32>::sse_encode(self.node_id, serializer);
         <u32>::sse_encode(self.pin_index, serializer);
-    }
-}
-
-impl SseEncode for crate::api::endpoint::EndpointDirection {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <i32>::sse_encode(
-            match self {
-                crate::api::endpoint::EndpointDirection::Input => 0,
-                crate::api::endpoint::EndpointDirection::Output => 1,
-                _ => {
-                    unimplemented!("");
-                }
-            },
-            serializer,
-        );
     }
 }
 
@@ -1720,9 +1687,12 @@ impl SseEncode for crate::api::endpoint::EventType {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(
             match self {
-                crate::api::endpoint::EventType::Midi => 0,
-                crate::api::endpoint::EventType::Bool => 1,
-                crate::api::endpoint::EventType::Int64 => 2,
+                crate::api::endpoint::EventType::Float32 => 0,
+                crate::api::endpoint::EventType::Float64 => 1,
+                crate::api::endpoint::EventType::Int32 => 2,
+                crate::api::endpoint::EventType::Int64 => 3,
+                crate::api::endpoint::EventType::Void => 4,
+                crate::api::endpoint::EventType::Bool => 5,
                 _ => {
                     unimplemented!("");
                 }
@@ -1746,12 +1716,12 @@ impl SseEncode for i32 {
     }
 }
 
-impl SseEncode for Vec<Endpoint> {
+impl SseEncode for Vec<NodeEndpoint> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
-            <Endpoint>::sse_encode(item, serializer);
+            <NodeEndpoint>::sse_encode(item, serializer);
         }
     }
 }
@@ -1773,6 +1743,8 @@ impl SseEncode for crate::api::endpoint::StreamType {
             match self {
                 crate::api::endpoint::StreamType::Float32 => 0,
                 crate::api::endpoint::StreamType::Float64 => 1,
+                crate::api::endpoint::StreamType::Int32 => 2,
+                crate::api::endpoint::StreamType::Int64 => 3,
                 _ => {
                     unimplemented!("");
                 }
@@ -1816,22 +1788,18 @@ impl SseEncode for crate::api::endpoint::ValueType {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(
             match self {
-                crate::api::endpoint::ValueType::Float64 => 0,
-                crate::api::endpoint::ValueType::Int64 => 1,
-                crate::api::endpoint::ValueType::Bool => 2,
+                crate::api::endpoint::ValueType::Float32 => 0,
+                crate::api::endpoint::ValueType::Float64 => 1,
+                crate::api::endpoint::ValueType::Int32 => 2,
+                crate::api::endpoint::ValueType::Int64 => 3,
+                crate::api::endpoint::ValueType::Void => 4,
+                crate::api::endpoint::ValueType::Bool => 5,
                 _ => {
                     unimplemented!("");
                 }
             },
             serializer,
         );
-    }
-}
-
-impl SseEncode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_u8(self as _).unwrap();
     }
 }
 
@@ -1857,31 +1825,17 @@ mod io {
     flutter_rust_bridge::frb_generated_boilerplate_io!();
 
     #[no_mangle]
-    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcVoices(
+    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpointHandle(
         ptr: *const std::ffi::c_void,
     ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < Voices >>>::increment_strong_count(ptr as _);
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>::increment_strong_count(ptr as _);
     }
 
     #[no_mangle]
-    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcVoices(
+    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpointHandle(
         ptr: *const std::ffi::c_void,
     ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < Voices >>>::decrement_strong_count(ptr as _);
-    }
-
-    #[no_mangle]
-    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpoint(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>::increment_strong_count(ptr as _);
-    }
-
-    #[no_mangle]
-    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpoint(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>::decrement_strong_count(ptr as _);
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>::decrement_strong_count(ptr as _);
     }
 
     #[no_mangle]
@@ -1910,6 +1864,34 @@ mod io {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>::decrement_strong_count(ptr as _);
+    }
+
+    #[no_mangle]
+    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>::increment_strong_count(ptr as _);
+    }
+
+    #[no_mangle]
+    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>::decrement_strong_count(ptr as _);
+    }
+
+    #[no_mangle]
+    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>::increment_strong_count(ptr as _);
+    }
+
+    #[no_mangle]
+    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>::decrement_strong_count(ptr as _);
     }
 }
 #[cfg(not(target_family = "wasm"))]
@@ -1940,31 +1922,17 @@ mod web {
     flutter_rust_bridge::frb_generated_boilerplate_web!();
 
     #[wasm_bindgen]
-    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcVoices(
+    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpointHandle(
         ptr: *const std::ffi::c_void,
     ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < Voices >>>::increment_strong_count(ptr as _);
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>::increment_strong_count(ptr as _);
     }
 
     #[wasm_bindgen]
-    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcVoices(
+    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpointHandle(
         ptr: *const std::ffi::c_void,
     ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < Voices >>>::decrement_strong_count(ptr as _);
-    }
-
-    #[wasm_bindgen]
-    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpoint(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>::increment_strong_count(ptr as _);
-    }
-
-    #[wasm_bindgen]
-    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpoint(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>::decrement_strong_count(ptr as _);
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>::decrement_strong_count(ptr as _);
     }
 
     #[wasm_bindgen]
@@ -1993,6 +1961,34 @@ mod web {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>>::decrement_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>::increment_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>::decrement_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>::increment_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>::decrement_strong_count(ptr as _);
     }
 }
 #[cfg(target_family = "wasm")]

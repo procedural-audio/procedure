@@ -8,30 +8,26 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'endpoint.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`
+// These types are ignored because they are not used by any `pub` functions: `InputHandle`, `InputStreamHandle`, `InputValueHandle`, `OutputHandle`, `OutputStreamHandle`, `OutputValueHandle`, `PrimitiveType`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Endpoint>>
-abstract class Endpoint implements RustOpaqueInterface {
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>
+abstract class EndpointHandle implements RustOpaqueInterface {}
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
+abstract class NodeEndpoint implements RustOpaqueInterface {
   String get annotation;
 
-  EndpointDirection get direction;
-
-  EndpointKind get kind;
+  EndpointHandle get endpoint;
 
   set annotation(String annotation);
 
-  set direction(EndpointDirection direction);
-
-  set kind(EndpointKind kind);
+  set endpoint(EndpointHandle endpoint);
 
   EndpointKind get type;
-}
 
-enum EndpointDirection {
-  input,
-  output,
-  ;
+  bool get isInput;
 }
 
 @freezed
@@ -50,21 +46,29 @@ sealed class EndpointKind with _$EndpointKind {
 }
 
 enum EventType {
-  midi,
-  bool,
+  float32,
+  float64,
+  int32,
   int64,
+  void_,
+  bool,
   ;
 }
 
 enum StreamType {
   float32,
   float64,
+  int32,
+  int64,
   ;
 }
 
 enum ValueType {
+  float32,
   float64,
+  int32,
   int64,
+  void_,
   bool,
   ;
 }

@@ -27,8 +27,8 @@ class Module {
   Color color;
   Size size;
   String source;
-  List<Endpoint> inputs;
-  List<Endpoint> outputs;
+  List<NodeEndpoint> inputs;
+  List<NodeEndpoint> outputs;
 
   static Future<Module?> loadFromPatch(String path) async {
     var contents = await File(path).readAsString();

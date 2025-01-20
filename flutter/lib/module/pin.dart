@@ -30,7 +30,7 @@ class Pin extends StatefulWidget {
     }
 
     // Initialize the pin color
-    endpoint.type.when(
+    /*endpoint.type.when(
       stream: (streamType) {
         color = Colors.blue;
       },
@@ -40,11 +40,11 @@ class Pin extends StatefulWidget {
       value: (valueType) {
         color = Colors.red;
       },
-    );
+    );*/
   }
 
   int index;
-  final Endpoint endpoint;
+  final NodeEndpoint endpoint;
   final Node node;
   final Patch patch;
   final bool isInput;

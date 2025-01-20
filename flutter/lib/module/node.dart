@@ -24,9 +24,9 @@ abstract class NodeWidget<T> extends StatelessWidget {
   }
 
   final Node node;
-  final Endpoint endpoint;
+  final NodeEndpoint endpoint;
 
-  static NodeWidget? from(Node node, Endpoint endpoint) {
+  static NodeWidget? from(Node node, NodeEndpoint endpoint) {
     Map<String, dynamic> map = jsonDecode(endpoint.annotation);
 
     if (map['widget'] != null) {
@@ -109,8 +109,8 @@ class Node extends StatelessWidget {
 
   final ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
 
-  void writeEndpoint(Endpoint endpoint, dynamic value) {}
-  dynamic readEndpoint(Endpoint endpoint) {
+  void writeEndpoint(NodeEndpoint endpoint, dynamic value) {}
+  dynamic readEndpoint(NodeEndpoint endpoint) {
     return null;
   }
 

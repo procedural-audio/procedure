@@ -1,14 +1,14 @@
 use cmajor::*;
 use cmajor::engine::{Engine, Loaded, Linked};
-use cmajor::performer::*;
 use cmajor::endpoint::*;
+use cmajor::performer::*;
+
+use super::endpoint::*;
 
 use std::sync::mpsc::*;
 use std::sync::{Arc, RwLock, Mutex};
 
 use flutter_rust_bridge::*;
-
-use crate::api::endpoint::Endpoint;
 
 #[derive(Copy, Clone)]
 pub struct ParameterChange {
@@ -16,9 +16,10 @@ pub struct ParameterChange {
 }
 
 #[frb(ignore)]
+#[derive(Clone)]
 pub enum Voices {
-    Mono(Mutex<Performer>),
-    Poly(Vec<Mutex<Performer>>)
+    Mono(Arc<Mutex<Performer>>),
+    Poly(Vec<Arc<Mutex<Performer>>>)
 }
 
 /// This is a single processor unit in the graph
@@ -27,11 +28,11 @@ pub enum Voices {
 pub struct Node {
     pub id: u32,
     source: String,
-    inputs: Vec<Endpoint>,
-    outputs: Vec<Endpoint>,
+    inputs: Vec<NodeEndpoint>,
+    outputs: Vec<NodeEndpoint>,
     sender: Sender<ParameterChange>,
     reciever: Arc<Mutex<Receiver<ParameterChange>>>,
-    pub voices: Arc<Voices>,
+    pub voices: Voices,
 }
 
 impl Node {
@@ -60,7 +61,7 @@ impl Node {
 
         for info in infos {
             let is_input = info.direction() == EndpointDirection::Input;
-            match Endpoint::from(&mut engine, info) {
+            match NodeEndpoint::from(&mut engine, info) {
                 Ok(endpoint) => {
                     if is_input {
                         inputs.push(endpoint);
@@ -77,9 +78,9 @@ impl Node {
             .unwrap();
 
         let voices = if id == 0 {
-            Voices::Mono(Mutex::new(engine.performer()))
+            Voices::Mono(Arc::new(Mutex::new(engine.performer())))
         } else {
-            Voices::Mono(Mutex::new(engine.performer()))
+            Voices::Mono(Arc::new(Mutex::new(engine.performer())))
         };
 
         let (sender, reciever) = std::sync::mpsc::channel();
@@ -91,7 +92,7 @@ impl Node {
             outputs,
             sender,
             reciever: Arc::new(Mutex::new(reciever)),
-            voices: Arc::new(voices)
+            voices
         }
     }
 
@@ -119,28 +120,31 @@ impl Node {
                 // Update the parameter on each voice
             }
         }
-        
-        /*if let Ok(mut voices) = self.voices.try_lock() {
-            match *voices {
-                Voices::Mono(ref mut voice) => {
-                    voice.advance();
-                },
-                Voices::Poly(ref mut voices) => {
-                    for voice in voices{
-                        voice.advance();
+
+        match &self.voices {
+            Voices::Mono(ref voice) => {
+                match voice.try_lock() {
+                    Ok(voice) => {
+                    }
+                    Err(e) => {
+                       todo!() 
                     }
                 }
+            },
+            Voices::Poly(ref voices) => {
+                for voice in voices{
+                }
             }
-        }*/
+        }
     }
 
     #[frb(sync, getter)]
-    pub fn get_inputs(&self) -> Vec<Endpoint> {
+    pub fn get_inputs(&self) -> Vec<NodeEndpoint> {
         self.inputs.clone()
     }
 
     #[frb(sync, getter)]
-    pub fn get_outputs(&self) -> Vec<Endpoint> {
+    pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
     }
 
