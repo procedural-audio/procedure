@@ -1202,6 +1202,17 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Option<Node> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Node>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for crate::api::endpoint::StreamType {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1306,20 +1317,20 @@ fn pde_ffi_dispatcher_sync_impl(
         9 => wire__crate__api__graph__Graph_add_cable_impl(ptr, rust_vec_len, data_len),
         10 => wire__crate__api__graph__Graph_add_node_impl(ptr, rust_vec_len, data_len),
         11 => wire__crate__api__graph__Graph_new_impl(ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
-        15 => {
+        13 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
+        16 => {
             wire__crate__api__node__Node_auto_accessor_get_voices_impl(ptr, rust_vec_len, data_len)
         }
-        16 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
-        17 => {
+        17 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
+        18 => {
             wire__crate__api__node__Node_auto_accessor_set_voices_impl(ptr, rust_vec_len, data_len)
         }
-        18 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__node__Node_set_parameter_impl(ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__node__Node_set_parameter_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1732,6 +1743,16 @@ impl SseEncode for Vec<u8> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <u8>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Node> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Node>::sse_encode(value, serializer);
         }
     }
 }

@@ -195,10 +195,12 @@ impl Graph {
     }
 }
 
+#[frb(ignore)]
 trait CopyAction {
     fn copy(&mut self);
 }
 
+#[frb(ignore)]
 struct CopyStream<T: StreamType> {
     src_performer: Arc<Mutex<Performer>>,
     src_handle: Endpoint<OutputStream<T>>,
@@ -221,6 +223,7 @@ impl<T: StreamType> CopyAction for CopyStream<T> {
     }
 }
 
+#[frb(ignore)]
 struct CopyValue<T> {
     src_performer: Arc<Mutex<Performer>>,
     src_handle: Endpoint<OutputValue<T>>,
@@ -247,6 +250,7 @@ where
     }
 }
 
+#[frb(ignore)]
 struct CopyEvent {
     src_performer: Arc<Mutex<Performer>>,
     src_handle: Endpoint<OutputEvent>,

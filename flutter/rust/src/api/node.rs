@@ -5,6 +5,7 @@ use cmajor::performer::*;
 
 use super::endpoint::*;
 
+use std::f32::consts::E;
 use std::sync::mpsc::*;
 use std::sync::{Arc, RwLock, Mutex};
 
@@ -37,7 +38,7 @@ pub struct Node {
 
 impl Node {
     #[frb(sync)]
-    pub fn from(source: &str, id: u32) -> Self {
+    pub fn from(source: &str, id: u32) -> Option<Self> {
         let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
 
         let mut program = cmajor.create_program();
@@ -45,11 +46,16 @@ impl Node {
             .parse(source)
             .unwrap();
 
-        let mut engine = cmajor
+        let mut engine = match cmajor
             .create_default_engine()
             .build()
-            .load(&program)
-            .unwrap();
+            .load(&program) {
+                Ok(engine) => engine,
+                Err(e) => {
+                    println!("{}", e);
+                    return None;
+                }
+            };
 
         let infos: Vec<EndpointInfo> = engine
             .program_details()
@@ -73,9 +79,14 @@ impl Node {
             }
         }
 
-        let engine = engine
-            .link()
-            .unwrap();
+        let engine = match engine
+            .link() {
+                Ok(engine) => engine,
+                Err(e) => {
+                    println!("{}", e);
+                    return None;
+                }
+            };
 
         let voices = if id == 0 {
             Voices::Mono(Arc::new(Mutex::new(engine.performer())))
@@ -85,57 +96,17 @@ impl Node {
 
         let (sender, reciever) = std::sync::mpsc::channel();
 
-        Self {
-            id,
-            source: source.to_string(),
-            inputs,
-            outputs,
-            sender,
-            reciever: Arc::new(Mutex::new(reciever)),
-            voices
-        }
-    }
-
-    #[frb(ignore)]
-    pub fn prepare(&self, sample_rate: f64, block_size: u32) {
-        /*if let Ok(mut voices) = self.voices.try_lock() {
-            match *voices {
-                Voices::Mono(ref mut voice) => {
-                    voice.set_block_size(block_size);
-                },
-                Voices::Poly(ref mut voices) => {
-                    for voice in voices{
-                        voice.set_block_size(block_size);
-                    }
-                }
+        Some(
+            Self {
+                id,
+                source: source.to_string(),
+                inputs,
+                outputs,
+                sender,
+                reciever: Arc::new(Mutex::new(reciever)),
+                voices
             }
-        }*/
-    }
-
-    // This method is not mutable
-    #[frb(ignore)]
-    pub fn process(&self) {
-        if let Ok(messages) = self.reciever.try_lock() {
-            for msg in messages.try_iter() {
-                // Update the parameter on each voice
-            }
-        }
-
-        match &self.voices {
-            Voices::Mono(ref voice) => {
-                match voice.try_lock() {
-                    Ok(voice) => {
-                    }
-                    Err(e) => {
-                       todo!() 
-                    }
-                }
-            },
-            Voices::Poly(ref voices) => {
-                for voice in voices{
-                }
-            }
-        }
+        )
     }
 
     #[frb(sync, getter)]

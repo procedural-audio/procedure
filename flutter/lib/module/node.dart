@@ -93,7 +93,7 @@ class Node extends StatelessWidget {
       );
     }
 
-    rawNode = api.Node.from(source: module.source, id: id);
+    rawNode = api.Node.from(source: module.source, id: id)!;
   }
 
   final int id = NODE_ID++;
