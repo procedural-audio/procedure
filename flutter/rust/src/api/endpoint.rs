@@ -8,6 +8,10 @@ pub enum InputStreamHandle {
     Float64(Endpoint<InputStream<f64>>),
     Int32(Endpoint<InputStream<i32>>),
     Int64(Endpoint<InputStream<i64>>),
+    Input {
+        endpoint: Endpoint<InputStream<f32>>,
+        channel: usize
+    },
 }
 
 #[derive(Copy, Clone)]
@@ -16,6 +20,10 @@ pub enum OutputStreamHandle {
     Float64(Endpoint<OutputStream<f64>>),
     Int32(Endpoint<OutputStream<i32>>),
     Int64(Endpoint<OutputStream<i64>>),
+    Output {
+        endpoint: Endpoint<OutputStream<f32>>,
+        channel: usize
+    },
 }
 
 #[derive(Copy, Clone)]
@@ -67,17 +75,34 @@ impl NodeEndpoint {
     #[frb(ignore)]
     pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo) -> Result<Self, &'static str> {
         let id = info.id();
+        let annotation = info.annotation();
+
         let endpoint = match &info {
             EndpointInfo::Stream(endpoint) => {
                 match endpoint.direction() {
                     EndpointDirection::Input => EndpointHandle::Input(
                         match endpoint.ty() {
                             Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => InputHandle::Stream(
-                                    InputStreamHandle::Float32(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
+                                Primitive::Float32 => {
+                                    if let Some(channel) = annotation.get("inputChannel") {
+                                        InputHandle::Stream(
+                                            InputStreamHandle::Input {
+                                                endpoint: engine
+                                                    .endpoint(id)
+                                                    .unwrap(),
+                                                channel: channel
+                                                    .as_u64()
+                                                    .unwrap() as usize
+                                            }
+                                        )
+                                    } else {
+                                        InputHandle::Stream(
+                                            InputStreamHandle::Float32(
+                                                engine.endpoint(id).unwrap()
+                                            )
+                                        )
+                                    }
+                                },
                                 Primitive::Float64 => InputHandle::Stream(
                                     InputStreamHandle::Float64(
                                         engine.endpoint(id).unwrap()
@@ -101,11 +126,26 @@ impl NodeEndpoint {
                     EndpointDirection::Output => EndpointHandle::Output(
                         match endpoint.ty() {
                             Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => OutputHandle::Stream(
-                                    OutputStreamHandle::Float32(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
+                                Primitive::Float32 => {
+                                    if let Some(channel) = annotation.get("outputChannel") {
+                                        OutputHandle::Stream(
+                                            OutputStreamHandle::Output {
+                                                endpoint: engine
+                                                    .endpoint(id)
+                                                    .unwrap(),
+                                                channel: channel
+                                                    .as_u64()
+                                                    .unwrap() as usize
+                                            }
+                                        )
+                                    } else {
+                                        OutputHandle::Stream(
+                                            OutputStreamHandle::Float32(
+                                                engine.endpoint(id).unwrap()
+                                            )
+                                        )
+                                    }
+                                },
                                 Primitive::Float64 => OutputHandle::Stream(
                                     OutputStreamHandle::Float64(
                                         engine.endpoint(id).unwrap()
@@ -194,7 +234,7 @@ impl NodeEndpoint {
             },
         };
 
-        let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
+        let annotation = serde_json::ser::to_string(annotation).unwrap();
 
         Ok(Self { endpoint, annotation })
     }
@@ -217,6 +257,7 @@ impl NodeEndpoint {
                         InputStreamHandle::Float64(_) => StreamType::Float64,
                         InputStreamHandle::Int32(_) => StreamType::Int32,
                         InputStreamHandle::Int64(_) => StreamType::Int64,
+                        InputStreamHandle::Input { .. } => StreamType::Float32,
                     }
                 ),
                 InputHandle::Value(value) => EndpointKind::Value(
@@ -239,6 +280,7 @@ impl NodeEndpoint {
                         OutputStreamHandle::Float64(_) => StreamType::Float64,
                         OutputStreamHandle::Int32(_) => StreamType::Int32,
                         OutputStreamHandle::Int64(_) => StreamType::Int64,
+                        OutputStreamHandle::Output { .. } => StreamType::Float32
                     }
                 ),
                 OutputHandle::Value(value) => EndpointKind::Value(

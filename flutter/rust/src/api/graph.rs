@@ -26,10 +26,6 @@ use performer::Performer;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
-
-use super::cable;
-use super::node;
-
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Vec<Action>>> = RwLock::new(None);
     // static ref GRAPH_PLAYING: RwLock<Option<Graph>> = RwLock::new(None);
@@ -276,7 +272,6 @@ impl CopyAction for CopyEvent {
 #[frb(ignore)]
 enum Action {
     Process(Arc<Mutex<Performer>>),
-    // Copy(Box<dyn CopyAction>),
 
     // Copy streams
     CopyStreamFloat32(CopyStream<f32>),
@@ -294,6 +289,17 @@ enum Action {
     CopyValueInt64(CopyValue<i64>),
     CopyValueBool(CopyValue<bool>),
 
+    InputStream {
+        performer: Arc<Mutex<Performer>>,
+        handle: Endpoint<InputStream<f32>>,
+        channel: usize,
+    },
+    OutputStream {
+        performer: Arc<Mutex<Performer>>,
+        handle: Endpoint<OutputStream<f32>>,
+        channel: usize,
+    }
+
     // Output {}
     // Input {}
     // Clear {}
@@ -302,7 +308,10 @@ enum Action {
 impl Action {
     #[frb(ignore)]
     pub fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = audio.get(0).unwrap().len() as u32;
+        let num_frames = audio
+            .get(0)
+            .unwrap()
+            .len() as u32;
 
         match self {
             Action::Process(performer) => {
@@ -315,8 +324,6 @@ impl Action {
                 }
             },
 
-            // Action::Copy(action) => action.copy(),
-            
             // Copy streams
             Action::CopyStreamFloat32(action) => action.copy(),
             Action::CopyStreamFloat64(action) => action.copy(),
@@ -332,6 +339,26 @@ impl Action {
             Action::CopyValueInt32(action) => action.copy(),
             Action::CopyValueInt64(action) => action.copy(),
             Action::CopyValueBool(action) => action.copy(),
+            Action::InputStream { performer, handle, channel } => {
+                match performer.try_lock() {
+                    Ok(performer) => {
+                        if let Some(channel) = audio.get(*channel) {
+                            performer.write(*handle, channel);
+                        }
+                    }
+                    Err(_) => println!("Failed to lock performer"),
+                }
+            }
+            Action::OutputStream { performer, handle, channel } => {
+                match performer.try_lock() {
+                    Ok(performer) => {
+                        if let Some(channel) = audio.get_mut(*channel) {
+                            performer.read(*handle, channel);
+                        }
+                    }
+                    Err(_) => println!("Failed to lock performer"),
+                }
+            }
         }
     }
 }
@@ -376,6 +403,73 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
             for (i, performer) in performers.iter().enumerate() {
                 println!(" - Process node {} voice {}", dst_node.id, i);
                 actions.push(Action::Process(performer.clone()));
+            }
+        }
+    }
+
+    generate_io_actions(actions, dst_node);
+}
+
+#[frb(ignore)]
+fn generate_io_actions(actions: &mut Vec<Action>, node: &Node) {
+    // Generate actions for each input
+    for endpoint in node.get_inputs().iter().chain(node.get_outputs().iter()) {
+        match endpoint.endpoint {
+            EndpointHandle::Input(handle) => {
+                if let InputHandle::Stream(handle) = handle {
+                    if let InputStreamHandle::Input { endpoint, channel } = handle {
+                        match node.voices {
+                            Voices::Mono(ref performer) => {
+                                actions.push(
+                                    Action::InputStream {
+                                        performer: performer.clone(),
+                                        handle: endpoint,
+                                        channel
+                                    }
+                                );
+                            },
+                            Voices::Poly(ref performers) => {
+                                for performer in performers.iter() {
+                                    actions.push(
+                                        Action::InputStream {
+                                            performer: performer.clone(),
+                                            handle: endpoint,
+                                            channel
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            EndpointHandle::Output(handle) => {
+                if let OutputHandle::Stream(handle) = handle {
+                    if let OutputStreamHandle::Output { endpoint, channel } = handle {
+                        match node.voices {
+                            Voices::Mono(ref performer) => {
+                                actions.push(
+                                    Action::OutputStream {
+                                        performer: performer.clone(),
+                                        handle: endpoint,
+                                        channel
+                                    }
+                                );
+                            },
+                            Voices::Poly(ref performers) => {
+                                for performer in performers.iter() {
+                                    actions.push(
+                                        Action::OutputStream {
+                                            performer: performer.clone(),
+                                            handle: endpoint,
+                                            channel
+                                        }
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -447,6 +541,31 @@ fn generate_connection_actions(
     }
 }
 
+/*#[frb(ignore)]
+fn generate_stream_copy_action<T: StreamType>(
+    actions: &mut Vec<Action>,
+    src_performer: Arc<Mutex<Performer>>,
+    src_handle: Endpoint<OutputStream<T>>,
+    dst_performer: Arc<Mutex<Performer>>,
+    dst_handle: Endpoint<InputStream<T>>) {
+
+    let max_frames: usize = 1024;
+
+    actions.push(
+        Action::Copy(
+            Box::new(
+                CopyStream {
+                    src_performer,
+                    src_handle,
+                    dst_performer,
+                    dst_handle,
+                    buffer: vec![0.0; max_frames]
+                }
+            )
+        )
+    );
+}*/
+
 #[frb(ignore)]
 fn generate_copy_action(
     actions: &mut Vec<Action>,
@@ -461,6 +580,7 @@ fn generate_copy_action(
         (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) => {
             match (src_handle, dst_handle) {
                 (OutputHandle::Stream(src), InputHandle::Stream(dst)) => {
+
                     match (src, dst) {
                         (OutputStreamHandle::Float32(src_handle), InputStreamHandle::Float32(dst_handle)) => {
                             let buffer = vec![0.0; max_frames];
