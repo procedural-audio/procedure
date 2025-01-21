@@ -570,25 +570,80 @@ fn wire__crate__api__graph__Graph_add_cable_impl(
             let api_that = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
             >>::sse_decode(&mut deserializer);
-            let api_cable = <crate::api::cable::Cable>::sse_decode(&mut deserializer);
+            let api_src_node = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
+            >>::sse_decode(&mut deserializer);
+            let api_src_endpoint = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+            >>::sse_decode(&mut deserializer);
+            let api_dst_node = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
+            >>::sse_decode(&mut deserializer);
+            let api_dst_endpoint = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+            >>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let mut api_that_guard = None;
+                let mut api_src_node_guard = None;
+                let mut api_src_endpoint_guard = None;
+                let mut api_dst_node_guard = None;
+                let mut api_dst_endpoint_guard = None;
                 let decode_indices_ =
                     flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
                         flutter_rust_bridge::for_generated::LockableOrderInfo::new(
                             &api_that, 0, true,
                         ),
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_src_node,
+                            1,
+                            false,
+                        ),
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_src_endpoint,
+                            2,
+                            false,
+                        ),
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_dst_node,
+                            3,
+                            false,
+                        ),
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_dst_endpoint,
+                            4,
+                            false,
+                        ),
                     ]);
                 for i in decode_indices_ {
                     match i {
                         0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        1 => api_src_node_guard = Some(api_src_node.lockable_decode_sync_ref()),
+                        2 => {
+                            api_src_endpoint_guard =
+                                Some(api_src_endpoint.lockable_decode_sync_ref())
+                        }
+                        3 => api_dst_node_guard = Some(api_dst_node.lockable_decode_sync_ref()),
+                        4 => {
+                            api_dst_endpoint_guard =
+                                Some(api_dst_endpoint.lockable_decode_sync_ref())
+                        }
                         _ => unreachable!(),
                     }
                 }
                 let mut api_that_guard = api_that_guard.unwrap();
+                let api_src_node_guard = api_src_node_guard.unwrap();
+                let api_src_endpoint_guard = api_src_endpoint_guard.unwrap();
+                let api_dst_node_guard = api_dst_node_guard.unwrap();
+                let api_dst_endpoint_guard = api_dst_endpoint_guard.unwrap();
                 let output_ok = Result::<_, ()>::Ok({
-                    crate::api::graph::Graph::add_cable(&mut *api_that_guard, &api_cable);
+                    crate::api::graph::Graph::add_cable(
+                        &mut *api_that_guard,
+                        &*api_src_node_guard,
+                        &*api_src_endpoint_guard,
+                        &*api_dst_node_guard,
+                        &*api_dst_endpoint_guard,
+                    );
                 })?;
                 Ok(output_ok)
             })())
@@ -1194,30 +1249,6 @@ impl SseDecode for bool {
     }
 }
 
-impl SseDecode for crate::api::cable::Cable {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_source = <crate::api::cable::Connection>::sse_decode(deserializer);
-        let mut var_destination = <crate::api::cable::Connection>::sse_decode(deserializer);
-        return crate::api::cable::Cable {
-            source: var_source,
-            destination: var_destination,
-        };
-    }
-}
-
-impl SseDecode for crate::api::cable::Connection {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_nodeId = <u32>::sse_decode(deserializer);
-        let mut var_pinIndex = <u32>::sse_decode(deserializer);
-        return crate::api::cable::Connection {
-            node_id: var_nodeId,
-            pin_index: var_pinIndex,
-        };
-    }
-}
-
 impl SseDecode for crate::api::endpoint::EndpointKind {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1518,40 +1549,6 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Voices>> for Voices {
 }
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::cable::Cable {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.source.into_into_dart().into_dart(),
-            self.destination.into_into_dart().into_dart(),
-        ]
-        .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::cable::Cable {}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::cable::Cable> for crate::api::cable::Cable {
-    fn into_into_dart(self) -> crate::api::cable::Cable {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::cable::Connection {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.node_id.into_into_dart().into_dart(),
-            self.pin_index.into_into_dart().into_dart(),
-        ]
-        .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::cable::Connection {}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::cable::Connection>
-    for crate::api::cable::Connection
-{
-    fn into_into_dart(self) -> crate::api::cable::Connection {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EndpointKind {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -1756,22 +1753,6 @@ impl SseEncode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_u8(self as _).unwrap();
-    }
-}
-
-impl SseEncode for crate::api::cable::Cable {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <crate::api::cable::Connection>::sse_encode(self.source, serializer);
-        <crate::api::cable::Connection>::sse_encode(self.destination, serializer);
-    }
-}
-
-impl SseEncode for crate::api::cable::Connection {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <u32>::sse_encode(self.node_id, serializer);
-        <u32>::sse_encode(self.pin_index, serializer);
     }
 }
 

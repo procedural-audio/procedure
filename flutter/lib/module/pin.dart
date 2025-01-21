@@ -11,7 +11,6 @@ import '../bindings/api/endpoint.dart';
 
 class Pin extends StatefulWidget {
   Pin({
-    required this.index,
     required this.node,
     required this.endpoint,
     required this.patch,
@@ -43,7 +42,6 @@ class Pin extends StatefulWidget {
     );
   }
 
-  int index;
   final NodeEndpoint endpoint;
   final Node node;
   final Patch patch;

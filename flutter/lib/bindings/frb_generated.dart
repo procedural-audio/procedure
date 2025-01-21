@@ -4,7 +4,6 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api.dart';
-import 'api/cable.dart';
 import 'api/endpoint.dart';
 import 'api/graph.dart';
 import 'api/node.dart';
@@ -113,7 +112,12 @@ abstract class RustLibApi extends BaseApi {
   void crateApiEndpointNodeEndpointWriteInt(
       {required NodeEndpoint that, required PlatformInt64 v});
 
-  void crateApiGraphGraphAddCable({required Graph that, required Cable cable});
+  void crateApiGraphGraphAddCable(
+      {required Graph that,
+      required Node srcNode,
+      required NodeEndpoint srcEndpoint,
+      required Node dstNode,
+      required NodeEndpoint dstEndpoint});
 
   void crateApiGraphGraphAddNode({required Graph that, required Node node});
 
@@ -475,13 +479,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  void crateApiGraphGraphAddCable({required Graph that, required Cable cable}) {
+  void crateApiGraphGraphAddCable(
+      {required Graph that,
+      required Node srcNode,
+      required NodeEndpoint srcEndpoint,
+      required Node dstNode,
+      required NodeEndpoint dstEndpoint}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
             that, serializer);
-        sse_encode_box_autoadd_cable(cable, serializer);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+            srcNode, serializer);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+            srcEndpoint, serializer);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+            dstNode, serializer);
+        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+            dstEndpoint, serializer);
         return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
       },
       codec: SseCodec(
@@ -489,14 +505,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: null,
       ),
       constMeta: kCrateApiGraphGraphAddCableConstMeta,
-      argValues: [that, cable],
+      argValues: [that, srcNode, srcEndpoint, dstNode, dstEndpoint],
       apiImpl: this,
     ));
   }
 
   TaskConstMeta get kCrateApiGraphGraphAddCableConstMeta => const TaskConstMeta(
         debugName: "Graph_add_cable",
-        argNames: ["that", "cable"],
+        argNames: ["that", "srcNode", "srcEndpoint", "dstNode", "dstEndpoint"],
       );
 
   @override
@@ -959,36 +975,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Cable dco_decode_box_autoadd_cable(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return dco_decode_cable(raw);
-  }
-
-  @protected
-  Cable dco_decode_cable(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return Cable(
-      source: dco_decode_connection(arr[0]),
-      destination: dco_decode_connection(arr[1]),
-    );
-  }
-
-  @protected
-  Connection dco_decode_connection(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return Connection(
-      nodeId: dco_decode_u_32(arr[0]),
-      pinIndex: dco_decode_u_32(arr[1]),
-    );
-  }
-
-  @protected
   EndpointKind dco_decode_endpoint_kind(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     switch (raw[0]) {
@@ -1252,28 +1238,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
         deserializer));
-  }
-
-  @protected
-  Cable sse_decode_box_autoadd_cable(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return (sse_decode_cable(deserializer));
-  }
-
-  @protected
-  Cable sse_decode_cable(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_source = sse_decode_connection(deserializer);
-    var var_destination = sse_decode_connection(deserializer);
-    return Cable(source: var_source, destination: var_destination);
-  }
-
-  @protected
-  Connection sse_decode_connection(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_nodeId = sse_decode_u_32(deserializer);
-    var var_pinIndex = sse_decode_u_32(deserializer);
-    return Connection(nodeId: var_nodeId, pinIndex: var_pinIndex);
   }
 
   @protected
@@ -1558,26 +1522,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_box_autoadd_cable(Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_cable(self, serializer);
-  }
-
-  @protected
-  void sse_encode_cable(Cable self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_connection(self.source, serializer);
-    sse_encode_connection(self.destination, serializer);
-  }
-
-  @protected
-  void sse_encode_connection(Connection self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_u_32(self.nodeId, serializer);
-    sse_encode_u_32(self.pinIndex, serializer);
-  }
-
-  @protected
   void sse_encode_endpoint_kind(EndpointKind self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     switch (self) {
@@ -1727,8 +1671,17 @@ class GraphImpl extends RustOpaque implements Graph {
         RustLib.instance.api.rust_arc_decrement_strong_count_GraphPtr,
   );
 
-  void addCable({required Cable cable}) =>
-      RustLib.instance.api.crateApiGraphGraphAddCable(that: this, cable: cable);
+  void addCable(
+          {required Node srcNode,
+          required NodeEndpoint srcEndpoint,
+          required Node dstNode,
+          required NodeEndpoint dstEndpoint}) =>
+      RustLib.instance.api.crateApiGraphGraphAddCable(
+          that: this,
+          srcNode: srcNode,
+          srcEndpoint: srcEndpoint,
+          dstNode: dstNode,
+          dstEndpoint: dstEndpoint);
 
   void addNode({required Node node}) =>
       RustLib.instance.api.crateApiGraphGraphAddNode(that: this, node: node);

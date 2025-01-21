@@ -7,7 +7,6 @@
 // ignore_for_file: argument_type_not_assignable
 
 import 'api.dart';
-import 'api/cable.dart';
 import 'api/endpoint.dart';
 import 'api/graph.dart';
 import 'api/node.dart';
@@ -129,15 +128,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Node
       dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
           dynamic raw);
-
-  @protected
-  Cable dco_decode_box_autoadd_cable(dynamic raw);
-
-  @protected
-  Cable dco_decode_cable(dynamic raw);
-
-  @protected
-  Connection dco_decode_connection(dynamic raw);
 
   @protected
   EndpointKind dco_decode_endpoint_kind(dynamic raw);
@@ -272,15 +262,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           SseDeserializer deserializer);
 
   @protected
-  Cable sse_decode_box_autoadd_cable(SseDeserializer deserializer);
-
-  @protected
-  Cable sse_decode_cable(SseDeserializer deserializer);
-
-  @protected
-  Connection sse_decode_connection(SseDeserializer deserializer);
-
-  @protected
   EndpointKind sse_decode_endpoint_kind(SseDeserializer deserializer);
 
   @protected
@@ -411,15 +392,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
       sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
           Node self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_box_autoadd_cable(Cable self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_cable(Cable self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_connection(Connection self, SseSerializer serializer);
 
   @protected
   void sse_encode_endpoint_kind(EndpointKind self, SseSerializer serializer);

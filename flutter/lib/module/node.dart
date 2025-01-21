@@ -77,8 +77,6 @@ class Node extends StatelessWidget {
   }) : super(key: UniqueKey()) {
     rawNode = api.Node.from(source: module.source, id: NODE_ID++)!;
 
-    int pinIndex = 0;
-
     // Add input pins and widgets to list
     for (var endpoint in rawNode.inputs) {
       var widget = NodeWidget.from(this, endpoint);
@@ -86,13 +84,11 @@ class Node extends StatelessWidget {
         widgets.add(widget);
 
         // Skip pin creation if a widget was created
-        pinIndex++;
         continue;
       }
 
       pins.add(
         Pin(
-          index: pinIndex++,
           endpoint: endpoint,
           node: this,
           patch: patch,
@@ -107,7 +103,6 @@ class Node extends StatelessWidget {
     for (var endpoint in rawNode.outputs) {
       pins.add(
         Pin(
-          index: pinIndex++,
           endpoint: endpoint,
           node: this,
           patch: patch,

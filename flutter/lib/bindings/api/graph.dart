@@ -4,7 +4,7 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
-import 'cable.dart';
+import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -21,7 +21,11 @@ void clearPatch() => RustLib.instance.api.crateApiGraphClearPatch();
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>
 abstract class Graph implements RustOpaqueInterface {
-  void addCable({required Cable cable});
+  void addCable(
+      {required Node srcNode,
+      required NodeEndpoint srcEndpoint,
+      required Node dstNode,
+      required NodeEndpoint dstEndpoint});
 
   void addNode({required Node node});
 

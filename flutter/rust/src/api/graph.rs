@@ -116,8 +116,25 @@ impl Graph {
     }
 
     #[frb(sync)]
-    pub fn add_cable(&mut self, cable: &Cable) {
-        self.cables.push(cable.clone());
+    pub fn add_cable(
+        &mut self,
+        src_node: &Node,
+        src_endpoint: &NodeEndpoint,
+        dst_node: &Node,
+        dst_endpoint: &NodeEndpoint) {
+
+        self.cables.push(
+            Cable {
+                source: Connection {
+                    node: src_node.clone(),
+                    endpoint: src_endpoint.clone()
+                },
+                destination: Connection {
+                    node: dst_node.clone(),
+                    endpoint: dst_endpoint.clone()
+                }
+            }
+        );
     }
 
     #[frb(sync)]
@@ -142,10 +159,10 @@ impl Graph {
 
         // Build the graph representation
         for cable in &self.cables {
-            let &source_index = node_id_to_index.get(&cable.source.node_id)
-                .ok_or_else(|| format!("Source node_id {} not found in nodes", cable.source.node_id))?;
-            let &dest_index = node_id_to_index.get(&cable.destination.node_id)
-                .ok_or_else(|| format!("Destination node_id {} not found in nodes", cable.destination.node_id))?;
+            let &source_index = node_id_to_index.get(&cable.source.node.id)
+                .ok_or_else(|| format!("Source node_id {} not found in nodes", cable.source.node.id))?;
+            let &dest_index = node_id_to_index.get(&cable.destination.node.id)
+                .ok_or_else(|| format!("Destination node_id {} not found in nodes", cable.destination.node.id))?;
 
             // Add edge from source to destination
             adj[source_index].push(dest_index);
@@ -447,37 +464,23 @@ fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
 #[frb(ignore)]
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
     // Copy node input data
-    for (i, dst_endpoint) in dst_node.get_inputs().iter().enumerate() {
+    for dst_endpoint in dst_node.get_inputs().iter() {
         let mut filled = false;
 
         // Generate actions for each connected cable
         graph
             .cables
             .iter()
-            .filter(| cable | cable.destination.node_id == dst_node.id && cable.destination.pin_index == i as u32)
+            .filter(| cable | &cable.destination.node == dst_node && &cable.destination.endpoint == dst_endpoint)
             .for_each(| cable | {
-                let src_node = graph
-                    .nodes
-                    .iter()
-                    .find(| n | n.id == cable.source.node_id)
-                    .unwrap();
-
-                let outputs = src_node
-                    .get_outputs();
-
-                let src_endpoint = outputs
-                    .get(cable.source.pin_index as usize - outputs.len())
-                    .unwrap();
-
-                println!(" - Copy {}:{} to {}:{}", src_node.id, cable.source.pin_index as usize - outputs.len(), dst_node.id, i);
-
-                generate_connection_actions(actions, src_node, src_endpoint, dst_node, dst_endpoint);
+                println!(" - Copy {} to {}", cable.source.node.id, dst_node.id);
+                generate_connection_actions(actions, &cable.source.node, &cable.source.endpoint, dst_node, dst_endpoint);
                 filled = true;
             });
         
         // Generate actions to recieve widget updates
         if let EndpointHandle::Widget { handle, queue } = &dst_endpoint.endpoint {
-            println!(" - Update widget endpoint {} of node {}", i, dst_node.id);
+            println!(" - Update widget endpoint of node {}", dst_node.id);
             filled = true;
             actions.push(
                 Action::ReceiveEvents {
@@ -490,7 +493,7 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
         
         // Generate actions to fill missing input streams
         if !filled {
-            println!(" - Fill input {} of node {}", i, dst_node.id);
+            println!(" - Fill input of node {}", dst_node.id);
             generate_zero_stream_endpoint_action(actions, dst_node, dst_endpoint);
         }
     }

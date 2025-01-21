@@ -33,6 +33,12 @@ pub struct Node {
     pub voices: Voices,
 }
 
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
 impl Node {
     #[frb(sync)]
     pub fn from(source: &str, id: u32) -> Option<Self> {

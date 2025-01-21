@@ -192,16 +192,12 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
     // Add all the cables to the graph
     for (var connector in widget.connectors.value) {
-      var startId = connector.start.node.rawNode.id;
-      var startIndex = connector.start.index;
-      var endId = connector.end.node.rawNode.id;
-      var endIndex = connector.end.index;
-
-      var source = Connection(nodeId: startId, pinIndex: startIndex);
-      var end = Connection(nodeId: endId, pinIndex: endIndex);
-
-      var cable = Cable(source: source, destination: end);
-      graph.addCable(cable: cable);
+      graph.addCable(
+        srcNode: connector.start.node.rawNode,
+        srcEndpoint: connector.start.endpoint,
+        dstNode: connector.end.node.rawNode,
+        dstEndpoint: connector.end.endpoint,
+      );
     }
 
     // Add all the nodes to the graph

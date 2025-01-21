@@ -9,7 +9,7 @@ use flutter_rust_bridge::*;
 
 static QUEUE_SIZE: usize = 4;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum InputStreamHandle {
     Float32(Endpoint<InputStream<f32>>),
     Float64(Endpoint<InputStream<f64>>),
@@ -21,7 +21,7 @@ pub enum InputStreamHandle {
     },
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum OutputStreamHandle {
     Float32(Endpoint<OutputStream<f32>>),
     Float64(Endpoint<OutputStream<f64>>),
@@ -33,7 +33,7 @@ pub enum OutputStreamHandle {
     },
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum InputValueHandle {
     Float32(Endpoint<InputValue<f32>>),
     Float64(Endpoint<InputValue<f64>>),
@@ -42,7 +42,7 @@ pub enum InputValueHandle {
     Bool(Endpoint<InputValue<bool>>),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum OutputValueHandle {
     Float32(Endpoint<OutputValue<f32>>),
     Float64(Endpoint<OutputValue<f64>>),
@@ -51,14 +51,14 @@ pub enum OutputValueHandle {
     Bool(Endpoint<OutputValue<bool>>),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum InputHandle {
     Stream(InputStreamHandle),
     Value(InputValueHandle),
     Event(Endpoint<InputEvent>),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum OutputHandle {
     Stream(OutputStreamHandle),
     Value(OutputValueHandle),
@@ -75,7 +75,18 @@ pub enum EndpointHandle {
     },
 }
 
-#[derive(Clone)]
+impl PartialEq for EndpointHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (EndpointHandle::Input(a), EndpointHandle::Input(b)) => a == b,
+            (EndpointHandle::Output(a), EndpointHandle::Output(b)) => a == b,
+            (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
+            _ => false
+        }
+    }
+}
+
+#[derive(Clone, PartialEq)]
 #[frb(opaque)]
 pub struct NodeEndpoint {
     pub endpoint: EndpointHandle,
