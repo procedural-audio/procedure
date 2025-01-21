@@ -6,7 +6,6 @@ use cmajor::performer::*;
 use super::endpoint::*;
 
 use std::f32::consts::E;
-use std::sync::mpsc::*;
 use std::sync::{Arc, RwLock, Mutex};
 
 use flutter_rust_bridge::*;
@@ -31,8 +30,6 @@ pub struct Node {
     source: String,
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
-    sender: Sender<ParameterChange>,
-    reciever: Arc<Mutex<Receiver<ParameterChange>>>,
     pub voices: Voices,
 }
 
@@ -107,16 +104,12 @@ impl Node {
             Voices::Mono(Arc::new(Mutex::new(engine.performer())))
         };
 
-        let (sender, reciever) = std::sync::mpsc::channel();
-
         Some(
             Self {
                 id,
                 source: source.to_string(),
                 inputs,
                 outputs,
-                sender,
-                reciever: Arc::new(Mutex::new(reciever)),
                 voices
             }
         )
@@ -130,10 +123,5 @@ impl Node {
     #[frb(sync, getter)]
     pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
-    }
-
-    #[frb(sync)]
-    pub fn set_parameter(&self, id: u32, value: f64) {
-        self.sender.send(ParameterChange { id }).unwrap();
     }
 }

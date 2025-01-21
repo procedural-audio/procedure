@@ -7,20 +7,23 @@ import '../module/node.dart';
 import '../views/settings.dart';
 import '../utils.dart';
 
-class KnobWidget extends NodeWidget<double> {
+class KnobWidget extends NodeWidget {
   KnobWidget(
     Node node,
-    NodeEndpoint endpoint,
-    double value, {
+    NodeEndpoint endpoint, {
     required this.left,
     required this.top,
     required this.width,
     required this.height,
     required this.label,
     required this.color,
+    required this.min,
+    required this.max,
+    required this.initialValue,
     super.key,
   }) : super(node, endpoint) {
-    setValue(value);
+    value = initialValue;
+    writeFloat(value * (max - min) + min);
   }
 
   final int left;
@@ -29,17 +32,22 @@ class KnobWidget extends NodeWidget<double> {
   final int height;
   final String label;
   final Color color;
+  final double min;
+  final double max;
+  final double initialValue;
+
+  double value = 0.0;
 
   @override
   Map<String, dynamic> getState() {
     return {
-      'value': getValue(),
+      // TODO
     };
   }
 
   @override
   void setState(Map<String, dynamic> state) {
-    setValue(state['value']);
+    // TODO
   }
 
   static KnobWidget from(
@@ -50,19 +58,21 @@ class KnobWidget extends NodeWidget<double> {
     return KnobWidget(
       node,
       endpoint,
-      map['default'] ?? 0.5,
       left: map['left'] ?? 0,
       top: map['top'] ?? 0,
       width: map['width'] ?? 50,
       height: map['height'] ?? 50,
       label: map['label'] ?? "",
       color: colorFromString(map['color'] ?? "grey"),
+      min: map['min'] ?? 0.0,
+      max: map['max'] ?? 1.0,
+      initialValue: map['default'] ?? 0.5,
+      key: UniqueKey(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    double initialValue = getValue() ?? 0.5;
     return Positioned(
       left: left.toDouble(),
       top: top.toDouble(),
@@ -70,12 +80,13 @@ class KnobWidget extends NodeWidget<double> {
         width: width.toDouble(),
         height: height.toDouble(),
         child: Knob(
-          initialValue: initialValue,
+          initialValue: (value - min) / (max - min),
           label: label,
           color: color,
           size: Size(width.toDouble(), height.toDouble()),
           onUpdate: (v) {
-            setValue(v);
+            value = v;
+            writeFloat(value * (max - min) + min);
           },
         ),
       ),

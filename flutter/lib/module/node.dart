@@ -12,19 +12,36 @@ import '../patch/patch.dart';
 
 int NODE_ID = 1;
 
-abstract class NodeWidget<T> extends StatelessWidget {
+abstract class NodeWidget extends StatelessWidget {
   const NodeWidget(this.node, this.endpoint, {super.key});
-
-  void setValue(T value) {
-    node.writeEndpoint(endpoint, value);
-  }
-
-  T? getValue() {
-    return node.readEndpoint(endpoint);
-  }
 
   final Node node;
   final NodeEndpoint endpoint;
+
+  void writeFloat(double value) {
+    try {
+      print("Writing float to endpoint: $value");
+      endpoint.writeFloat(v: value);
+    } catch (e) {
+      print("Failed to write float to endpoint: $e");
+    }
+  }
+
+  void writeInt(int value) {
+    try {
+      endpoint.writeInt(v: value);
+    } catch (e) {
+      print("Failed to write int to endpoint: $e");
+    }
+  }
+
+  void writeBool(bool value) {
+    try {
+      endpoint.writeBool(b: value);
+    } catch (e) {
+      print("Failed to write bool to endpoint: $e");
+    }
+  }
 
   static NodeWidget? from(Node node, NodeEndpoint endpoint) {
     Map<String, dynamic> map = jsonDecode(endpoint.annotation);
@@ -63,6 +80,10 @@ class Node extends StatelessWidget {
       var widget = NodeWidget.from(this, endpoint);
       if (widget != null) {
         widgets.add(widget);
+
+        // Skip pin creation if a widget was created
+        pinIndex++;
+        continue;
       }
 
       pins.add(

@@ -26,8 +26,6 @@ abstract class Node implements RustOpaqueInterface {
   List<NodeEndpoint> get inputs;
 
   List<NodeEndpoint> get outputs;
-
-  void setParameter({required int id, required double value});
 }
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Voices>>

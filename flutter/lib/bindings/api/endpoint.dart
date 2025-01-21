@@ -10,7 +10,7 @@ part 'endpoint.freezed.dart';
 
 // These types are ignored because they are not used by any `pub` functions: `InputHandle`, `InputStreamHandle`, `InputValueHandle`, `OutputHandle`, `OutputStreamHandle`, `OutputValueHandle`, `PrimitiveType`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`
-// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`
+// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `write_value`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>
 abstract class EndpointHandle implements RustOpaqueInterface {}
@@ -28,6 +28,12 @@ abstract class NodeEndpoint implements RustOpaqueInterface {
   EndpointKind get type;
 
   bool get isInput;
+
+  void writeBool({required bool b});
+
+  void writeFloat({required double v});
+
+  void writeInt({required PlatformInt64 v});
 }
 
 @freezed

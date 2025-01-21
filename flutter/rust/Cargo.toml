@@ -13,3 +13,5 @@ serde_yaml = "0.8.7"
 # cmajor-rs = { path = "../../../cmajor-rs" }
 cmajor = { path = "../../../cmajor-rs-2" }
 lazy_static = "1.5.0"
+crossbeam = "0.8.4"
+crossbeam-queue = "0.3.12"

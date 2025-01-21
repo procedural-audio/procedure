@@ -1,4 +1,9 @@
-use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Primitive, Type}};
+use std::{f32::consts::E, sync::{Arc, Mutex}};
+
+use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
+use cmajor::value::Value;
+use crossbeam::channel::*;
+use crossbeam_queue::ArrayQueue;
 
 use flutter_rust_bridge::*;
 
@@ -58,10 +63,14 @@ pub enum OutputHandle {
     Event(Endpoint<OutputEvent>),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub enum EndpointHandle {
     Input(InputHandle),
     Output(OutputHandle),
+    Widget {
+        handle: Endpoint<InputEvent>,
+        queue: Arc<ArrayQueue<Value>>,
+    },
 }
 
 #[derive(Clone)]
@@ -170,16 +179,27 @@ impl NodeEndpoint {
             },
             EndpointInfo::Event(endpoint) => {
                 match endpoint.direction() {
-                    EndpointDirection::Input => EndpointHandle::Input(
-                        InputHandle::Event(
-                            engine.endpoint(id).unwrap()
-                        )
-                    ),
+                    EndpointDirection::Input => {
+                        if annotation.contains_key("widget") {
+                            println!("Creating queue");
+                            let queue = ArrayQueue::new(100);
+                            EndpointHandle::Widget {
+                                handle: engine.endpoint(id).unwrap(),
+                                queue: Arc::new(queue)
+                            }
+                        } else {
+                            EndpointHandle::Input(
+                                InputHandle::Event(
+                                    engine.endpoint(id).unwrap()
+                                )
+                            )
+                        }
+                    },
                     EndpointDirection::Output => EndpointHandle::Output(
                         OutputHandle::Event(
                             engine.endpoint(id).unwrap()
                         )
-                    ),
+                    )
                 }
             },
             EndpointInfo::Value(endpoint) => {
@@ -236,7 +256,12 @@ impl NodeEndpoint {
 
         let annotation = serde_json::ser::to_string(annotation).unwrap();
 
-        Ok(Self { endpoint, annotation })
+        Ok(
+            Self {
+                endpoint,
+                annotation,
+            }
+        )
     }
 
     #[frb(sync, getter)]
@@ -244,7 +269,45 @@ impl NodeEndpoint {
         match self.endpoint {
             EndpointHandle::Input(_) => true,
             EndpointHandle::Output(_) => false,
+            EndpointHandle::Widget { .. } => true
         }
+    }
+
+    #[frb(ignore)]
+    pub fn write_value(&self, value: Value) -> Result<(), &'static str> {
+        match &self.endpoint {
+            EndpointHandle::Widget { queue, .. } => {
+                match queue.force_push(value) {
+                    Some(_) => {
+                        println!("Replaced the oldest value in the queue");
+                        Ok(())
+                    },
+                    None => Ok(())
+                }
+            }
+            _ => Err("endpoint is not a widget")
+        }
+    }
+
+    #[frb(sync)]
+    pub fn write_float(&self, v: f64) -> Result<(), String> {
+        self
+            .write_value(Value::Float64(v))
+            .map_err(| e | e.to_string())
+    }
+
+    #[frb(sync)]
+    pub fn write_int(&self, v: i64) -> Result<(), String> {
+        self
+            .write_value(Value::Int64(v))
+            .map_err(| e | e.to_string())
+    }
+
+    #[frb(sync)]
+    pub fn write_bool(&self, b: bool) -> Result<(), String> {
+        self
+            .write_value(Value::Bool(b))
+            .map_err(| e | e.to_string())
     }
 
     #[frb(sync, getter)]
@@ -296,6 +359,7 @@ impl NodeEndpoint {
                     EventType::Void
                 ),
             },
+            EndpointHandle::Widget { .. } => EndpointKind::Event(EventType::Void)
         }
     }
 }

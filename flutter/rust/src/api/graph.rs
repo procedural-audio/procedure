@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use std::process::Output;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::sync::mpsc::*;
 use std::sync::RwLock;
 
 use crate::api::cable::*;
@@ -14,7 +13,6 @@ use crate::api::node::*;
 use cmajor::*;
 
 use flutter_rust_bridge::*;
-use for_generated::futures::io::FillBuf;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -26,6 +24,9 @@ use performer::OutputValue;
 use performer::Performer;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
+use crossbeam_queue::ArrayQueue;
+
+use super::node;
 
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Vec<Action>>> = RwLock::new(None);
@@ -309,6 +310,13 @@ enum Action {
     // Copy events
     CopyEvent(CopyEvent),
 
+    // Update event
+    ReceiveEvents {
+        voices: Voices,
+        handle: Endpoint<InputEvent>,
+        queue: Arc<ArrayQueue<cmajor::value::Value>>
+    },
+
     // Copy values
     CopyValueFloat32(CopyValue<f32>),
     CopyValueFloat64(CopyValue<f64>),
@@ -326,8 +334,6 @@ enum Action {
         handle: Endpoint<OutputStream<f32>>,
         channel: usize,
     }
-
-    // Clear {}
 }
 
 impl Action {
@@ -363,6 +369,39 @@ impl Action {
 
             // Copy event
             Action::CopyEvent(action) => action.execute(),
+            
+            // Recieve UI events
+            Action::ReceiveEvents { voices, handle, queue } => {
+                while let Some(value) = queue.pop() {
+                    println!(" > Recieved event on {:?}", handle);
+                    match voices {
+                        Voices::Mono(ref performer) => {
+                            match performer.try_lock() {
+                                Ok(mut performer) => {
+                                    match performer.post(*handle, &value) {
+                                        Ok(_) => (),
+                                        Err(e) => println!(" > Failed to post event: {}", e),
+                                    }
+                                }
+                                Err(e) => println!("Failed to lock performer: {}", e),
+                            }
+                        },
+                        Voices::Poly(ref performers) => {
+                            for performer in performers.iter() {
+                                match performer.try_lock() {
+                                    Ok(mut performer) => {
+                                        match performer.post(*handle, &value) {
+                                            Ok(_) => (),
+                                            Err(e) => println!(" > Failed to post event: {}", e),
+                                        }
+                                    }
+                                    Err(e) => println!("Failed to lock performer: {}", e),
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // Copy values
             Action::CopyValueFloat32(action) => action.execute(),
@@ -409,24 +448,10 @@ fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
 #[frb(ignore)]
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
     // Copy node input data
-    /*for cable in &graph.cables {
-        if cable.destination.node_id == dst_node.id {
-            let src_node = graph
-                .nodes
-                .iter()
-                .find(| n | n.id == cable.source.node_id)
-                .unwrap();
-
-            let src_idx = cable.source.pin_index as usize;
-            let dst_idx = cable.destination.pin_index as usize;
-
-            generate_connection_actions(actions, src_node, src_idx, dst_node, dst_idx);
-        }
-    }*/
-
     for (i, dst_endpoint) in dst_node.get_inputs().iter().enumerate() {
         let mut filled = false;
 
+        // Generate actions for each connected cable
         graph
             .cables
             .iter()
@@ -451,13 +476,27 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
                 filled = true;
             });
         
+        // Generate actions to recieve widget updates
+        if let EndpointHandle::Widget { handle, queue } = &dst_endpoint.endpoint {
+            println!(" - Update widget endpoint {} of node {}", i, dst_node.id);
+            filled = true;
+            actions.push(
+                Action::ReceiveEvents {
+                    voices: dst_node.voices.clone(),
+                    handle: handle.clone(),
+                    queue: queue.clone()
+                }
+            );
+        }
+        
+        // Generate actions to fill missing input streams
         if !filled {
             println!(" - Fill input {} of node {}", i, dst_node.id);
-            generate_fill_endpoint_action(actions, dst_node, dst_endpoint);
+            generate_zero_stream_endpoint_action(actions, dst_node, dst_endpoint);
         }
     }
 
-    // Process each voice
+    // Generate actions for each node process
     match dst_node.voices {
         Voices::Mono(ref performer) => {
             println!(" - Process node {}", dst_node.id);
@@ -475,21 +514,21 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
 }
 
 #[frb(ignore)]
-fn generate_fill_endpoint_action(actions: &mut Vec<Action>, node: &Node, endpoint: &NodeEndpoint) {
+fn generate_zero_stream_endpoint_action(actions: &mut Vec<Action>, node: &Node, endpoint: &NodeEndpoint) {
     match node.voices {
         Voices::Mono(ref performer) => {
-            generate_fill_handle_action(actions, performer, endpoint.endpoint);
+            generate_zero_stream_handle_action(actions, performer, &endpoint.endpoint);
         },
         Voices::Poly(ref performers) => {
             for performer in performers.iter() {
-                generate_fill_handle_action(actions, performer, endpoint.endpoint);
+                generate_zero_stream_handle_action(actions, performer, &endpoint.endpoint);
             }
         }
     }
 }
 
 #[frb(ignore)]
-fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<Performer>>, handle: EndpointHandle) {
+fn generate_zero_stream_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<Performer>>, handle: &EndpointHandle) {
     match handle {
         EndpointHandle::Input(handle) => {
             if let InputHandle::Stream(handle) = handle {
@@ -500,7 +539,7 @@ fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<
                             Action::ClearStreamFloat32(
                                 ClearStream {
                                     dst_performer: performer.clone(),
-                                    dst_handle: handle,
+                                    dst_handle: handle.clone(),
                                     buffer
                                 }
                             )
@@ -512,7 +551,7 @@ fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<
                             Action::ClearStreamFloat64(
                                 ClearStream {
                                     dst_performer: performer.clone(),
-                                    dst_handle: handle,
+                                    dst_handle: handle.clone(),
                                     buffer
                                 }
                             )
@@ -524,7 +563,7 @@ fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<
                             Action::ClearStreamInt32(
                                 ClearStream {
                                     dst_performer: performer.clone(),
-                                    dst_handle: handle,
+                                    dst_handle: handle.clone(),
                                     buffer
                                 }
                             )
@@ -536,7 +575,7 @@ fn generate_fill_handle_action(actions: &mut Vec<Action>, performer: &Arc<Mutex<
                             Action::ClearStreamInt64(
                                 ClearStream {
                                     dst_performer: performer.clone(),
-                                    dst_handle: handle,
+                                    dst_handle: handle.clone(),
                                     buffer
                                 }
                             )
@@ -613,6 +652,7 @@ fn generate_io_actions(actions: &mut Vec<Action>, node: &Node) {
                     }
                 }
             }
+            EndpointHandle::Widget { .. } => ()
         }
     }
 }
@@ -634,9 +674,9 @@ fn generate_connection_actions(
                     generate_copy_action(
                         actions,
                         src_performer.clone(),
-                        src_endpoint.endpoint,
+                        src_endpoint.endpoint.clone(),
                         dst_performer.clone(),
-                        dst_endpoint.endpoint
+                        dst_endpoint.endpoint.clone()
                     );
                 },
                 // Copy mono => poly frames
@@ -646,9 +686,9 @@ fn generate_connection_actions(
                         generate_copy_action(
                             actions,
                             src_performer.clone(),
-                            src_endpoint.endpoint,
+                            src_endpoint.endpoint.clone(),
                             dst_performer.clone(),
-                            dst_endpoint.endpoint
+                            dst_endpoint.endpoint.clone()
                         );
                     }
                 }

@@ -6,7 +6,7 @@ import '../bindings/api/endpoint.dart';
 import '../module/node.dart';
 import '../utils.dart';
 
-class FaderWidget extends NodeWidget<double> {
+class FaderWidget extends NodeWidget {
   FaderWidget(
     Node node,
     NodeEndpoint endpoint,
@@ -17,9 +17,13 @@ class FaderWidget extends NodeWidget<double> {
     required this.height,
     required this.label,
     required this.color,
+    required this.min,
+    required this.max,
+    required this.initialValue,
     super.key,
   }) : super(node, endpoint) {
-    setValue(value);
+    value = initialValue;
+    writeFloat(value);
   }
 
   final int left;
@@ -28,17 +32,22 @@ class FaderWidget extends NodeWidget<double> {
   final int height;
   final String label;
   final Color color;
+  final double min;
+  final double max;
+  final double initialValue;
+
+  double value = 0.0;
 
   @override
   Map<String, dynamic> getState() {
     return {
-      'value': getValue(),
+      // TODO
     };
   }
 
   @override
   void setState(Map<String, dynamic> state) {
-    setValue(state['value']);
+    // TODO
   }
 
   static FaderWidget from(
@@ -52,13 +61,16 @@ class FaderWidget extends NodeWidget<double> {
       width: map['width'] ?? 50,
       height: map['height'] ?? 50,
       label: map['label'] ?? "",
+      min: map['min'] ?? 0.0,
+      max: map['max'] ?? 1.0,
+      initialValue: map['initialValue'] ?? 0.5,
       color: colorFromString(map['color'] ?? "grey"),
+      key: UniqueKey(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    double initialValue = getValue() ?? 0.5;
     return Positioned(
       left: left.toDouble(),
       top: top.toDouble(),
@@ -66,12 +78,13 @@ class FaderWidget extends NodeWidget<double> {
         width: width.toDouble(),
         height: height.toDouble(),
         child: Fader(
-          initialValue: initialValue,
+          initialValue: (value - min) / (max - min),
           label: label,
           color: color,
           size: Size(width.toDouble(), height.toDouble()),
           onUpdate: (v) {
-            setValue(v);
+            value = v;
+            writeFloat(value * (max - min) + min);
           },
         ),
       ),

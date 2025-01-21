@@ -8,11 +8,11 @@ import 'cable.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `generate_connection_actions`, `generate_copy_action`, `generate_graph_actions`, `generate_io_actions`, `generate_node_actions`, `sort_nodes_topologically`
-// These types are ignored because they are not used by any `pub` functions: `ACTIONS`, `Action`, `CopyEvent`, `CopyStream`, `CopyValue`
+// These functions are ignored because they are not marked as `pub`: `generate_connection_actions`, `generate_copy_action`, `generate_graph_actions`, `generate_io_actions`, `generate_node_actions`, `generate_zero_stream_endpoint_action`, `generate_zero_stream_handle_action`, `sort_nodes_topologically`
+// These types are ignored because they are not used by any `pub` functions: `ACTIONS`, `Action`, `ClearStream`, `CopyEvent`, `CopyStream`, `CopyValue`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `deref`, `initialize`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare_patch`, `process_patch`
-// These functions are ignored (category: IgnoreBecauseOwnerTyShouldIgnore): `copy`, `copy`, `copy`, `execute`
+// These functions are ignored (category: IgnoreBecauseOwnerTyShouldIgnore): `execute`, `execute`, `execute`, `execute`, `execute`
 
 void setPatch({required Graph graph}) =>
     RustLib.instance.api.crateApiGraphSetPatch(graph: graph);
@@ -28,6 +28,6 @@ abstract class Graph implements RustOpaqueInterface {
   factory Graph() => RustLib.instance.api.crateApiGraphGraphNew();
 }
 
-abstract class CopyAction {
-  Future<void> copy();
+abstract class ExecuteAction {
+  Future<void> execute();
 }
