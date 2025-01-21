@@ -126,11 +126,6 @@ class Node extends StatelessWidget {
 
   final ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
 
-  void writeEndpoint(NodeEndpoint endpoint, dynamic value) {}
-  dynamic readEndpoint(NodeEndpoint endpoint) {
-    return null;
-  }
-
   void tick() {
     // for (var widget in widgets) {
     // widget.tick();
