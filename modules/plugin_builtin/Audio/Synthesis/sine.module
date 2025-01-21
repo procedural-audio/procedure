@@ -6,7 +6,7 @@
 // Determine the note frequency from the pitch (midi note)
 processor Sine [[ main, width: 80, height: 60 ]]
 {
-    input value float32 pitch [[ pinTop: 10 ]];
+    input value float32 frequency [[ pinTop: 10 ]];
     output stream float32 out [[ pinTop: 10 ]];
 
     // Constants
@@ -16,15 +16,10 @@ processor Sine [[ main, width: 80, height: 60 ]]
 
     // State variables
     float32 phase = 0.0;
-    float32 frequency = 440.0;
 
     void main()
     {
         loop {
-            // Convert MIDI pitch to frequency
-            // frequency = 440.0f * pow(2.0f, (pitch - 69.0f) / 12.0f);
-            frequency = 440.0f;
-
             // Generate sine wave
             float32 sample = sin(TWO_PI * phase);
 

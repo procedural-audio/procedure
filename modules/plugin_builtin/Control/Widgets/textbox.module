@@ -6,7 +6,7 @@
 processor Knob [[ main, width: 300, height: 200 ]]
 {
     input event float32 knobChange [[
-        widget: "knob",
+        widget: "textbox",
         left: 80,
         top: 40,
         default: 0.5

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/module/module.dart';
 import 'package:metasampler/module/pin.dart';
 import 'package:metasampler/nodeWidgets/fader.dart';
+import 'package:metasampler/nodeWidgets/textbox.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as api;
@@ -52,6 +53,8 @@ abstract class NodeWidget extends StatelessWidget {
           return KnobWidget.from(node, endpoint, map);
         case "fader":
           return FaderWidget.from(node, endpoint, map);
+        case "textbox":
+          return TextboxWidget.from(node, endpoint, map);
         default:
           print("Unknown widget type: $type");
       }
