@@ -17,8 +17,8 @@ class Module {
     required this.color,
     required this.size,
     required this.source,
-    required this.inputs,
-    required this.outputs,
+    // required this.inputs,
+    // required this.outputs,
   });
 
   String name;
@@ -27,8 +27,8 @@ class Module {
   Color color;
   Size size;
   String source;
-  List<NodeEndpoint> inputs;
-  List<NodeEndpoint> outputs;
+  // List<EndpointKind> inputs;
+  // List<EndpointKind> outputs;
 
   static Future<Module?> loadFromPatch(String path) async {
     var contents = await File(path).readAsString();
@@ -101,8 +101,8 @@ class Module {
         color: color,
         size: Size(width, height),
         source: source,
-        inputs: node.inputs,
-        outputs: node.outputs,
+        // inputs: node.inputs,
+        // outputs: node.outputs,
       );
     } catch (e) {
       print("Failed to create node: $e");

@@ -7,6 +7,8 @@ use crossbeam_queue::ArrayQueue;
 
 use flutter_rust_bridge::*;
 
+static QUEUE_SIZE: usize = 4;
+
 #[derive(Copy, Clone)]
 pub enum InputStreamHandle {
     Float32(Endpoint<InputStream<f32>>),
@@ -82,7 +84,7 @@ pub struct NodeEndpoint {
 
 impl NodeEndpoint {
     #[frb(ignore)]
-    pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo) -> Result<Self, &'static str> {
+    pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, node_id: u32) -> Result<Self, &'static str> {
         let id = info.id();
         let annotation = info.annotation();
 
@@ -181,11 +183,10 @@ impl NodeEndpoint {
                 match endpoint.direction() {
                     EndpointDirection::Input => {
                         if annotation.contains_key("widget") {
-                            println!("Creating queue");
-                            let queue = ArrayQueue::new(100);
+                            let queue = ArrayQueue::new(QUEUE_SIZE);
                             EndpointHandle::Widget {
                                 handle: engine.endpoint(id).unwrap(),
-                                queue: Arc::new(queue)
+                                queue: Arc::new(queue),
                             }
                         } else {
                             EndpointHandle::Input(
@@ -279,7 +280,6 @@ impl NodeEndpoint {
             EndpointHandle::Widget { queue, .. } => {
                 match queue.force_push(value) {
                     Some(_) => {
-                        println!("Replaced the oldest value in the queue");
                         Ok(())
                     },
                     None => Ok(())
@@ -292,7 +292,7 @@ impl NodeEndpoint {
     #[frb(sync)]
     pub fn write_float(&self, v: f64) -> Result<(), String> {
         self
-            .write_value(Value::Float64(v))
+            .write_value(Value::Float32(v as f32))
             .map_err(| e | e.to_string())
     }
 

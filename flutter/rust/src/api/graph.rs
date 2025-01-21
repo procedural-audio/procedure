@@ -314,7 +314,7 @@ enum Action {
     ReceiveEvents {
         voices: Voices,
         handle: Endpoint<InputEvent>,
-        queue: Arc<ArrayQueue<cmajor::value::Value>>
+        queue: Arc<ArrayQueue<cmajor::value::Value>>,
     },
 
     // Copy values
@@ -373,7 +373,6 @@ impl Action {
             // Recieve UI events
             Action::ReceiveEvents { voices, handle, queue } => {
                 while let Some(value) = queue.pop() {
-                    println!(" > Recieved event on {:?}", handle);
                     match voices {
                         Voices::Mono(ref performer) => {
                             match performer.try_lock() {
@@ -484,7 +483,7 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
                 Action::ReceiveEvents {
                     voices: dst_node.voices.clone(),
                     handle: handle.clone(),
-                    queue: queue.clone()
+                    queue: queue.clone(),
                 }
             );
         }

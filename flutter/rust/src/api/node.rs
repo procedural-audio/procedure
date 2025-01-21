@@ -71,7 +71,7 @@ impl Node {
 
         for info in infos {
             let is_input = info.direction() == EndpointDirection::Input;
-            match NodeEndpoint::from(&mut engine, info) {
+            match NodeEndpoint::from(&mut engine, info, id) {
                 Ok(endpoint) => {
                     if is_input {
                         inputs.push(endpoint);

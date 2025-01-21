@@ -20,7 +20,6 @@ abstract class NodeWidget extends StatelessWidget {
 
   void writeFloat(double value) {
     try {
-      print("Writing float to endpoint: $value");
       endpoint.writeFloat(v: value);
     } catch (e) {
       print("Failed to write float to endpoint: $e");
@@ -73,10 +72,12 @@ class Node extends StatelessWidget {
     required this.onRemoveConnections,
     required this.onDrag,
   }) : super(key: UniqueKey()) {
+    rawNode = api.Node.from(source: module.source, id: NODE_ID++)!;
+
     int pinIndex = 0;
 
     // Add input pins and widgets to list
-    for (var endpoint in module.inputs) {
+    for (var endpoint in rawNode.inputs) {
       var widget = NodeWidget.from(this, endpoint);
       if (widget != null) {
         widgets.add(widget);
@@ -100,7 +101,7 @@ class Node extends StatelessWidget {
     }
 
     // Add output pins to list
-    for (var endpoint in module.outputs) {
+    for (var endpoint in rawNode.outputs) {
       pins.add(
         Pin(
           index: pinIndex++,
@@ -113,11 +114,8 @@ class Node extends StatelessWidget {
         ),
       );
     }
-
-    rawNode = api.Node.from(source: module.source, id: id)!;
   }
 
-  final int id = NODE_ID++;
   final Module module;
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
