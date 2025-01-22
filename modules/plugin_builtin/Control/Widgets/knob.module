@@ -3,13 +3,14 @@
 */
 
 // Output the control value set by the knob
-processor Knob [[ main, width: 300, height: 200 ]]
+processor Knob [[ main, width: 100, height: 100 ]]
 {
     input event float32 knobChange [[
         widget: "knob",
-        left: 80,
-        top: 40,
-        default: 0.5
+        left: 20,
+        top: 35,
+        default: 0.5,
+        color: "red"
     ]];
 
     output value float32 out [[ pinTop: 10 ]];

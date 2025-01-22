@@ -64,6 +64,8 @@ dependencies:
   freezed_annotation: ^2.4.4
   langchain: ^0.7.7+2
   langchain_openai: ^0.7.3
+  webview_flutter: ^4.10.0
+  webview_flutter_wkwebview: ^3.17.0
   #nativeshell:
     #path: ../deps/nativeshell/nativeshell_dart/
 
@@ -93,6 +95,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+   - assets/monaco/monaco.html
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
