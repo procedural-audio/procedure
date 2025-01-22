@@ -1,0 +1,41 @@
+{
+    // Hide various UI elements
+    "workbench.sideBar.location": "left",
+    "workbench.activityBar.location": "hidden",
+    "workbench.editor.showTabs": "none",
+    "workbench.statusBar.visible": false,
+    "editor.minimap.autohide": true,
+    "breadcrumbs.enabled": false,
+
+    // Status bar settings
+    
+    // Git settings
+    "git.autofetch": false,
+
+    // Other useful changes
+    "notebook.defaultFormatter": "CmajorSoftware.cmajor-tools",
+    "editor.scrollbar.vertical": "hidden",
+    "explorer.autoRevealExclude": {
+        "**/.vscode/*": true
+    },
+
+    // Not using these features
+    // "editor.minimap.enabled": false,
+    // "editor.scrollbar.horizontal": "hidden",
+
+    // Not sure if these are necessary
+    "window.commandCenter": false,
+    "editor.suggest.showStatusBar": false,
+    "outline.icons": true,
+    "debug.enableStatusBarColor": true,
+
+    // Actions to do on save
+    "editor.codeActionsOnSave": {
+
+    },
+
+    // "explorer.autoReveal": false,
+    // "zenMode.showTabs": "none",
+    // "zenMode.fullScreen": false,
+    // "zenMode.centerLayout": false,
+}
