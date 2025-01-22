@@ -7,7 +7,9 @@
     "editor.minimap.autohide": true,
     "breadcrumbs.enabled": false,
 
-    // Status bar settings
+    // Notification settings
+    "extensions.ignoreRecommendations": true,
+    "workbench.remoteIndicator.showExtensionRecommendations": false,
     
     // Git settings
     "git.autofetch": false,
@@ -15,13 +17,22 @@
     // Other useful changes
     "notebook.defaultFormatter": "CmajorSoftware.cmajor-tools",
     "editor.scrollbar.vertical": "hidden",
-    "explorer.autoRevealExclude": {
-        "**/.vscode/*": true
+
+    // Associate modules files with cmajor
+    "files.associations": {
+        "*.module": "cmajor"
+    },
+    
+    // The the configuration from the editor
+    "files.exclude": {
+        // "**/.vscode/": true
     },
 
-    // Not using these features
-    // "editor.minimap.enabled": false,
-    // "editor.scrollbar.horizontal": "hidden",
+    // Open all markdown files in the preview
+    "workbench.editorAssociations": {   
+        "*.md": "vscode.markdown.preview.editor",
+    },
+
 
     // Not sure if these are necessary
     "window.commandCenter": false,
@@ -33,7 +44,12 @@
     "editor.codeActionsOnSave": {
 
     },
+    "workbench.editor.enablePreviewFromCodeNavigation": false,
 
+    // Not using these features
+
+    // "editor.minimap.enabled": false,
+    // "editor.scrollbar.horizontal": "hidden",
     // "explorer.autoReveal": false,
     // "zenMode.showTabs": "none",
     // "zenMode.fullScreen": false,
