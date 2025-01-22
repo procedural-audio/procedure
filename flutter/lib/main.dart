@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:langchain/langchain.dart';
+import 'package:langchain_openai/langchain_openai.dart';
 import 'package:metasampler/bindings/api/graph.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
@@ -10,6 +12,7 @@ import 'projects.dart';
 
 import 'views/info.dart';
 import 'views/projects.dart';
+import 'ide/ide.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api.dart';
@@ -137,11 +140,39 @@ class _Window extends State<Window> {
     clearPatch();
   }
 
+  void openIde() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        settings: const RouteSettings(name: "/ide"),
+        builder: (context) => Theme(
+          data: ThemeData(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          // child: Material(
+          // color: const Color.fromRGBO(10, 10, 10, 1.0),
+          child: Ide(
+            onClose: closeIde,
+          ),
+          // ),
+        ),
+      ),
+    );
+  }
+
+  void closeIde() {
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ProjectsBrowser(
       app: widget.app,
-      onLoadProject: loadProject,
+      // onLoadProject: loadProject,
+      onLoadProject: (p) {
+        openIde();
+      },
     );
   }
 }
