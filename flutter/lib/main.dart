@@ -50,21 +50,7 @@ Future<void> main(List<String> args) async {
 }
 
 class App extends StatelessWidget {
-  App({super.key, required this.project}) {
-    GlobalSettings.pluginsDirectory.watch(recursive: true).listen(
-      (event) {
-        if (event is FileSystemCreateEvent) {
-          print("File created");
-        } else if (event is FileSystemModifyEvent) {
-          if (event.contentChanged) {
-            print("File modified");
-          } else {
-            print("Contents not changed");
-          }
-        }
-      },
-    );
-  }
+  App({super.key, required this.project});
 
   final ValueNotifier<Project?> project;
 

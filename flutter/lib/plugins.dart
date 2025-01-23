@@ -7,78 +7,106 @@ import 'dart:isolate';
 import 'module/module.dart';
 import 'patch/patch.dart';
 
+List<String> pathToCategory(FileSystemEntity moduleFile) {
+  // Use the sub path as a module categories
+  return moduleFile.parent.path
+      .replaceFirst(GlobalSettings.pluginsDirectory.path, "")
+      .split("/")
+      .sublist(2)
+    ..remove("");
+}
+
+String pathToName(FileSystemEntity moduleFile) {
+  return moduleFile.name.replaceAll(".module", "");
+}
+
 class Plugins {
   static final ValueNotifier<List<Module>> _modules = ValueNotifier([]);
   static Stream<FileSystemEvent>? eventStream;
 
-  static void scan() {
-    List<Module> newModules = [];
+  static void scan() async {
+    _modules.value = [];
 
     // Scan all plugins for modules
-    GlobalSettings.pluginsDirectory
+    var files = GlobalSettings.pluginsDirectory
         .list(recursive: true)
-        .where((item) => item.name.endsWith(".module"))
-        .forEach(
-      (file) async {
-        // Use the file name as a module name
-        var name = file.name.replaceAll(".module", "");
+        .where((item) => item.name.endsWith(".module"));
 
-        // Use the sub path as a module categories
-        var category = file.parent.path
-            .replaceFirst(GlobalSettings.pluginsDirectory.path, "")
-            .split("/")
-            .sublist(2)
-          ..remove("");
-
-        var module = await Module.load(name, category, file.path);
-        if (module != null) {
-          print("Loaded module ${file.name} at ${file.path}");
-          newModules.add(module);
-        } else {
-          print("Failed to load module: ${file.path}");
-        }
-      },
-    );
-
-    _modules.value = newModules;
+    await for (final entity in files) {
+      var file = File(entity.path);
+      await _createModule(file);
+    }
   }
 
   static void beginWatch() async {
     // Listen for file changes
-    eventStream = GlobalSettings.pluginsDirectory.watch(recursive: true);
+    eventStream = GlobalSettings.pluginsDirectory
+        .watch(recursive: true)
+        .where((e) => e.path.endsWith(".module"))
+        .where((e) => !e.isDirectory);
 
+    // Process each event
     await for (final event in eventStream!) {
+      var file = File(event.path);
+
+      // Update the module list
       if (event is FileSystemCreateEvent) {
-        if (event.isDirectory) {
-          print("Directory created");
-        } else {
-          print("File created");
-        }
+        // Skip if the file already exists
+        if (!await file.exists()) continue;
+
+        // Skip if the module already exists
+        if (_modules.value.contains((e) => e.path == file.path)) continue;
+
+        // Create the module
+        await _createModule(file);
       } else if (event is FileSystemMoveEvent) {
-        if (event.isDirectory) {
-          print("Directory moved");
-        } else {
-          print("File moved");
-        }
-        print("File moved");
+        print("File ${event.path} moved");
       } else if (event is FileSystemModifyEvent) {
-        if (event.isDirectory) {
-          print("Directory modified");
-        } else {
-          if (event.contentChanged) {
-            print("File modified");
-          } else {
-            print("File modified but contents not changed");
-          }
+        if (event.contentChanged) {
+          await _updateModule(event.path);
         }
       } else if (event is FileSystemDeleteEvent) {
-        print("File deleted");
+        await _deleteModule(event.path);
       }
     }
   }
 
   static void endWatch() {
     eventStream = null;
+  }
+
+  static Future<void> _createModule(File file) async {
+    print("File ${file.path} created");
+
+    // Use the file name as a module name
+    var name = pathToName(file);
+    var category = pathToCategory(file);
+
+    // Load the module
+    var module = await Module.load(name, category, file.path);
+    if (module != null) {
+      print("Loaded module ${file.name} at ${file.path}");
+      _modules.value = [..._modules.value, module];
+    } else {
+      print("Failed to load module: ${file.path}");
+    }
+  }
+
+  static Future<void> _updateModule(String path) async {
+    for (var module in _modules.value) {
+      if (module.path == path) {
+        var moduleFile = File(path);
+        if (await moduleFile.exists()) {
+          var contents = await moduleFile.readAsString();
+          module.update(contents);
+        }
+      }
+    }
+  }
+
+  static Future<void> _deleteModule(String path) async {
+    print("File ${path} deleted");
+    _modules.value = _modules.value.where((m) => m.path != path).toList();
   }
 
   static ValueNotifier<List<Module>> get modules => _modules;

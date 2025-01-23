@@ -118,4 +118,8 @@ class Module {
       return null;
     }
   }
+
+  void update(String contents) {
+    print("Updating module $path");
+  }
 }
