@@ -81,108 +81,98 @@ class _RightClickView extends State<RightClickView> {
   @override
   Widget build(BuildContext context) {
     // Build the plugin list
-    return ValueListenableBuilder<List<Plugin>>(
-      valueListenable: Plugins.list(),
-      builder: (context, plugins, child) {
-        return Stack(
-          children: plugins.map((plugin) {
-            // Build the module list
-            return ValueListenableBuilder<List<Module>>(
-              valueListenable: plugin.modules(),
-              builder: (context, modules, child) {
-                List<RightClickCategory> categories = [];
+    return ValueListenableBuilder<List<Module>>(
+      valueListenable: Plugins.modules,
+      builder: (context, modules, child) {
+        // Build the module list
+        List<RightClickCategory> categories = [];
 
-                for (var module in modules) {
-                  add_module_to_category(
-                    module,
-                    4,
-                    module.category,
-                    categories,
-                    widget.onAddModule,
-                  );
-                }
+        for (var module in modules) {
+          add_module_to_category(
+            module,
+            4,
+            module.category,
+            categories,
+            widget.onAddModule,
+          );
+        }
 
-                return MouseRegion(
-                  onEnter: (event) {
-                    // widget.app.patchingScaleEnabled = false;
-                  },
-                  onExit: (event) {
-                    // widget.app.patchingScaleEnabled = true;
-                  },
-                  child: Container(
-                    width: 300,
-                    child: Column(
-                      children: [
-                        /* Title */
-                        Container(
-                          height: 35,
-                          padding: const EdgeInsets.all(10.0),
-                          child: const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Modules",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        /* Search bar */
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-                          child: Container(
-                            height: 20,
-                            child: TextField(
-                              maxLines: 1,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                              ),
-                              decoration: const InputDecoration(
-                                fillColor: Color.fromARGB(255, 112, 35, 30),
-                                border: OutlineInputBorder(),
-                                contentPadding:
-                                    EdgeInsets.fromLTRB(10, 10, 0, 3),
-                              ),
-                              onChanged: (data) {
-                                setState(() {
-                                  searchText = data;
-                                });
-                              },
-                            ),
-                            decoration: const BoxDecoration(
-                              color: Colors.white70,
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5.0),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        /* List */
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 300),
-                          child: SingleChildScrollView(
-                            controller: ScrollController(),
-                            child: Column(
-                              children: categories,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                      color: MyTheme.grey20,
-                      border: Border.all(color: MyTheme.grey40),
+        return MouseRegion(
+          onEnter: (event) {
+            // widget.app.patchingScaleEnabled = false;
+          },
+          onExit: (event) {
+            // widget.app.patchingScaleEnabled = true;
+          },
+          child: Container(
+            width: 300,
+            child: Column(
+              children: [
+                /* Title */
+                Container(
+                  height: 35,
+                  padding: const EdgeInsets.all(10.0),
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Modules",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
-                );
-              },
-            );
-          }).toList(),
+                ),
+
+                /* Search bar */
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+                  child: Container(
+                    height: 20,
+                    child: TextField(
+                      maxLines: 1,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                      ),
+                      decoration: const InputDecoration(
+                        fillColor: Color.fromARGB(255, 112, 35, 30),
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
+                      ),
+                      onChanged: (data) {
+                        setState(() {
+                          searchText = data;
+                        });
+                      },
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white70,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
+                    ),
+                  ),
+                ),
+
+                /* List */
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 300),
+                  child: SingleChildScrollView(
+                    controller: ScrollController(),
+                    child: Column(
+                      children: categories,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            decoration: BoxDecoration(
+              color: MyTheme.grey20,
+              border: Border.all(color: MyTheme.grey40),
+            ),
+          ),
         );
       },
     );

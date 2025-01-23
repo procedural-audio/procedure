@@ -1,13 +1,34 @@
 import 'dart:io';
 
-class Settings2 {
-  static String pluginDirectory() {
+class GlobalSettings {
+  static Directory get mainDirectory {
     if (Platform.isLinux) {
-      return "/home/chase/github/nodus/modules/";
+      return Directory("~/Procedural Audio");
     } else if (Platform.isMacOS) {
-      return "/Users/chasekanipe/Github/nodus/modules/";
+      return Directory("/Users/chasekanipe/Procedural Audio");
     } else {
-      print("Core library location unknown on platform");
+      print("main directory location unknown on platform");
+      exit(1);
+    }
+  }
+
+  static Directory get pluginsDirectory {
+    return Directory("${mainDirectory.path}/Plugins");
+  }
+
+  static Directory get projectsDirectory {
+    return Directory("${mainDirectory.path}/Projects");
+  }
+
+  static File get vsCodePath {
+    if (Platform.isLinux) {
+      return File("/usr/bin/code");
+    } else if (Platform.isMacOS) {
+      return File(
+        "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code",
+      );
+    } else {
+      print("VS Code path unknown on platform");
       exit(1);
     }
   }
@@ -19,17 +40,6 @@ class Settings2 {
       return "/Users/chasekanipe/Github/nodus/build/out/core/release/libtonevision_core.dylib";
     } else {
       print("Core library location unknown on platform");
-      exit(1);
-    }
-  }
-
-  static String projectsDirectory() {
-    if (Platform.isLinux) {
-      return "/home/chase/github/assets/projects";
-    } else if (Platform.isMacOS) {
-      return "/Users/chasekanipe/Github/assets/projects";
-    } else {
-      print("Projects directory location unknown on platform");
       exit(1);
     }
   }

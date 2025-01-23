@@ -13,6 +13,7 @@ class Module {
   Module({
     required this.name,
     // required this.description,
+    required this.path,
     required this.category,
     required this.color,
     required this.size,
@@ -23,6 +24,7 @@ class Module {
 
   String name;
   // String description;
+  String path;
   List<String> category;
   Color color;
   Size size;
@@ -40,7 +42,10 @@ class Module {
   }
 
   static Future<Module?> load(
-      String name, List<String> category, String path) async {
+    String name,
+    List<String> category,
+    String path,
+  ) async {
     String source = await File(path).readAsString();
 
     print("Got category $category");
@@ -89,14 +94,18 @@ class Module {
     }
 
     try {
-      var node = Node.from(source: source, id: 0);
+      /*var node = Node.from(
+        source: source,
+        id: 0,
+      );
+
       if (node == null) {
         return null;
-      }
+      }*/
 
       return Module(
         name: name,
-        // description: json['description'] ?? "Empty description",
+        path: path,
         category: category,
         color: color,
         size: Size(width, height),

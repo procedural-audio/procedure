@@ -74,7 +74,7 @@ class Project extends StatefulWidget {
 
   static Project blank(Plugins plugins, Core core, void Function() onUnload) {
     var projectDirectory =
-        Directory(Settings2.projectsDirectory() + "/NewProject");
+        Directory(GlobalSettings.projectsDirectory.path + "/NewProject");
     var patchDirectory = Directory(projectDirectory.path + "/patches/NewPatch");
     var info = ProjectInfo.blank();
     var presetInfo = PresetInfo.blank(patchDirectory);

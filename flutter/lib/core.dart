@@ -17,7 +17,7 @@ class Core {
   static String version = "0.1.0";
 
   static DynamicLibrary library = DynamicLibrary.open(
-    Settings2.coreLibraryDirectory(),
+    GlobalSettings.coreLibraryDirectory(),
   );
 
   static CoreApi coreApi = Core.getApi();
