@@ -86,6 +86,16 @@ class Window extends StatefulWidget {
 class _Window extends State<Window> {
   bool uiVisible = false;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   void loadProject(ProjectInfo info) async {
     var project = await Project.load(info, unloadProject);
 
@@ -108,15 +118,6 @@ class _Window extends State<Window> {
             ),
           ),
         ),
-      );
-
-      Process.run(
-        GlobalSettings.vsCodePath.path,
-        [
-          "--new-window",
-          GlobalSettings.pluginsDirectory.path,
-          GlobalSettings.pluginsDirectory.path + "/about.md",
-        ],
       );
     }
   }

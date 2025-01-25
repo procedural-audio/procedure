@@ -38,6 +38,17 @@ class Plugins {
     }
   }
 
+  static void openEditor() async {
+    await Process.run(
+      GlobalSettings.vsCodePath.path,
+      [
+        "--new-window",
+        GlobalSettings.pluginsDirectory.path,
+        GlobalSettings.pluginsDirectory.path + "/about.md",
+      ],
+    );
+  }
+
   static void beginWatch() async {
     // Listen for file changes
     eventStream = GlobalSettings.pluginsDirectory
@@ -93,13 +104,18 @@ class Plugins {
   }
 
   static Future<void> _updateModule(String path) async {
-    for (var module in _modules.value) {
-      if (module.path == path) {
-        var moduleFile = File(path);
-        if (await moduleFile.exists()) {
-          var contents = await moduleFile.readAsString();
-          module.update(contents);
-        }
+    var moduleFile = File(path);
+    if (await moduleFile.exists()) {
+      var name = pathToName(moduleFile);
+      var category = pathToCategory(moduleFile);
+
+      // Load the module
+      var module = await Module.load(name, category, moduleFile.path);
+      if (module != null) {
+        print("Updated module ${moduleFile.name}");
+
+        _modules.value =
+            _modules.value.map((m) => m.name == name ? module : m).toList();
       }
     }
   }

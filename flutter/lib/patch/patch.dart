@@ -9,6 +9,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import '../module/pin.dart';
+import '../plugins.dart';
 import 'connector.dart';
 import '../projects.dart';
 import '../module/node.dart';
@@ -78,15 +79,6 @@ class Patch extends StatefulWidget {
       // rawPatch: rawPatch,
       info: info,
     );
-
-    /*if (rawPatch.load(file, plugins)) {
-      return Patch(
-        rawPatch: rawPatch,
-        info: info,
-      );
-    }*/
-
-    return null;
   }
 
   Future<bool> save() async {
@@ -109,13 +101,6 @@ class Patch extends StatefulWidget {
     print("MOVE TO IN PATCH");
     moveToValue.value = Offset(x, y);
   }
-
-  /*void refreshUserInterface(ModuleInfo info) {
-    print("Refreshing user interface");
-    for (var node in nodes) {
-      node.refreshUserInterface();
-    }
-  }*/
 
   void addNewConnector() {
     if (newConnector.start != null && newConnector.end != null) {
@@ -148,6 +133,63 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   // late Timer timer;
   final focusNode = FocusNode();
 
+  @override
+  void initState() {
+    super.initState();
+
+    Plugins.modules.addListener(onModuleListChanged);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    Plugins.modules.removeListener(onModuleListChanged);
+
+    super.dispose();
+  }
+
+  void removeNode(Node node) {
+    // Remove the node
+    widget.nodes.value = widget.nodes.value.where((n) => n != node).toList();
+
+    // Remove any connectors to the node
+    widget.connectors.value = widget.connectors.value.where((c) {
+      return c.start.node != node && c.end.node != node;
+    }).toList();
+
+    updatePlayback();
+  }
+
+  void onModuleListChanged() {
+    print("Module list changed");
+
+    // Replace any nodes that have updated modules
+    for (var module in Plugins.modules.value) {
+      for (int j = 0; j < widget.nodes.value.length; j++) {
+        var node = widget.nodes.value[j];
+        if (node.module.name == module.name && node.module != module) {
+          print("Replacing module");
+          Offset position = node.position.value;
+          removeNode(node);
+          addModule(module, position);
+          j--;
+        }
+      }
+    }
+
+    // Remove any nodes that are no longer in the module list
+    /*int i = 0;
+    while (i < widget.nodes.value.length) {
+      var node = widget.nodes.value[i];
+      if (!Plugins.modules.value.contains(node.module)) {
+        print("Removing node");
+        removeNode(node);
+      } else {
+        i++;
+      }
+    }*/
+  }
+
   void tick(Timer t) {
     /*if (widget.shouldTick) {
       for (var node in nodes) {
@@ -172,21 +214,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     animationController.forward(from: 0);
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    print("Skipping patch initState");
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    controller.dispose();
-    // timer.cancel();
-  }
-
-  void updateGraph() {
+  void updatePlayback() {
     // Create a new graph
     var graph = api.Graph.new();
 
@@ -218,17 +246,18 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
         setState(() {});
       },
       onRemoveConnections: (pin) {
-        removeConnections(pin);
+        removeConnectionsTo(pin);
         setState(() {});
       },
       onDrag: (offset) {
         setState(() {});
       },
+      position: position,
     );
 
-    widget.nodes.value.add(node);
-    widget.nodes.notifyListeners();
-    updateGraph();
+    widget.nodes.value = [...widget.nodes.value, node];
+
+    updatePlayback();
   }
 
   void addConnector(Pin start, Pin end) {
@@ -239,21 +268,16 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       patch: widget,
     );
 
-    widget.connectors.value.add(connector);
-    widget.connectors.notifyListeners();
-    updateGraph();
+    widget.connectors.value = [...widget.connectors.value, connector];
+    updatePlayback();
   }
 
-  void removeConnections(Pin pin) {
+  void removeConnectionsTo(Pin pin) {
     widget.connectors.value.removeWhere(
       (e) => e.start == pin || e.end == pin,
     );
 
-    /*for (var node in widget.nodes.value) {
-      node.refreshSize();
-    }*/
-
-    updateGraph();
+    updatePlayback();
   }
 
   @override

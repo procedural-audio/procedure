@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../views/settings.dart';
@@ -109,20 +111,36 @@ class _RightClickView extends State<RightClickView> {
             child: Column(
               children: [
                 /* Title */
-                Container(
-                  height: 35,
-                  padding: const EdgeInsets.all(10.0),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Modules",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
+                Row(
+                  children: [
+                    Container(
+                      height: 35,
+                      padding: const EdgeInsets.all(10.0),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Modules",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    Expanded(child: SizedBox()),
+                    IconButton(
+                      icon: Icon(
+                        Icons.settings,
+                        color: Colors.grey.shade600,
+                        size: 14,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () {
+                        Plugins.openEditor();
+                      },
+                    )
+                  ],
                 ),
 
                 /* Search bar */

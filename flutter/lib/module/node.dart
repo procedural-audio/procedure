@@ -74,8 +74,12 @@ class Node extends StatelessWidget {
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.onDrag,
+    required Offset position,
   }) : super(key: UniqueKey()) {
     rawNode = api.Node.from(source: module.source, id: NODE_ID++)!;
+
+    // Set the initial node position
+    this.position.value = position;
 
     // Add input pins and widgets to list
     for (var endpoint in rawNode.inputs) {

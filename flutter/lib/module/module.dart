@@ -2,11 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/ui/common.dart';
-import 'package:yaml/yaml.dart';
 
-import '../bindings/api/endpoint.dart';
-import '../bindings/api/node.dart';
 import '../utils.dart';
 
 class Module {
@@ -32,14 +28,14 @@ class Module {
   // List<EndpointKind> inputs;
   // List<EndpointKind> outputs;
 
-  static Future<Module?> loadFromPatch(String path) async {
+  /*static Future<Module?> loadFromPatch(String path) async {
     var contents = await File(path).readAsString();
     var json = jsonDecode(contents);
     var name = json['name'] ?? "Unnamed";
     var sourcePath = File(path).parent.path + "/" + json['source'];
     var category = <String>[]; // TODO: Parse the module category
     return await Module.load(name, category, sourcePath);
-  }
+  }*/
 
   static Future<Module?> load(
     String name,
@@ -117,9 +113,5 @@ class Module {
       print("Failed to create node: $e");
       return null;
     }
-  }
-
-  void update(String contents) {
-    print("Updating module $path");
   }
 }
