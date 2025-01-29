@@ -6,15 +6,18 @@ import '../views/settings.dart';
 import '../plugins.dart';
 import '../module/module.dart';
 
+const int INDENT_SIZE = 10;
+
 void add_module_to_category(
   Module module,
   double indent,
+  String searchText,
   List<String> categoryNames,
   List<RightClickCategory> categories,
   void Function(Module) onAddModule,
 ) {
   if (categoryNames.length == 0) {
-    categoryNames = ["Miscellaneous"];
+    categoryNames = ["Uncategorized"];
   }
 
   for (var category in categories) {
@@ -23,7 +26,8 @@ void add_module_to_category(
         category.elements.add(
           RightClickElement(
             module,
-            indent,
+            indent + INDENT_SIZE,
+            searchText,
             onAddModule,
           ),
         );
@@ -31,7 +35,8 @@ void add_module_to_category(
       } else {
         add_module_to_category(
           module,
-          indent + 10,
+          indent + INDENT_SIZE,
+          searchText,
           categoryNames.sublist(1),
           category.categories,
           onAddModule,
@@ -44,21 +49,23 @@ void add_module_to_category(
   RightClickCategory newCategory = RightClickCategory(
     categoryNames[0],
     indent,
+    searchText,
   );
 
   if (categoryNames.length == 1) {
-    // print("Adding " + module.name + " to category " + categoryNames.toString());
     newCategory.elements.add(
       RightClickElement(
         module,
-        indent + 10,
+        indent + INDENT_SIZE,
+        searchText,
         onAddModule,
       ),
     );
   } else {
     add_module_to_category(
       module,
-      indent + 10,
+      indent + INDENT_SIZE,
+      searchText,
       categoryNames.sublist(1),
       newCategory.categories,
       onAddModule,
@@ -89,14 +96,29 @@ class _RightClickView extends State<RightClickView> {
         // Build the module list
         List<RightClickCategory> categories = [];
 
+        String lowerSearchText = searchText.toLowerCase();
+
         for (var module in modules) {
-          add_module_to_category(
-            module,
-            4,
-            module.category,
-            categories,
-            widget.onAddModule,
-          );
+          bool matchesSearch =
+              module.name.toLowerCase().contains(lowerSearchText);
+
+          for (var category in module.category) {
+            if (category.toLowerCase().contains(lowerSearchText)) {
+              matchesSearch = true;
+              break;
+            }
+          }
+
+          if (matchesSearch) {
+            add_module_to_category(
+              module,
+              4,
+              lowerSearchText,
+              module.category,
+              categories,
+              widget.onAddModule,
+            );
+          }
         }
 
         return MouseRegion(
@@ -155,7 +177,7 @@ class _RightClickView extends State<RightClickView> {
                         fontSize: 14,
                       ),
                       decoration: const InputDecoration(
-                        fillColor: Color.fromARGB(255, 112, 35, 30),
+                        fillColor: Colors.green,
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
                       ),
@@ -176,7 +198,9 @@ class _RightClickView extends State<RightClickView> {
 
                 /* List */
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 300),
+                  constraints: const BoxConstraints(
+                    maxHeight: 300,
+                  ),
                   child: SingleChildScrollView(
                     controller: ScrollController(),
                     child: Column(
@@ -200,10 +224,16 @@ class _RightClickView extends State<RightClickView> {
 class RightClickCategory extends StatefulWidget {
   final String name;
   final double indent;
+  final String searchText;
   final List<RightClickCategory> categories = [];
   final List<RightClickElement> elements = [];
 
-  RightClickCategory(this.name, this.indent, {super.key});
+  RightClickCategory(
+    this.name,
+    this.indent,
+    this.searchText, {
+    super.key,
+  });
 
   @override
   State<RightClickCategory> createState() => _RightClickCategoryState();
@@ -215,6 +245,8 @@ class _RightClickCategoryState extends State<RightClickCategory> {
 
   @override
   Widget build(BuildContext context) {
+    bool searched = widget.searchText.length > 0;
+
     return Column(
       children: <Widget>[
             MouseRegion(
@@ -275,7 +307,9 @@ class _RightClickCategoryState extends State<RightClickCategory> {
               ),
             ),
           ] +
-          (expanded ? <Widget>[] + widget.elements + widget.categories : []),
+          (expanded || searched
+              ? <Widget>[] + widget.elements + widget.categories
+              : []),
     );
   }
 }
@@ -283,10 +317,16 @@ class _RightClickCategoryState extends State<RightClickCategory> {
 class RightClickElement extends StatefulWidget {
   final Module module;
   final double indent;
+  final String searchText;
   final void Function(Module info) onAddModule;
 
-  const RightClickElement(this.module, this.indent, this.onAddModule,
-      {super.key});
+  const RightClickElement(
+    this.module,
+    this.indent,
+    this.searchText,
+    this.onAddModule, {
+    super.key,
+  });
 
   @override
   State<RightClickElement> createState() => _RightClickElementState();
