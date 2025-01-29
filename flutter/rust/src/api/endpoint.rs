@@ -1,6 +1,6 @@
-use std::{f32::consts::E, sync::{Arc, Mutex}};
+use std::{f32::consts::E, primitive, sync::{Arc, Mutex}};
 
-use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
+use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
 use cmajor::value::Value;
 use crossbeam::channel::*;
 use crossbeam_queue::ArrayQueue;
@@ -11,26 +11,82 @@ static QUEUE_SIZE: usize = 4;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum InputStreamHandle {
-    Float32(Endpoint<InputStream<f32>>),
-    Float64(Endpoint<InputStream<f64>>),
-    Int32(Endpoint<InputStream<i32>>),
-    Int64(Endpoint<InputStream<i64>>),
-    Input {
-        endpoint: Endpoint<InputStream<f32>>,
-        channel: usize
-    },
+    MonoFloat32(Endpoint<InputStream<f32>>),
+    StereoFloat32(Endpoint<InputStream<[f32; 2]>>),
+}
+
+impl InputStreamHandle {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Result<Self, &'static str> {
+        let id = endpoint.id();
+        let stream_handle = match endpoint.ty() {
+            Type::Primitive(Primitive::Float32) => {
+                Self::MonoFloat32(
+                    engine.endpoint(id).unwrap()
+                )
+            },
+            Type::Array(array) => {
+                match array.elem_ty() {
+                    Type::Primitive(Primitive::Float32) => {
+                        match array.len() {
+                            2 => Self::StereoFloat32(
+                                engine.endpoint(id).unwrap()
+                            ),
+                            _ => return Err("unsupported endpoint type array stream"),
+                        }
+                    },
+                    Type::Primitive(_) => return Err("unsupported endpoint type stream"),
+                    Type::Array(_) => return Err("unsupported endpoint type array stream"),
+                    Type::Object(_) => return Err("unsupported endpoint type array stream"),
+                    Type::String => return Err("unsupported endpoint type array stream"),
+                }
+            },
+            Type::Primitive(_) => return Err("unsupported endpoint type stream"),
+            Type::String => return Err("unsupported endpoint type string stream"),
+            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+        };
+
+        Ok(stream_handle)
+    }
 }
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum OutputStreamHandle {
-    Float32(Endpoint<OutputStream<f32>>),
-    Float64(Endpoint<OutputStream<f64>>),
-    Int32(Endpoint<OutputStream<i32>>),
-    Int64(Endpoint<OutputStream<i64>>),
-    Output {
-        endpoint: Endpoint<OutputStream<f32>>,
-        channel: usize
-    },
+    MonoFloat32(Endpoint<OutputStream<f32>>),
+    StereoFloat32(Endpoint<OutputStream<[f32; 2]>>),
+}
+
+impl OutputStreamHandle {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Result<Self, &'static str> {
+        let id = endpoint.id();
+        let stream_handle = match endpoint.ty() {
+            Type::Primitive(Primitive::Float32) => {
+                Self::MonoFloat32(
+                    engine.endpoint(id).unwrap()
+                )
+            },
+            Type::Array(array) => {
+                match array.elem_ty() {
+                    Type::Primitive(Primitive::Float32) => {
+                        match array.len() {
+                            2 => Self::StereoFloat32(
+                                engine.endpoint(id).unwrap()
+                            ),
+                            _ => return Err("unsupported endpoint type array stream"),
+                        }
+                    },
+                    Type::Primitive(_) => return Err("unsupported endpoint type stream"),
+                    Type::Array(_) => return Err("unsupported endpoint type array stream"),
+                    Type::Object(_) => return Err("unsupported endpoint type array stream"),
+                    Type::String => return Err("unsupported endpoint type array stream"),
+                }
+            },
+            Type::Primitive(_) => return Err("unsupported endpoint type stream"),
+            Type::String => return Err("unsupported endpoint type string stream"),
+            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+        };
+
+        Ok(stream_handle)
+    }
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -42,6 +98,41 @@ pub enum InputValueHandle {
     Bool(Endpoint<InputValue<bool>>),
 }
 
+impl InputValueHandle {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Result<Self, &'static str> {
+        // Ensure it's a primitive otherwise error
+        let primitive = match endpoint.ty() {
+            Type::Primitive(p) => p,
+            Type::String => return Err("unsupported endpoint type string stream"),
+            Type::Array(_) => return Err("unsupported endpoint type array stream"),
+            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+        };
+
+        // Get the endpoint id
+        let id = endpoint.id();
+
+        // Match on the specific primitive variant
+        let value_handle = match primitive {
+            Primitive::Float32 => Self::Float32(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Float64 => Self::Float64(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Int32 => Self::Int32(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Int64 => Self::Int64(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Bool => return Err("unsupported endpoint type bool stream"),
+            Primitive::Void => return Err("unsupported endpoint type void stream"),
+        };
+
+        Ok(value_handle)
+    }
+}
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum OutputValueHandle {
     Float32(Endpoint<OutputValue<f32>>),
@@ -51,11 +142,64 @@ pub enum OutputValueHandle {
     Bool(Endpoint<OutputValue<bool>>),
 }
 
+impl OutputValueHandle {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Result<Self, &'static str> {
+        // Ensure it's a primitive otherwise error
+        let primitive = match endpoint.ty() {
+            Type::Primitive(p) => p,
+            Type::String => return Err("unsupported endpoint type string stream"),
+            Type::Array(_) => return Err("unsupported endpoint type array stream"),
+            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+        };
+
+        // Get the endpoint id
+        let id = endpoint.id();
+
+        // Match on the specific primitive variant
+        let value_handle = match primitive {
+            Primitive::Float32 => Self::Float32(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Float64 => Self::Float64(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Int32 => Self::Int32(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Int64 => Self::Int64(
+                engine.endpoint(id).unwrap()
+            ),
+            Primitive::Bool => return Err("unsupported endpoint type bool stream"),
+            Primitive::Void => return Err("unsupported endpoint type void stream"),
+        };
+
+        Ok(value_handle)
+    }
+}
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum InputHandle {
     Stream(InputStreamHandle),
     Value(InputValueHandle),
     Event(Endpoint<InputEvent>),
+}
+
+impl InputHandle {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
+        let handle = match info {
+            EndpointInfo::Stream(stream) => InputHandle::Stream(
+                InputStreamHandle::from_endpoint(engine, stream)?
+            ),
+            EndpointInfo::Event(e) => InputHandle::Event(
+                engine.endpoint(e.id()).unwrap()
+            ),
+            EndpointInfo::Value(value) => InputHandle::Value(
+                InputValueHandle::from_endpoint(engine, value)?
+            )
+        };
+
+        Ok(handle)
+    }
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -65,14 +209,96 @@ pub enum OutputHandle {
     Event(Endpoint<OutputEvent>),
 }
 
+impl OutputHandle {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
+        let handle = match info {
+            EndpointInfo::Stream(stream) => OutputHandle::Stream(
+                OutputStreamHandle::from_endpoint(engine, stream)?
+            ),
+            EndpointInfo::Event(e) => OutputHandle::Event(
+                engine.endpoint(e.id()).unwrap()
+            ),
+            EndpointInfo::Value(value) => OutputHandle::Value(
+                OutputValueHandle::from_endpoint(engine, value)?
+            )
+        };
+
+        Ok(handle)
+    }
+}
+
 #[derive(Clone)]
 pub enum EndpointHandle {
     Input(InputHandle),
     Output(OutputHandle),
+    ExternalInput {
+        handle: InputHandle,
+        channel: usize
+    },
+    ExternalOutput {
+        handle: OutputHandle,
+        channel: usize
+    },
     Widget {
         handle: Endpoint<InputEvent>,
         queue: Arc<ArrayQueue<Value>>,
     },
+}
+
+impl EndpointHandle {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
+        // Get the endpoint id
+        let id = info.id();
+
+        // Get the endpoint annotation
+        let annotation = info.annotation();
+
+        // Build widget endpoints
+        if annotation.contains_key("widget") {
+            let queue = ArrayQueue::new(QUEUE_SIZE);
+            let handle = EndpointHandle::Widget {
+                handle: engine.endpoint(id).unwrap(),
+                queue: Arc::new(queue),
+            };
+
+            return Ok(handle);
+        }
+
+        // Build external endpoints
+        if let Some(channel) = annotation.get("external") {
+            let channel = channel.as_u64().unwrap_or(0) as usize;
+
+            // Build external endpoints
+            let handle = match info.direction() {
+                EndpointDirection::Input => {
+                    EndpointHandle::ExternalInput {
+                        handle: InputHandle::from_info(engine, info)?,
+                        channel
+                    }
+                },
+                EndpointDirection::Output => {
+                    EndpointHandle::ExternalOutput {
+                        handle: OutputHandle::from_info(engine, info)?,
+                        channel
+                    }
+                },
+            };
+
+            return Ok(handle);
+        }
+
+        // Build regular endpoints
+        let handle = match info.direction() {
+            EndpointDirection::Input => EndpointHandle::Input(
+                InputHandle::from_info(engine, info)?
+            ),
+            EndpointDirection::Output => EndpointHandle::Output(
+                OutputHandle::from_info(engine, info)?
+            ),
+        };
+
+        Ok(handle)
+    }
 }
 
 impl PartialEq for EndpointHandle {
@@ -80,6 +306,8 @@ impl PartialEq for EndpointHandle {
         match (self, other) {
             (EndpointHandle::Input(a), EndpointHandle::Input(b)) => a == b,
             (EndpointHandle::Output(a), EndpointHandle::Output(b)) => a == b,
+            (EndpointHandle::ExternalInput { handle, .. }, EndpointHandle::ExternalInput { handle: other, .. }) => handle == other,
+            (EndpointHandle::ExternalOutput { handle, .. }, EndpointHandle::ExternalOutput { handle: other, .. }) => handle == other,
             (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
             _ => false
         }
@@ -96,177 +324,8 @@ pub struct NodeEndpoint {
 impl NodeEndpoint {
     #[frb(ignore)]
     pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, node_id: u32) -> Result<Self, &'static str> {
-        let id = info.id();
-        let annotation = info.annotation();
-
-        let endpoint = match &info {
-            EndpointInfo::Stream(endpoint) => {
-                match endpoint.direction() {
-                    EndpointDirection::Input => EndpointHandle::Input(
-                        match endpoint.ty() {
-                            Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => {
-                                    if let Some(channel) = annotation.get("inputChannel") {
-                                        InputHandle::Stream(
-                                            InputStreamHandle::Input {
-                                                endpoint: engine
-                                                    .endpoint(id)
-                                                    .unwrap(),
-                                                channel: channel
-                                                    .as_u64()
-                                                    .unwrap() as usize
-                                            }
-                                        )
-                                    } else {
-                                        InputHandle::Stream(
-                                            InputStreamHandle::Float32(
-                                                engine.endpoint(id).unwrap()
-                                            )
-                                        )
-                                    }
-                                },
-                                Primitive::Float64 => InputHandle::Stream(
-                                    InputStreamHandle::Float64(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                Primitive::Int32 => InputHandle::Stream(
-                                    InputStreamHandle::Int32(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                Primitive::Int64 => InputHandle::Stream(
-                                    InputStreamHandle::Int64(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                _ => return Err("unsupported input stream type"),
-                            },
-                            _ => return Err("unsupported input stream type"),
-                        }
-                    ),
-                    EndpointDirection::Output => EndpointHandle::Output(
-                        match endpoint.ty() {
-                            Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => {
-                                    if let Some(channel) = annotation.get("outputChannel") {
-                                        OutputHandle::Stream(
-                                            OutputStreamHandle::Output {
-                                                endpoint: engine
-                                                    .endpoint(id)
-                                                    .unwrap(),
-                                                channel: channel
-                                                    .as_u64()
-                                                    .unwrap() as usize
-                                            }
-                                        )
-                                    } else {
-                                        OutputHandle::Stream(
-                                            OutputStreamHandle::Float32(
-                                                engine.endpoint(id).unwrap()
-                                            )
-                                        )
-                                    }
-                                },
-                                Primitive::Float64 => OutputHandle::Stream(
-                                    OutputStreamHandle::Float64(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                Primitive::Int32 => OutputHandle::Stream(
-                                    OutputStreamHandle::Int32(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                Primitive::Int64 => OutputHandle::Stream(
-                                    OutputStreamHandle::Int64(
-                                        engine.endpoint(id).unwrap()
-                                    )
-                                ),
-                                _ => return Err("unsupported output stream type"),
-                            },
-                            _ => return Err("unsupported output stream type"),
-                        }
-                    ),
-                }
-            },
-            EndpointInfo::Event(endpoint) => {
-                match endpoint.direction() {
-                    EndpointDirection::Input => {
-                        if annotation.contains_key("widget") {
-                            let queue = ArrayQueue::new(QUEUE_SIZE);
-                            EndpointHandle::Widget {
-                                handle: engine.endpoint(id).unwrap(),
-                                queue: Arc::new(queue),
-                            }
-                        } else {
-                            EndpointHandle::Input(
-                                InputHandle::Event(
-                                    engine.endpoint(id).unwrap()
-                                )
-                            )
-                        }
-                    },
-                    EndpointDirection::Output => EndpointHandle::Output(
-                        OutputHandle::Event(
-                            engine.endpoint(id).unwrap()
-                        )
-                    )
-                }
-            },
-            EndpointInfo::Value(endpoint) => {
-                match endpoint.direction() {
-                    EndpointDirection::Input => EndpointHandle::Input(
-                        match endpoint.ty() {
-                            Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => InputHandle::Value(
-                                    InputValueHandle::Float32(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Float64 => InputHandle::Value(
-                                    InputValueHandle::Float64(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Int32 => InputHandle::Value(
-                                    InputValueHandle::Int32(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Int64 => InputHandle::Value(
-                                    InputValueHandle::Int64(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Void => return Err("unsupported endpoint type void stream"),
-                                Primitive::Bool => return Err("unsupported endpoint type bool stream"),
-                            },
-                            Type::String => return Err("unsupported endpoint type string stream"),
-                            Type::Array(array) => return Err("unsupported endpoint type array stream"),
-                            Type::Object(object) => return Err("unsupported endpoint type object stream"),
-                        }
-                    ),
-                    EndpointDirection::Output => EndpointHandle::Output(
-                        match endpoint.ty() {
-                            Type::Primitive(primitive) => match primitive {
-                                Primitive::Float32 => OutputHandle::Value(
-                                    OutputValueHandle::Float32(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Float64 => OutputHandle::Value(
-                                    OutputValueHandle::Float64(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Int32 => OutputHandle::Value(
-                                    OutputValueHandle::Int32(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Int64 => OutputHandle::Value(
-                                    OutputValueHandle::Int64(engine.endpoint(id).unwrap())
-                                ),
-                                Primitive::Void => return Err("unsupported endpoint type void stream"),
-                                Primitive::Bool => return Err("unsupported endpoint type bool stream"),
-                            },
-                            Type::String => return Err("unsupported endpoint type string stream"),
-                            Type::Array(array) => return Err("unsupported endpoint type array stream"),
-                            Type::Object(object) => return Err("unsupported endpoint type object stream"),
-                        }
-                    ),
-                }
-            },
-        };
-
-        let annotation = serde_json::ser::to_string(annotation).unwrap();
+        let endpoint = EndpointHandle::from_info(engine, &info)?;
+        let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 
         Ok(
             Self {
@@ -281,6 +340,8 @@ impl NodeEndpoint {
         match self.endpoint {
             EndpointHandle::Input(_) => true,
             EndpointHandle::Output(_) => false,
+            EndpointHandle::ExternalInput { .. } => true,
+            EndpointHandle::ExternalOutput { .. } => false,
             EndpointHandle::Widget { .. } => true
         }
     }
@@ -327,11 +388,8 @@ impl NodeEndpoint {
             EndpointHandle::Input(handle) => match handle {
                 InputHandle::Stream(stream) => EndpointKind::Stream(
                     match stream {
-                        InputStreamHandle::Float32(_) => StreamType::Float32,
-                        InputStreamHandle::Float64(_) => StreamType::Float64,
-                        InputStreamHandle::Int32(_) => StreamType::Int32,
-                        InputStreamHandle::Int64(_) => StreamType::Int64,
-                        InputStreamHandle::Input { .. } => StreamType::Float32,
+                        InputStreamHandle::MonoFloat32(_) => StreamType::Float32,
+                        InputStreamHandle::StereoFloat32(_) => StreamType::Float32,
                     }
                 ),
                 InputHandle::Value(value) => EndpointKind::Value(
@@ -350,11 +408,8 @@ impl NodeEndpoint {
             EndpointHandle::Output(handle) => match handle {
                 OutputHandle::Stream(stream) => EndpointKind::Stream(
                     match stream {
-                        OutputStreamHandle::Float32(_) => StreamType::Float32,
-                        OutputStreamHandle::Float64(_) => StreamType::Float64,
-                        OutputStreamHandle::Int32(_) => StreamType::Int32,
-                        OutputStreamHandle::Int64(_) => StreamType::Int64,
-                        OutputStreamHandle::Output { .. } => StreamType::Float32
+                        OutputStreamHandle::MonoFloat32(_) => StreamType::Float32,
+                        OutputStreamHandle::StereoFloat32(_) => StreamType::Float32,
                     }
                 ),
                 OutputHandle::Value(value) => EndpointKind::Value(
@@ -370,7 +425,9 @@ impl NodeEndpoint {
                     EventType::Void
                 ),
             },
-            EndpointHandle::Widget { .. } => EndpointKind::Event(EventType::Void)
+            EndpointHandle::Widget { .. } => EndpointKind::Event(EventType::Void),
+            EndpointHandle::ExternalInput { handle, channel } => EndpointKind::Stream(StreamType::Float32),
+            EndpointHandle::ExternalOutput { handle, channel } => EndpointKind::Stream(StreamType::Float32),
         }
     }
 }

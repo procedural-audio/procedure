@@ -19,7 +19,7 @@ pub struct ParameterChange {
 #[derive(Clone)]
 pub enum Voices {
     Mono(Arc<Mutex<Performer>>),
-    Poly(Vec<Arc<Mutex<Performer>>>)
+    Poly(Arc<Mutex<Vec<Performer>>>)
 }
 
 /// This is a single processor unit in the graph
