@@ -44,8 +44,7 @@ class Module {
   ) async {
     String source = await File(path).readAsString();
 
-    print("Got category $category");
-
+    // print("Got category $category");
     // double width = double.tryParse(json['width'].toString()) ?? 200;
     // double height = double.tryParse(json['height'].toString()) ?? 150;
 
@@ -69,7 +68,7 @@ class Module {
               var key = parts[0].trim();
               var value = parts[1].trim();
 
-              print(parts);
+              // print(parts);
 
               if (key == "color") {
                 color = colorFromString(value);
@@ -85,7 +84,7 @@ class Module {
             }
           }
         }
-        print(annotations);
+        // print(annotations);
       }
     }
 

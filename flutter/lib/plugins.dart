@@ -87,8 +87,6 @@ class Plugins {
   }
 
   static Future<void> _createModule(File file) async {
-    print("File ${file.path} created");
-
     // Use the file name as a module name
     var name = pathToName(file);
     var category = pathToCategory(file);
@@ -97,7 +95,10 @@ class Plugins {
     var module = await Module.load(name, category, file.path);
     if (module != null) {
       print("Loaded module ${file.name} at ${file.path}");
-      _modules.value = [..._modules.value, module];
+
+      List<Module> modules = _modules.value;
+      modules.retainWhere((m) => m.path != module.path);
+      _modules.value = [...modules, module];
     } else {
       print("Failed to load module: ${file.path}");
     }
@@ -112,10 +113,10 @@ class Plugins {
       // Load the module
       var module = await Module.load(name, category, moduleFile.path);
       if (module != null) {
-        print("Updated module ${moduleFile.name}");
+        print("Updated module ${moduleFile.path}");
 
         _modules.value =
-            _modules.value.map((m) => m.name == name ? module : m).toList();
+            _modules.value.map((m) => m.path == path ? module : m).toList();
       }
     }
   }

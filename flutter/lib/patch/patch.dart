@@ -161,14 +161,12 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   }
 
   void onModuleListChanged() {
-    print("Module list changed");
-
     // Replace any nodes that have updated modules
     for (var module in Plugins.modules.value) {
       for (int j = 0; j < widget.nodes.value.length; j++) {
         var node = widget.nodes.value[j];
         if (node.module.name == module.name && node.module != module) {
-          print("Replacing module");
+          print("Replacing a patch node");
           Offset position = node.position.value;
           removeNode(node);
           addModule(module, position);
