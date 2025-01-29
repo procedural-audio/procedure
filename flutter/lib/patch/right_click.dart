@@ -23,6 +23,7 @@ void add_module_to_category(
   for (var category in categories) {
     if (category.name == categoryNames[0]) {
       if (categoryNames.length == 1) {
+        // Add new element to the category
         category.elements.add(
           RightClickElement(
             module,
@@ -31,6 +32,12 @@ void add_module_to_category(
             onAddModule,
           ),
         );
+
+        // Sort elements of the added category
+        category.elements.sort(
+          (a, b) => a.module.name.compareTo(b.module.name),
+        );
+
         return;
       } else {
         add_module_to_category(
@@ -72,7 +79,11 @@ void add_module_to_category(
     );
   }
 
+  // Add the new category to the list
   categories.add(newCategory);
+
+  // Sort categories of the new category
+  categories.sort((a, b) => a.name.compareTo(b.name));
 }
 
 class RightClickView extends StatefulWidget {
@@ -169,16 +180,33 @@ class _RightClickView extends State<RightClickView> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
                   child: Container(
-                    height: 20,
+                    height: 25,
                     child: TextField(
                       maxLines: 1,
+                      cursorHeight: 14,
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 14,
                       ),
-                      decoration: const InputDecoration(
-                        fillColor: Colors.green,
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5.0),
+                          ),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueGrey,
+                          ),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5.0),
+                          ),
+                          borderSide: BorderSide(
+                            width: 2,
+                            color: Colors.blueGrey,
+                          ),
+                        ),
                         contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
                       ),
                       onChanged: (data) {
