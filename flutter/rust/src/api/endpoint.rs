@@ -2,7 +2,6 @@ use std::{f32::consts::E, primitive, sync::{Arc, Mutex}};
 
 use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
 use cmajor::value::Value;
-use crossbeam::channel::*;
 use crossbeam_queue::ArrayQueue;
 
 use flutter_rust_bridge::*;
@@ -228,6 +227,41 @@ impl OutputHandle {
 }
 
 #[derive(Clone)]
+pub enum WidgetHandle {
+    Event {
+        handle: Endpoint<InputEvent>,
+        queue: Arc<ArrayQueue<Value>>,
+    },
+    Value {
+        handle: Endpoint<InputValue<Value>>,
+        queue: Arc<ArrayQueue<Value>>,
+    },
+}
+
+impl WidgetHandle {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
+        let id = info.id();
+        let annotation = info.annotation();
+
+        let queue = ArrayQueue::new(QUEUE_SIZE);
+
+        let handle = match info {
+            EndpointInfo::Event(_) => WidgetHandle::Event {
+                handle: engine.endpoint(id).unwrap(),
+                queue: Arc::new(queue),
+            },
+            EndpointInfo::Value(_) => WidgetHandle::Value {
+                handle: engine.endpoint(id).unwrap(),
+                queue: Arc::new(queue),
+            },
+            _ => return Err("unsupported widget endpoint type")
+        };
+
+        Ok(handle)
+    }
+}
+
+#[derive(Clone)]
 pub enum EndpointHandle {
     Input(InputHandle),
     Output(OutputHandle),
@@ -239,10 +273,7 @@ pub enum EndpointHandle {
         handle: OutputHandle,
         channel: usize
     },
-    Widget {
-        handle: Endpoint<InputEvent>,
-        queue: Arc<ArrayQueue<Value>>,
-    },
+    Widget(WidgetHandle)
 }
 
 impl EndpointHandle {
@@ -255,13 +286,11 @@ impl EndpointHandle {
 
         // Build widget endpoints
         if annotation.contains_key("widget") {
-            let queue = ArrayQueue::new(QUEUE_SIZE);
-            let handle = EndpointHandle::Widget {
-                handle: engine.endpoint(id).unwrap(),
-                queue: Arc::new(queue),
-            };
+            let handle = WidgetHandle::from_info(engine, info)?;
 
-            return Ok(handle);
+            return Ok(
+                Self::Widget(handle)
+            );
         }
 
         // Build external endpoints
@@ -308,7 +337,7 @@ impl PartialEq for EndpointHandle {
             (EndpointHandle::Output(a), EndpointHandle::Output(b)) => a == b,
             (EndpointHandle::ExternalInput { handle, .. }, EndpointHandle::ExternalInput { handle: other, .. }) => handle == other,
             (EndpointHandle::ExternalOutput { handle, .. }, EndpointHandle::ExternalOutput { handle: other, .. }) => handle == other,
-            (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
+            // (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
             _ => false
         }
     }
@@ -349,16 +378,21 @@ impl NodeEndpoint {
     #[frb(ignore)]
     pub fn write_value(&self, value: Value) -> Result<(), &'static str> {
         match &self.endpoint {
-            EndpointHandle::Widget { queue, .. } => {
-                match queue.force_push(value) {
-                    Some(_) => {
-                        Ok(())
-                    },
-                    None => Ok(())
+            EndpointHandle::Widget(handle) => {
+                match handle {
+                    WidgetHandle::Event { queue, .. } => {
+                        queue.force_push(value);
+                    }
+                    WidgetHandle::Value { queue, .. } => {
+                        queue.force_push(value);
+                    }
+                    _ => return Err("endpoint is not a widget handle")
                 }
             }
-            _ => Err("endpoint is not a widget")
+            _ => return Err("endpoint is not a widget")
         }
+
+        Ok(())
     }
 
     #[frb(sync)]

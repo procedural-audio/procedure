@@ -43,9 +43,8 @@ abstract class NodeWidget extends StatelessWidget {
     }
   }
 
-  static NodeWidget? from(Node node, NodeEndpoint endpoint) {
-    Map<String, dynamic> map = jsonDecode(endpoint.annotation);
-
+  static NodeWidget? from(
+      Node node, NodeEndpoint endpoint, Map<String, dynamic> map) {
     if (map['widget'] != null) {
       String type = map['widget'];
       switch (type) {
@@ -84,11 +83,15 @@ class Node extends StatelessWidget {
     if (rawNode != null) {
       // Add input pins and widgets to list
       for (var endpoint in rawNode!.inputs) {
-        var widget = NodeWidget.from(this, endpoint);
-        if (widget != null) {
-          widgets.add(widget);
+        Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
-          // Skip pin creation if a widget was created
+        // Skip pin creation if a widget was created
+        if (annotations.containsKey("widget")) {
+          var widget = NodeWidget.from(this, endpoint, annotations);
+          if (widget != null) {
+            widgets.add(widget);
+          }
+
           continue;
         }
 

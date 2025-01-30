@@ -88,6 +88,19 @@ impl Voices {
         }
     }
 
+    pub fn set_value(&mut self, endpoint: Endpoint<InputValue>, value: cmajor::value::Value) {
+        match self {
+            Voices::Mono(performer) => {
+                performer.set(endpoint, value);
+            },
+            Voices::Poly(performers) => {
+                for performer in performers {
+                    performer.set(endpoint.clone(), value.clone());
+                }
+            }
+        }
+    }
+
     pub fn post<'a>(&mut self, endpoint: Endpoint<InputEvent>, event: impl Into<ValueRef<'a>>) -> Result<(), EndpointError> {
         match self {
             Voices::Mono(performer) => {
@@ -217,8 +230,14 @@ impl<T: Copy> ConvertTo<[T; 2]> for T {
 }
 
 // Convert stereo samples to mono
-impl<T: std::ops::Add<Output = T> + Copy> ConvertTo<T> for [T; 2] {
-    fn convert_to(&self) -> T {
-        self[0] + self[1]
+impl ConvertTo<f32> for [f32; 2] {
+    fn convert_to(&self) -> f32 {
+        (self[0] + self[1]) * 0.5
+    }
+}
+
+impl ConvertTo<f64> for [f64; 2] {
+    fn convert_to(&self) -> f64 {
+        (self[0] + self[1]) * 0.5
     }
 }

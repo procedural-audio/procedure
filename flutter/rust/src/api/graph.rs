@@ -350,7 +350,14 @@ enum Action {
     // Copy events
     CopyEvent(CopyEvent),
 
-    // Update event
+    // Recieve events
+    ReceiveValues {
+        voices: Arc<Mutex<Voices>>,
+        handle: Endpoint<InputValue<cmajor::value::Value>>,
+        queue: Arc<ArrayQueue<cmajor::value::Value>>,
+    },
+
+    // Recieve events
     ReceiveEvents {
         voices: Arc<Mutex<Voices>>,
         handle: Endpoint<InputEvent>,
@@ -422,6 +429,17 @@ impl Action {
             // Copy event
             Action::CopyEvent(action) => action.execute(num_frames),
             
+            // Recieve UI values
+            Action::ReceiveValues { voices, handle, queue } => {
+                let mut voices = voices
+                    .try_lock()
+                    .unwrap();
+
+                while let Some(value) = queue.pop() {
+                    voices.set_value(handle.clone(), value);
+                }
+            }
+
             // Recieve UI events
             Action::ReceiveEvents { voices, handle, queue } => {
                 let mut voices = voices
@@ -515,7 +533,6 @@ fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
     return actions;
 }
 
-#[frb(ignore)]
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
     // Copy node input data
     for dst_endpoint in dst_node.get_inputs().iter() {
@@ -541,16 +558,31 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
             });
         
         // Generate actions to recieve widget updates
-        if let EndpointHandle::Widget { handle, queue } = &dst_endpoint.endpoint {
-            println!(" - Update widget endpoint of node {}", dst_node.id);
+        if let EndpointHandle::Widget(handle) = &dst_endpoint.endpoint {
             filled = true;
-            actions.push(
-                Action::ReceiveEvents {
-                    voices: dst_node.voices(),
-                    handle: handle.clone(),
-                    queue: queue.clone(),
+
+            match handle {
+                WidgetHandle::Value { handle, queue } => {
+                    println!(" - Recieve widget value updates for node {}", dst_node.id);
+                    actions.push(
+                        Action::ReceiveValues {
+                            voices: dst_node.voices(),
+                            handle: handle.clone(),
+                            queue: queue.clone(),
+                        }
+                    );
+                },
+                WidgetHandle::Event { handle, queue } => {
+                    println!(" - Recieve widget event updates for node {}", dst_node.id);
+                    actions.push(
+                        Action::ReceiveEvents {
+                            voices: dst_node.voices(),
+                            handle: handle.clone(),
+                            queue: queue.clone(),
+                        }
+                    );
                 }
-            );
+            };
         }
         
         // Generate actions to fill missing input streams
