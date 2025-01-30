@@ -94,7 +94,7 @@ class Plugins {
     // Load the module
     var module = await Module.load(name, category, file.path);
     if (module != null) {
-      print("Loaded module ${file.name} at ${file.path}");
+      print("Loaded module ${file.name}");
 
       List<Module> modules = _modules.value;
       modules.retainWhere((m) => m.path != module.path);

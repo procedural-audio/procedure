@@ -244,6 +244,35 @@ impl<T: StreamType> ExecuteAction for CopyStream<T> {
 }
 
 #[frb(ignore)]
+struct ConvertCopyStream<A: StreamType, B: StreamType> {
+    src_voices: Arc<Mutex<Voices>>,
+    src_handle: Endpoint<OutputStream<A>>,
+    src_buffer: Vec<A>,
+    dst_voices: Arc<Mutex<Voices>>,
+    dst_handle: Endpoint<InputStream<B>>,
+    dst_buffer: Vec<B>
+}
+
+impl<B: StreamType, A: StreamType + ConvertTo<B>> ExecuteAction for ConvertCopyStream<A, B> {
+    fn execute(&mut self, num_frames: usize) {
+        let src = self.src_voices
+            .try_lock()
+            .unwrap();
+        let mut dst = self.dst_voices
+            .try_lock()
+            .unwrap();
+
+        src.convert_copy_streams_to(
+            self.src_handle,
+            &mut self.src_buffer[..num_frames],
+            &mut dst,
+            self.dst_handle,
+            &mut self.dst_buffer[..num_frames]
+        );
+    }
+}
+
+#[frb(ignore)]
 struct ClearStream<T: StreamType + Default> {
     voices: Arc<Mutex<Voices>>,
     handle: Endpoint<InputStream<T>>,
@@ -311,6 +340,8 @@ enum Action {
     // Copy streams
     CopyStreamMonoFloat32(CopyStream<f32>),
     CopyStreamStereoFloat32(CopyStream<[f32; 2]>),
+    CopyStreamMonoToStereoFloat32(ConvertCopyStream<f32, [f32; 2]>),
+    CopyStreamStereoToMonoFloat32(ConvertCopyStream<[f32; 2], f32>),
 
     // Clear streams
     ClearStreamMonoFloat32(ClearStream<f32>),
@@ -333,6 +364,7 @@ enum Action {
     CopyValueInt64(CopyValue<i64>),
     CopyValueBool(CopyValue<bool>),
 
+    // Output streams
     InputStreamMonoFloat32 {
         voices: Arc<Mutex<Voices>>,
         handle: Endpoint<InputStream<f32>>,
@@ -378,6 +410,10 @@ impl Action {
             // Copy streams
             Action::CopyStreamMonoFloat32(action) => action.execute(num_frames),
             Action::CopyStreamStereoFloat32(action) => action.execute(num_frames),
+
+            // Convert copy streams
+            Action::CopyStreamMonoToStereoFloat32(action) => action.execute(num_frames),
+            Action::CopyStreamStereoToMonoFloat32(action) => action.execute(num_frames),
 
             // Fill streams
             Action::ClearStreamMonoFloat32(action) => action.execute(num_frames),
@@ -580,7 +616,7 @@ fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node) {
                 InputHandle::Stream(handle) => {
                     match handle {
                         InputStreamHandle::MonoFloat32(handle) => {
-                            println!(" - External input channel {} to node {}", channel, node.id);
+                            println!(" - External mono input channel {} to node {}", channel, node.id);
                             actions.push(
                                 Action::InputStreamMonoFloat32 {
                                     voices: node.voices(),
@@ -590,7 +626,7 @@ fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node) {
                             );
                         },
                         InputStreamHandle::StereoFloat32(handle) => {
-                            println!(" - External input channel {} to node {}", channel, node.id);
+                            println!(" - External stereo input channel {} to node {}", channel, node.id);
                             let buffer = vec![[0.0, 0.0]; 1024];
                             actions.push(
                                 Action::InputStreamStereoFloat32 {
@@ -619,7 +655,7 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
                 OutputHandle::Stream(handle) => {
                     match handle {
                         OutputStreamHandle::MonoFloat32(handle) => {
-                            println!(" - External input channel {} to node {}", channel, node.id);
+                            println!(" - External mono ouput channel {} to node {}", channel, node.id);
                             actions.push(
                                 Action::OutputStreamMonoFloat32 {
                                     voices: node.voices(),
@@ -629,7 +665,7 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
                             );
                         },
                         OutputStreamHandle::StereoFloat32(handle) => {
-                            println!(" - External input channel {} to node {}", channel, node.id);
+                            println!(" - External stereo output channel {} to node {}", channel, node.id);
                             let buffer = vec![[0.0, 0.0]; 1024];
                             actions.push(
                                 Action::OutputStreamStereoFloat32 {
@@ -664,7 +700,6 @@ fn generate_connection_actions(
         (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) => {
             match (src_handle, dst_handle) {
                 (OutputHandle::Stream(src), InputHandle::Stream(dst)) => {
-
                     match (src, dst) {
                         (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::MonoFloat32(dst_handle)) => {
                             let buffer = vec![0.0; max_frames];
@@ -690,6 +725,22 @@ fn generate_connection_actions(
                                         dst_voices,
                                         dst_handle,
                                         buffer
+                                    }
+                                )
+                            );
+                        },
+                        (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => {
+                            let src_buffer = vec![0.0; max_frames];
+                            let dst_buffer = vec![[0.0; 2]; max_frames];
+                            actions.push(
+                                Action::CopyStreamMonoToStereoFloat32(
+                                    ConvertCopyStream {
+                                        src_voices,
+                                        src_handle,
+                                        src_buffer,
+                                        dst_voices,
+                                        dst_handle,
+                                        dst_buffer,
                                     }
                                 )
                             );

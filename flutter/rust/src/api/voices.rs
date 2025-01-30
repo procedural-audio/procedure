@@ -126,6 +126,47 @@ impl Voices {
         }
     }
 
+    pub fn convert_copy_streams_to<A, B>(
+        &self,
+        src_endpoint: Endpoint<OutputStream<A>>,
+        src_buffer: &mut [A],
+        dst_voices: &mut Self,
+        dst_endpoint: Endpoint<InputStream<B>>,
+        dst_buffer: &mut [B])
+            where
+                A: StreamType + ConvertTo<B>, B: StreamType {
+
+        match (self, dst_voices) {
+            (Voices::Mono(src_voice), Voices::Mono(dst_voice)) => {
+                // Read the source samples
+                src_voice.read(src_endpoint, src_buffer);
+
+                // Convert the samples between the buffers
+                for (s, d) in src_buffer.iter().zip(dst_buffer.iter_mut()) {
+                    *d = s.convert_to();
+                }
+
+                // Write the converted samples
+                dst_voice.write(dst_endpoint, dst_buffer);
+            },
+            (Voices::Poly(src_voices), Voices::Poly(dst_voices)) => {
+                for (src_voice, dst_voice) in src_voices.iter().zip(dst_voices.iter_mut()) {
+                    // Read the source samples
+                    src_voice.read(src_endpoint, src_buffer);
+
+                    // Convert the samples between the buffers
+                    for (s, d) in src_buffer.iter().zip(dst_buffer.iter_mut()) {
+                        *d = s.convert_to();
+                    }
+
+                    // Write the converted samples
+                    dst_voice.write(dst_endpoint, dst_buffer);
+                }
+            },
+            _ => todo!()
+        }
+    }
+
     pub fn copy_values_to<T>(&mut self, src_endpoint: Endpoint<OutputValue<T>>, dst_voices: &mut Self, dst_endpoint: Endpoint<InputValue<T>>) 
         where
             T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> {
@@ -161,5 +202,23 @@ impl Voices {
             },
             _ => todo!()
         }
+    }
+}
+
+pub trait ConvertTo<T> {
+    fn convert_to(&self) -> T;
+}
+
+// Convert mono samples to stereo
+impl<T: Copy> ConvertTo<[T; 2]> for T {
+    fn convert_to(&self) -> [T; 2] {
+        [*self, *self]
+    }
+}
+
+// Convert stereo samples to mono
+impl<T: std::ops::Add<Output = T> + Copy> ConvertTo<T> for [T; 2] {
+    fn convert_to(&self) -> T {
+        self[0] + self[1]
     }
 }

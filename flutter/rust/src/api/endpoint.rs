@@ -103,9 +103,9 @@ impl InputValueHandle {
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
-            Type::String => return Err("unsupported endpoint type string stream"),
-            Type::Array(_) => return Err("unsupported endpoint type array stream"),
-            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+            Type::String => return Err("unsupported endpoint type string value"),
+            Type::Array(_) => return Err("unsupported endpoint type array value"),
+            Type::Object(_) => return Err("unsupported endpoint type object value"),
         };
 
         // Get the endpoint id
@@ -125,8 +125,8 @@ impl InputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Err("unsupported endpoint type bool stream"),
-            Primitive::Void => return Err("unsupported endpoint type void stream"),
+            Primitive::Bool => return Err("unsupported endpoint type bool value"),
+            Primitive::Void => return Err("unsupported endpoint type void value"),
         };
 
         Ok(value_handle)
@@ -147,9 +147,9 @@ impl OutputValueHandle {
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
-            Type::String => return Err("unsupported endpoint type string stream"),
-            Type::Array(_) => return Err("unsupported endpoint type array stream"),
-            Type::Object(_) => return Err("unsupported endpoint type object stream"),
+            Type::String => return Err("unsupported endpoint type string value"),
+            Type::Array(_) => return Err("unsupported endpoint type array value"),
+            Type::Object(_) => return Err("unsupported endpoint type object value"),
         };
 
         // Get the endpoint id
@@ -169,8 +169,8 @@ impl OutputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Err("unsupported endpoint type bool stream"),
-            Primitive::Void => return Err("unsupported endpoint type void stream"),
+            Primitive::Bool => return Err("unsupported endpoint type bool value"),
+            Primitive::Void => return Err("unsupported endpoint type void value"),
         };
 
         Ok(value_handle)

@@ -218,17 +218,24 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
     // Add all the cables to the graph
     for (var connector in widget.connectors.value) {
+      // Skip if either node is null
+      if (connector.start.node.rawNode == null ||
+          connector.end.node.rawNode == null) continue;
+
       graph.addCable(
-        srcNode: connector.start.node.rawNode,
+        srcNode: connector.start.node.rawNode!,
         srcEndpoint: connector.start.endpoint,
-        dstNode: connector.end.node.rawNode,
+        dstNode: connector.end.node.rawNode!,
         dstEndpoint: connector.end.endpoint,
       );
     }
 
     // Add all the nodes to the graph
     for (var node in widget.nodes.value) {
-      graph.addNode(node: node.rawNode);
+      // Skip if node is null
+      if (node.rawNode == null) continue;
+
+      graph.addNode(node: node.rawNode!);
     }
 
     // Update the playback graph

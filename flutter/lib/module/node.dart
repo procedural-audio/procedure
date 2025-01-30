@@ -76,45 +76,52 @@ class Node extends StatelessWidget {
     required this.onDrag,
     required Offset position,
   }) : super(key: UniqueKey()) {
-    rawNode = api.Node.from(source: module.source, id: NODE_ID++)!;
+    rawNode = api.Node.from(source: module.source, id: NODE_ID++);
 
     // Set the initial node position
     this.position.value = position;
 
-    // Add input pins and widgets to list
-    for (var endpoint in rawNode.inputs) {
-      var widget = NodeWidget.from(this, endpoint);
-      if (widget != null) {
-        widgets.add(widget);
+    if (rawNode != null) {
+      // Add input pins and widgets to list
+      for (var endpoint in rawNode!.inputs) {
+        var widget = NodeWidget.from(this, endpoint);
+        if (widget != null) {
+          widgets.add(widget);
 
-        // Skip pin creation if a widget was created
-        continue;
+          // Skip pin creation if a widget was created
+          continue;
+        }
+
+        pins.add(
+          Pin(
+            endpoint: endpoint,
+            node: this,
+            patch: patch,
+            isInput: true,
+            onAddConnector: onAddConnector,
+            onRemoveConnections: onRemoveConnections,
+          ),
+        );
       }
 
-      pins.add(
-        Pin(
-          endpoint: endpoint,
-          node: this,
-          patch: patch,
-          isInput: true,
-          onAddConnector: onAddConnector,
-          onRemoveConnections: onRemoveConnections,
-        ),
-      );
-    }
+      // Add output pins to list
+      for (var endpoint in rawNode!.outputs) {
+        // Skip pin if it's an external endpoint
+        if (endpoint.annotation.contains("external")) {
+          continue;
+        }
 
-    // Add output pins to list
-    for (var endpoint in rawNode.outputs) {
-      pins.add(
-        Pin(
-          endpoint: endpoint,
-          node: this,
-          patch: patch,
-          isInput: false,
-          onAddConnector: onAddConnector,
-          onRemoveConnections: onRemoveConnections,
-        ),
-      );
+        pins.add(
+          Pin(
+            endpoint: endpoint,
+            node: this,
+            patch: patch,
+            isInput: false,
+            onAddConnector: onAddConnector,
+            onRemoveConnections: onRemoveConnections,
+          ),
+        );
+      }
     }
   }
 
@@ -123,7 +130,7 @@ class Node extends StatelessWidget {
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onDrag;
-  late final api.Node rawNode;
+  api.Node? rawNode;
 
   List<Pin> pins = [];
   List<NodeWidget> widgets = [];
