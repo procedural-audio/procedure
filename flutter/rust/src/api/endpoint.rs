@@ -6,8 +6,6 @@ use crossbeam_queue::ArrayQueue;
 
 use flutter_rust_bridge::*;
 
-static QUEUE_SIZE: usize = 4;
-
 #[derive(Copy, Clone, PartialEq)]
 pub enum InputStreamHandle {
     MonoFloat32(Endpoint<InputStream<f32>>),
@@ -241,18 +239,19 @@ pub enum WidgetHandle {
 impl WidgetHandle {
     fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
         let id = info.id();
-        let annotation = info.annotation();
-
-        let queue = ArrayQueue::new(QUEUE_SIZE);
 
         let handle = match info {
             EndpointInfo::Event(_) => WidgetHandle::Event {
                 handle: engine.endpoint(id).unwrap(),
-                queue: Arc::new(queue),
+                queue: Arc::new(
+                    ArrayQueue::new(32)
+                ),
             },
             EndpointInfo::Value(_) => WidgetHandle::Value {
                 handle: engine.endpoint(id).unwrap(),
-                queue: Arc::new(queue),
+                queue: Arc::new(
+                    ArrayQueue::new(1)
+                ),
             },
             _ => return Err("unsupported widget endpoint type")
         };
@@ -278,9 +277,6 @@ pub enum EndpointHandle {
 
 impl EndpointHandle {
     fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
-        // Get the endpoint id
-        let id = info.id();
-
         // Get the endpoint annotation
         let annotation = info.annotation();
 
