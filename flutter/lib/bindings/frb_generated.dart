@@ -71,7 +71,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.3.0';
 
   @override
-  int get rustContentHash => -1406823231;
+  int get rustContentHash => 1096423976;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -129,12 +129,7 @@ abstract class RustLibApi extends BaseApi {
 
   int crateApiNodeNodeAutoAccessorGetId({required Node that});
 
-  Voices crateApiNodeNodeAutoAccessorGetVoices({required Node that});
-
   void crateApiNodeNodeAutoAccessorSetId({required Node that, required int id});
-
-  void crateApiNodeNodeAutoAccessorSetVoices(
-      {required Node that, required Voices voices});
 
   Node? crateApiNodeNodeFrom({required String source, required int id});
 
@@ -170,12 +165,6 @@ abstract class RustLibApi extends BaseApi {
       get rust_arc_decrement_strong_count_NodeEndpoint;
 
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_NodeEndpointPtr;
-
-  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Voices;
-
-  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Voices;
-
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_VoicesPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -636,32 +625,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Voices crateApiNodeNodeAutoAccessorGetVoices({required Node that}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
-            that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiNodeNodeAutoAccessorGetVoicesConstMeta,
-      argValues: [that],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiNodeNodeAutoAccessorGetVoicesConstMeta =>
-      const TaskConstMeta(
-        debugName: "Node_auto_accessor_get_voices",
-        argNames: ["that"],
-      );
-
-  @override
   void crateApiNodeNodeAutoAccessorSetId(
       {required Node that, required int id}) {
     return handler.executeSync(SyncTask(
@@ -670,7 +633,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
             that, serializer);
         sse_encode_u_32(id, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -689,41 +652,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  void crateApiNodeNodeAutoAccessorSetVoices(
-      {required Node that, required Voices voices}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
-            that, serializer);
-        sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-            voices, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiNodeNodeAutoAccessorSetVoicesConstMeta,
-      argValues: [that, voices],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiNodeNodeAutoAccessorSetVoicesConstMeta =>
-      const TaskConstMeta(
-        debugName: "Node_auto_accessor_set_voices",
-        argNames: ["that", "voices"],
-      );
-
-  @override
   Node? crateApiNodeNodeFrom({required String source, required int id}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(source, serializer);
         sse_encode_u_32(id, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
       },
       codec: SseCodec(
         decodeSuccessData:
@@ -748,7 +683,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
             that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
       },
       codec: SseCodec(
         decodeSuccessData:
@@ -773,7 +708,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
             that, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22)!;
       },
       codec: SseCodec(
         decodeSuccessData:
@@ -819,14 +754,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       get rust_arc_decrement_strong_count_NodeEndpoint => wire
           .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint;
 
-  RustArcIncrementStrongCountFnType
-      get rust_arc_increment_strong_count_Voices => wire
-          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices;
-
-  RustArcDecrementStrongCountFnType
-      get rust_arc_decrement_strong_count_Voices => wire
-          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices;
-
   @protected
   EndpointHandle
       dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerEndpointHandle(
@@ -857,14 +784,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return NodeEndpointImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Voices
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return VoicesImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -937,14 +856,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return NodeEndpointImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Voices
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return VoicesImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -1120,15 +1031,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Voices
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return VoicesImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
   Graph
       sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
           SseDeserializer deserializer) {
@@ -1206,15 +1108,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return NodeEndpointImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
-  Voices
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return VoicesImpl.frbInternalSseDecode(
         sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
@@ -1399,15 +1292,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          Voices self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as VoicesImpl).frbInternalSseEncode(move: true), serializer);
-  }
-
-  @protected
-  void
       sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
           Graph self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1489,15 +1373,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_usize(
         (self as NodeEndpointImpl).frbInternalSseEncode(move: null),
         serializer);
-  }
-
-  @protected
-  void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerVoices(
-          Voices self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as VoicesImpl).frbInternalSseEncode(move: null), serializer);
   }
 
   @protected
@@ -1766,16 +1641,8 @@ class NodeImpl extends RustOpaque implements Node {
         that: this,
       );
 
-  Voices get voices =>
-      RustLib.instance.api.crateApiNodeNodeAutoAccessorGetVoices(
-        that: this,
-      );
-
   set id(int id) => RustLib.instance.api
       .crateApiNodeNodeAutoAccessorSetId(that: this, id: id);
-
-  set voices(Voices voices) => RustLib.instance.api
-      .crateApiNodeNodeAutoAccessorSetVoices(that: this, voices: voices);
 
   List<NodeEndpoint> get inputs =>
       RustLib.instance.api.crateApiNodeNodeGetInputs(
@@ -1786,24 +1653,4 @@ class NodeImpl extends RustOpaque implements Node {
       RustLib.instance.api.crateApiNodeNodeGetOutputs(
         that: this,
       );
-}
-
-@sealed
-class VoicesImpl extends RustOpaque implements Voices {
-  // Not to be used by end users
-  VoicesImpl.frbInternalDcoDecode(List<dynamic> wire)
-      : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  VoicesImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
-      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_Voices,
-    rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_Voices,
-    rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_VoicesPtr,
-  );
 }

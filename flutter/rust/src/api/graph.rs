@@ -13,6 +13,7 @@ use crate::api::node::*;
 use cmajor::*;
 
 use flutter_rust_bridge::*;
+use for_generated::futures::SinkExt;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -27,6 +28,7 @@ use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use crossbeam_queue::ArrayQueue;
 
 use super::node;
+use super::voices::*;
 
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Vec<Action>>> = RwLock::new(None);
@@ -216,53 +218,52 @@ impl Graph {
 
 #[frb(ignore)]
 trait ExecuteAction {
-    fn execute(&mut self);
+    fn execute(&mut self, num_frames: usize);
 }
 
 #[frb(ignore)]
 struct CopyStream<T: StreamType> {
-    src_voices: Voices,
+    src_voices: Arc<Mutex<Voices>>,
     src_handle: Endpoint<OutputStream<T>>,
-    dst_voices: Voices,
+    dst_voices: Arc<Mutex<Voices>>,
     dst_handle: Endpoint<InputStream<T>>,
     buffer: Vec<T>,
 }
 
 impl<T: StreamType> ExecuteAction for CopyStream<T> {
-    fn execute(&mut self) {
-        /*self.src_performer
+    fn execute(&mut self, num_frames: usize) {
+        let src = self.src_voices
             .try_lock()
-            .unwrap()
-            .read(self.src_handle, self.buffer.as_mut_slice());
+            .unwrap();
+        let mut dst = self.dst_voices
+            .try_lock()
+            .unwrap();
 
-        self.dst_performer
-            .try_lock()
-            .unwrap()
-            .write(self.dst_handle, self.buffer.as_slice());*/
+        src.copy_streams_to(self.src_handle, &mut dst, self.dst_handle, &mut self.buffer[..num_frames]);
     }
 }
 
 #[frb(ignore)]
 struct ClearStream<T: StreamType + Default> {
-    voices: Voices,
+    voices: Arc<Mutex<Voices>>,
     handle: Endpoint<InputStream<T>>,
     buffer: Vec<T>,
 }
 
 impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
-    fn execute(&mut self) {
-        /*self.dst_performer
+    fn execute(&mut self, num_frames: usize) {
+        self.voices
             .try_lock()
             .unwrap()
-            .write(self.dst_handle, self.buffer.as_slice());*/
+            .write(self.handle, self.buffer.as_slice());
     }
 }
 
 #[frb(ignore)]
 struct CopyValue<T> {
-    src_voices: Voices,
+    src_voices: Arc<Mutex<Voices>>,
     src_handle: Endpoint<OutputValue<T>>,
-    dst_voices: Voices,
+    dst_voices: Arc<Mutex<Voices>>,
     dst_handle: Endpoint<InputValue<T>>,
 }
 
@@ -270,47 +271,42 @@ impl<T> ExecuteAction for CopyValue<T>
 where
     T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
 {
-    fn execute(&mut self) {
-        /*let mut src_performer = self.src_performer
+    fn execute(&mut self, num_frames: usize) {
+        let mut src = self.src_voices
+            .try_lock()
+            .unwrap();
+        let mut dst = self.dst_voices
             .try_lock()
             .unwrap();
 
-        let temp = src_performer.get(self.src_handle);
-
-        let mut dst_performer = self.dst_performer
-            .try_lock()
-            .unwrap();
-
-        dst_performer.set(self.dst_handle, temp);*/
+        src.copy_values_to(self.src_handle, &mut dst, self.dst_handle);
     }
 }
 
 #[frb(ignore)]
 struct CopyEvent {
-    src_voices: Voices,
+    src_voices: Arc<Mutex<Voices>>,
     src_handle: Endpoint<OutputEvent>,
-    dst_voices: Voices,
+    dst_voices: Arc<Mutex<Voices>>,
     dst_handle: Endpoint<InputEvent>,
 }
 
 impl ExecuteAction for CopyEvent {
-    fn execute(&mut self) {
-        /*let mut src_performer = self.src_performer
+    fn execute(&mut self, num_frames: usize) {
+        let mut src = self.src_voices
             .try_lock()
             .unwrap();
-        let mut dst_performer = self.dst_performer
+        let mut dst = self.dst_voices
             .try_lock()
             .unwrap();
 
-        src_performer.fetch(self.src_handle, | _i, event | {
-            dst_performer.post(self.dst_handle, event).unwrap();
-        }).unwrap();*/
+        src.copy_events_to(self.src_handle, &mut dst, self.dst_handle);
     }
 }
 
 #[frb(ignore)]
 enum Action {
-    Process(Voices),
+    Advance(Arc<Mutex<Voices>>),
 
     // Copy streams
     CopyStreamMonoFloat32(CopyStream<f32>),
@@ -325,7 +321,7 @@ enum Action {
 
     // Update event
     ReceiveEvents {
-        voices: Voices,
+        voices: Arc<Mutex<Voices>>,
         handle: Endpoint<InputEvent>,
         queue: Arc<ArrayQueue<cmajor::value::Value>>,
     },
@@ -338,23 +334,25 @@ enum Action {
     CopyValueBool(CopyValue<bool>),
 
     InputStreamMonoFloat32 {
-        voices: Voices,
+        voices: Arc<Mutex<Voices>>,
         handle: Endpoint<InputStream<f32>>,
         channel: usize,
     },
-    InputStreamStereoFloat32 {
-        voices: Voices,
-        handle: Endpoint<InputStream<[f32; 2]>>,
-        channel: usize,
-    },
     OutputStreamMonoFloat32 {
-        voices: Voices,
+        voices: Arc<Mutex<Voices>>,
         handle: Endpoint<OutputStream<f32>>,
         channel: usize,
     },
+    InputStreamStereoFloat32 {
+        voices: Arc<Mutex<Voices>>,
+        handle: Endpoint<InputStream<[f32; 2]>>,
+        buffer: Vec<[f32; 2]>,
+        channel: usize,
+    },
     OutputStreamStereoFloat32 {
-        voices: Voices,
+        voices: Arc<Mutex<Voices>>,
         handle: Endpoint<OutputStream<[f32; 2]>>,
+        buffer: Vec<[f32; 2]>,
         channel: usize,
     }
 }
@@ -365,95 +363,105 @@ impl Action {
         let num_frames = audio
             .get(0)
             .unwrap()
-            .len() as u32;
+            .len();
 
         match self {
-            Action::Process(voices) => {
-                /*match performer.try_lock() {
-                    Ok(mut performer) => {
-                        performer.set_block_size(num_frames);
-                        performer.advance();
-                    }
-                    Err(_) => println!("Failed to lock performer"),
-                }*/
+            Action::Advance(voices) => {
+                let mut voices = voices
+                    .try_lock()
+                    .unwrap();
+
+                voices.set_block_size(num_frames);
+                voices.advance();
             },
 
             // Copy streams
-            Action::CopyStreamMonoFloat32(action) => action.execute(),
-            Action::CopyStreamStereoFloat32(action) => action.execute(),
+            Action::CopyStreamMonoFloat32(action) => action.execute(num_frames),
+            Action::CopyStreamStereoFloat32(action) => action.execute(num_frames),
 
             // Fill streams
-            Action::ClearStreamMonoFloat32(action) => action.execute(),
-            Action::ClearStreamStereoFloat32(action) => action.execute(),
+            Action::ClearStreamMonoFloat32(action) => action.execute(num_frames),
+            Action::ClearStreamStereoFloat32(action) => action.execute(num_frames),
 
             // Copy event
-            Action::CopyEvent(action) => action.execute(),
+            Action::CopyEvent(action) => action.execute(num_frames),
             
             // Recieve UI events
             Action::ReceiveEvents { voices, handle, queue } => {
-                while let Some(value) = queue.pop() {
-                    match voices {
-                        Voices::Mono(ref performer) => {
-                            match performer.try_lock() {
-                                Ok(mut performer) => {
-                                    match performer.post(*handle, &value) {
-                                        Ok(_) => (),
-                                        Err(e) => println!(" > Failed to post event: {}", e),
-                                    }
-                                }
-                                Err(e) => println!("Failed to lock performer: {}", e),
-                            }
-                        },
-                        Voices::Poly(ref performers) => {
-                            for performer in performers.iter() {
-                                match performer.try_lock() {
-                                    Ok(mut performer) => {
-                                        match performer.post(*handle, &value) {
-                                            Ok(_) => (),
-                                            Err(e) => println!(" > Failed to post event: {}", e),
-                                        }
-                                    }
-                                    Err(e) => println!("Failed to lock performer: {}", e),
-                                }
-                            }
-                        }
-                    }
+                let mut voices = voices
+                    .try_lock()
+                    .unwrap();
+
+                while let Some(event) = queue.pop() {
+                    let _ = voices.post(*handle, &event);
                 }
             }
 
             // Copy values
-            Action::CopyValueFloat32(action) => action.execute(),
-            Action::CopyValueFloat64(action) => action.execute(),
-            Action::CopyValueInt32(action) => action.execute(),
-            Action::CopyValueInt64(action) => action.execute(),
-            Action::CopyValueBool(action) => action.execute(),
+            Action::CopyValueFloat32(action) => action.execute(num_frames),
+            Action::CopyValueFloat64(action) => action.execute(num_frames),
+            Action::CopyValueInt32(action) => action.execute(num_frames),
+            Action::CopyValueInt64(action) => action.execute(num_frames),
+            Action::CopyValueBool(action) => action.execute(num_frames),
 
             // Input stream
             Action::InputStreamMonoFloat32 { voices, handle, channel } => {
-                /*match performer.try_lock() {
-                    Ok(performer) => {
-                        if let Some(channel) = audio.get(*channel) {
-                            performer.write(*handle, channel);
-                        }
-                    }
-                    Err(_) => println!("Failed to lock performer"),
-                }*/
+                if let Some(channel) = audio.get(*channel) {
+                    voices
+                        .try_lock()
+                        .unwrap()
+                        .write(*handle, channel);
+                }
             }
             Action::OutputStreamMonoFloat32 { voices, handle, channel } => {
-                /*match performer.try_lock() {
-                    Ok(performer) => {
-                        if let Some(channel) = audio.get_mut(*channel) {
-                            performer.read(*handle, channel);
-                        }
+                if let Some(channel) = audio.get_mut(*channel) {
+                    voices
+                        .try_lock()
+                        .unwrap()
+                        .read(*handle, channel);
+                }
+            }
+            Action::InputStreamStereoFloat32 { voices, handle, channel, buffer } => {
+                // Copy the left channel
+                if let Some(left) = audio.get(*channel * 2) {
+                    for (b, l) in buffer.iter_mut().zip(left.iter()) {
+                        b[0] = *l;
                     }
-                    Err(_) => println!("Failed to lock performer"),
-                }*/
-            }
-            Action::InputStreamStereoFloat32 { voices, handle, channel } => {
+                }
 
-            }
-            Action::OutputStreamStereoFloat32 { voices, handle, channel } => {
+                // Copy the right channel
+                if let Some(right) = audio.get(*channel * 2 + 1) {
+                    for (b, r) in buffer.iter_mut().zip(right.iter()) {
+                        b[0] = *r;
+                    }
+                }
 
+                // Write the samples
+                voices
+                    .try_lock()
+                    .unwrap()
+                    .write(*handle, buffer);
+            }
+            Action::OutputStreamStereoFloat32 { voices, handle, channel, buffer} => {
+                // Read the samples
+                voices
+                    .try_lock()
+                    .unwrap()
+                    .read(*handle, buffer);
+
+                // Copy the left channel
+                if let Some(left) = audio.get_mut(*channel * 2) {
+                    for (l, b) in left.iter_mut().zip(buffer.iter()) {
+                        *l = b[0];
+                    }
+                }
+
+                // Copy the right channel
+                if let Some(right) = audio.get_mut(*channel * 2 + 1) {
+                    for (r, b) in right.iter_mut().zip(buffer.iter()) {
+                        *r = b[1];
+                    }
+                }
             }
         }
     }
@@ -473,9 +481,6 @@ fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
 
 #[frb(ignore)]
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
-    // Generate any external output actions
-    generate_external_input_actions(actions, dst_node);
-
     // Copy node input data
     for dst_endpoint in dst_node.get_inputs().iter() {
         let mut filled = false;
@@ -490,9 +495,9 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
 
                 generate_connection_actions(
                     actions,
-                    cable.source.node.voices.clone(),
+                    cable.source.node.voices(),
                     cable.source.endpoint.endpoint.clone(),
-                    dst_node.voices.clone(),
+                    dst_node.voices(),
                     dst_endpoint.endpoint.clone()
                 );
 
@@ -505,7 +510,7 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
             filled = true;
             actions.push(
                 Action::ReceiveEvents {
-                    voices: dst_node.voices.clone(),
+                    voices: dst_node.voices(),
                     handle: handle.clone(),
                     queue: queue.clone(),
                 }
@@ -515,20 +520,23 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
         // Generate actions to fill missing input streams
         if !filled {
             println!(" - Fill input of node {}", dst_node.id);
-            generate_clear_stream_actions(actions, dst_node.voices.clone(), dst_endpoint.endpoint.clone());
+            generate_clear_stream_actions(actions, dst_node.voices(), dst_endpoint.endpoint.clone());
         }
     }
 
-    // Generate actions for each node process
-    println!(" - Process node {}", dst_node.id);
-    actions.push(Action::Process(dst_node.voices.clone()));
+    // Generate any external input actions
+    generate_external_input_actions(actions, dst_node);
+
+    // Generate actions for each node advance
+    println!(" - Advance node {}", dst_node.id);
+    actions.push(Action::Advance(dst_node.voices()));
 
     // Generate any external output actions
     generate_external_output_actions(actions, dst_node);
 }
 
 #[frb(ignore)]
-fn generate_clear_stream_actions(actions: &mut Vec<Action>, voices: Voices, handle: EndpointHandle) {
+fn generate_clear_stream_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>, handle: EndpointHandle) {
     match handle {
         EndpointHandle::Input(handle) => {
             if let InputHandle::Stream(handle) = handle {
@@ -575,7 +583,7 @@ fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node) {
                             println!(" - External input channel {} to node {}", channel, node.id);
                             actions.push(
                                 Action::InputStreamMonoFloat32 {
-                                    voices: node.voices.clone(),
+                                    voices: node.voices(),
                                     handle,
                                     channel
                                 }
@@ -583,10 +591,12 @@ fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node) {
                         },
                         InputStreamHandle::StereoFloat32(handle) => {
                             println!(" - External input channel {} to node {}", channel, node.id);
+                            let buffer = vec![[0.0, 0.0]; 1024];
                             actions.push(
                                 Action::InputStreamStereoFloat32 {
-                                    voices: node.voices.clone(),
+                                    voices: node.voices(),
                                     handle,
+                                    buffer,
                                     channel
                                 }
                             );
@@ -612,7 +622,7 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
                             println!(" - External input channel {} to node {}", channel, node.id);
                             actions.push(
                                 Action::OutputStreamMonoFloat32 {
-                                    voices: node.voices.clone(),
+                                    voices: node.voices(),
                                     handle,
                                     channel
                                 }
@@ -620,10 +630,12 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
                         },
                         OutputStreamHandle::StereoFloat32(handle) => {
                             println!(" - External input channel {} to node {}", channel, node.id);
+                            let buffer = vec![[0.0, 0.0]; 1024];
                             actions.push(
                                 Action::OutputStreamStereoFloat32 {
-                                    voices: node.voices.clone(),
+                                    voices: node.voices(),
                                     handle,
+                                    buffer,
                                     channel
                                 }
                             );
@@ -641,9 +653,9 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
 #[frb(ignore)]
 fn generate_connection_actions(
     actions: &mut Vec<Action>,
-    src_voices: Voices,
+    src_voices: Arc<Mutex<Voices>>,
     src_handle: EndpointHandle,
-    dst_voices: Voices,
+    dst_voices: Arc<Mutex<Voices>>,
     dst_handle: EndpointHandle) {
 
     let max_frames: usize = 1024;

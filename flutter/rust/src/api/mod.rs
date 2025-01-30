@@ -2,6 +2,7 @@ pub mod cable;
 pub mod endpoint;
 pub mod graph;
 pub mod node;
+pub mod voices;
 
 use cmajor::*;
 

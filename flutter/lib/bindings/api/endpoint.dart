@@ -8,6 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'endpoint.freezed.dart';
 
+// These functions are ignored because they are not marked as `pub`: `from_endpoint`, `from_endpoint`, `from_endpoint`, `from_endpoint`, `from_info`, `from_info`, `from_info`
 // These types are ignored because they are not used by any `pub` functions: `InputHandle`, `InputStreamHandle`, `InputValueHandle`, `OutputHandle`, `OutputStreamHandle`, `OutputValueHandle`, `PrimitiveType`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `write_value`

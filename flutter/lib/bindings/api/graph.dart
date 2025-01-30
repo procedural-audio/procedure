@@ -8,7 +8,7 @@ import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `generate_connection_actions`, `generate_copy_action`, `generate_graph_actions`, `generate_io_actions`, `generate_node_actions`, `generate_zero_stream_endpoint_action`, `generate_zero_stream_handle_action`, `sort_nodes_topologically`
+// These functions are ignored because they are not marked as `pub`: `generate_clear_stream_actions`, `generate_connection_actions`, `generate_external_input_actions`, `generate_external_output_actions`, `generate_graph_actions`, `generate_node_actions`, `sort_nodes_topologically`
 // These types are ignored because they are not used by any `pub` functions: `ACTIONS`, `Action`, `ClearStream`, `CopyEvent`, `CopyStream`, `CopyValue`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `deref`, `initialize`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare_patch`, `process_patch`
@@ -33,5 +33,5 @@ abstract class Graph implements RustOpaqueInterface {
 }
 
 abstract class ExecuteAction {
-  Future<void> execute();
+  Future<void> execute({required BigInt numFrames});
 }

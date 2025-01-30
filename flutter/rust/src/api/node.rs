@@ -2,25 +2,18 @@ use cmajor::*;
 use cmajor::engine::{Engine, Loaded, Linked, Error};
 use cmajor::endpoint::*;
 use cmajor::performer::*;
+use endpoints::stream::StreamType;
+use value::ValueRef;
 
 use super::endpoint::*;
+
+use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
 use std::f32::consts::E;
 use std::sync::{Arc, RwLock, Mutex};
 
 use flutter_rust_bridge::*;
-
-#[derive(Copy, Clone)]
-pub struct ParameterChange {
-    id: u32
-}
-
-#[frb(ignore)]
-#[derive(Clone)]
-pub enum Voices {
-    Mono(Arc<Mutex<Performer>>),
-    Poly(Arc<Mutex<Vec<Performer>>>)
-}
+use super::voices::*;
 
 /// This is a single processor unit in the graph
 #[frb(opaque)]
@@ -30,7 +23,7 @@ pub struct Node {
     source: String,
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
-    pub voices: Voices,
+    voices: Arc<Mutex<Voices>>,
 }
 
 impl PartialEq for Node {
@@ -105,9 +98,9 @@ impl Node {
             };
 
         let voices = if id == 0 {
-            Voices::Mono(Arc::new(Mutex::new(engine.performer())))
+            Arc::new(Mutex::new(Voices::Mono(engine.performer())))
         } else {
-            Voices::Mono(Arc::new(Mutex::new(engine.performer())))
+            Arc::new(Mutex::new(Voices::Mono(engine.performer())))
         };
 
         Some(
@@ -129,5 +122,10 @@ impl Node {
     #[frb(sync, getter)]
     pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
+    }
+
+    #[frb(ignore)]
+    pub fn voices(&self) -> Arc<Mutex<Voices>> {
+        self.voices.clone()
     }
 }
