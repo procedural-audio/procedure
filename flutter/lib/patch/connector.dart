@@ -4,9 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../module/module.dart';
-import '../module/node.dart';
-import '../module/pin.dart';
+import 'module.dart';
+import 'node.dart';
+import 'pin.dart';
 import 'patch.dart';
 
 class Connector extends StatelessWidget {
@@ -48,12 +48,16 @@ class Connector extends StatelessWidget {
                 return CustomPaint(
                   painter: ConnectorPainter(
                     Offset(
-                      start.offset.dx + startModuleOffset.dx + 15 / 2,
-                      start.offset.dy + startModuleOffset.dy + 15 / 2,
+                      start.offset.dx +
+                          roundToGrid(startModuleOffset.dx) +
+                          15 / 2,
+                      start.offset.dy +
+                          roundToGrid(startModuleOffset.dy) +
+                          15 / 2,
                     ),
                     Offset(
-                      end.offset.dx + endModuleOffset.dx + 15 / 2,
-                      end.offset.dy + endModuleOffset.dy + 15 / 2,
+                      end.offset.dx + roundToGrid(endModuleOffset.dx) + 15 / 2,
+                      end.offset.dy + roundToGrid(endModuleOffset.dy) + 15 / 2,
                     ),
                     start.color,
                     focused,

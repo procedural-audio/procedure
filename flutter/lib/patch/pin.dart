@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'dart:convert';
 
+import '../settings.dart';
 import 'node.dart';
 
-import '../patch/patch.dart';
-import '../patch/connector.dart';
+import 'patch.dart';
+import 'connector.dart';
 
 import '../bindings/api/endpoint.dart';
 
@@ -25,7 +26,8 @@ class Pin extends StatefulWidget {
     if (isInput) {
       offset = Offset(5, top);
     } else {
-      offset = Offset(node.module.size.width - 25, top);
+      offset =
+          Offset(node.module.size.width * GlobalSettings.gridSize - 25, top);
     }
 
     // Initialize the pin color

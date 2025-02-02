@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/bindings/api/cable.dart';
-import 'package:metasampler/module/module.dart';
+import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/views/presets.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import '../module/pin.dart';
+import '../settings.dart';
+import 'pin.dart';
 import '../plugins.dart';
 import 'connector.dart';
 import '../projects.dart';
-import '../module/node.dart';
+import 'node.dart';
 import 'right_click.dart';
 
 import '../bindings/api/graph.dart' as api;
@@ -254,9 +255,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
         removeConnectionsTo(pin);
         setState(() {});
       },
-      onDrag: (offset) {
-        setState(() {});
-      },
       position: position,
     );
 
@@ -338,7 +336,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                   focusNode: focusNode,
                   autofocus: true,
                   onKeyEvent: (e) {
-                    print("Got key event");
                     if (e.logicalKey == LogicalKeyboardKey.delete ||
                         e.logicalKey == LogicalKeyboardKey.backspace) {
                       print("Get key delete");
@@ -399,7 +396,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
-          // PopupWindow(),
         ],
       ),
     );
@@ -407,21 +403,29 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 }
 
 class Grid extends CustomPainter {
+  Grid();
+
   @override
   void paint(Canvas canvas, ui.Size size) {
-    const spacing = 30;
     final paint = Paint()
       ..color = const Color.fromRGBO(25, 25, 25, 1.0)
-      ..strokeWidth = 2;
+      ..strokeWidth = 1;
 
-    List<Offset> points = [];
-    for (double i = 0; i < size.width; i += spacing) {
-      for (double j = 0; j < size.height; j += spacing) {
-        points.add(Offset(i, j));
-      }
+    for (double i = 0;
+        i < size.width;
+        i += GlobalSettings.gridSize.toDouble()) {
+      var p1 = Offset(i, 0);
+      var p2 = Offset(i, size.height);
+      canvas.drawLine(p1, p2, paint);
     }
 
-    canvas.drawPoints(ui.PointMode.points, points, paint);
+    for (double i = 0;
+        i < size.height;
+        i += GlobalSettings.gridSize.toDouble()) {
+      var p1 = Offset(0, i);
+      var p2 = Offset(size.width, i);
+      canvas.drawLine(p1, p2, paint);
+    }
   }
 
   @override

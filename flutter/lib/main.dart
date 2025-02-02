@@ -8,7 +8,7 @@ import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/presets.dart';
 
-import 'module/module.dart';
+import 'patch/module.dart';
 import 'projects.dart';
 
 import 'views/info.dart';

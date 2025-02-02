@@ -1,6 +1,8 @@
 import 'dart:io';
 
 class GlobalSettings {
+  static double gridSize = 70.0;
+
   static Directory get mainDirectory {
     if (Platform.isLinux) {
       return Directory("~/Procedural Audio");

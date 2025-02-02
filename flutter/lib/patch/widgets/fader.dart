@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../bindings/api/endpoint.dart';
-import '../module/node.dart';
-import '../utils.dart';
+import '../../bindings/api/endpoint.dart';
+import '../node.dart';
+import '../../utils.dart';
 
 class FaderWidget extends NodeWidget {
   FaderWidget(

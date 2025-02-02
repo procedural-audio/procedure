@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 
 import 'dart:ui' as ui;
 
-import '../bindings/api/endpoint.dart';
-import '../module/node.dart';
-import '../views/settings.dart';
-import '../utils.dart';
+import '../../bindings/api/endpoint.dart';
+import '../node.dart';
+import '../../views/settings.dart';
+import '../../utils.dart';
 
 class TextboxWidget extends NodeWidget {
   TextboxWidget(

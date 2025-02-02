@@ -4,7 +4,7 @@ import 'package:metasampler/settings.dart';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'module/module.dart';
+import 'patch/module.dart';
 import 'patch/patch.dart';
 
 List<String> pathToCategory(FileSystemEntity moduleFile) {

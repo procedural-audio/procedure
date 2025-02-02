@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../views/settings.dart';
 import '../plugins.dart';
-import '../module/module.dart';
+import 'module.dart';
 
 const int INDENT_SIZE = 10;
 
@@ -395,7 +395,10 @@ class _RightClickElementState extends State<RightClickElement> {
                   width: 15,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: widget.module.color,
+                    color: widget.module.color ??
+                        widget.module.titleColor ??
+                        widget.module.iconColor ??
+                        Colors.grey,
                     borderRadius: const BorderRadius.all(
                       Radius.circular(5.0),
                     ),

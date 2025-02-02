@@ -1,17 +1,24 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/module/module.dart';
-import 'package:metasampler/module/pin.dart';
-import 'package:metasampler/nodeWidgets/fader.dart';
-import 'package:metasampler/nodeWidgets/textbox.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:metasampler/patch/module.dart';
+import 'package:metasampler/patch/pin.dart';
+import 'package:metasampler/patch/widgets/fader.dart';
+import 'package:metasampler/patch/widgets/textbox.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as api;
-import '../nodeWidgets/knob.dart';
-import '../patch/patch.dart';
+import '../settings.dart';
+import 'widgets/knob.dart';
+import 'patch.dart';
 
 int NODE_ID = 1;
+
+double roundToGrid(double x) {
+  return (x / GlobalSettings.gridSize).roundToDouble() *
+      GlobalSettings.gridSize;
+}
 
 abstract class NodeWidget extends StatelessWidget {
   const NodeWidget(this.node, this.endpoint, {super.key});
@@ -72,7 +79,6 @@ class Node extends StatelessWidget {
     required this.patch,
     required this.onAddConnector,
     required this.onRemoveConnections,
-    required this.onDrag,
     required Offset position,
   }) : super(key: UniqueKey()) {
     rawNode = api.Node.from(source: module.source, id: NODE_ID++);
@@ -132,7 +138,6 @@ class Node extends StatelessWidget {
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
-  final void Function(Offset) onDrag;
   api.Node? rawNode;
 
   List<Pin> pins = [];
@@ -179,8 +184,8 @@ class Node extends StatelessWidget {
       valueListenable: position,
       builder: (context, p, child) {
         return Positioned(
-          left: p.dx,
-          top: p.dy,
+          left: roundToGrid(p.dx),
+          top: roundToGrid(p.dy),
           child: GestureDetector(
             onTap: () {
               if (patch.selectedNodes.value.contains(this)) {
@@ -198,15 +203,19 @@ class Node extends StatelessWidget {
               var x = position.value.dx + details.delta.dx;
               var y = position.value.dy + details.delta.dy;
               position.value = Offset(x, y);
-              onDrag(details.localPosition);
+            },
+            onPanEnd: (details) {
+              var x = roundToGrid(position.value.dx);
+              var y = roundToGrid(position.value.dy);
+              position.value = Offset(x, y);
             },
             child: ValueListenableBuilder<List<Node>>(
               valueListenable: patch.selectedNodes,
               builder: (context, selectedNodes, child) {
                 bool selected = selectedNodes.contains(this);
                 return Container(
-                  width: module.size.width,
-                  height: module.size.height,
+                  width: module.size.width * GlobalSettings.gridSize - 1.0,
+                  height: module.size.height * GlobalSettings.gridSize - 1.0,
                   decoration: BoxDecoration(
                     color: const Color.fromRGBO(40, 40, 40, 1.0),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -225,11 +234,23 @@ class Node extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(8),
                           child: Text(
-                            module.name,
+                            module.title ?? "",
                             style: TextStyle(
-                              color: module.color,
+                              color: module.titleColor ?? Colors.grey,
                               fontSize: 16,
                             ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: module.icon != null,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: SvgPicture.string(
+                            module.icon ?? "",
+                            width: (module.iconSize ?? 24).toDouble(),
+                            height: (module.iconSize ?? 24).toDouble(),
+                            color: module.iconColor ?? Colors.grey,
                           ),
                         ),
                       ),
