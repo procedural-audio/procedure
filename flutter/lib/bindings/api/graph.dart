@@ -4,15 +4,15 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'cable.dart';
 import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `generate_clear_stream_actions`, `generate_connection_actions`, `generate_external_input_actions`, `generate_external_output_actions`, `generate_graph_actions`, `generate_node_actions`, `sort_nodes_topologically`
-// These types are ignored because they are not used by any `pub` functions: `ACTIONS`, `Action`, `ClearStream`, `CopyEvent`, `CopyStream`, `CopyValue`
+// These functions are ignored because they are not marked as `pub`: `sort_nodes_topologically`
+// These types are ignored because they are not used by any `pub` functions: `ACTIONS`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `deref`, `initialize`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare_patch`, `process_patch`
-// These functions are ignored (category: IgnoreBecauseOwnerTyShouldIgnore): `execute`, `execute`, `execute`, `execute`, `execute`
 
 void setPatch({required Graph graph}) =>
     RustLib.instance.api.crateApiGraphSetPatch(graph: graph);
@@ -29,9 +29,13 @@ abstract class Graph implements RustOpaqueInterface {
 
   void addNode({required Node node});
 
-  factory Graph() => RustLib.instance.api.crateApiGraphGraphNew();
-}
+  List<Cable> get cables;
 
-abstract class ExecuteAction {
-  Future<void> execute({required BigInt numFrames});
+  List<Node> get nodes;
+
+  set cables(List<Cable> cables);
+
+  set nodes(List<Node> nodes);
+
+  factory Graph() => RustLib.instance.api.crateApiGraphGraphNew();
 }

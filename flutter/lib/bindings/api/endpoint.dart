@@ -8,27 +8,26 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'endpoint.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_endpoint`, `from_endpoint`, `from_endpoint`, `from_endpoint`, `from_info`, `from_info`, `from_info`
-// These types are ignored because they are not used by any `pub` functions: `InputHandle`, `InputStreamHandle`, `InputValueHandle`, `OutputHandle`, `OutputStreamHandle`, `OutputValueHandle`, `PrimitiveType`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`
-// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `write_value`
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<EndpointHandle>>
-abstract class EndpointHandle implements RustOpaqueInterface {}
+// These functions are ignored because they are not marked as `pub`: `read_value`, `write_value`
+// These types are ignored because they are not used by any `pub` functions: `PrimitiveType`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`
+// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `handle`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
 abstract class NodeEndpoint implements RustOpaqueInterface {
   String get annotation;
 
-  EndpointHandle get endpoint;
-
   set annotation(String annotation);
-
-  set endpoint(EndpointHandle endpoint);
 
   EndpointKind get type;
 
   bool get isInput;
+
+  bool? readBool();
+
+  double? readFloat();
+
+  PlatformInt64? readInt();
 
   void writeBool({required bool b});
 

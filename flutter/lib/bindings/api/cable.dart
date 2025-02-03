@@ -4,48 +4,30 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'endpoint.dart';
+import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`
 
-class Cable {
-  final Connection source;
-  final Connection destination;
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Cable>>
+abstract class Cable implements RustOpaqueInterface {
+  Connection get destination;
 
-  const Cable({
-    required this.source,
-    required this.destination,
-  });
+  Connection get source;
 
-  @override
-  int get hashCode => source.hashCode ^ destination.hashCode;
+  set destination(Connection destination);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Cable &&
-          runtimeType == other.runtimeType &&
-          source == other.source &&
-          destination == other.destination;
+  set source(Connection source);
 }
 
-class Connection {
-  final int nodeId;
-  final int pinIndex;
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>
+abstract class Connection implements RustOpaqueInterface {
+  NodeEndpoint get endpoint;
 
-  const Connection({
-    required this.nodeId,
-    required this.pinIndex,
-  });
+  Node get node;
 
-  @override
-  int get hashCode => nodeId.hashCode ^ pinIndex.hashCode;
+  set endpoint(NodeEndpoint endpoint);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Connection &&
-          runtimeType == other.runtimeType &&
-          nodeId == other.nodeId &&
-          pinIndex == other.pinIndex;
+  set node(Node node);
 }

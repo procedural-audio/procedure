@@ -7,7 +7,6 @@ use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
 use flutter_rust_bridge::*;
 
-#[frb(ignore)]
 pub enum Voices {
     Mono(Performer),
     Poly(Vec<Performer>)

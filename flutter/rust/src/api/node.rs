@@ -13,7 +13,7 @@ use std::f32::consts::E;
 use std::sync::{Arc, RwLock, Mutex};
 
 use flutter_rust_bridge::*;
-use super::voices::*;
+use crate::other::voices::*;
 
 /// This is a single processor unit in the graph
 #[frb(opaque)]

@@ -12,6 +12,7 @@ import '../bindings/api/node.dart' as api;
 import '../settings.dart';
 import 'widgets/knob.dart';
 import 'patch.dart';
+import 'widgets/scope.dart';
 
 int NODE_ID = 1;
 
@@ -25,6 +26,8 @@ abstract class NodeWidget extends StatelessWidget {
 
   final Node node;
   final NodeEndpoint endpoint;
+
+  void tick() {}
 
   void writeFloat(double value) {
     try {
@@ -50,6 +53,36 @@ abstract class NodeWidget extends StatelessWidget {
     }
   }
 
+  double? readFloat() {
+    try {
+      return endpoint.readFloat();
+    } catch (e) {
+      print("Failed to read float from endpoint: $e");
+    }
+
+    return 0.0;
+  }
+
+  int? readInt() {
+    try {
+      return endpoint.readInt();
+    } catch (e) {
+      print("Failed to read float from endpoint: $e");
+    }
+
+    return 0;
+  }
+
+  bool? readBool() {
+    try {
+      return endpoint.readBool();
+    } catch (e) {
+      print("Failed to read float from endpoint: $e");
+    }
+
+    return false;
+  }
+
   static NodeWidget? from(
       Node node, NodeEndpoint endpoint, Map<String, dynamic> map) {
     if (map['widget'] != null) {
@@ -61,6 +94,8 @@ abstract class NodeWidget extends StatelessWidget {
           return FaderWidget.from(node, endpoint, map);
         case "textbox":
           return TextboxWidget.from(node, endpoint, map);
+        case "scope":
+          return ScopeWidget.from(node, endpoint, map);
         default:
           print("Unknown widget type: $type");
       }
@@ -91,6 +126,11 @@ class Node extends StatelessWidget {
       for (var endpoint in rawNode!.inputs) {
         Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
+        // Skip pin if it's an external endpoint
+        if (annotations.containsKey("external")) {
+          continue;
+        }
+
         // Skip pin creation if a widget was created
         if (annotations.containsKey("widget")) {
           var widget = NodeWidget.from(this, endpoint, annotations);
@@ -115,8 +155,20 @@ class Node extends StatelessWidget {
 
       // Add output pins to list
       for (var endpoint in rawNode!.outputs) {
+        Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
+
         // Skip pin if it's an external endpoint
-        if (endpoint.annotation.contains("external")) {
+        if (annotations.containsKey("external")) {
+          continue;
+        }
+
+        // Skip pin creation if a widget was created
+        if (annotations.containsKey("widget")) {
+          var widget = NodeWidget.from(this, endpoint, annotations);
+          if (widget != null) {
+            widgets.add(widget);
+          }
+
           continue;
         }
 
@@ -232,7 +284,7 @@ class Node extends StatelessWidget {
                       Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(5),
                           child: Text(
                             module.title ?? "",
                             style: TextStyle(
