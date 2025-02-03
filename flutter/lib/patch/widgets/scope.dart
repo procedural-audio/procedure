@@ -59,9 +59,10 @@ class ScopeWidget extends NodeWidget {
   }
 
   @override
-  void tick() {
+  void tick(Duration elapsed) {
     var newValue = readFloat();
     if (newValue != null) {
+      print("new value: $newValue");
       value.value = newValue;
     }
   }

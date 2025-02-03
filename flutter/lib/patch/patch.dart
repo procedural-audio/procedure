@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/bindings/api/cable.dart';
 import 'package:metasampler/patch/module.dart';
@@ -59,7 +60,6 @@ class Patch extends StatefulWidget {
   final PresetInfo info;
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
-  bool shouldTick = true;
 
   static Patch from(PresetInfo info) {
     return Patch(
@@ -88,14 +88,6 @@ class Patch extends StatefulWidget {
     print("Skipping patch save");
     // rawPatch.save(file);
     return true;
-  }
-
-  void disableTick() {
-    shouldTick = false;
-  }
-
-  void enableTick() {
-    shouldTick = true;
   }
 
   void moveTo(double x, double y) {
@@ -133,18 +125,24 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   bool showRightClickMenu = false;
   // late Timer timer;
   final focusNode = FocusNode();
+  late final Ticker _ticker;
 
   @override
   void initState() {
     super.initState();
 
     Plugins.modules.addListener(onModuleListChanged);
+
+    _ticker = createTicker(tick);
+    _ticker.start();
   }
 
   @override
   void dispose() {
     controller.dispose();
     Plugins.modules.removeListener(onModuleListChanged);
+
+    _ticker.dispose();
 
     super.dispose();
   }
@@ -189,14 +187,12 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     }*/
   }
 
-  void tick(Timer t) {
-    /*if (widget.shouldTick) {
-      for (var node in nodes) {
-        for (var widget in node.widgets) {
-          // callTickRecursive(widget);
-        }
+  void tick(Duration elapsed) {
+    for (var node in widget.nodes.value) {
+      for (var widget in node.widgets) {
+        widget.tick(elapsed);
       }
-    }*/
+    }
   }
 
   void moveTo(Offset offset) {

@@ -278,7 +278,8 @@ impl Action {
                     .try_lock()
                     .unwrap();
 
-                // let value = voices.get(*handle).unwrap();
+                let value = voices.get(handle.clone()).unwrap();
+                queue.force_push(value.to_owned());
             }
 
             Action::SendEvents { voices, handle, queue } => {
@@ -361,15 +362,88 @@ impl Action {
     }
 }
 
-pub fn generate_graph_actions(graph: &Graph) -> Vec<Action> {
+pub fn generate_graph_actions(mut graph: Graph) -> Vec<Action> {
     let mut actions = Vec::new();
+
+    // Sort nodes topologically
+    sort_nodes_topologically(&mut graph).unwrap();
 
     // Generate actions for each node
     for node in &graph.nodes {
-        generate_node_actions(&mut actions, node, graph);
+        generate_node_actions(&mut actions, node, &graph);
     }
 
     return actions;
+}
+
+fn sort_nodes_topologically(graph: &mut Graph) -> Result<(), String> {
+    let node_count = graph.nodes.len();
+
+    // Map from node_id to its current index in self.nodes
+    let node_id_to_index: HashMap<u32, usize> = graph.nodes
+        .iter()
+        .enumerate()
+        .map(|(index, node)| (node.id, index))
+        .collect();
+
+    // Initialize in-degree and adjacency list (successors)
+    let mut in_degree = vec![0; node_count];
+    let mut adj = vec![Vec::new(); node_count];
+
+    // Build the graph representation
+    for cable in &graph.cables {
+        let &source_index = node_id_to_index.get(&cable.source.node.id)
+            .ok_or_else(|| format!("Source node_id {} not found in nodes", cable.source.node.id))?;
+        let &dest_index = node_id_to_index.get(&cable.destination.node.id)
+            .ok_or_else(|| format!("Destination node_id {} not found in nodes", cable.destination.node.id))?;
+
+        // Add edge from source to destination
+        adj[source_index].push(dest_index);
+
+        // Increment in-degree of destination
+        in_degree[dest_index] += 1;
+    }
+
+    // Kahn's algorithm to compute topological order
+    let mut stack: Vec<usize> = in_degree.iter()
+        .enumerate()
+        .filter_map(|(index, &deg)| if deg == 0 { Some(index) } else { None })
+        .collect();
+
+    let mut sorted_indices = Vec::with_capacity(node_count);
+
+    while let Some(node_index) = stack.pop() {
+        sorted_indices.push(node_index);
+
+        for &succ_index in &adj[node_index] {
+            in_degree[succ_index] -= 1;
+            if in_degree[succ_index] == 0 {
+                stack.push(succ_index);
+            }
+        }
+    }
+
+    if sorted_indices.len() != node_count {
+        // Graph has at least one cycle
+        return Err("The graph contains a cycle and cannot be topologically sorted.".to_string());
+    }
+    // Create a mapping from old index to new index
+    let mut index_map = vec![0; node_count]; // index_map[old_index] = new_index
+    for (new_index, &old_index) in sorted_indices.iter().enumerate() {
+        index_map[old_index] = new_index;
+    }
+
+    // Rearrange nodes in place without cloning
+    for i in 0..node_count {
+        while index_map[i] != i {
+            let target = index_map[i];
+            graph.nodes.swap(i, target);
+            index_map[i] = index_map[target];
+            index_map[target] = target;
+        }
+    }
+
+    Ok(())
 }
 
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {

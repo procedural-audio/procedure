@@ -27,7 +27,7 @@ abstract class NodeWidget extends StatelessWidget {
   final Node node;
   final NodeEndpoint endpoint;
 
-  void tick() {}
+  void tick(Duration elapsed) {}
 
   void writeFloat(double value) {
     try {

@@ -1,35 +1,11 @@
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::marker::PhantomData;
-use std::process::Output;
-use std::sync::Arc;
-use std::sync::Mutex;
 use std::sync::RwLock;
 
 use crate::api::cable::*;
 use crate::api::endpoint::*;
 use crate::api::node::*;
 
-use cmajor::*;
-
 use flutter_rust_bridge::*;
-use for_generated::futures::SinkExt;
-use performer::endpoints::stream::StreamType;
-use performer::Endpoint;
-use performer::InputEvent;
-use performer::InputStream;
-use performer::InputValue;
-use performer::OutputEvent;
-use performer::OutputStream;
-use performer::OutputValue;
-use performer::Performer;
-
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
-use crossbeam_queue::ArrayQueue;
-
-use super::node;
-use crate::other::voices::*;
-use crate::other::handle::*;
 use crate::other::action::*;
 
 lazy_static::lazy_static! {
@@ -39,13 +15,10 @@ lazy_static::lazy_static! {
 }
 
 #[frb(sync)]
-pub fn set_patch(mut graph: Graph) {
+pub fn set_patch(graph: Graph) {
     println!("Updating patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
-    
-    // Prepare the graph for playback
-    graph.sort_nodes_topologically().unwrap();
 
-    let actions = generate_graph_actions(&graph);
+    let actions = generate_graph_actions(graph);
 
     *ACTIONS.write().unwrap() = Some(actions);
 }
@@ -144,76 +117,5 @@ impl Graph {
     #[frb(sync)]
     pub fn add_node(&mut self, node: &Node) {
         self.nodes.push(node.clone());
-    }
-
-    #[frb(ignore)]
-    fn sort_nodes_topologically(&mut self) -> Result<(), String> {
-        let node_count = self.nodes.len();
-
-        // Map from node_id to its current index in self.nodes
-        let node_id_to_index: HashMap<u32, usize> = self.nodes
-            .iter()
-            .enumerate()
-            .map(|(index, node)| (node.id, index))
-            .collect();
-
-        // Initialize in-degree and adjacency list (successors)
-        let mut in_degree = vec![0; node_count];
-        let mut adj = vec![Vec::new(); node_count];
-
-        // Build the graph representation
-        for cable in &self.cables {
-            let &source_index = node_id_to_index.get(&cable.source.node.id)
-                .ok_or_else(|| format!("Source node_id {} not found in nodes", cable.source.node.id))?;
-            let &dest_index = node_id_to_index.get(&cable.destination.node.id)
-                .ok_or_else(|| format!("Destination node_id {} not found in nodes", cable.destination.node.id))?;
-
-            // Add edge from source to destination
-            adj[source_index].push(dest_index);
-
-            // Increment in-degree of destination
-            in_degree[dest_index] += 1;
-        }
-
-        // Kahn's algorithm to compute topological order
-        let mut stack: Vec<usize> = in_degree.iter()
-            .enumerate()
-            .filter_map(|(index, &deg)| if deg == 0 { Some(index) } else { None })
-            .collect();
-
-        let mut sorted_indices = Vec::with_capacity(node_count);
-
-        while let Some(node_index) = stack.pop() {
-            sorted_indices.push(node_index);
-
-            for &succ_index in &adj[node_index] {
-                in_degree[succ_index] -= 1;
-                if in_degree[succ_index] == 0 {
-                    stack.push(succ_index);
-                }
-            }
-        }
-
-        if sorted_indices.len() != node_count {
-            // Graph has at least one cycle
-            return Err("The graph contains a cycle and cannot be topologically sorted.".to_string());
-        }
-        // Create a mapping from old index to new index
-        let mut index_map = vec![0; node_count]; // index_map[old_index] = new_index
-        for (new_index, &old_index) in sorted_indices.iter().enumerate() {
-            index_map[old_index] = new_index;
-        }
-
-        // Rearrange nodes in place without cloning
-        for i in 0..node_count {
-            while index_map[i] != i {
-                let target = index_map[i];
-                self.nodes.swap(i, target);
-                index_map[i] = index_map[target];
-                index_map[target] = target;
-            }
-        }
-
-        Ok(())
     }
 }

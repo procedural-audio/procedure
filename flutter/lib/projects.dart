@@ -186,7 +186,6 @@ class _Project extends State<Project> {
     await widget.info.save();
     await widget.preset.value.save();
 
-    widget.preset.value.patch.disableTick();
     widget.onUnload();
   }
 
