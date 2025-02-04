@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/bindings/api/cable.dart';
 import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/views/presets.dart';
 
@@ -239,7 +238,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     api.setPatch(graph: graph);
   }
 
-  void addModule(Module module, Offset position) {
+  void addModule(Module module, Offset p) {
+    Offset position = Offset(roundToGrid(p.dx), roundToGrid(p.dy));
     var node = Node(
       module: module,
       patch: widget,

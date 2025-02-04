@@ -45,6 +45,7 @@ impl Node {
 
         let mut engine = match cmajor
             .create_default_engine()
+            .with_sample_rate(44100.0)
             .build()
             .load(&program) {
                 Ok(engine) => engine,
@@ -59,7 +60,7 @@ impl Node {
                     return None;
                 }
             };
-
+        
         let infos: Vec<EndpointInfo> = engine
             .program_details()
             .endpoints()

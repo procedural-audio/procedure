@@ -1,19 +1,12 @@
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::marker::PhantomData;
-use std::process::Output;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::sync::RwLock;
 
-use crate::api::cable::*;
-use crate::api::endpoint::*;
 use crate::api::node::*;
 
 use cmajor::*;
 
 use flutter_rust_bridge::*;
-use for_generated::futures::SinkExt;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -22,7 +15,6 @@ use performer::InputValue;
 use performer::OutputEvent;
 use performer::OutputStream;
 use performer::OutputValue;
-use performer::Performer;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use crossbeam_queue::ArrayQueue;
