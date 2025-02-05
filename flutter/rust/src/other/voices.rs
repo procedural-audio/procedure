@@ -252,21 +252,21 @@ impl ConvertTo<f64> for f32 {
 // Convert f32 to i32
 impl ConvertTo<i32> for f32 {
     fn convert_to(&self) -> i32 {
-        *self as i32
+        self.round() as i32
     }
 }
 
 // Convert f32 to i64
 impl ConvertTo<i64> for f32 {
     fn convert_to(&self) -> i64 {
-        *self as i64
+        self.round() as i64
     }
 }
 
 // Convert f32 to bool
 impl ConvertTo<bool> for f32 {
     fn convert_to(&self) -> bool {
-        *self >= 0.5
+        self.round() as i32 != 0
     }
 }
 
@@ -280,21 +280,21 @@ impl ConvertTo<f32> for f64 {
 // Convert f64 -> i32
 impl ConvertTo<i32> for f64 {
     fn convert_to(&self) -> i32 {
-        *self as i32
+        self.round() as i32
     }
 }
 
 // Convert f64 -> i64
 impl ConvertTo<i64> for f64 {
     fn convert_to(&self) -> i64 {
-        *self as i64
+        self.round() as i64
     }
 }
 
 // Convert f64 -> bool
 impl ConvertTo<bool> for f64 {
     fn convert_to(&self) -> bool {
-        *self >= 0.5
+        self.round() as i64 != 0
     }
 }
 
