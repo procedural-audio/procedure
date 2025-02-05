@@ -35,6 +35,17 @@ pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
     println!("Should re-generate the graph here");
 }
 
+#[frb(sync)]
+pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> bool {
+    match crate::other::action::is_connection_supported(src_node, src_endpoint, dst_node, dst_endpoint) {
+        Ok(_) => true,
+        Err(e) => {
+            println!("Error: {}", e);
+            false
+        },
+    }
+}
+
 #[frb(ignore)]
 #[no_mangle]
 pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *mut u8, size: u32) {

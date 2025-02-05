@@ -9,7 +9,6 @@ import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `sort_nodes_topologically`
 // These types are ignored because they are not used by any `pub` functions: `ACTIONS`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `deref`, `initialize`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare_patch`, `process_patch`
@@ -18,6 +17,17 @@ void setPatch({required Graph graph}) =>
     RustLib.instance.api.crateApiGraphSetPatch(graph: graph);
 
 void clearPatch() => RustLib.instance.api.crateApiGraphClearPatch();
+
+bool isConnectionSupported(
+        {required Node srcNode,
+        required NodeEndpoint srcEndpoint,
+        required Node dstNode,
+        required NodeEndpoint dstEndpoint}) =>
+    RustLib.instance.api.crateApiGraphIsConnectionSupported(
+        srcNode: srcNode,
+        srcEndpoint: srcEndpoint,
+        dstNode: dstNode,
+        dstEndpoint: dstEndpoint);
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>
 abstract class Graph implements RustOpaqueInterface {

@@ -1,14 +1,10 @@
-use std::{f32::consts::E, primitive, sync::{Arc, Mutex}};
+use std::sync::Arc;
 
-use cmajor::{endpoint::{self, EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
+use cmajor::{endpoint::{EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
 use cmajor::value::Value;
 use crossbeam_queue::ArrayQueue;
-use crossbeam::atomic::AtomicCell;
-
-use flutter_rust_bridge::*;
 
 #[derive(Copy, Clone, PartialEq)]
-#[frb(ignore)]
 pub enum InputStreamHandle {
     MonoFloat32(Endpoint<InputStream<f32>>),
     StereoFloat32(Endpoint<InputStream<[f32; 2]>>),
@@ -49,7 +45,6 @@ impl InputStreamHandle {
 }
 
 #[derive(Copy, Clone, PartialEq)]
-#[frb(ignore)]
 pub enum OutputStreamHandle {
     MonoFloat32(Endpoint<OutputStream<f32>>),
     StereoFloat32(Endpoint<OutputStream<[f32; 2]>>),
@@ -90,7 +85,6 @@ impl OutputStreamHandle {
 }
 
 #[derive(Copy, Clone, PartialEq)]
-#[frb(ignore)]
 pub enum InputValueHandle {
     Float32(Endpoint<InputValue<f32>>),
     Float64(Endpoint<InputValue<f64>>),
@@ -126,7 +120,9 @@ impl InputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Err("unsupported endpoint type bool value"),
+            Primitive::Bool => Self::Bool(
+                engine.endpoint(id).unwrap()
+            ),
             Primitive::Void => return Err("unsupported endpoint type void value"),
         };
 
@@ -135,7 +131,6 @@ impl InputValueHandle {
 }
 
 #[derive(Clone)]
-#[frb(ignore)]
 pub enum InputWidgetHandle {
     Event {
         handle: Endpoint<InputEvent>,
@@ -182,7 +177,6 @@ impl PartialEq for InputWidgetHandle {
 }
 
 #[derive(Copy, Clone, PartialEq)]
-#[frb(ignore)]
 pub enum OutputValueHandle {
     Float32(Endpoint<OutputValue<f32>>),
     Float64(Endpoint<OutputValue<f64>>),
@@ -218,7 +212,9 @@ impl OutputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Err("unsupported endpoint type bool value"),
+            Primitive::Bool => Self::Bool(
+                engine.endpoint(id).unwrap()
+            ),
             Primitive::Void => return Err("unsupported endpoint type void value"),
         };
 
@@ -227,7 +223,6 @@ impl OutputValueHandle {
 }
 
 #[derive(Clone)]
-#[frb(ignore)]
 pub enum OutputWidgetHandle {
     Event {
         handle: Endpoint<OutputEvent>,
@@ -274,7 +269,6 @@ impl PartialEq for OutputWidgetHandle {
 }
 
 #[derive(PartialEq, Clone)]
-#[frb(ignore)]
 pub enum InputHandle {
     Stream(InputStreamHandle),
     Value(InputValueHandle),
@@ -314,7 +308,6 @@ impl InputHandle {
 }
 
 #[derive(PartialEq, Clone)]
-#[frb(ignore)]
 pub enum OutputHandle {
     Stream(OutputStreamHandle),
     Value(OutputValueHandle),
@@ -354,7 +347,6 @@ impl OutputHandle {
 }
 
 #[derive(Clone)]
-#[frb(ignore)]
 pub enum EndpointHandle {
     Input(InputHandle),
     Output(OutputHandle),
@@ -369,7 +361,6 @@ pub enum EndpointHandle {
 }
 
 impl EndpointHandle {
-    #[frb(ignore)]
     pub fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Result<Self, &'static str> {
         // Get the endpoint annotation
         let annotation = info.annotation();
@@ -418,7 +409,6 @@ impl PartialEq for EndpointHandle {
             (EndpointHandle::Output(a), EndpointHandle::Output(b)) => a == b,
             (EndpointHandle::ExternalInput { handle, .. }, EndpointHandle::ExternalInput { handle: other, .. }) => handle == other,
             (EndpointHandle::ExternalOutput { handle, .. }, EndpointHandle::ExternalOutput { handle: other, .. }) => handle == other,
-            // (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
             _ => false
         }
     }

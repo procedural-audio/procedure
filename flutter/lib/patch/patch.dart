@@ -209,6 +209,9 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   }
 
   void updatePlayback() {
+    // Update the UI
+    setState(() {});
+
     // Create a new graph
     var graph = api.Graph.new();
 
@@ -243,14 +246,8 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     var node = Node(
       module: module,
       patch: widget,
-      onAddConnector: (start, end) {
-        addConnector(start, end);
-        setState(() {});
-      },
-      onRemoveConnections: (pin) {
-        removeConnectionsTo(pin);
-        setState(() {});
-      },
+      onAddConnector: addConnector,
+      onRemoveConnections: removeConnectionsTo,
       position: position,
     );
 
@@ -267,16 +264,28 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
       patch: widget,
     );
 
-    widget.connectors.value = [...widget.connectors.value, connector];
-    updatePlayback();
+    if (api.isConnectionSupported(
+      srcNode: start.node.rawNode!,
+      srcEndpoint: start.endpoint,
+      dstNode: end.node.rawNode!,
+      dstEndpoint: end.endpoint,
+    )) {
+      widget.connectors.value = [...widget.connectors.value, connector];
+      updatePlayback();
+    } else {
+      print("Connection not supported");
+    }
   }
 
   void removeConnectionsTo(Pin pin) {
-    widget.connectors.value.removeWhere(
-      (e) => e.start == pin || e.end == pin,
-    );
+    var filtered = widget.connectors.value
+        .where((e) => e.start != pin && e.end != pin)
+        .toList();
 
-    updatePlayback();
+    if (filtered.length != widget.connectors.value.length) {
+      widget.connectors.value = filtered;
+      updatePlayback();
+    }
   }
 
   @override

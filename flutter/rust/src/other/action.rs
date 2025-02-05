@@ -91,7 +91,20 @@ impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
     }
 }
 
-#[frb(ignore)]
+struct ClearValue<T> {
+    voices: Arc<Mutex<Voices>>,
+    handle: Endpoint<InputValue<T>>,
+}
+
+impl<T: Copy + Default + SetInputValue> ExecuteAction for ClearValue<T> {
+    fn execute(&mut self, _num_frames: usize) {
+        self.voices
+            .try_lock()
+            .unwrap()
+            .set(self.handle, T::default());
+    }
+}
+
 struct CopyValue<T> {
     src_voices: Arc<Mutex<Voices>>,
     src_handle: Endpoint<OutputValue<T>>,
@@ -112,6 +125,31 @@ where
             .unwrap();
 
         src.copy_values_to(self.src_handle, &mut dst, self.dst_handle);
+    }
+}
+
+struct CopyConvertValue<A, B> {
+    src_voices: Arc<Mutex<Voices>>,
+    src_handle: Endpoint<OutputValue<A>>,
+    dst_voices: Arc<Mutex<Voices>>,
+    dst_handle: Endpoint<InputValue<B>>,
+}
+
+impl<A, B> ExecuteAction for CopyConvertValue<A, B>
+where
+    B: Copy + SetInputValue, A: Copy + for<'a> GetOutputValue<Output<'a> = A> + ConvertTo<B>,
+{
+    fn execute(&mut self, num_frames: usize) {
+        let mut src = self.src_voices
+            .try_lock()
+            .unwrap();
+        let mut dst = self.dst_voices
+            .try_lock()
+            .unwrap();
+
+        let a = src.get(self.src_handle);
+        let b = a.convert_to();
+        dst.set(self.dst_handle, b);
     }
 }
 
@@ -186,6 +224,39 @@ pub enum Action {
     CopyValueInt64(CopyValue<i64>),
     CopyValueBool(CopyValue<bool>),
 
+    // Convert values
+    CopyValueFloat32ToFloat64(CopyConvertValue<f32, f64>),
+    CopyValueFloat32ToInt32(CopyConvertValue<f32, i32>),
+    CopyValueFloat32ToInt64(CopyConvertValue<f32, i64>),
+    CopyValueFloat32ToBool(CopyConvertValue<f32, bool>),
+
+    CopyValueFloat64ToFloat32(CopyConvertValue<f64, f32>),
+    CopyValueFloat64ToInt32(CopyConvertValue<f64, i32>),
+    CopyValueFloat64ToInt64(CopyConvertValue<f64, i64>),
+    CopyValueFloat64ToBool(CopyConvertValue<f64, bool>),
+
+    CopyValueInt32ToFloat32(CopyConvertValue<i32, f32>),
+    CopyValueInt32ToFloat64(CopyConvertValue<i32, f64>),
+    CopyValueInt32ToInt64(CopyConvertValue<i32, i64>),
+    CopyValueInt32ToBool(CopyConvertValue<i32, bool>),
+
+    CopyValueInt64ToFloat32(CopyConvertValue<i64, f32>),
+    CopyValueInt64ToFloat64(CopyConvertValue<i64, f64>),
+    CopyValueInt64ToInt32(CopyConvertValue<i64, i32>),
+    CopyValueInt64ToBool(CopyConvertValue<i64, bool>),
+
+    CopyValueBoolToFloat32(CopyConvertValue<bool, f32>),
+    CopyValueBoolToFloat64(CopyConvertValue<bool, f64>),
+    CopyValueBoolToInt32(CopyConvertValue<bool, i32>),
+    CopyValueBoolToInt64(CopyConvertValue<bool, i64>),
+
+    // Clear values
+    ClearValueFloat32(ClearValue<f32>),
+    ClearValueFloat64(ClearValue<f64>),
+    ClearValueInt32(ClearValue<i32>),
+    ClearValueInt64(ClearValue<i64>),
+    ClearValueBool(ClearValue<bool>),
+
     // Output streams
     InputStreamMonoFloat32 {
         voices: Arc<Mutex<Voices>>,
@@ -231,8 +302,6 @@ impl Action {
             // Copy streams
             Action::CopyStreamMonoFloat32(action) => action.execute(num_frames),
             Action::CopyStreamStereoFloat32(action) => action.execute(num_frames),
-
-            // Convert copy streams
             Action::CopyStreamMonoToStereoFloat32(action) => action.execute(num_frames),
             Action::CopyStreamStereoToMonoFloat32(action) => action.execute(num_frames),
 
@@ -290,6 +359,39 @@ impl Action {
             Action::CopyValueInt32(action) => action.execute(num_frames),
             Action::CopyValueInt64(action) => action.execute(num_frames),
             Action::CopyValueBool(action) => action.execute(num_frames),
+
+            // Convert values
+            Action::CopyValueFloat32ToFloat64(action) => action.execute(num_frames),
+            Action::CopyValueFloat32ToInt32(action) => action.execute(num_frames),
+            Action::CopyValueFloat32ToInt64(action) => action.execute(num_frames),
+            Action::CopyValueFloat32ToBool(action) => action.execute(num_frames),
+
+            Action::CopyValueFloat64ToFloat32(action) => action.execute(num_frames),
+            Action::CopyValueFloat64ToInt32(action) => action.execute(num_frames),
+            Action::CopyValueFloat64ToInt64(action) => action.execute(num_frames),
+            Action::CopyValueFloat64ToBool(action) => action.execute(num_frames),
+
+            Action::CopyValueInt32ToFloat32(action) => action.execute(num_frames),
+            Action::CopyValueInt32ToFloat64(action) => action.execute(num_frames),
+            Action::CopyValueInt32ToInt64(action) => action.execute(num_frames),
+            Action::CopyValueInt32ToBool(action) => action.execute(num_frames),
+
+            Action::CopyValueInt64ToFloat32(action) => action.execute(num_frames),
+            Action::CopyValueInt64ToFloat64(action) => action.execute(num_frames),
+            Action::CopyValueInt64ToInt32(action) => action.execute(num_frames),
+            Action::CopyValueInt64ToBool(action) => action.execute(num_frames),
+
+            Action::CopyValueBoolToFloat32(action) => action.execute(num_frames),
+            Action::CopyValueBoolToFloat64(action) => action.execute(num_frames),
+            Action::CopyValueBoolToInt32(action) => action.execute(num_frames),
+            Action::CopyValueBoolToInt64(action) => action.execute(num_frames),
+
+            // Clear values
+            Action::ClearValueFloat32(action) => action.execute(num_frames),
+            Action::ClearValueFloat64(action) => action.execute(num_frames),
+            Action::ClearValueInt32(action) => action.execute(num_frames),
+            Action::ClearValueInt64(action) => action.execute(num_frames),
+            Action::ClearValueBool(action) => action.execute(num_frames),
 
             // Input stream
             Action::InputStreamMonoFloat32 { voices, handle, channel } => {
@@ -351,6 +453,16 @@ impl Action {
                 }
             }
         }
+    }
+}
+
+pub struct Actions {
+    actions: Vec<Action>
+}
+
+impl Actions {
+    pub fn from(graph: Graph) {
+        // TODO
     }
 }
 
@@ -441,41 +553,55 @@ fn sort_nodes_topologically(graph: &mut Graph) -> Result<(), String> {
 fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Graph) {
     // Copy node input data
     for endpoint in dst_node.get_inputs().iter() {
-        let mut filled = false;
+        // Generate external input actions
+        if let EndpointHandle::ExternalInput { handle, channel } = &endpoint.handle() {
+            generate_external_input_actions(actions, dst_node, handle.clone(), *channel);
+            continue;
+        }
 
         // Generate input actions
         if let EndpointHandle::Input(handle) = &endpoint.handle() {
-            generate_input_endpoint_actions(actions, dst_node, &handle);
-        }
+            if let InputHandle::Widget(widget) = handle {
+                generate_widget_endpoint_actions(actions, dst_node, widget);
+                continue;
+            }
 
-        // Generate connection actions
-        graph
-            .cables
-            .iter()
-            .filter(| cable | &cable.destination.node == dst_node && &cable.destination.endpoint == endpoint)
-            .for_each(| cable | {
-                println!(" - Copy {} to {}", cable.source.node.id, dst_node.id);
+            let mut filled = false;
 
-                generate_connection_actions(
-                    actions,
-                    cable.source.node.voices(),
-                    cable.source.endpoint.handle().clone(),
-                    dst_node.voices(),
-                    endpoint.handle().clone()
-                );
+            // Generate connection actions
+            graph
+                .cables
+                .iter()
+                .filter(| cable | &cable.destination.node == dst_node && &cable.destination.endpoint == endpoint)
+                .for_each(| cable | {
+                    println!(" - Copy {} to {}", cable.source.node.id, dst_node.id);
 
-                filled = true;
-            });
+                    let src = cable.source.endpoint.handle();
 
-        // Generate actions to fill missing input streams
-        if !filled {
-            println!(" - Fill input of node {}", dst_node.id);
-            generate_clear_stream_actions(actions, dst_node.voices(), endpoint.handle().clone());
+                    if let EndpointHandle::Output(src) = src {
+                        let _ = generate_connection_actions(
+                            actions,
+                            cable.source.node.voices(),
+                            src.clone(),
+                            dst_node.voices(),
+                            handle.clone(),
+                        );
+                    } else {
+                        println!("Connection is not from an output to an input");
+                    }
+
+                    filled = true;
+                });
+
+            // Generate actions to fill missing input streams
+            if !filled {
+                println!(" - Clear input of node {}", dst_node.id);
+                if let EndpointHandle::Input(handle) = &endpoint.handle() {
+                    generate_clear_actions(actions, dst_node.voices(), handle.clone());
+                }
+            }
         }
     }
-
-    // Generate any external input actions
-    generate_external_input_actions(actions, dst_node);
 
     // Generate actions for each node advance
     println!(" - Advance node {}", dst_node.id);
@@ -492,34 +618,29 @@ fn generate_node_actions(actions: &mut Vec<Action>, dst_node: &Node, graph: &Gra
     generate_external_output_actions(actions, dst_node);
 }
 
-fn generate_input_endpoint_actions(actions: &mut Vec<Action>, node: &Node, handle: &InputHandle) {
+fn generate_widget_endpoint_actions(actions: &mut Vec<Action>, node: &Node, handle: &InputWidgetHandle) {
     match handle {
-        InputHandle::Widget(handle) => {
-            match handle {
-                InputWidgetHandle::Value { handle, queue } => {
-                    println!(" - Recieve widget value updates for node {}", node.id);
-                    actions.push(
-                        Action::ReceiveValue {
-                            voices: node.voices(),
-                            handle: handle.clone(),
-                            queue: queue.clone()
-                        }
-                    );
-                },
-                InputWidgetHandle::Event { handle, queue } => {
-                    println!(" - Recieve widget event updates for node {}", node.id);
-                    actions.push(
-                        Action::ReceiveEvents {
-                            voices: node.voices(),
-                            handle: handle.clone(),
-                            queue: queue.clone()
-                        }
-                    );
+        InputWidgetHandle::Value { handle, queue } => {
+            println!(" - Send widget value updates for node {}", node.id);
+            actions.push(
+                Action::ReceiveValue {
+                    voices: node.voices(),
+                    handle: handle.clone(),
+                    queue: queue.clone()
                 }
-            };
+            );
+        },
+        InputWidgetHandle::Event { handle, queue } => {
+            println!(" - Send widget event updates for node {}", node.id);
+            actions.push(
+                Action::ReceiveEvents {
+                    voices: node.voices(),
+                    handle: handle.clone(),
+                    queue: queue.clone()
+                }
+            );
         }
-        _ => ()
-    }
+    };
 }
 
 fn generate_output_endpoint_actions(actions: &mut Vec<Action>, node: &Node, handle: &OutputHandle) {
@@ -552,78 +673,125 @@ fn generate_output_endpoint_actions(actions: &mut Vec<Action>, node: &Node, hand
     }
 }
 
-fn generate_clear_stream_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>, handle: EndpointHandle) {
+fn generate_clear_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>, handle: InputHandle) {
     match handle {
-        EndpointHandle::Input(handle) => {
-            if let InputHandle::Stream(handle) = handle {
-                match handle {
-                    InputStreamHandle::MonoFloat32(handle) => {
-                        let buffer = vec![0.0; 1024];
-                        actions.push(
-                            Action::ClearStreamMonoFloat32(
-                                ClearStream {
-                                    voices,
-                                    handle,
-                                    buffer
-                                }
-                            )
-                        );
-                    },
-                    InputStreamHandle::StereoFloat32(handle) => {
-                        let buffer = vec![[0.0; 2]; 1024];
-                        actions.push(
-                            Action::ClearStreamStereoFloat32(
-                                ClearStream {
-                                    voices,
-                                    handle,
-                                    buffer
-                                }
-                            )
-                        );
-                    },
-                }
+        InputHandle::Stream(handle) => {
+            match handle {
+                InputStreamHandle::MonoFloat32(handle) => {
+                    let buffer = vec![0.0; 1024];
+                    actions.push(
+                        Action::ClearStreamMonoFloat32(
+                            ClearStream {
+                                voices,
+                                handle,
+                                buffer
+                            }
+                        )
+                    );
+                },
+                InputStreamHandle::StereoFloat32(handle) => {
+                    let buffer = vec![[0.0; 2]; 1024];
+                    actions.push(
+                        Action::ClearStreamStereoFloat32(
+                            ClearStream {
+                                voices,
+                                handle,
+                                buffer
+                            }
+                        )
+                    );
+                },
+            }
+        },
+        InputHandle::Value(handle) => {
+            match handle {
+                InputValueHandle::Float32(handle) => {
+                    actions.push(
+                        Action::ClearValueFloat32(
+                            ClearValue {
+                                voices,
+                                handle
+                            }
+                        )
+                    );
+                },
+                InputValueHandle::Float64(handle) => {
+                    actions.push(
+                        Action::ClearValueFloat64(
+                            ClearValue {
+                                voices,
+                                handle
+                            }
+                        )
+                    );
+                },
+                InputValueHandle::Int32(handle) => {
+                    actions.push(
+                        Action::ClearValueInt32(
+                            ClearValue {
+                                voices,
+                                handle
+                            }
+                        )
+                    );
+                },
+                InputValueHandle::Int64(handle) => {
+                    actions.push(
+                        Action::ClearValueInt64(
+                            ClearValue {
+                                voices,
+                                handle
+                            }
+                        )
+                    );
+                },
+                InputValueHandle::Bool(handle) => {
+                    actions.push(
+                        Action::ClearValueBool(
+                            ClearValue {
+                                voices,
+                                handle
+                            }
+                        )
+                    );
+                },
             }
         },
         _ => ()
     }
 }
 
-fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node) {
-    for endpoint in &node.get_inputs() {
-        match &endpoint.handle() {
-            EndpointHandle::ExternalInput { handle, channel } => match handle {
-                InputHandle::Stream(handle) => {
-                    match handle {
-                        InputStreamHandle::MonoFloat32(handle) => {
-                            println!(" - External mono input channel {} to node {}", channel, node.id);
-                            actions.push(
-                                Action::InputStreamMonoFloat32 {
-                                    voices: node.voices(),
-                                    handle: *handle,
-                                    channel: *channel
-                                }
-                            );
-                        },
-                        InputStreamHandle::StereoFloat32(handle) => {
-                            println!(" - External stereo input channel {} to node {}", channel, node.id);
-                            let buffer = vec![[0.0, 0.0]; 1024];
-                            actions.push(
-                                Action::InputStreamStereoFloat32 {
-                                    voices: node.voices(),
-                                    handle: *handle,
-                                    buffer,
-                                    channel: *channel
-                                }
-                            );
+fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node, handle: InputHandle, channel: usize) {
+    match handle {
+        InputHandle::Stream(handle) => {
+            match handle {
+                InputStreamHandle::MonoFloat32(handle) => {
+                    println!(" - External mono input channel {} to node {}", channel, node.id);
+                    actions.push(
+                        Action::InputStreamMonoFloat32 {
+                            voices: node.voices(),
+                            handle,
+                            channel,
                         }
-                    }
+                    );
+                },
+                InputStreamHandle::StereoFloat32(handle) => {
+                    println!(" - External stereo input channel {} to node {}", channel, node.id);
+                    let buffer = vec![[0.0, 0.0]; 1024];
+                    actions.push(
+                        Action::InputStreamStereoFloat32 {
+                            voices: node.voices(),
+                            handle,
+                            buffer,
+                            channel,
+                        }
+                    );
                 }
-                InputHandle::Widget(_) => println!(" - External widgets are not supported"),
-                InputHandle::Event(_) => println!(" - External events are not supported"),
-                InputHandle::Value(_) => println!(" - External values are not supported")
             }
-            _ => ()
         }
+        InputHandle::Widget(_) => println!(" - External widgets are not supported"),
+        InputHandle::Event(_) => println!(" - External events are not supported"),
+        InputHandle::Value(_) => println!(" - External values are not supported")
     }
 }
 
@@ -666,147 +834,136 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
     }
 }
 
+use crate::api::endpoint::NodeEndpoint;
+
+pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> Result<(), &'static str> {
+    let mut actions = Vec::new();
+    let src_voices = src_node.voices();
+    let src_handle = src_endpoint.handle();
+    let dst_voices = dst_node.voices();
+    let dst_handle = dst_endpoint.handle();
+
+    if let (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) = (src_handle, dst_handle) {
+        return generate_connection_actions(&mut actions, src_voices, src_handle.clone(), dst_voices, dst_handle.clone());
+    } else {
+        return Err("Connection not from an output to an input");
+    }
+}
+
 fn generate_connection_actions(
     actions: &mut Vec<Action>,
     src_voices: Arc<Mutex<Voices>>,
-    src_handle: EndpointHandle,
+    src_handle: OutputHandle,
     dst_voices: Arc<Mutex<Voices>>,
-    dst_handle: EndpointHandle) {
+    dst_handle: InputHandle) -> Result<(), &'static str> {
 
     let max_frames: usize = 1024;
 
     match (src_handle, dst_handle) {
-        (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) => {
-            match (src_handle, dst_handle) {
-                (OutputHandle::Stream(src), InputHandle::Stream(dst)) => {
-                    match (src, dst) {
-                        (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::MonoFloat32(dst_handle)) => {
-                            let buffer = vec![0.0; max_frames];
-                            actions.push(
-                                Action::CopyStreamMonoFloat32(
-                                    CopyStream {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                        buffer
-                                    }
-                                )
-                            );
-                        },
-                        (OutputStreamHandle::StereoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => {
-                            let buffer = vec![[0.0; 2]; max_frames];
-                            actions.push(
-                                Action::CopyStreamStereoFloat32(
-                                    CopyStream {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                        buffer
-                                    }
-                                )
-                            );
-                        },
-                        (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => {
-                            let src_buffer = vec![0.0; max_frames];
-                            let dst_buffer = vec![[0.0; 2]; max_frames];
-                            actions.push(
-                                Action::CopyStreamMonoToStereoFloat32(
-                                    ConvertCopyStream {
-                                        src_voices,
-                                        src_handle,
-                                        src_buffer,
-                                        dst_voices,
-                                        dst_handle,
-                                        dst_buffer,
-                                    }
-                                )
-                            );
-                        },
-                        _ => println!("Connection not between streams of the same type")
-                    }
-                },
-                (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => {
+        (OutputHandle::Stream(src), InputHandle::Stream(dst)) => {
+            match (src, dst) {
+                (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::MonoFloat32(dst_handle)) => {
+                    let buffer = vec![0.0; max_frames];
                     actions.push(
-                        Action::CopyEvent(
-                            CopyEvent {
+                        Action::CopyStreamMonoFloat32(
+                            CopyStream {
                                 src_voices,
                                 src_handle,
                                 dst_voices,
                                 dst_handle,
+                                buffer
                             }
                         )
                     );
                 },
-                (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => {
-                    match (src_handle, dst_handle) {
-                        (OutputValueHandle::Float32(src_handle), InputValueHandle::Float32(dst_handle)) => {
-                            actions.push(
-                                Action::CopyValueFloat32(
-                                    CopyValue {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                    }
-                                )
-                            );
-                        },
-                        (OutputValueHandle::Float64(src_handle), InputValueHandle::Float64(dst_handle)) => {
-                            actions.push(
-                                Action::CopyValueFloat64(
-                                    CopyValue {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                    }
-                                )
-                            );
-                        },
-                        (OutputValueHandle::Int32(src_handle), InputValueHandle::Int32(dst_handle)) => {
-                            actions.push(
-                                Action::CopyValueInt32(
-                                    CopyValue {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                    }
-                                )
-                            );
-                        },
-                        (OutputValueHandle::Int64(src_handle), InputValueHandle::Int64(dst_handle)) => {
-                            actions.push(
-                                Action::CopyValueInt64(
-                                    CopyValue {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                    }
-                                )
-                            );
-                        },
-                        (OutputValueHandle::Bool(src_handle), InputValueHandle::Bool(dst_handle)) => {
-                            actions.push(
-                                Action::CopyValueBool(
-                                    CopyValue {
-                                        src_voices,
-                                        src_handle,
-                                        dst_voices,
-                                        dst_handle,
-                                    }
-                                )
-                            );
-                        },
-                        _ => println!("Connection not between values of the same type")
-                    }
+                (OutputStreamHandle::StereoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => {
+                    let buffer = vec![[0.0; 2]; max_frames];
+                    actions.push(
+                        Action::CopyStreamStereoFloat32(
+                            CopyStream {
+                                src_voices,
+                                src_handle,
+                                dst_voices,
+                                dst_handle,
+                                buffer
+                            }
+                        )
+                    );
                 },
-                _ => println!("Connection not between compatible endpoints")
+                (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => {
+                    let src_buffer = vec![0.0; max_frames];
+                    let dst_buffer = vec![[0.0; 2]; max_frames];
+                    actions.push(
+                        Action::CopyStreamMonoToStereoFloat32(
+                            ConvertCopyStream {
+                                src_voices,
+                                src_handle,
+                                src_buffer,
+                                dst_voices,
+                                dst_handle,
+                                dst_buffer,
+                            }
+                        )
+                    );
+                },
+                _ => return Err("Endpoints streams types are not compatible")
             }
         },
-        _ => println!("Connection not from an output to an input")
-    }
+        (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => {
+            actions.push(
+                Action::CopyEvent(
+                    CopyEvent {
+                        src_voices,
+                        src_handle,
+                        dst_voices,
+                        dst_handle,
+                    }
+                )
+            );
+        },
+        (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => {
+            let action = match src_handle {
+                OutputValueHandle::Float32(src_handle) => match dst_handle {
+                    InputValueHandle::Float32(dst_handle) => Action::CopyValueFloat32( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Float64(dst_handle) => Action::CopyValueFloat32ToFloat64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat32ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                }
+                OutputValueHandle::Float64(src_handle) => match dst_handle {
+                    InputValueHandle::Float32(dst_handle) => Action::CopyValueFloat64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Float64(dst_handle) => Action::CopyValueFloat64( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat64ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                }
+                OutputValueHandle::Int32(src_handle) => match dst_handle {
+                    InputValueHandle::Float32(dst_handle) => Action::CopyValueInt32ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Float64(dst_handle) => Action::CopyValueInt32ToFloat64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int32(dst_handle) => Action::CopyValueInt32( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int64(dst_handle) => Action::CopyValueInt32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Bool(dst_handle) => Action::CopyValueInt32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                }
+                OutputValueHandle::Int64(src_handle) => match dst_handle {
+                    InputValueHandle::Float32(dst_handle) => Action::CopyValueInt64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Float64(dst_handle) => Action::CopyValueInt64ToFloat64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int32(dst_handle) => Action::CopyValueInt64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int64(dst_handle) => Action::CopyValueInt64( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Bool(dst_handle) => Action::CopyValueInt64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                }
+                OutputValueHandle::Bool(src_handle) => match dst_handle {
+                    InputValueHandle::Float32(dst_handle) => Action::CopyValueBoolToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Float64(dst_handle) => Action::CopyValueBoolToFloat64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int32(dst_handle) => Action::CopyValueBoolToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Int64(dst_handle) => Action::CopyValueBoolToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Bool(dst_handle) => Action::CopyValueBool( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                }
+            };
+
+            actions.push(action);
+        },
+        _ => return Err("Connection not between compatible endpoints")
+    };
+
+    Ok(())
 }

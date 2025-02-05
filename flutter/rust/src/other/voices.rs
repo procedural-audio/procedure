@@ -221,22 +221,163 @@ pub trait ConvertTo<T> {
     fn convert_to(&self) -> T;
 }
 
-// Convert mono samples to stereo
+// Convert mono to stereo
 impl<T: Copy> ConvertTo<[T; 2]> for T {
     fn convert_to(&self) -> [T; 2] {
         [*self, *self]
     }
 }
 
-// Convert stereo samples to mono
+// Convert stereo to mono
 impl ConvertTo<f32> for [f32; 2] {
     fn convert_to(&self) -> f32 {
         (self[0] + self[1]) * 0.5
     }
 }
 
+// Convert stereo to mono
 impl ConvertTo<f64> for [f64; 2] {
     fn convert_to(&self) -> f64 {
         (self[0] + self[1]) * 0.5
+    }
+}
+
+// Convert f32 to f64
+impl ConvertTo<f64> for f32 {
+    fn convert_to(&self) -> f64 {
+        *self as f64
+    }
+}
+
+// Convert f32 to i32
+impl ConvertTo<i32> for f32 {
+    fn convert_to(&self) -> i32 {
+        *self as i32
+    }
+}
+
+// Convert f32 to i64
+impl ConvertTo<i64> for f32 {
+    fn convert_to(&self) -> i64 {
+        *self as i64
+    }
+}
+
+// Convert f32 to bool
+impl ConvertTo<bool> for f32 {
+    fn convert_to(&self) -> bool {
+        *self >= 0.5
+    }
+}
+
+// Convert f64 -> f32
+impl ConvertTo<f32> for f64 {
+    fn convert_to(&self) -> f32 {
+        *self as f32
+    }
+}
+
+// Convert f64 -> i32
+impl ConvertTo<i32> for f64 {
+    fn convert_to(&self) -> i32 {
+        *self as i32
+    }
+}
+
+// Convert f64 -> i64
+impl ConvertTo<i64> for f64 {
+    fn convert_to(&self) -> i64 {
+        *self as i64
+    }
+}
+
+// Convert f64 -> bool
+impl ConvertTo<bool> for f64 {
+    fn convert_to(&self) -> bool {
+        *self >= 0.5
+    }
+}
+
+// Convert i32 -> f32
+impl ConvertTo<f32> for i32 {
+    fn convert_to(&self) -> f32 {
+        *self as f32
+    }
+}
+
+// Convert i32 -> f64
+impl ConvertTo<f64> for i32 {
+    fn convert_to(&self) -> f64 {
+        *self as f64
+    }
+}
+
+// Convert i32 -> i64
+impl ConvertTo<i64> for i32 {
+    fn convert_to(&self) -> i64 {
+        *self as i64
+    }
+}
+
+// Convert i32 -> bool
+impl ConvertTo<bool> for i32 {
+    fn convert_to(&self) -> bool {
+        *self != 0
+    }
+}
+
+// Convert i64 -> f32
+impl ConvertTo<f32> for i64 {
+    fn convert_to(&self) -> f32 {
+        *self as f32
+    }
+}
+
+// Convert i64 -> f64
+impl ConvertTo<f64> for i64 {
+    fn convert_to(&self) -> f64 {
+        *self as f64
+    }
+}
+
+// Convert i64 -> i32
+impl ConvertTo<i32> for i64 {
+    fn convert_to(&self) -> i32 {
+        *self as i32
+    }
+}
+
+// Convert i64 -> bool
+impl ConvertTo<bool> for i64 {
+    fn convert_to(&self) -> bool {
+        *self != 0
+    }
+}
+
+// Convert bool to f32
+impl ConvertTo<f32> for bool {
+    fn convert_to(&self) -> f32 {
+        if *self { 1.0 } else { 0.0 }
+    }
+}
+
+// Convert bool -> f64
+impl ConvertTo<f64> for bool {
+    fn convert_to(&self) -> f64 {
+        if *self { 1.0 } else { 0.0 }
+    }
+}
+
+// Convert bool to i32
+impl ConvertTo<i32> for bool {
+    fn convert_to(&self) -> i32 {
+        if *self { 1 } else { 0 }
+    }
+}
+
+// Convert bool -> i64
+impl ConvertTo<i64> for bool {
+    fn convert_to(&self) -> i64 {
+        if *self { 1 } else { 0 }
     }
 }
