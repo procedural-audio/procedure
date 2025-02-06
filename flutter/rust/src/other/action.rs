@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::f32::consts::E;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -279,7 +280,7 @@ pub enum Action {
         handle: Endpoint<OutputStream<[f32; 2]>>,
         buffer: Vec<[f32; 2]>,
         channel: usize,
-    }
+    },
 }
 
 impl Action {
@@ -639,7 +640,8 @@ fn generate_widget_endpoint_actions(actions: &mut Vec<Action>, node: &Node, hand
                     queue: queue.clone()
                 }
             );
-        }
+        },
+        InputWidgetHandle::Err(e) => ()
     };
 }
 
@@ -666,7 +668,8 @@ fn generate_output_endpoint_actions(actions: &mut Vec<Action>, node: &Node, hand
                             queue: queue.clone()
                         }
                     );
-                }
+                },
+                OutputWidgetHandle::Err(e) => ()
             };
         }
         _ => ()
@@ -701,6 +704,7 @@ fn generate_clear_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>,
                         )
                     );
                 },
+                InputStreamHandle::Err(_) => ()
             }
         },
         InputHandle::Value(handle) => {
@@ -755,6 +759,7 @@ fn generate_clear_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>,
                         )
                     );
                 },
+                InputValueHandle::Err(e) => ()
             }
         },
         _ => ()
@@ -786,7 +791,8 @@ fn generate_external_input_actions(actions: &mut Vec<Action>, node: &Node, handl
                             channel,
                         }
                     );
-                }
+                },
+                InputStreamHandle::Err(_) => ()
             }
         }
         InputHandle::Widget(_) => println!(" - External widgets are not supported"),
@@ -823,6 +829,7 @@ fn generate_external_output_actions(actions: &mut Vec<Action>, node: &Node) {
                                 }
                             );
                         }
+                        OutputStreamHandle::Err(e) => ()
                     }
                 }
                 OutputHandle::Widget(_) => println!(" - External widgets are not supported"),
@@ -929,6 +936,7 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat32ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Err(e) => return Err(e)
                 }
                 OutputValueHandle::Float64(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueFloat64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -936,6 +944,7 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat64ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Err(e) => return Err(e)
                 }
                 OutputValueHandle::Int32(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueInt32ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -943,6 +952,7 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueInt32( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueInt32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueInt32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Err(e) => return Err(e)
                 }
                 OutputValueHandle::Int64(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueInt64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -950,6 +960,7 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueInt64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueInt64( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueInt64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Err(e) => return Err(e)
                 }
                 OutputValueHandle::Bool(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueBoolToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -957,7 +968,9 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueBoolToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueBoolToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueBool( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
+                    InputValueHandle::Err(e) => return Err(e)
                 }
+                OutputValueHandle::Err(e) => return Err(e)
             };
 
             actions.push(action);

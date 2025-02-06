@@ -1,4 +1,4 @@
-use cmajor::{endpoint::EndpointInfo, engine::{Engine, Loaded}};
+use cmajor::{endpoint::EndpointInfo, engine::{Engine, Loaded}, performer::OutputStream};
 use cmajor::value::Value;
 
 use flutter_rust_bridge::*;
@@ -14,16 +14,14 @@ pub struct NodeEndpoint {
 
 impl NodeEndpoint {
     #[frb(ignore)]
-    pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, node_id: u32) -> Result<Self, &'static str> {
-        let endpoint = EndpointHandle::from_info(engine, &info)?;
+    pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, node_id: u32) -> Self {
+        let endpoint = EndpointHandle::from_info(engine, &info);
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 
-        Ok(
-            Self {
-                endpoint,
-                annotation,
-            }
-        )
+        Self {
+            endpoint,
+            annotation,
+        }
     }
 
     #[frb(ignore)]
@@ -52,6 +50,7 @@ impl NodeEndpoint {
                     InputWidgetHandle::Value { queue, .. } => {
                         queue.pop()
                     }
+                    InputWidgetHandle::Err(e) => None
                 }
             }
             _ => None
@@ -147,6 +146,7 @@ impl NodeEndpoint {
                     match stream {
                         InputStreamHandle::MonoFloat32(_) => StreamType::Float32,
                         InputStreamHandle::StereoFloat32(_) => StreamType::Float32,
+                        InputStreamHandle::Err(_) => StreamType::Void,
                     }
                 ),
                 InputHandle::Value(value) => EndpointKind::Value(
@@ -156,6 +156,7 @@ impl NodeEndpoint {
                         InputValueHandle::Int32(_) => ValueType::Int32,
                         InputValueHandle::Int64(_) => ValueType::Int64,
                         InputValueHandle::Bool(_) => ValueType::Bool,
+                        InputValueHandle::Err(e) => ValueType::Void,
                     }
                 ),
                 InputHandle::Event(e) => EndpointKind::Event(
@@ -170,6 +171,7 @@ impl NodeEndpoint {
                     match stream {
                         OutputStreamHandle::MonoFloat32(_) => StreamType::Float32,
                         OutputStreamHandle::StereoFloat32(_) => StreamType::Float32,
+                        OutputStreamHandle::Err(e) => StreamType::Void,
                     }
                 ),
                 OutputHandle::Value(value) => EndpointKind::Value(
@@ -179,6 +181,7 @@ impl NodeEndpoint {
                         OutputValueHandle::Int32(_) => ValueType::Int32,
                         OutputValueHandle::Int64(_) => ValueType::Int64,
                         OutputValueHandle::Bool(_) => ValueType::Bool,
+                        OutputValueHandle::Err(e) => ValueType::Void,
                     }
                 ),
                 OutputHandle::Event(e) => EndpointKind::Event(
@@ -210,6 +213,7 @@ pub enum StreamType {
     Float64,
     Int32,
     Int64,
+    Void
 }
 
 #[derive(Copy, Clone)]

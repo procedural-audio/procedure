@@ -6,7 +6,7 @@ Color colorFromString(String color) {
     "green" => Colors.green,
     "blue" => Colors.blue,
     "yellow" => Colors.yellow,
-    "purple" => Colors.purple,
+    "purple" => Colors.deepPurple,
     "orange" => Colors.orange,
     "pink" => Colors.pink,
     "cyan" => Colors.cyan,

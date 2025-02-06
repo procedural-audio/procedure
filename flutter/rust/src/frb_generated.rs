@@ -2036,6 +2036,7 @@ impl SseDecode for crate::api::endpoint::StreamType {
             1 => crate::api::endpoint::StreamType::Float64,
             2 => crate::api::endpoint::StreamType::Int32,
             3 => crate::api::endpoint::StreamType::Int64,
+            4 => crate::api::endpoint::StreamType::Void,
             _ => unreachable!("Invalid variant for StreamType: {}", inner),
         };
     }
@@ -2337,6 +2338,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::endpoint::StreamType {
             Self::Float64 => 1.into_dart(),
             Self::Int32 => 2.into_dart(),
             Self::Int64 => 3.into_dart(),
+            Self::Void => 4.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -2638,6 +2640,7 @@ impl SseEncode for crate::api::endpoint::StreamType {
                 crate::api::endpoint::StreamType::Float64 => 1,
                 crate::api::endpoint::StreamType::Int32 => 2,
                 crate::api::endpoint::StreamType::Int64 => 3,
+                crate::api::endpoint::StreamType::Void => 4,
                 _ => {
                     unimplemented!("");
                 }

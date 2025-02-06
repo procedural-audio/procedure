@@ -66,6 +66,7 @@ enum StreamType {
   float64,
   int32,
   int64,
+  void_,
   ;
 }
 
