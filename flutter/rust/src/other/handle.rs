@@ -398,6 +398,34 @@ impl EndpointHandle {
             ),
         };
     }
+
+    pub fn is_input(&self) -> bool {
+        match self {
+            EndpointHandle::Input(_) => true,
+            EndpointHandle::Output(_) => false,
+            EndpointHandle::ExternalInput { .. } => true,
+            EndpointHandle::ExternalOutput { .. } => false,
+        }
+    }
+
+    pub fn is_external(&self) -> bool {
+        match self {
+            EndpointHandle::ExternalInput { .. } => true,
+            EndpointHandle::ExternalOutput { .. } => true,
+            _ => false
+        }
+    }
+
+    pub fn kind(&self) -> EndpointKind2 {
+        todo!()
+    }
+}
+
+pub enum EndpointKind2 {
+    Audio,
+    Number,
+    Note,
+    Time
 }
 
 impl PartialEq for EndpointHandle {
