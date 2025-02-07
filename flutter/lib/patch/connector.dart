@@ -13,13 +13,11 @@ class Connector extends StatelessWidget {
   Connector({
     required this.start,
     required this.end,
-    required this.type,
     required this.patch,
   }) : super(key: UniqueKey());
 
   final Pin start;
   final Pin end;
-  final EndpointKind type;
   final Patch patch;
 
   Map<String, dynamic> toJson() {
@@ -28,7 +26,6 @@ class Connector extends StatelessWidget {
       // "startIndex": start.pinIndex,
       // "endId": end.nodeId,
       // "endIndex": end.pinIndex,
-      "type": type.toString(),
     };
   }
 
@@ -50,14 +47,18 @@ class Connector extends StatelessWidget {
                     Offset(
                       start.offset.dx +
                           roundToGrid(startModuleOffset.dx) +
-                          15 / 2,
+                          pinRadius,
                       start.offset.dy +
                           roundToGrid(startModuleOffset.dy) +
-                          15 / 2,
+                          pinRadius,
                     ),
                     Offset(
-                      end.offset.dx + roundToGrid(endModuleOffset.dx) + 15 / 2,
-                      end.offset.dy + roundToGrid(endModuleOffset.dy) + 15 / 2,
+                      end.offset.dx +
+                          roundToGrid(endModuleOffset.dx) +
+                          pinRadius,
+                      end.offset.dy +
+                          roundToGrid(endModuleOffset.dy) +
+                          pinRadius,
                     ),
                     start.color,
                     focused,
@@ -76,15 +77,11 @@ class NewConnector extends StatelessWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
-  EndpointKind type = EndpointKind.stream(StreamType.float32);
 
   NewConnector({super.key});
 
   void setStart(Pin? pin) {
     start = pin;
-    if (pin != null) {
-      type = pin.endpoint.type;
-    }
   }
 
   void setEnd(Pin? pin) {

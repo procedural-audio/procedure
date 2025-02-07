@@ -164,7 +164,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EndpointKind dco_decode_endpoint_kind(dynamic raw);
 
   @protected
-  EventType dco_decode_event_type(dynamic raw);
+  EndpointType dco_decode_endpoint_type(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -211,9 +211,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
-  StreamType dco_decode_stream_type(dynamic raw);
-
-  @protected
   int dco_decode_u_32(dynamic raw);
 
   @protected
@@ -224,9 +221,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt dco_decode_usize(dynamic raw);
-
-  @protected
-  ValueType dco_decode_value_type(dynamic raw);
 
   @protected
   Cable
@@ -352,7 +346,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EndpointKind sse_decode_endpoint_kind(SseDeserializer deserializer);
 
   @protected
-  EventType sse_decode_event_type(SseDeserializer deserializer);
+  EndpointType sse_decode_endpoint_type(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -399,9 +393,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
-  StreamType sse_decode_stream_type(SseDeserializer deserializer);
-
-  @protected
   int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
@@ -412,9 +403,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
-
-  @protected
-  ValueType sse_decode_value_type(SseDeserializer deserializer);
 
   @protected
   void
@@ -541,7 +529,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_endpoint_kind(EndpointKind self, SseSerializer serializer);
 
   @protected
-  void sse_encode_event_type(EventType self, SseSerializer serializer);
+  void sse_encode_endpoint_type(EndpointType self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
@@ -590,9 +578,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       PlatformInt64? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_stream_type(StreamType self, SseSerializer serializer);
-
-  @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -603,9 +588,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_value_type(ValueType self, SseSerializer serializer);
 }
 
 // Section: wire_class

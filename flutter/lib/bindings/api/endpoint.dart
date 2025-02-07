@@ -9,8 +9,7 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'endpoint.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `read_value`, `write_value`
-// These types are ignored because they are not used by any `pub` functions: `PrimitiveType`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `eq`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `handle`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
@@ -19,9 +18,13 @@ abstract class NodeEndpoint implements RustOpaqueInterface {
 
   set annotation(String annotation);
 
-  EndpointKind get type;
+  EndpointKind get kind;
 
-  bool get isInput;
+  EndpointType get type;
+
+  bool isExternal();
+
+  bool isInput();
 
   bool? readBool();
 
@@ -36,46 +39,23 @@ abstract class NodeEndpoint implements RustOpaqueInterface {
   void writeInt({required PlatformInt64 v});
 }
 
+enum EndpointKind {
+  stream,
+  value,
+  event,
+  ;
+}
+
 @freezed
-sealed class EndpointKind with _$EndpointKind {
-  const EndpointKind._();
+sealed class EndpointType with _$EndpointType {
+  const EndpointType._();
 
-  const factory EndpointKind.stream(
-    StreamType field0,
-  ) = EndpointKind_Stream;
-  const factory EndpointKind.value(
-    ValueType field0,
-  ) = EndpointKind_Value;
-  const factory EndpointKind.event(
-    EventType field0,
-  ) = EndpointKind_Event;
-}
-
-enum EventType {
-  float32,
-  float64,
-  int32,
-  int64,
-  void_,
-  bool,
-  ;
-}
-
-enum StreamType {
-  float32,
-  float64,
-  int32,
-  int64,
-  void_,
-  ;
-}
-
-enum ValueType {
-  float32,
-  float64,
-  int32,
-  int64,
-  void_,
-  bool,
-  ;
+  const factory EndpointType.float() = EndpointType_Float;
+  const factory EndpointType.int() = EndpointType_Int;
+  const factory EndpointType.bool() = EndpointType_Bool;
+  const factory EndpointType.void_() = EndpointType_Void;
+  const factory EndpointType.object(
+    String field0,
+  ) = EndpointType_Object;
+  const factory EndpointType.unsupported() = EndpointType_Unsupported;
 }

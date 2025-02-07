@@ -1,8 +1,10 @@
 use std::{f32::consts::E, primitive, sync::{Arc, Mutex}};
 
-use cmajor::{endpoint::{EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Object, Primitive, Type}};
+use cmajor::{endpoint::{EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Object, Primitive, Type}};
 use cmajor::value::Value;
 use crossbeam_queue::ArrayQueue;
+
+use crate::api::endpoint::{EndpointKind, EndpointType};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum InputStreamHandle {
@@ -39,6 +41,14 @@ impl InputStreamHandle {
             Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
+        }
+    }
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::MonoFloat32(_) => EndpointType::Float,
+            Self::StereoFloat32(_) => EndpointType::Float,
+            Self::Err(_) => EndpointType::Unsupported,
         }
     }
 }
@@ -78,6 +88,14 @@ impl OutputStreamHandle {
             Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
+        }
+    }
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::MonoFloat32(_) => EndpointType::Float,
+            Self::StereoFloat32(_) => EndpointType::Float,
+            Self::Err(_) => EndpointType::Unsupported,
         }
     }
 }
@@ -132,6 +150,18 @@ impl InputValueHandle {
                 engine.endpoint(id).unwrap()
             ),
             Primitive::Void => return Self::Err("unsupported endpoint type void value"),
+        }
+    }
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::Float32(_) => EndpointType::Float,
+            Self::Float64(_) => EndpointType::Float,
+            Self::Int32(_) => EndpointType::Int,
+            Self::Int64(_) => EndpointType::Int,
+            Self::Bool(_) => EndpointType::Bool,
+            Self::Object { object, .. } => EndpointType::Object(object.class().to_string()),
+            Self::Err(_) => EndpointType::Unsupported,
         }
     }
 }
@@ -232,6 +262,18 @@ impl OutputValueHandle {
             Primitive::Void => return Self::Err("unsupported endpoint type void value"),
         }
     }
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::Float32(_) => EndpointType::Float,
+            Self::Float64(_) => EndpointType::Float,
+            Self::Int32(_) => EndpointType::Int,
+            Self::Int64(_) => EndpointType::Int,
+            Self::Bool(_) => EndpointType::Bool,
+            Self::Object { object, .. } => EndpointType::Object(object.class().to_string()),
+            Self::Err(_) => EndpointType::Unsupported,
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -311,6 +353,25 @@ impl InputHandle {
             )
         }
     }
+
+    pub fn get_kind(&self) -> EndpointKind {
+        match self {
+            Self::Stream(_) => EndpointKind::Stream,
+            Self::Value(_) => EndpointKind::Value,
+            Self::Event(_) => EndpointKind::Event,
+            Self::Widget(_) => EndpointKind::Value
+        }
+    }
+
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::Stream(handle) => handle.get_type(),
+            Self::Value(handle) => handle.get_type(),
+            Self::Event(handle) => EndpointType::Unsupported,
+            Self::Widget(handle) => EndpointType::Unsupported
+        }
+    }
 }
 
 #[derive(PartialEq, Clone)]
@@ -344,6 +405,24 @@ impl OutputHandle {
             EndpointInfo::Value(value) => OutputHandle::Value(
                 OutputValueHandle::from_endpoint(engine, value)
             )
+        }
+    }
+
+    pub fn get_kind(&self) -> EndpointKind {
+        match self {
+            Self::Stream(_) => EndpointKind::Stream,
+            Self::Value(_) => EndpointKind::Value,
+            Self::Event(_) => EndpointKind::Event,
+            Self::Widget(_) => EndpointKind::Value
+        }
+    }
+
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            Self::Stream(handle) => handle.get_type(),
+            Self::Value(handle) => handle.get_type(),
+            Self::Event(handle) => EndpointType::Unsupported,
+            Self::Widget(handle) => EndpointType::Unsupported
         }
     }
 }
@@ -416,16 +495,23 @@ impl EndpointHandle {
         }
     }
 
-    pub fn kind(&self) -> EndpointKind2 {
-        todo!()
+    pub fn get_kind(&self) -> EndpointKind {
+        match self {
+            EndpointHandle::Input(handle) => handle.get_kind(),
+            EndpointHandle::Output(handle) => handle.get_kind(),
+            EndpointHandle::ExternalInput { handle, .. } => handle.get_kind(),
+            EndpointHandle::ExternalOutput { handle, .. } => handle.get_kind(),
+        }
     }
-}
 
-pub enum EndpointKind2 {
-    Audio,
-    Number,
-    Note,
-    Time
+    pub fn get_type(&self) -> EndpointType {
+        match self {
+            EndpointHandle::Input(handle) => handle.get_type(),
+            EndpointHandle::Output(handle) => handle.get_type(),
+            EndpointHandle::ExternalInput { handle, .. } => handle.get_type(),
+            EndpointHandle::ExternalOutput { handle, .. } => handle.get_type(),
+        }
+    }
 }
 
 impl PartialEq for EndpointHandle {

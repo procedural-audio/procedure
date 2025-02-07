@@ -260,7 +260,6 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     var connector = Connector(
       start: start,
       end: end,
-      type: start.endpoint.type,
       patch: widget,
     );
 

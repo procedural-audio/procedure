@@ -10,12 +10,42 @@ import 'connector.dart';
 
 import '../bindings/api/endpoint.dart';
 
+// Radius of a pin
+const double pinRadius = 6;
+
+// Convert an endpoint to a color
+Color endpointToColor(NodeEndpoint endpoint) {
+  Color color = Colors.grey;
+
+  // Switch on the endpoint kind
+  switch (endpoint.kind) {
+    // Stream types
+    case EndpointKind.stream:
+      color = Colors.blue;
+      break;
+
+    // Event and value types
+    case EndpointKind.event || EndpointKind.value:
+      endpoint.type.when(
+        float: () => color = Colors.red,
+        int: () => color = Colors.red,
+        bool: () => color = Colors.red,
+        object: (a) => color = Colors.green,
+        unsupported: () => color = Color.fromRGBO(50, 50, 50, 1.0),
+        void_: () => color = Colors.grey,
+      );
+
+      break;
+  }
+
+  return color;
+}
+
 class Pin extends StatefulWidget {
   Pin({
     required this.node,
     required this.endpoint,
     required this.patch,
-    required this.isInput,
     required this.onAddConnector,
     required this.onRemoveConnections,
   }) : super(key: UniqueKey()) {
@@ -23,43 +53,22 @@ class Pin extends StatefulWidget {
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
     // Initialize the pin offset
-    if (isInput) {
+    if (endpoint.isInput()) {
       offset = Offset(5, top);
     } else {
-      offset =
-          Offset(node.module.size.width * GlobalSettings.gridSize - 25, top);
+      offset = Offset(
+          node.module.size.width * GlobalSettings.gridSize -
+              (pinRadius * 2 + 10),
+          top);
     }
 
     // Initialize the pin color
-    endpoint.type.when(
-      stream: (streamType) {
-        if (streamType == StreamType.void_) {
-          color = Colors.grey;
-        } else {
-          color = Colors.blue;
-        }
-      },
-      event: (eventType) {
-        if (eventType == EventType.void_) {
-          color = Colors.grey;
-        } else {
-          color = Colors.green;
-        }
-      },
-      value: (valueType) {
-        if (valueType == ValueType.void_) {
-          color = Colors.grey;
-        } else {
-          color = Colors.red;
-        }
-      },
-    );
+    color = endpointToColor(endpoint);
   }
 
   final NodeEndpoint endpoint;
   final Node node;
   final Patch patch;
-  final bool isInput;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
 
@@ -96,7 +105,7 @@ class _PinState extends State<Pin> {
         child: GestureDetector(
           onPanStart: (details) {
             dragging = true;
-            if (widget.isInput) {
+            if (widget.endpoint.isInput()) {
               widget.node.patch.newConnector.onDrag(details.localPosition);
             } else {
               widget.node.patch.newConnector.setStart(widget);
@@ -137,19 +146,17 @@ class _PinState extends State<Pin> {
                   bool is_selected = selectedNodes.contains(widget.node);
 
                   return Container(
-                    width: 15,
-                    height: 15,
-                    decoration: BoxDecoration(
-                      color: hovering || dragging || connected
-                          ? (is_selected || hovering
-                              ? widget.color
-                              : widget.color.withOpacity(0.5))
-                          : Colors.transparent,
-                      border: Border.all(
+                    width: pinRadius * 2,
+                    height: pinRadius * 2,
+                    child: CustomPaint(
+                      painter: PinPainter(
                         color: widget.color,
-                        width: 2,
+                        kind: widget.endpoint.kind,
+                        selected: is_selected,
+                        hovering: hovering,
+                        dragging: dragging,
+                        connected: connected,
                       ),
-                      borderRadius: BorderRadius.circular(10),
                     ),
                   );
                 },
@@ -159,5 +166,93 @@ class _PinState extends State<Pin> {
         ),
       ),
     );
+  }
+}
+
+class PinPainter extends CustomPainter {
+  PinPainter({
+    required this.color,
+    required this.kind,
+    required this.selected,
+    required this.hovering,
+    required this.dragging,
+    required this.connected,
+  });
+
+  final Color color;
+  final EndpointKind kind;
+  final bool selected;
+  final bool hovering;
+  final bool dragging;
+  final bool connected;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    var center = Offset(size.width / 2, size.height / 2);
+    var radius = size.width / 2;
+
+    Path path = Path();
+
+    switch (kind) {
+      case EndpointKind.stream:
+        path.addOval(Rect.fromCircle(center: center, radius: radius));
+        break;
+      case EndpointKind.event:
+        final cornerRadius = pinRadius / 3; // Adjust for more/less rounding
+
+        // Define the three corners of a triangle
+        final p1 = Offset(center.dx - radius, center.dy - radius);
+        final p2 = Offset(center.dx - radius, center.dy + radius);
+        final p3 = Offset(center.dx + radius, center.dy);
+
+        // Start at the center
+        path.moveTo(p1.dx, p1.dy + radius);
+
+        // Bottom-left corner
+        path.lineTo(p2.dx, p2.dy - cornerRadius);
+        path.quadraticBezierTo(p2.dx, p2.dy, p2.dx + cornerRadius, p2.dy);
+
+        // Right-center corner
+        path.lineTo(p3.dx - cornerRadius, p3.dy + cornerRadius);
+        path.quadraticBezierTo(p3.dx + cornerRadius, p3.dy,
+            p3.dx - cornerRadius, p3.dy - cornerRadius);
+
+        // Top-left corner
+        path.lineTo(p1.dx + cornerRadius, p1.dy);
+        path.quadraticBezierTo(p1.dx, p1.dy, p1.dx, p1.dy + cornerRadius);
+
+        // Return to the center
+        path.lineTo(p1.dx, p1.dy + radius);
+
+        break;
+      case EndpointKind.value:
+        var rect = Rect.fromCircle(center: center, radius: radius);
+        path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(3)));
+        break;
+    }
+
+    if (hovering || dragging || (selected && connected)) {
+      canvas.drawPath(path, paint);
+      paint.style = PaintingStyle.fill;
+      canvas.drawPath(path, paint);
+    } else if (connected) {
+      canvas.drawPath(path, paint);
+      paint.color = color.withOpacity(0.5);
+      paint.style = PaintingStyle.fill;
+      canvas.drawPath(path, paint);
+    } else {
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

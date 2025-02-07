@@ -29,16 +29,6 @@ impl NodeEndpoint {
         &self.endpoint
     }
 
-    #[frb(sync, getter)]
-    pub fn is_input(&self) -> bool {
-        match self.endpoint {
-            EndpointHandle::Input(_) => true,
-            EndpointHandle::Output(_) => false,
-            EndpointHandle::ExternalInput { .. } => true,
-            EndpointHandle::ExternalOutput { .. } => false,
-        }
-    }
-
     #[frb(ignore)]
     fn read_value(&self) -> Option<Value> {
         match &self.endpoint {
@@ -138,109 +128,40 @@ impl NodeEndpoint {
             .map_err(| e | e.to_string())
     }
 
+    #[frb(sync)]
+    pub fn is_input(&self) -> bool {
+        self.endpoint.is_input()
+    }
+
+    #[frb(sync)]
+    pub fn is_external(&self) -> bool {
+        self.endpoint.is_external()
+    }
+
     #[frb(sync, getter)]
-    pub fn get_type(&self) -> EndpointKind {
-        match &self.endpoint {
-            EndpointHandle::Input(handle) => match handle {
-                InputHandle::Stream(stream) => EndpointKind::Stream(
-                    match stream {
-                        InputStreamHandle::MonoFloat32(_) => StreamType::Float32,
-                        InputStreamHandle::StereoFloat32(_) => StreamType::Float32,
-                        InputStreamHandle::Err(_) => StreamType::Void,
-                    }
-                ),
-                InputHandle::Value(value) => EndpointKind::Value(
-                    match value {
-                        InputValueHandle::Float32(_) => ValueType::Float32,
-                        InputValueHandle::Float64(_) => ValueType::Float64,
-                        InputValueHandle::Int32(_) => ValueType::Int32,
-                        InputValueHandle::Int64(_) => ValueType::Int64,
-                        InputValueHandle::Bool(_) => ValueType::Bool,
-                        InputValueHandle::Object { .. } => ValueType::Void,
-                        InputValueHandle::Err(e) => ValueType::Void,
-                    }
-                ),
-                InputHandle::Event(e) => EndpointKind::Event(
-                    EventType::Void
-                ),
-                InputHandle::Widget(e) => EndpointKind::Event(
-                    EventType::Void
-                ),
-            },
-            EndpointHandle::Output(handle) => match handle {
-                OutputHandle::Stream(stream) => EndpointKind::Stream(
-                    match stream {
-                        OutputStreamHandle::MonoFloat32(_) => StreamType::Float32,
-                        OutputStreamHandle::StereoFloat32(_) => StreamType::Float32,
-                        OutputStreamHandle::Err(e) => StreamType::Void,
-                    }
-                ),
-                OutputHandle::Value(value) => EndpointKind::Value(
-                    match value {
-                        OutputValueHandle::Float32(_) => ValueType::Float32,
-                        OutputValueHandle::Float64(_) => ValueType::Float64,
-                        OutputValueHandle::Int32(_) => ValueType::Int32,
-                        OutputValueHandle::Int64(_) => ValueType::Int64,
-                        OutputValueHandle::Bool(_) => ValueType::Bool,
-                        OutputValueHandle::Object{ .. } => ValueType::Void,
-                        OutputValueHandle::Err(e) => ValueType::Void,
-                    }
-                ),
-                OutputHandle::Event(e) => EndpointKind::Event(
-                    EventType::Void
-                ),
-                OutputHandle::Widget(_) => EndpointKind::Value(
-                    ValueType::Float32
-                ),
-            },
-            EndpointHandle::ExternalInput { handle, channel } => EndpointKind::Stream(StreamType::Float32),
-            EndpointHandle::ExternalOutput { handle, channel } => EndpointKind::Stream(StreamType::Float32),
-        }
+    pub fn get_kind(&self) -> EndpointKind {
+        self.endpoint.get_kind()
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_type(&self) -> EndpointType {
+        self.endpoint.get_type()
     }
 }
 
-#[derive(Copy, Clone)]
-pub enum PrimitiveType {
-    Float32,
-    Float64,
-    Int32,
-    Int64,
-    Void,
-    Bool
-}
-
-#[derive(Copy, Clone)]
-pub enum StreamType {
-    Float32,
-    Float64,
-    Int32,
-    Int64,
-    Void
-}
-
-#[derive(Copy, Clone)]
-pub enum ValueType {
-    Float32,
-    Float64,
-    Int32,
-    Int64,
-    Void,
+#[derive(Clone)]
+pub enum EndpointType {
+    Float,
+    Int,
     Bool,
-}
-
-#[derive(Copy, Clone)]
-pub enum EventType {
-    Float32,
-    Float64,
-    Int32,
-    Int64,
     Void,
-    Bool,
+    Object(String),
+    Unsupported
 }
 
 #[derive(Copy, Clone)]
 pub enum EndpointKind {
-    Stream(StreamType),
-    Value(ValueType),
-    Event(EventType),
+    Stream,
+    Value,
+    Event
 }
