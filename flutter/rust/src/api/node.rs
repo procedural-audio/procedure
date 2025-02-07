@@ -3,6 +3,7 @@ use cmajor::engine::{Engine, Loaded, Linked, Error};
 use cmajor::endpoint::*;
 use cmajor::performer::*;
 use endpoints::stream::StreamType;
+use for_generated::dart_sys::Dart_SourceFile;
 use value::ValueRef;
 
 use super::endpoint::*;
@@ -20,7 +21,7 @@ use crate::other::voices::*;
 #[derive(Clone)]
 pub struct Node {
     pub id: u32,
-    source: String,
+    source: Vec<String>,
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
     voices: Arc<Mutex<Voices>>,
@@ -34,13 +35,14 @@ impl PartialEq for Node {
 
 impl Node {
     #[frb(sync)]
-    pub fn from(source: &str, id: u32) -> Option<Self> {
+    pub fn from(source: Vec<String>, id: u32) -> Option<Self> {
         let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
 
         let mut program = cmajor.create_program();
-        if let Err(e) = program.parse(source) {
-            println!("{}", e);
-            return None;
+        for source in &source {
+            if let Err(e) = program.parse(source) {
+                println!("{}", e);
+            }
         }
 
         let mut engine = match cmajor
@@ -103,7 +105,7 @@ impl Node {
         Some(
             Self {
                 id,
-                source: source.to_string(),
+                source,
                 inputs,
                 outputs,
                 voices

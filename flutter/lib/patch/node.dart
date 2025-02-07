@@ -9,6 +9,7 @@ import 'package:metasampler/patch/widgets/textbox.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as api;
+import '../plugins.dart';
 import '../settings.dart';
 import 'widgets/knob.dart';
 import 'patch.dart';
@@ -116,7 +117,9 @@ class Node extends StatelessWidget {
     required this.onRemoveConnections,
     required Offset position,
   }) : super(key: UniqueKey()) {
-    rawNode = api.Node.from(source: module.source, id: NODE_ID++);
+    List<String> source = Plugins.lib();
+    source.add(module.source);
+    rawNode = api.Node.from(source: source, id: NODE_ID++);
 
     // Set the initial node position
     this.position.value = position;

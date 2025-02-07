@@ -24,6 +24,13 @@ class Plugins {
   static final ValueNotifier<List<Module>> _modules = ValueNotifier([]);
   static Stream<FileSystemEvent>? eventStream;
 
+  static List<String> lib() {
+    return [
+      File(GlobalSettings.pluginsDirectory.path + "/standard.cmajor")
+          .readAsStringSync()
+    ];
+  }
+
   static void scan() async {
     _modules.value = [];
 

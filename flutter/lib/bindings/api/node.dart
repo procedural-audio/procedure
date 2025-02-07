@@ -16,7 +16,7 @@ abstract class Node implements RustOpaqueInterface {
 
   set id(int id);
 
-  static Node? from({required String source, required int id}) =>
+  static Node? from({required List<String> source, required int id}) =>
       RustLib.instance.api.crateApiNodeNodeFrom(source: source, id: id);
 
   List<NodeEndpoint> get inputs;

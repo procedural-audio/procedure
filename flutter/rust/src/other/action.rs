@@ -19,6 +19,8 @@ use performer::OutputValue;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use crossbeam_queue::ArrayQueue;
+use value::types::Object;
+use value::Value;
 
 use crate::api::graph::*;
 use crate::other::voices::*;
@@ -224,6 +226,12 @@ pub enum Action {
     CopyValueInt32(CopyValue<i32>),
     CopyValueInt64(CopyValue<i64>),
     CopyValueBool(CopyValue<bool>),
+    CopyValueObject {
+        src_voices: Arc<Mutex<Voices>>,
+        src_handle: Endpoint<OutputValue<Value>>,
+        dst_voices: Arc<Mutex<Voices>>,
+        dst_handle: Endpoint<InputValue<Value>>,
+    },
 
     // Convert values
     CopyValueFloat32ToFloat64(CopyConvertValue<f32, f64>),
@@ -360,6 +368,24 @@ impl Action {
             Action::CopyValueInt32(action) => action.execute(num_frames),
             Action::CopyValueInt64(action) => action.execute(num_frames),
             Action::CopyValueBool(action) => action.execute(num_frames),
+
+            Action::CopyValueObject { src_voices, src_handle, dst_voices, dst_handle } => {
+                let mut src = src_voices
+                    .try_lock()
+                    .unwrap();
+                let mut dst = dst_voices
+                    .try_lock()
+                    .unwrap();
+
+                if let (Voices::Mono(src), Voices::Mono(dst)) = (&mut *src, &mut *dst) {
+                    if let Ok(value_ref) = src.get(src_handle.clone()) {
+                        // dst.set(dst_handle.clone(), v.to_owned());
+                    }
+                    todo!()
+                }
+
+                // src.copy_values_to(src_handle, &mut dst, dst_handle);
+            }
 
             // Convert values
             Action::CopyValueFloat32ToFloat64(action) => action.execute(num_frames),
@@ -759,7 +785,8 @@ fn generate_clear_actions(actions: &mut Vec<Action>, voices: Arc<Mutex<Voices>>,
                         )
                     );
                 },
-                InputValueHandle::Err(e) => ()
+                InputValueHandle::Object { handle, object } => todo!(),
+                InputValueHandle::Err(e) => (),
             }
         },
         _ => ()
@@ -936,7 +963,8 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat32ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
-                    InputValueHandle::Err(e) => return Err(e)
+                    InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
+                    InputValueHandle::Err(e) => return Err(e),
                 }
                 OutputValueHandle::Float64(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueFloat64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -944,7 +972,8 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueFloat64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueFloat64ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueFloat64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
-                    InputValueHandle::Err(e) => return Err(e)
+                    InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
+                    InputValueHandle::Err(e) => return Err(e),
                 }
                 OutputValueHandle::Int32(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueInt32ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -952,7 +981,8 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueInt32( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueInt32ToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueInt32ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
-                    InputValueHandle::Err(e) => return Err(e)
+                    InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
+                    InputValueHandle::Err(e) => return Err(e),
                 }
                 OutputValueHandle::Int64(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueInt64ToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -960,7 +990,8 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueInt64ToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueInt64( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueInt64ToBool( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
-                    InputValueHandle::Err(e) => return Err(e)
+                    InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
+                    InputValueHandle::Err(e) => return Err(e),
                 }
                 OutputValueHandle::Bool(src_handle) => match dst_handle {
                     InputValueHandle::Float32(dst_handle) => Action::CopyValueBoolToFloat32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
@@ -968,7 +999,18 @@ fn generate_connection_actions(
                     InputValueHandle::Int32(dst_handle) => Action::CopyValueBoolToInt32( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Int64(dst_handle) => Action::CopyValueBoolToInt64( CopyConvertValue { src_voices, src_handle, dst_voices, dst_handle } ),
                     InputValueHandle::Bool(dst_handle) => Action::CopyValueBool( CopyValue { src_voices, src_handle, dst_voices, dst_handle } ),
-                    InputValueHandle::Err(e) => return Err(e)
+                    InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
+                    InputValueHandle::Err(e) => return Err(e),
+                }
+                OutputValueHandle::Object { handle, object } => match dst_handle {
+                    InputValueHandle::Object { handle: dst_handle, object: dst_object } => {
+                        if object != dst_object {
+                            return Err("Endpoints value types are not compatible");
+                        }
+                        todo!()
+                    }
+                    InputValueHandle::Err(e) => return Err(e),
+                    _ => return Err("Endpoints value types are not compatible"),
                 }
                 OutputValueHandle::Err(e) => return Err(e)
             };

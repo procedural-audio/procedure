@@ -61,7 +61,7 @@ class TextboxWidget extends NodeWidget {
       left: map['left'] ?? 0,
       top: map['top'] ?? 0,
       width: map['width'] ?? 50,
-      height: map['height'] ?? 50,
+      height: map['height'] ?? 30,
       label: map['label'] ?? "",
       color: colorFromString(map['color'] ?? "grey"),
       initialValue: map['default'] ?? 0.5,
@@ -77,15 +77,37 @@ class TextboxWidget extends NodeWidget {
       child: SizedBox(
         width: width.toDouble(),
         height: height.toDouble(),
-        child: TextField(
-          controller: controller,
-          onChanged: (s) {
-            var v = double.tryParse(s);
-            if (v != null) {
-              value = v;
-              writeFloat(value);
-            }
-          },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(10, 10, 10, 1.0),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: TextField(
+            maxLines: 1,
+            controller: controller,
+            textAlign: TextAlign.center,
+            onChanged: (s) {
+              var v = double.tryParse(s);
+              if (v != null) {
+                value = v;
+                writeFloat(value);
+              }
+            },
+            style: TextStyle(
+              fontSize: 14,
+              color: color,
+            ),
+            decoration: InputDecoration(
+              fillColor: Colors.grey,
+              border: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.grey,
+                  width: 0.5,
+                ),
+              ),
+              contentPadding: EdgeInsets.all(5.0),
+            ),
+          ),
         ),
       ),
     );

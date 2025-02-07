@@ -156,6 +156,7 @@ impl NodeEndpoint {
                         InputValueHandle::Int32(_) => ValueType::Int32,
                         InputValueHandle::Int64(_) => ValueType::Int64,
                         InputValueHandle::Bool(_) => ValueType::Bool,
+                        InputValueHandle::Object { .. } => ValueType::Void,
                         InputValueHandle::Err(e) => ValueType::Void,
                     }
                 ),
@@ -181,6 +182,7 @@ impl NodeEndpoint {
                         OutputValueHandle::Int32(_) => ValueType::Int32,
                         OutputValueHandle::Int64(_) => ValueType::Int64,
                         OutputValueHandle::Bool(_) => ValueType::Bool,
+                        OutputValueHandle::Object{ .. } => ValueType::Void,
                         OutputValueHandle::Err(e) => ValueType::Void,
                     }
                 ),

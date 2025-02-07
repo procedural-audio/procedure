@@ -1,6 +1,6 @@
 use std::{f32::consts::E, primitive, sync::{Arc, Mutex}};
 
-use cmajor::{endpoint::{EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Primitive, Type}};
+use cmajor::{endpoint::{EndpointDirection, EndpointInfo, StreamEndpoint, ValueEndpoint}, engine::{Engine, Loaded}, performer::{Endpoint, EndpointType, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue}, value::types::{Array, Object, Primitive, Type}};
 use cmajor::value::Value;
 use crossbeam_queue::ArrayQueue;
 
@@ -82,28 +82,37 @@ impl OutputStreamHandle {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum InputValueHandle {
     Float32(Endpoint<InputValue<f32>>),
     Float64(Endpoint<InputValue<f64>>),
     Int32(Endpoint<InputValue<i32>>),
     Int64(Endpoint<InputValue<i64>>),
     Bool(Endpoint<InputValue<bool>>),
+    Object {
+        handle: Endpoint<OutputValue<Object>>,
+        object: Box<Object>
+    },
     Err(&'static str)
 }
 
 impl InputValueHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Self {
+        // Get the endpoint id
+        let id = endpoint.id();
+
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
             Type::String => return Self::Err("unsupported endpoint type string value"),
             Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
-            Type::Object(_) => return Self::Err("unsupported endpoint type object value"),
+            Type::Object(object) => {
+                return Self::Object {
+                    handle: engine.endpoint(id).unwrap(),
+                    object: object.clone()
+                };
+            }
         };
-
-        // Get the endpoint id
-        let id = endpoint.id();
 
         // Match on the specific primitive variant
         match primitive {
@@ -119,7 +128,9 @@ impl InputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Self::Err("unsupported endpoint type bool value"),
+            Primitive::Bool => Self::Bool(
+                engine.endpoint(id).unwrap()
+            ),
             Primitive::Void => return Self::Err("unsupported endpoint type void value"),
         }
     }
@@ -169,28 +180,37 @@ impl PartialEq for InputWidgetHandle {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum OutputValueHandle {
     Float32(Endpoint<OutputValue<f32>>),
     Float64(Endpoint<OutputValue<f64>>),
     Int32(Endpoint<OutputValue<i32>>),
     Int64(Endpoint<OutputValue<i64>>),
     Bool(Endpoint<OutputValue<bool>>),
+    Object {
+        handle: Endpoint<OutputValue<Object>>,
+        object: Box<Object>
+    },
     Err(&'static str)
 }
 
 impl OutputValueHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Self {
+        // Get the endpoint id
+        let id = endpoint.id();
+
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
             Type::String => return Self::Err("unsupported endpoint type string value"),
             Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
-            Type::Object(_) => return Self::Err("unsupported endpoint type object value"),
+            Type::Object(object) => {
+                return Self::Object {
+                    handle: engine.endpoint(id).unwrap(),
+                    object: object.clone()
+                };
+            }
         };
-
-        // Get the endpoint id
-        let id = endpoint.id();
 
         // Match on the specific primitive variant
         match primitive {
@@ -206,7 +226,9 @@ impl OutputValueHandle {
             Primitive::Int64 => Self::Int64(
                 engine.endpoint(id).unwrap()
             ),
-            Primitive::Bool => return Self::Err("unsupported endpoint type bool value"),
+            Primitive::Bool => Self::Bool(
+                engine.endpoint(id).unwrap()
+            ),
             Primitive::Void => return Self::Err("unsupported endpoint type void value"),
         }
     }

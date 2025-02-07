@@ -171,7 +171,7 @@ abstract class RustLibApi extends BaseApi {
 
   void crateApiNodeNodeAutoAccessorSetId({required Node that, required int id});
 
-  Node? crateApiNodeNodeFrom({required String source, required int id});
+  Node? crateApiNodeNodeFrom({required List<String> source, required int id});
 
   List<NodeEndpoint> crateApiNodeNodeGetInputs({required Node that});
 
@@ -1077,11 +1077,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Node? crateApiNodeNodeFrom({required String source, required int id}) {
+  Node? crateApiNodeNodeFrom({required List<String> source, required int id}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_String(source, serializer);
+        sse_encode_list_String(source, serializer);
         sse_encode_u_32(id, serializer);
         return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
       },
@@ -1460,6 +1460,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         .map(
             dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint)
         .toList();
+  }
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
   }
 
   @protected
@@ -1842,6 +1848,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       ans_.add(
           sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
               deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <String>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_String(deserializer));
     }
     return ans_;
   }
@@ -2236,6 +2254,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     for (final item in self) {
       sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
           item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_String(item, serializer);
     }
   }
 
