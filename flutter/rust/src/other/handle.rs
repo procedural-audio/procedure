@@ -205,11 +205,7 @@ impl OutputValueHandle {
 
 #[derive(Clone, PartialEq)]
 pub enum InputEventHandle {
-    Float32(Endpoint<InputEvent>),
-    Float64(Endpoint<InputEvent>),
-    Int32(Endpoint<InputEvent>),
-    Int64(Endpoint<InputEvent>),
-    Bool(Endpoint<InputEvent>),
+    Primitive(Endpoint<InputEvent>),
     Object {
         handle: Endpoint<InputEvent>,
         object: Box<Object>,
@@ -228,7 +224,9 @@ impl InputEventHandle {
             let ty = &types[0];
             // Ensure it's a primitive otherwise error
             let primitive = match ty {
-                Type::Primitive(p) => p,
+                Type::Primitive(p) => Self::Primitive(
+                    engine.endpoint(id).unwrap()
+                ),
                 Type::String => return Self::Err("unsupported endpoint type string value"),
                 Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
                 Type::Object(object) => {
@@ -238,16 +236,6 @@ impl InputEventHandle {
                     };
                 }
             };
-
-            // Match on the specific primitive variant
-            return match primitive {
-                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
-                Primitive::Bool => Self::Bool(engine.endpoint(id).unwrap()),
-                Primitive::Void => return Self::Err("unsupported endpoint type void value"),
-            };
         }
 
         Self::Err("unsupported event endpoint type")
@@ -255,11 +243,7 @@ impl InputEventHandle {
 
     pub fn get_type(&self) -> EndpointType {
         match self {
-            Self::Float32(_) => EndpointType::Float,
-            Self::Float64(_) => EndpointType::Float,
-            Self::Int32(_) => EndpointType::Int,
-            Self::Int64(_) => EndpointType::Int,
-            Self::Bool(_) => EndpointType::Bool,
+            Self::Primitive(_) => EndpointType::Bool,
             Self::Object { object, .. } => EndpointType::Object(object.class().to_string()),
             Self::Err(_) => EndpointType::Unsupported,
         }
@@ -268,11 +252,7 @@ impl InputEventHandle {
 
 #[derive(Clone, PartialEq)]
 pub enum OutputEventHandle {
-    Float32(Endpoint<OutputEvent>),
-    Float64(Endpoint<OutputEvent>),
-    Int32(Endpoint<OutputEvent>),
-    Int64(Endpoint<OutputEvent>),
-    Bool(Endpoint<OutputEvent>),
+    Primitive(Endpoint<OutputEvent>),
     Object {
         handle: Endpoint<OutputEvent>,
         object: Box<Object>,
@@ -291,7 +271,9 @@ impl OutputEventHandle {
             let ty = &types[0];
             // Ensure it's a primitive otherwise error
             let primitive = match ty {
-                Type::Primitive(p) => p,
+                Type::Primitive(p) => Self::Primitive(
+                    engine.endpoint(id).unwrap(),
+                ),
                 Type::String => return Self::Err("unsupported endpoint type string value"),
                 Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
                 Type::Object(object) => {
@@ -301,16 +283,6 @@ impl OutputEventHandle {
                     };
                 }
             };
-
-            // Match on the specific primitive variant
-            return match primitive {
-                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
-                Primitive::Bool => Self::Bool(engine.endpoint(id).unwrap()),
-                Primitive::Void => return Self::Err("unsupported endpoint type void value"),
-            };
         }
 
         Self::Err("unsupported event endpoint type")
@@ -318,11 +290,7 @@ impl OutputEventHandle {
 
     pub fn get_type(&self) -> EndpointType {
         match self {
-            Self::Float32(_) => EndpointType::Float,
-            Self::Float64(_) => EndpointType::Float,
-            Self::Int32(_) => EndpointType::Int,
-            Self::Int64(_) => EndpointType::Int,
-            Self::Bool(_) => EndpointType::Bool,
+            Self::Primitive(_) => EndpointType::Bool,
             Self::Object { object, .. } => EndpointType::Object(object.class().to_string()),
             Self::Err(_) => EndpointType::Unsupported,
         }
@@ -414,19 +382,10 @@ pub enum InputHandle {
     Stream(InputStreamHandle),
     Value(InputValueHandle),
     Event(InputEventHandle),
-    Widget(InputWidgetHandle),
 }
 
 impl InputHandle {
     fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
-        // Get the endpoint annotation
-        let annotation = info.annotation();
-
-        // Build widget endpoint
-        if annotation.contains_key("widget") {
-            return Self::Widget(InputWidgetHandle::from_info(engine, info));
-        }
-
         // Build normal endpoint
         match info {
             EndpointInfo::Stream(stream) => {
@@ -446,7 +405,6 @@ impl InputHandle {
             Self::Stream(_) => EndpointKind::Stream,
             Self::Value(_) => EndpointKind::Value,
             Self::Event(_) => EndpointKind::Event,
-            Self::Widget(_) => EndpointKind::Value,
         }
     }
 
@@ -455,7 +413,6 @@ impl InputHandle {
             Self::Stream(handle) => handle.get_type(),
             Self::Value(handle) => handle.get_type(),
             Self::Event(handle) => handle.get_type(),
-            Self::Widget(handle) => EndpointType::Unsupported,
         }
     }
 }
@@ -465,19 +422,10 @@ pub enum OutputHandle {
     Stream(OutputStreamHandle),
     Value(OutputValueHandle),
     Event(OutputEventHandle),
-    Widget(OutputWidgetHandle),
 }
 
 impl OutputHandle {
     fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
-        // Get the endpoint annotation
-        let annotation = info.annotation();
-
-        // Build widget endpoint
-        if annotation.contains_key("widget") {
-            return Self::Widget(OutputWidgetHandle::from_info(engine, info));
-        }
-
         // Build normal endpoint
         match info {
             EndpointInfo::Stream(stream) => {
@@ -497,7 +445,6 @@ impl OutputHandle {
             Self::Stream(_) => EndpointKind::Stream,
             Self::Value(_) => EndpointKind::Value,
             Self::Event(_) => EndpointKind::Event,
-            Self::Widget(_) => EndpointKind::Value,
         }
     }
 
@@ -506,53 +453,177 @@ impl OutputHandle {
             Self::Stream(handle) => handle.get_type(),
             Self::Value(handle) => handle.get_type(),
             Self::Event(handle) => handle.get_type(),
-            Self::Widget(handle) => EndpointType::Unsupported,
         }
     }
 }
 
 #[derive(Clone)]
-pub enum EndpointHandle {
-    Input(InputHandle),
-    Output(OutputHandle),
-    ExternalInput {
+pub enum InputEndpoint {
+    Endpoint(InputHandle),
+    External {
         handle: InputHandle,
         channel: usize,
     },
-    ExternalOutput {
-        handle: OutputHandle,
-        channel: usize,
-    },
+    Widget {
+        handle: InputHandle,
+        queue: Arc<ArrayQueue<Value>>,
+    }
 }
 
-impl EndpointHandle {
-    pub fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
+impl InputEndpoint {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
         // Get the endpoint annotation
         let annotation = info.annotation();
+
+        // Build widget endpoints
+        if let Some(channel) = annotation.get("widget") {
+            return Self::Widget {
+                handle: InputHandle::from_info(engine, info),
+                queue: Arc::new(ArrayQueue::new(32)),
+            };
+        }
 
         // Build external endpoints
         if let Some(channel) = annotation.get("external") {
             let channel = channel.as_u64().unwrap_or(0) as usize;
-
-            // Build external endpoints
-            return match info.direction() {
-                EndpointDirection::Input => EndpointHandle::ExternalInput {
-                    handle: InputHandle::from_info(engine, info),
-                    channel,
-                },
-                EndpointDirection::Output => EndpointHandle::ExternalOutput {
-                    handle: OutputHandle::from_info(engine, info),
-                    channel,
-                },
+            return Self::External {
+                handle: InputHandle::from_info(engine, info),
+                channel,
             };
         }
 
         // Build regular endpoints
+        return Self::Endpoint(
+            InputHandle::from_info(engine, info),
+        );
+    }
+
+    fn is_external(&self) -> bool {
+        match self {
+            InputEndpoint::External { .. } => true,
+            _ => false,
+        }
+    }
+
+    fn get_kind(&self) -> EndpointKind {
+        match self {
+            InputEndpoint::Endpoint(handle) => handle.get_kind(),
+            InputEndpoint::External { handle, .. } => handle.get_kind(),
+            InputEndpoint::Widget { handle, .. } => handle.get_kind(),
+        }
+    }
+
+    fn get_type(&self) -> EndpointType {
+        match self {
+            InputEndpoint::Endpoint(handle) => handle.get_type(),
+            InputEndpoint::External { handle, .. } => handle.get_type(),
+            InputEndpoint::Widget { handle, .. } => handle.get_type(),
+        }
+    }
+}
+
+impl PartialEq for InputEndpoint {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (InputEndpoint::Endpoint(a), InputEndpoint::Endpoint(b)) => a == b,
+            (InputEndpoint::External { handle, .. }, InputEndpoint::External { handle: other, .. }) => handle == other,
+            (InputEndpoint::Widget { handle, .. }, InputEndpoint::Widget { handle: other, .. }) => handle == other,
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone)]
+pub enum OutputEndpoint {
+    Endpoint(OutputHandle),
+    External {
+        handle: OutputHandle,
+        channel: usize,
+    },
+    Widget {
+        handle: OutputHandle,
+        queue: Arc<ArrayQueue<Value>>,
+    }
+}
+
+impl OutputEndpoint {
+    fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
+        // Get the endpoint annotation
+        let annotation = info.annotation();
+
+        // Build widget endpoints
+        if let Some(channel) = annotation.get("widget") {
+            return Self::Widget {
+                handle: OutputHandle::from_info(engine, info),
+                queue: Arc::new(ArrayQueue::new(32)),
+            };
+        }
+
+        // Build external endpoints
+        if let Some(channel) = annotation.get("external") {
+            let channel = channel.as_u64().unwrap_or(0) as usize;
+            return Self::External {
+                handle: OutputHandle::from_info(engine, info),
+                channel,
+            };
+        }
+
+        // Build regular endpoints
+        return Self::Endpoint(
+            OutputHandle::from_info(engine, info),
+        );
+    }
+
+    fn is_external(&self) -> bool {
+        match self {
+            OutputEndpoint::External { .. } => true,
+            _ => false,
+        }
+    }
+
+    fn get_kind(&self) -> EndpointKind {
+        match self {
+            OutputEndpoint::Endpoint(handle) => handle.get_kind(),
+            OutputEndpoint::External { handle, .. } => handle.get_kind(),
+            OutputEndpoint::Widget { handle, .. } => handle.get_kind(),
+        }
+    }
+
+    fn get_type(&self) -> EndpointType {
+        match self {
+            OutputEndpoint::Endpoint(handle) => handle.get_type(),
+            OutputEndpoint::External { handle, .. } => handle.get_type(),
+            OutputEndpoint::Widget { handle, .. } => handle.get_type(),
+        }
+    }
+}
+
+impl PartialEq for OutputEndpoint {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (OutputEndpoint::Endpoint(a), OutputEndpoint::Endpoint(b)) => a == b,
+            (OutputEndpoint::External { handle, .. }, OutputEndpoint::External { handle: other, .. }) => handle == other,
+            (OutputEndpoint::Widget { handle, .. }, OutputEndpoint::Widget { handle: other, .. }) => handle == other,
+            _ => false,
+        }
+    }
+}
+
+#[derive(PartialEq, Clone)]
+pub enum EndpointHandle {
+    Input(InputEndpoint),
+    Output(OutputEndpoint),
+}
+
+impl EndpointHandle {
+    pub fn from_info(engine: &mut Engine<Loaded>, info: &EndpointInfo) -> Self {
         return match info.direction() {
-            EndpointDirection::Input => EndpointHandle::Input(InputHandle::from_info(engine, info)),
-            EndpointDirection::Output => {
-                EndpointHandle::Output(OutputHandle::from_info(engine, info))
-            }
+            EndpointDirection::Input => Self::Input(
+                InputEndpoint::from_info(engine, info),
+            ),
+            EndpointDirection::Output => Self::Output(
+                OutputEndpoint::from_info(engine, info),
+            ),
         };
     }
 
@@ -560,16 +631,13 @@ impl EndpointHandle {
         match self {
             EndpointHandle::Input(_) => true,
             EndpointHandle::Output(_) => false,
-            EndpointHandle::ExternalInput { .. } => true,
-            EndpointHandle::ExternalOutput { .. } => false,
         }
     }
 
     pub fn is_external(&self) -> bool {
         match self {
-            EndpointHandle::ExternalInput { .. } => true,
-            EndpointHandle::ExternalOutput { .. } => true,
-            _ => false,
+            EndpointHandle::Input(handle) => handle.is_external(),
+            EndpointHandle::Output(handle) => handle.is_external(),
         }
     }
 
@@ -577,8 +645,6 @@ impl EndpointHandle {
         match self {
             EndpointHandle::Input(handle) => handle.get_kind(),
             EndpointHandle::Output(handle) => handle.get_kind(),
-            EndpointHandle::ExternalInput { handle, .. } => handle.get_kind(),
-            EndpointHandle::ExternalOutput { handle, .. } => handle.get_kind(),
         }
     }
 
@@ -586,27 +652,7 @@ impl EndpointHandle {
         match self {
             EndpointHandle::Input(handle) => handle.get_type(),
             EndpointHandle::Output(handle) => handle.get_type(),
-            EndpointHandle::ExternalInput { handle, .. } => handle.get_type(),
-            EndpointHandle::ExternalOutput { handle, .. } => handle.get_type(),
         }
     }
 }
 
-impl PartialEq for EndpointHandle {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (EndpointHandle::Input(a), EndpointHandle::Input(b)) => a == b,
-            (EndpointHandle::Output(a), EndpointHandle::Output(b)) => a == b,
-            (
-                EndpointHandle::ExternalInput { handle, .. },
-                EndpointHandle::ExternalInput { handle: other, .. },
-            ) => handle == other,
-            (
-                EndpointHandle::ExternalOutput { handle, .. },
-                EndpointHandle::ExternalOutput { handle: other, .. },
-            ) => handle == other,
-            // (EndpointHandle::Widget { handle, .. }, EndpointHandle::Widget { handle: other, .. }) => handle == other,
-            _ => false,
-        }
-    }
-}

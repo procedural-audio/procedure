@@ -151,14 +151,14 @@ impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
 
 */
 
-pub struct ExternalInputStream<T: StreamType> {
+pub struct ExternalOutputStream<T: StreamType> {
     pub voices: Arc<Mutex<Voices>>,
     pub handle: Endpoint<OutputStream<T>>,
     pub buffer: Vec<T>,
     pub channel: usize,
 }
 
-impl ExecuteAction for ExternalInputStream<f32> {
+impl ExecuteAction for ExternalOutputStream<f32> {
     fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
         let num_frames = get_num_frames(audio);
         if let Some(channel) = audio.get_mut(self.channel) {
@@ -170,15 +170,28 @@ impl ExecuteAction for ExternalInputStream<f32> {
     }
 }
 
-/*impl ExecuteAction for ExternalInputStream<[f32; 2]> {
+impl ExecuteAction for ExternalOutputStream<[f32; 2]> {
     fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
         let num_frames = get_num_frames(audio);
-        if let Some(channel) = audio.get_mut(self.channel) {
-            self
-                .voices
-                .try_lock()
-                .unwrap()
-                .read(self.handle, &mut channel[num_frames..]);
+
+        self
+            .voices
+            .try_lock()
+            .unwrap()
+            .read(self.handle, &mut self.buffer[..num_frames]);
+
+        // Copy the left channel
+        if let Some(left) = audio.get_mut(self.channel * 2) {
+            for (l, b) in left.iter_mut().zip(self.buffer.iter()) {
+                *l = b[0];
+            }
+        }
+
+        // Copy the right channel
+        if let Some(right) = audio.get_mut(self.channel * 2 + 1) {
+            for (r, b) in right.iter_mut().zip(self.buffer.iter()) {
+                *r = b[1];
+            }
         }
     }
-}*/
+}

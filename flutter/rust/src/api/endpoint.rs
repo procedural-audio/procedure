@@ -35,14 +35,13 @@ impl NodeEndpoint {
 
     #[frb(ignore)]
     fn read_value(&self) -> Option<Value> {
-        match &self.endpoint {
-            EndpointHandle::Input(InputHandle::Widget(handle)) => match handle {
-                InputWidgetHandle::Event { queue, .. } => queue.pop(),
-                InputWidgetHandle::Value { queue, .. } => queue.pop(),
-                InputWidgetHandle::Err(e) => None,
-            },
-            _ => None,
+        if let EndpointHandle::Input(handle) = &self.endpoint {
+            if let InputEndpoint::Widget { queue, .. } = handle {
+                return queue.pop();
+            }
         }
+
+        None
     }
 
     #[frb(sync)]
@@ -83,17 +82,10 @@ impl NodeEndpoint {
 
     #[frb(ignore)]
     fn write_value(&self, value: Value) -> Result<(), &'static str> {
-        match &self.endpoint {
-            EndpointHandle::Input(InputHandle::Widget(handle)) => match handle {
-                InputWidgetHandle::Event { queue, .. } => {
-                    queue.force_push(value);
-                }
-                InputWidgetHandle::Value { queue, .. } => {
-                    queue.force_push(value);
-                }
-                _ => return Err("endpoint is not a widget handle"),
-            },
-            _ => return Err("endpoint is not a widget input"),
+        if let EndpointHandle::Input(handle) = &self.endpoint {
+            if let InputEndpoint::Widget { queue, .. } = handle {
+                queue.force_push(value);
+            }
         }
 
         Ok(())

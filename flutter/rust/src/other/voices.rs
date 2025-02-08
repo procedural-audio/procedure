@@ -1,7 +1,7 @@
 use cmajor::performer::*;
 use cmajor::*;
 use endpoints::stream::StreamType;
-use value::ValueRef;
+use value::{Value, ValueRef};
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
@@ -61,14 +61,14 @@ impl Voices {
         }
     }
 
-    pub fn get<T: GetOutputValue>(&mut self, endpoint: Endpoint<OutputValue<T>>) -> T::Output<'_> {
+    /*pub fn get<T: GetOutputValue>(&mut self, endpoint: Endpoint<OutputValue<T>>) -> T::Output<'_> {
         match self {
             Voices::Mono(performer) => performer.get(endpoint),
             Voices::Poly(performers) => {
                 todo!()
             }
         }
-    }
+    }*/
 
     pub fn set<T: SetInputValue + Copy>(&mut self, endpoint: Endpoint<InputValue<T>>, value: T) {
         match self {
@@ -83,14 +83,14 @@ impl Voices {
         }
     }
 
-    pub fn set_value(&mut self, endpoint: Endpoint<InputValue>, value: cmajor::value::Value) {
+    pub fn set_value(&mut self, endpoint: Endpoint<InputValue>, value: Value) {
         match self {
             Voices::Mono(performer) => {
-                performer.set(endpoint, value);
+                performer.set(endpoint, value).unwrap();
             }
             Voices::Poly(performers) => {
                 for performer in performers {
-                    performer.set(endpoint.clone(), value.clone());
+                    performer.set(endpoint.clone(), value.clone()).unwrap();
                 }
             }
         }
