@@ -1,5 +1,9 @@
-use cmajor::{endpoint::EndpointInfo, engine::{Engine, Loaded}, performer::OutputStream};
 use cmajor::value::Value;
+use cmajor::{
+    endpoint::EndpointInfo,
+    engine::{Engine, Loaded},
+    performer::OutputStream,
+};
 
 use flutter_rust_bridge::*;
 
@@ -32,46 +36,36 @@ impl NodeEndpoint {
     #[frb(ignore)]
     fn read_value(&self) -> Option<Value> {
         match &self.endpoint {
-            EndpointHandle::Input(InputHandle::Widget(handle)) => {
-                match handle {
-                    InputWidgetHandle::Event { queue, .. } => {
-                        queue.pop()
-                    }
-                    InputWidgetHandle::Value { queue, .. } => {
-                        queue.pop()
-                    }
-                    InputWidgetHandle::Err(e) => None
-                }
-            }
-            _ => None
+            EndpointHandle::Input(InputHandle::Widget(handle)) => match handle {
+                InputWidgetHandle::Event { queue, .. } => queue.pop(),
+                InputWidgetHandle::Value { queue, .. } => queue.pop(),
+                InputWidgetHandle::Err(e) => None,
+            },
+            _ => None,
         }
     }
 
     #[frb(sync)]
     pub fn read_float(&self) -> Option<f64> {
         match self.read_value() {
-            Some(value) => {
-                match value {
-                    Value::Float32(v) => Some(v as f64),
-                    Value::Float64(v) => Some(v),
-                    _ => None
-                }
-            }
-            None => None
+            Some(value) => match value {
+                Value::Float32(v) => Some(v as f64),
+                Value::Float64(v) => Some(v),
+                _ => None,
+            },
+            None => None,
         }
     }
 
     #[frb(sync)]
     pub fn read_int(&self) -> Option<i64> {
         match self.read_value() {
-            Some(value) => {
-                match value {
-                    Value::Int32(v) => Some(v as i64),
-                    Value::Int64(v) => Some(v),
-                    _ => None
-                }
-            }
-            None => None
+            Some(value) => match value {
+                Value::Int32(v) => Some(v as i64),
+                Value::Int64(v) => Some(v),
+                _ => None,
+            },
+            None => None,
         }
     }
 
@@ -80,7 +74,7 @@ impl NodeEndpoint {
         if let Some(value) = self.read_value() {
             match value {
                 Value::Bool(v) => Some(v),
-                _ => None
+                _ => None,
             }
         } else {
             None
@@ -90,18 +84,16 @@ impl NodeEndpoint {
     #[frb(ignore)]
     fn write_value(&self, value: Value) -> Result<(), &'static str> {
         match &self.endpoint {
-            EndpointHandle::Input(InputHandle::Widget(handle)) => {
-                match handle {
-                    InputWidgetHandle::Event { queue, .. } => {
-                        queue.force_push(value);
-                    }
-                    InputWidgetHandle::Value { queue, .. } => {
-                        queue.force_push(value);
-                    }
-                    _ => return Err("endpoint is not a widget handle")
+            EndpointHandle::Input(InputHandle::Widget(handle)) => match handle {
+                InputWidgetHandle::Event { queue, .. } => {
+                    queue.force_push(value);
                 }
-            }
-            _ => return Err("endpoint is not a widget input")
+                InputWidgetHandle::Value { queue, .. } => {
+                    queue.force_push(value);
+                }
+                _ => return Err("endpoint is not a widget handle"),
+            },
+            _ => return Err("endpoint is not a widget input"),
         }
 
         Ok(())
@@ -109,23 +101,18 @@ impl NodeEndpoint {
 
     #[frb(sync)]
     pub fn write_float(&self, v: f64) -> Result<(), String> {
-        self
-            .write_value(Value::Float32(v as f32))
-            .map_err(| e | e.to_string())
+        self.write_value(Value::Float32(v as f32))
+            .map_err(|e| e.to_string())
     }
 
     #[frb(sync)]
     pub fn write_int(&self, v: i64) -> Result<(), String> {
-        self
-            .write_value(Value::Int64(v))
-            .map_err(| e | e.to_string())
+        self.write_value(Value::Int64(v)).map_err(|e| e.to_string())
     }
 
     #[frb(sync)]
     pub fn write_bool(&self, b: bool) -> Result<(), String> {
-        self
-            .write_value(Value::Bool(b))
-            .map_err(| e | e.to_string())
+        self.write_value(Value::Bool(b)).map_err(|e| e.to_string())
     }
 
     #[frb(sync)]
@@ -156,12 +143,12 @@ pub enum EndpointType {
     Bool,
     Void,
     Object(String),
-    Unsupported
+    Unsupported,
 }
 
 #[derive(Copy, Clone)]
 pub enum EndpointKind {
     Stream,
     Value,
-    Event
+    Event,
 }

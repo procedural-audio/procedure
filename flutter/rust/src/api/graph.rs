@@ -5,8 +5,8 @@ use crate::api::cable::*;
 use crate::api::endpoint::*;
 use crate::api::node::*;
 
-use flutter_rust_bridge::*;
 use crate::other::action::*;
+use flutter_rust_bridge::*;
 
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Actions>> = RwLock::new(None);
@@ -16,18 +16,18 @@ lazy_static::lazy_static! {
 
 #[frb(sync)]
 pub fn set_patch(graph: Graph) {
-    println!("Updating patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
-    *ACTIONS
-        .write()
-        .unwrap() = Some(Actions::from(graph));
+    println!(
+        "Updating patch ({} nodes, {} cables)",
+        graph.nodes.len(),
+        graph.cables.len()
+    );
+    *ACTIONS.write().unwrap() = Some(Actions::from(graph));
 }
 
 #[frb(sync)]
 pub fn clear_patch() {
     println!("Cleared patch");
-    *ACTIONS
-        .write()
-        .unwrap() = None;
+    *ACTIONS.write().unwrap() = None;
 }
 
 #[frb(ignore)]
@@ -37,19 +37,35 @@ pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
 }
 
 #[frb(sync)]
-pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> bool {
-    match crate::other::action::is_connection_supported(src_node, src_endpoint, dst_node, dst_endpoint) {
+pub fn is_connection_supported(
+    src_node: &Node,
+    src_endpoint: &NodeEndpoint,
+    dst_node: &Node,
+    dst_endpoint: &NodeEndpoint,
+) -> bool {
+    match crate::other::action::is_connection_supported(
+        src_node,
+        src_endpoint,
+        dst_node,
+        dst_endpoint,
+    ) {
         Ok(_) => true,
         Err(e) => {
             println!("Error: {}", e);
             false
-        },
+        }
     }
 }
 
 #[frb(ignore)]
 #[no_mangle]
-pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, frames: u32, midi: *mut u8, size: u32) {
+pub unsafe extern "C" fn process_patch(
+    audio: *const *mut f32,
+    channels: u32,
+    frames: u32,
+    midi: *mut u8,
+    size: u32,
+) {
     let mut buffer_1 = [0.0f32];
     let mut buffer_2 = [0.0];
     let mut buffer_3 = [0.0];
@@ -71,9 +87,8 @@ pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, fr
     ];
 
     for i in 0..usize::min(channels as usize, buffer.len()) {
-        buffer[i] = unsafe {
-            std::slice::from_raw_parts_mut(*audio.offset(i as isize), frames as usize)
-        };
+        buffer[i] =
+            unsafe { std::slice::from_raw_parts_mut(*audio.offset(i as isize), frames as usize) };
     }
 
     let midi = unsafe { std::slice::from_raw_parts_mut(midi, size as usize) };
@@ -108,20 +123,18 @@ impl Graph {
         src_node: &Node,
         src_endpoint: &NodeEndpoint,
         dst_node: &Node,
-        dst_endpoint: &NodeEndpoint) {
-
-        self.cables.push(
-            Cable {
-                source: Connection {
-                    node: src_node.clone(),
-                    endpoint: src_endpoint.clone()
-                },
-                destination: Connection {
-                    node: dst_node.clone(),
-                    endpoint: dst_endpoint.clone()
-                }
-            }
-        );
+        dst_endpoint: &NodeEndpoint,
+    ) {
+        self.cables.push(Cable {
+            source: Connection {
+                node: src_node.clone(),
+                endpoint: src_endpoint.clone(),
+            },
+            destination: Connection {
+                node: dst_node.clone(),
+                endpoint: dst_endpoint.clone(),
+            },
+        });
     }
 
     #[frb(sync)]

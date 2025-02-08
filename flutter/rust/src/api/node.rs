@@ -1,7 +1,7 @@
-use cmajor::*;
-use cmajor::engine::{Engine, Loaded, Linked, Error};
 use cmajor::endpoint::*;
+use cmajor::engine::{Engine, Error, Linked, Loaded};
 use cmajor::performer::*;
+use cmajor::*;
 use endpoints::stream::StreamType;
 use for_generated::dart_sys::Dart_SourceFile;
 use value::ValueRef;
@@ -11,10 +11,10 @@ use super::endpoint::*;
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
 use std::f32::consts::E;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
-use flutter_rust_bridge::*;
 use crate::other::voices::*;
+use flutter_rust_bridge::*;
 
 /// This is a single processor unit in the graph
 #[frb(opaque)]
@@ -36,7 +36,10 @@ impl PartialEq for Node {
 impl Node {
     #[frb(sync)]
     pub fn from(source: Vec<String>, id: u32) -> Option<Self> {
-        let cmajor = Cmajor::new_from_path("/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib").unwrap();
+        let cmajor = Cmajor::new_from_path(
+            "/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib",
+        )
+        .unwrap();
 
         let mut program = cmajor.create_program();
         for source in &source {
@@ -49,24 +52,22 @@ impl Node {
             .create_default_engine()
             .with_sample_rate(44100.0)
             .build()
-            .load(&program) {
-                Ok(engine) => engine,
-                Err(e) => {
-                    match e {
-                        Error::FailedToLoad(_engine, message) => {
-                            println!("{}", message);
-                        },
-                        _ => println!("{}", e),
+            .load(&program)
+        {
+            Ok(engine) => engine,
+            Err(e) => {
+                match e {
+                    Error::FailedToLoad(_engine, message) => {
+                        println!("{}", message);
                     }
-
-                    return None;
+                    _ => println!("{}", e),
                 }
-            };
-        
-        let infos: Vec<EndpointInfo> = engine
-            .program_details()
-            .endpoints()
-            .collect();
+
+                return None;
+            }
+        };
+
+        let infos: Vec<EndpointInfo> = engine.program_details().endpoints().collect();
 
         let mut inputs = Vec::new();
         let mut outputs = Vec::new();
@@ -81,20 +82,19 @@ impl Node {
             }
         }
 
-        let engine = match engine
-            .link() {
-                Ok(engine) => engine,
-                Err(e) => {
-                    match e {
-                        Error::FailedToLink(_engine, message) => {
-                            println!("{}", message);
-                        },
-                        _ => println!("{}", e),
+        let engine = match engine.link() {
+            Ok(engine) => engine,
+            Err(e) => {
+                match e {
+                    Error::FailedToLink(_engine, message) => {
+                        println!("{}", message);
                     }
-
-                    return None;
+                    _ => println!("{}", e),
                 }
-            };
+
+                return None;
+            }
+        };
 
         let voices = if id == 0 {
             Arc::new(Mutex::new(Voices::Mono(engine.performer())))
@@ -102,15 +102,13 @@ impl Node {
             Arc::new(Mutex::new(Voices::Mono(engine.performer())))
         };
 
-        Some(
-            Self {
-                id,
-                source,
-                inputs,
-                outputs,
-                voices
-            }
-        )
+        Some(Self {
+            id,
+            source,
+            inputs,
+            outputs,
+            voices,
+        })
     }
 
     #[frb(sync, getter)]
