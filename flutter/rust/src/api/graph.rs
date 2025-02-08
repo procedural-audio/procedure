@@ -9,7 +9,7 @@ use flutter_rust_bridge::*;
 use crate::other::action::*;
 
 lazy_static::lazy_static! {
-    static ref ACTIONS: RwLock<Option<Vec<Action>>> = RwLock::new(None);
+    static ref ACTIONS: RwLock<Option<Actions>> = RwLock::new(None);
     // static ref GRAPH_PLAYING: RwLock<Option<Graph>> = RwLock::new(None);
     // static ref GRAPH_PENDING: RwLock<Option<Graph>> = RwLock::new(None);
 }
@@ -17,16 +17,17 @@ lazy_static::lazy_static! {
 #[frb(sync)]
 pub fn set_patch(graph: Graph) {
     println!("Updating patch ({} nodes, {} cables)", graph.nodes.len(), graph.cables.len());
-
-    let actions = generate_graph_actions(graph);
-
-    *ACTIONS.write().unwrap() = Some(actions);
+    *ACTIONS
+        .write()
+        .unwrap() = Some(Actions::from(graph));
 }
 
 #[frb(sync)]
 pub fn clear_patch() {
     println!("Cleared patch");
-    *ACTIONS.write().unwrap() = None;
+    *ACTIONS
+        .write()
+        .unwrap() = None;
 }
 
 #[frb(ignore)]
@@ -80,9 +81,7 @@ pub unsafe extern "C" fn process_patch(audio: *const *mut f32, channels: u32, fr
     // TODO: Update patch from pending patch if it exists
     if let Ok(mut actions) = ACTIONS.try_write() {
         if let Some(actions) = &mut *actions {
-            for action in actions {
-                action.execute(buffer.as_mut_slice(), midi);
-            }
+            actions.execute(&mut buffer, midi);
         }
     }
 }
