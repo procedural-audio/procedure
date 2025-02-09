@@ -46,6 +46,9 @@ class Plugins {
       var file = File(entity.path);
       await _createModule(file);
     }
+
+    var theme = File(GlobalSettings.pluginsDirectory.path + "/theme.json");
+    await _updateTheme(theme);
   }
 
   static void openEditor() async {
