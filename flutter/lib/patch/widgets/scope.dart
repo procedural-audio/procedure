@@ -53,7 +53,7 @@ class ScopeWidget extends NodeWidget {
       height: map['height'] ?? 50,
       min: map['min'] ?? 0.0,
       max: map['max'] ?? 1.0,
-      color: colorFromString(map['color'] ?? "grey"),
+      color: colorFromString(map['color']) ?? Colors.grey,
       key: UniqueKey(),
     );
   }

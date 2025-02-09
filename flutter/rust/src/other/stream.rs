@@ -88,69 +88,6 @@ impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
     }
 }
 
-/*
-// Input stream
-        Action::InputStreamMonoFloat32 { voices, handle, channel } => {
-            if let Some(channel) = audio.get(*channel) {
-                voices
-                    .try_lock()
-                    .unwrap()
-                    .write(*handle, channel);
-            }
-        }
-        Action::OutputStreamMonoFloat32 { voices, handle, channel } => {
-            if let Some(channel) = audio.get_mut(*channel) {
-                voices
-                    .try_lock()
-                    .unwrap()
-                    .read(*handle, channel);
-            }
-        }
-        Action::InputStreamStereoFloat32 { voices, handle, channel, buffer } => {
-            // Copy the left channel
-            if let Some(left) = audio.get(*channel * 2) {
-                for (b, l) in buffer.iter_mut().zip(left.iter()) {
-                    b[0] = *l;
-                }
-            }
-
-            // Copy the right channel
-            if let Some(right) = audio.get(*channel * 2 + 1) {
-                for (b, r) in buffer.iter_mut().zip(right.iter()) {
-                    b[0] = *r;
-                }
-            }
-
-            // Write the samples
-            voices
-                .try_lock()
-                .unwrap()
-                .write(*handle, buffer);
-        }
-        Action::OutputStreamStereoFloat32 { voices, handle, channel, buffer} => {
-            // Read the samples
-            voices
-                .try_lock()
-                .unwrap()
-                .read(*handle, buffer);
-
-            // Copy the left channel
-            if let Some(left) = audio.get_mut(*channel * 2) {
-                for (l, b) in left.iter_mut().zip(buffer.iter()) {
-                    *l = b[0];
-                }
-            }
-
-            // Copy the right channel
-            if let Some(right) = audio.get_mut(*channel * 2 + 1) {
-                for (r, b) in right.iter_mut().zip(buffer.iter()) {
-                    *r = b[1];
-                }
-            }
-        }
-
-*/
-
 pub struct ExternalOutputStream<T: StreamType> {
     pub voices: Arc<Mutex<Voices>>,
     pub handle: Endpoint<OutputStream<T>>,

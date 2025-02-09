@@ -64,7 +64,7 @@ class FaderWidget extends NodeWidget {
       min: map['min'] ?? 0.0,
       max: map['max'] ?? 1.0,
       initialValue: map['initialValue'] ?? 0.5,
-      color: colorFromString(map['color'] ?? "grey"),
+      color: colorFromString(map['color']) ?? Colors.grey,
       key: UniqueKey(),
     );
   }

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::api::cable::Cable;
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
@@ -19,8 +18,8 @@ use performer::OutputStream;
 use performer::OutputValue;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
-use value::types::Array;
 use value::Value;
+use value::ValueRef;
 
 use crate::api::graph::*;
 use crate::other::voices::*;
@@ -29,7 +28,6 @@ use crate::other::handle::*;
 use super::stream::*;
 use super::value::*;
 use super::event::*;
-use super::handle::*;
 
 pub trait ExecuteAction {
     fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]);
@@ -55,168 +53,6 @@ impl ExecuteAction for Advance {
         voices.advance();
     }
 }
-
-/*struct CopyTypedEvent<T> {
-    src_voices: Arc<Mutex<Voices>>,
-    src_handle: Endpoint<OutputEvent>,
-    dst_voices: Arc<Mutex<Voices>>,
-    dst_handle: Endpoint<InputEvent>,
-    data: PhantomData<T>
-}
-
-impl<T: Copy> ExecuteAction for CopyTypedEvent<T> {
-    fn execute(&mut self, num_frames: usize) {
-    }
-}*/
-
-
-
-/*pub enum Action {
-    Advance(Arc<Mutex<Voices>>),
-
-    // Copy streams
-    CopyStreamMonoFloat32(CopyStream<f32>),
-    CopyStreamStereoFloat32(CopyStream<[f32; 2]>),
-    CopyStreamMonoToStereoFloat32(ConvertCopyStream<f32, [f32; 2]>),
-    CopyStreamStereoToMonoFloat32(ConvertCopyStream<[f32; 2], f32>),
-
-    // Clear streams
-    ClearStreamMonoFloat32(ClearStream<f32>),
-    ClearStreamStereoFloat32(ClearStream<[f32; 2]>),
-
-    // Copy events
-    CopyEvent(CopyEvent),
-
-    // Copy convert events
-    CopyEventFloat32ToFloat64(CopyEvent),
-
-    // Recieve value from the user interface
-    ReceiveValue {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<InputValue<cmajor::value::Value>>,
-        queue: Arc<ArrayQueue<cmajor::value::Value>>,
-    },
-
-    // Recieve events from the user interface
-    ReceiveEvents {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<InputEvent>,
-        queue: Arc<ArrayQueue<cmajor::value::Value>>,
-    },
-
-    // Send value to the user interface
-    SendValue {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<OutputValue<cmajor::value::Value>>,
-        queue: Arc<ArrayQueue<cmajor::value::Value>>,
-    },
-
-    // Send events to the user interface
-    SendEvents {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<OutputEvent>,
-        queue: Arc<ArrayQueue<cmajor::value::Value>>,
-    },
-
-    // Output streams
-    InputStreamMonoFloat32 {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<InputStream<f32>>,
-        channel: usize,
-    },
-    OutputStreamMonoFloat32 {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<OutputStream<f32>>,
-        channel: usize,
-    },
-    InputStreamStereoFloat32 {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<InputStream<[f32; 2]>>,
-        buffer: Vec<[f32; 2]>,
-        channel: usize,
-    },
-    OutputStreamStereoFloat32 {
-        voices: Arc<Mutex<Voices>>,
-        handle: Endpoint<OutputStream<[f32; 2]>>,
-        buffer: Vec<[f32; 2]>,
-        channel: usize,
-    },
-}
-
-impl Action {
-    pub fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = audio
-            .get(0)
-            .unwrap()
-            .len();
-
-        match self {
-            Action::Advance(voices) => {
-                let mut voices = voices
-                    .try_lock()
-                    .unwrap();
-
-                voices.set_block_size(num_frames);
-                voices.advance();
-            },
-
-            // Copy streams
-            Action::CopyStreamMonoFloat32(action) => action.execute(num_frames),
-            Action::CopyStreamStereoFloat32(action) => action.execute(num_frames),
-            Action::CopyStreamMonoToStereoFloat32(action) => action.execute(num_frames),
-            Action::CopyStreamStereoToMonoFloat32(action) => action.execute(num_frames),
-
-            // Fill streams
-            Action::ClearStreamMonoFloat32(action) => action.execute(num_frames),
-            Action::ClearStreamStereoFloat32(action) => action.execute(num_frames),
-
-            // Copy event
-            Action::CopyEvent(action) => action.execute(num_frames),
-            Action::CopyEventFloat32ToFloat64(CopyEvent { src_voices, src_handle, dst_voices, dst_handle }) => {
-                todo!()
-            }
-            
-            // Recieve UI value
-            Action::ReceiveValue { voices, handle, queue } => {
-                let mut voices = voices
-                    .try_lock()
-                    .unwrap();
-
-                while let Some(value) = queue.pop() {
-                    voices.set_value(handle.clone(), value);
-                }
-            }
-
-            // Recieve UI events
-            Action::ReceiveEvents { voices, handle, queue } => {
-                let mut voices = voices
-                    .try_lock()
-                    .unwrap();
-
-                while let Some(event) = queue.pop() {
-                    let _ = voices.post(*handle, &event);
-                }
-            }
-
-            Action::SendValue { voices, handle, queue } => {
-                let mut voices = voices
-                    .try_lock()
-                    .unwrap();
-
-                let value = voices.get(handle.clone()).unwrap();
-                queue.force_push(value.to_owned());
-            }
-
-            Action::SendEvents { voices, handle, queue } => {
-                let mut voices = voices
-                    .try_lock()
-                    .unwrap();
-
-                voices.fetch(*handle, | _, value | {
-                    // queue.force_push(value);
-                });
-            }
-}*/
 
 pub struct Actions {
     actions: Vec<Box<dyn ExecuteAction + Send + Sync>>
@@ -336,7 +172,7 @@ impl Actions {
 
         // Generate actions to fill missing input streams
         if !filled {
-            self.process_input_clear(node.voices(), handle.clone());
+            self.process_input_endpoint_clear(node.voices(), handle.clone());
         }
     }
 
@@ -390,13 +226,60 @@ impl Actions {
                 println!(" - Unsupported widget input stream");
             },
             InputHandle::Event(handle) => {
-                todo!()
+                match handle {
+                    InputEventHandle::Primitive(handle) => {
+                        println!(" - Receive events from widget");
+                        self.push(
+                            ReceiveEvents {
+                                voices: node.voices(),
+                                handle: handle.clone(),
+                                queue: queue.clone(),
+                            }
+                        );
+                    },
+                    InputEventHandle::Object { handle, object } => {
+                        println!(" - Unsupported widget input event object");
+                    },
+                    InputEventHandle::Err(_) => ()
+                }
             },
             InputHandle::Value(handle) => {
-                todo!()
+                println!(" - Receive values from widget");
+                match handle {
+                    InputValueHandle::Float32(handle) => {
+                        self.process_input_widget_value(node, handle, queue);
+                    }
+                    InputValueHandle::Float64(handle) => {
+                        self.process_input_widget_value(node, handle, queue);
+                    }
+                    InputValueHandle::Int32(handle) => {
+                        self.process_input_widget_value(node, handle, queue);
+                    }
+                    InputValueHandle::Int64(handle) => {
+                        self.process_input_widget_value(node, handle, queue);
+                    }
+                    InputValueHandle::Bool(handle) => {
+                        self.process_input_widget_value(node, handle, queue);
+                    }
+                    InputValueHandle::Object { .. } => todo!(),
+                    InputValueHandle::Err(_) => (),
+                }
+                println!(" - Unsupported widget input value");
             },
-            _ => ()
         }
+    }
+
+    fn process_input_widget_value<T>(&mut self, node: &Node, handle: &Endpoint<InputValue<T>>, queue: &Arc<ArrayQueue<Value>>)
+        where
+            T: Copy + SetInputValue + Send + Sync + 'static + for<'a> TryFrom<ValueRef<'a>> {
+
+        self.push(
+            ReceiveValue {
+                voices: node.voices(),
+                handle: handle.clone(),
+                queue: queue.clone(),
+            }
+        );
     }
 
     fn process_output_widget(&mut self, node: &Node, handle: &OutputHandle, queue: &Arc<ArrayQueue<Value>>) {
@@ -405,7 +288,22 @@ impl Actions {
                 println!(" - Unsupported widget output stream");
             },
             OutputHandle::Event(handle) => {
-                println!(" - Unsupported widget output event");
+                println!(" - Send events to widget");
+                match handle {
+                    OutputEventHandle::Primitive(handle) => {
+                        self.push(
+                            SendEvents {
+                                voices: node.voices(),
+                                handle: handle.clone(),
+                                queue: queue.clone(),
+                            }
+                        );
+                    },
+                    OutputEventHandle::Object { handle, object } => {
+                        println!(" - Unsupported widget output event object");
+                    },
+                    OutputEventHandle::Err(_) => ()
+                }
             },
             OutputHandle::Value(handle) => {
                 println!(" - Unsupported widget output value");
@@ -413,15 +311,17 @@ impl Actions {
         }
     }
 
-    fn process_input_clear(&mut self, voices: Arc<Mutex<Voices>>, handle: InputHandle) {
+    fn process_input_endpoint_clear(&mut self, voices: Arc<Mutex<Voices>>, handle: InputHandle) {
         match handle {
             InputHandle::Stream(handle) => {
                 match handle {
                     InputStreamHandle::MonoFloat32(handle) => {
-                        self.push_clear_input_stream(voices, handle);
+                        let buffer = vec![0.0; 1024];
+                        self.push( ClearStream { voices, handle, buffer });
                     }
                     InputStreamHandle::StereoFloat32(handle) => {
-                        self.push_clear_input_stream(voices, handle);
+                        let buffer = vec![[0.0; 2]; 1024];
+                        self.push( ClearStream { voices, handle, buffer });
                     }
                     InputStreamHandle::Err(_) => ()
                 }
@@ -429,19 +329,19 @@ impl Actions {
             InputHandle::Value(handle) => {
                 match handle {
                     InputValueHandle::Float32(handle) => {
-                        self.push_clear_input_value(voices, handle);
+                        self.push( ClearValue { voices, handle });
                     }
                     InputValueHandle::Float64(handle) => {
-                        self.push_clear_input_value(voices, handle);
+                        self.push( ClearValue { voices, handle });
                     }
                     InputValueHandle::Int32(handle) => {
-                        self.push_clear_input_value(voices, handle);
+                        self.push( ClearValue { voices, handle });
                     }
                     InputValueHandle::Int64(handle) => {
-                        self.push_clear_input_value(voices, handle);
+                        self.push( ClearValue { voices, handle });
                     }
                     InputValueHandle::Bool(handle) => {
-                        self.push_clear_input_value(voices, handle);
+                        self.push( ClearValue { voices, handle });
                     }
                     InputValueHandle::Object { .. } => todo!(),
                     InputValueHandle::Err(_) => (),
@@ -449,33 +349,6 @@ impl Actions {
             },
             _ => ()
         }
-    }
-
-    fn push_clear_input_stream<T>(&mut self, voices: Arc<Mutex<Voices>>, handle: Endpoint<InputStream<T>>) 
-        where
-            T: Copy + Default + StreamType + Send + Sync + 'static {
-
-        // Push the clear action
-        self.push(
-            ClearStream {
-                voices,
-                handle,
-                buffer: vec![T::default(); 1024]
-            }
-        );
-    }
-
-    fn push_clear_input_value<T>(&mut self, voices: Arc<Mutex<Voices>>, handle: Endpoint<InputValue<T>>) 
-        where
-            T: Copy + Default + SetInputValue + 'static {
-
-        // Push the clear action
-        self.push(
-            ClearValue {
-                voices,
-                handle
-            }
-        );
     }
 
     fn process_cable(
@@ -487,33 +360,18 @@ impl Actions {
 
         match (src_handle, dst_handle) {
             (OutputHandle::Stream(src_handle), InputHandle::Stream(dst_handle)) => self
-                .push_connection_stream_to_stream(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                )?,
+                .connect_streams(src_voices, src_handle, dst_voices, dst_handle)?,
             (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => self
-                .push_connection_event_to_event(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                )?,
+                .connect_events(src_voices, src_handle, dst_voices, dst_handle)?,
             (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => self
-                .push_connection_value_to_value(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                )?,
+                .connect_values(src_voices, src_handle, dst_voices, dst_handle)?,
             _ => return Err("Connection not between different endpoint kinds")
         };
 
         Ok(())
     }
 
-    fn push_connection_stream_to_stream(
+    fn connect_streams(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputStreamHandle,
@@ -521,34 +379,19 @@ impl Actions {
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
         match (src_handle, dst_handle) {
-            (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::MonoFloat32(dst_handle)) => self
-                .push_copy_stream(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                ),
-            (OutputStreamHandle::StereoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => self
-                .push_copy_stream(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                ),
-            (OutputStreamHandle::MonoFloat32(src_handle), InputStreamHandle::StereoFloat32(dst_handle)) => self
-                .push_copy_convert_stream(
-                    src_voices,
-                    src_handle,
-                    dst_voices,
-                    dst_handle
-                ),
+            (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::MonoFloat32(dst)) => self
+                .copy_stream(src_voices, src, dst_voices, dst),
+            (OutputStreamHandle::StereoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
+                .copy_stream(src_voices, src, dst_voices, dst),
+            (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
+                .copy_convert_stream(src_voices, src, dst_voices, dst),
             _ => return Err("Endpoints streams types are not compatible")
         }
 
         Ok(())
     }
 
-    fn push_connection_event_to_event(
+    fn connect_events(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputEventHandle,
@@ -556,27 +399,21 @@ impl Actions {
         dst_handle: InputEventHandle) -> Result<(), &'static str> {
         
         match src_handle {
-            OutputEventHandle::Primitive(src_handle) => match dst_handle {
-                InputEventHandle::Primitive(dst_handle) => self
-                    .push_copy_event(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputEventHandle::Object { .. } => return Err("Endpoints event types are not compatible"),
-                InputEventHandle::Err(e) => return Err(e),
+            OutputEventHandle::Primitive(src_handle) => {
+                match dst_handle {
+                    InputEventHandle::Primitive(dst_handle) => self
+                        .copy_event(src_voices, src_handle, dst_voices, dst_handle),
+                    InputEventHandle::Object { .. } => return Err("Endpoints event types are not compatible"),
+                    InputEventHandle::Err(e) => return Err(e),
+                }
             }
-            OutputEventHandle::Object { handle: src_handle, object } => match dst_handle {
-                InputEventHandle::Primitive(dst_handle) => todo!(),
-                InputEventHandle::Object { handle: dst_handle, object } => self
-                    .push_copy_event(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputEventHandle::Err(e) => return Err(e),
+            OutputEventHandle::Object { handle: src_handle, object } => {
+                match dst_handle {
+                    InputEventHandle::Primitive(dst_handle) => todo!(),
+                    InputEventHandle::Object { handle: dst_handle, object } => self
+                        .copy_event(src_voices, src_handle, dst_voices, dst_handle),
+                    InputEventHandle::Err(e) => return Err(e),
+                }
             }
             OutputEventHandle::Err(e) => return Err(e),
         }
@@ -584,100 +421,31 @@ impl Actions {
         Ok(())
     }
 
-    fn push_connection_value_to_value(
+    fn connect_values(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputValueHandle,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputValueHandle) -> Result<(), &'static str> {
 
-        match src_handle {
-            OutputValueHandle::Float32(src_handle) => match dst_handle {
-                InputValueHandle::Float32(dst_handle) => self
-                    .push_copy_value(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputValueHandle::Float64(dst_handle) => self
-                    .push_copy_convert_value(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputValueHandle::Int32(dst_handle) => self
-                    .push_copy_convert_value(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputValueHandle::Int64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Bool(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
-                InputValueHandle::Err(e) => return Err(e),
-            }
-            OutputValueHandle::Float64(src_handle) => match dst_handle {
-                InputValueHandle::Float32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Float64(dst_handle) => self.push_copy_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Bool(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
-                InputValueHandle::Err(e) => return Err(e),
-            }
-            OutputValueHandle::Int32(src_handle) => match dst_handle {
-                InputValueHandle::Float32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Float64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int32(dst_handle) => self.push_copy_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Bool(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
-                InputValueHandle::Err(e) => return Err(e),
-            }
-            OutputValueHandle::Int64(src_handle) => match dst_handle {
-                InputValueHandle::Float32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Float64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int64(dst_handle) => self.push_copy_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Bool(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
-                InputValueHandle::Err(e) => return Err(e),
-            }
-            OutputValueHandle::Bool(src_handle) => match dst_handle {
-                InputValueHandle::Float32(dst_handle) => self
-                    .push_copy_convert_value(
-                        src_voices,
-                        src_handle,
-                        dst_voices,
-                        dst_handle
-                    ),
-                InputValueHandle::Float64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int32(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Int64(dst_handle) => self.push_copy_convert_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Bool(dst_handle) => self.push_copy_value(src_voices, src_handle, dst_voices, dst_handle),
-                InputValueHandle::Object { .. } => return Err("Endpoints value types are not compatible"),
-                InputValueHandle::Err(e) => return Err(e),
-            }
-            OutputValueHandle::Object { handle, object } => match dst_handle {
-                InputValueHandle::Object { handle: dst_handle, object: dst_object } => {
-                    if object != dst_object {
-                        return Err("Endpoints value types are not compatible");
-                    }
-                    todo!()
-                }
-                InputValueHandle::Err(e) => return Err(e),
-                _ => return Err("Endpoints value types are not compatible"),
-            }
-            OutputValueHandle::Err(e) => return Err(e)
+        match (src_handle, dst_handle) {
+            (OutputValueHandle::Float32(src), InputValueHandle::Float32(dst)) => self
+                .copy_value(src_voices, src, dst_voices, dst),
+            (OutputValueHandle::Float64(src), InputValueHandle::Float64(dst)) => self
+                .copy_value(src_voices, src, dst_voices, dst),
+            (OutputValueHandle::Int32(src), InputValueHandle::Int32(dst)) => self
+                .copy_value(src_voices, src, dst_voices, dst),
+            (OutputValueHandle::Int64(src), InputValueHandle::Int64(dst)) => self
+                .copy_value(src_voices, src, dst_voices, dst),
+            (OutputValueHandle::Bool(src), InputValueHandle::Bool(dst)) => self
+                .copy_value(src_voices, src, dst_voices, dst),
+            _ => return Err("Endpoints value types are not compatible"),
         }
 
         Ok(())
     }
 
-    fn push_copy_stream<T>(
+    fn copy_stream<T>(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputStream<T>>,
@@ -698,7 +466,7 @@ impl Actions {
         );
     }
 
-    fn push_copy_convert_stream<T, U>(
+    fn copy_convert_stream<T, U>(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputStream<T>>,
@@ -722,7 +490,7 @@ impl Actions {
         );
     }
 
-    fn push_copy_event(
+    fn copy_event(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputEvent>,
@@ -739,7 +507,7 @@ impl Actions {
         );
     }
 
-    fn push_copy_value<T>(
+    fn copy_value<T>(
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputValue<T>>,
@@ -750,26 +518,6 @@ impl Actions {
 
         self.push(
             CopyValue {
-                src_voices,
-                src_handle,
-                dst_voices,
-                dst_handle,
-            }
-        );
-    }
-
-    fn push_copy_convert_value<T, U>(
-        &mut self,
-        src_voices: Arc<Mutex<Voices>>,
-        src_handle: Endpoint<OutputValue<T>>,
-        dst_voices: Arc<Mutex<Voices>>,
-        dst_handle: Endpoint<InputValue<U>>)
-        where
-            U: Copy + SetInputValue + 'static,
-            T: Copy + for<'a> GetOutputValue<Output<'a> = T> + ConvertTo<U> + 'static {
-
-        self.push(
-            CopyConvertValue {
                 src_voices,
                 src_handle,
                 dst_voices,

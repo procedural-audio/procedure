@@ -61,14 +61,18 @@ impl Voices {
         }
     }
 
-    /*pub fn get<T: GetOutputValue>(&mut self, endpoint: Endpoint<OutputValue<T>>) -> T::Output<'_> {
+    pub fn get_all<T: GetOutputValue, F: Fn(T::Output<'_>)>(&mut self, endpoint: Endpoint<OutputValue<T>>, f: F) {
         match self {
-            Voices::Mono(performer) => performer.get(endpoint),
+            Voices::Mono(performer) => {
+                f(performer.get(endpoint))
+            },
             Voices::Poly(performers) => {
-                todo!()
+                for performer in performers {
+                    f(performer.get(endpoint));
+                }
             }
         }
-    }*/
+    }
 
     pub fn set<T: SetInputValue + Copy>(&mut self, endpoint: Endpoint<InputValue<T>>, value: T) {
         match self {
@@ -235,6 +239,11 @@ impl Voices {
             _ => todo!(),
         }
     }
+}
+
+pub trait Primitive {
+    fn from_f32(value: f32) -> Self;
+    fn into_f32(self) -> f32;
 }
 
 pub trait ConvertTo<T> {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
 
+import '../plugins.dart';
 import '../settings.dart';
 import 'node.dart';
 
@@ -12,34 +14,6 @@ import '../bindings/api/endpoint.dart';
 
 // Radius of a pin
 const double pinRadius = 6;
-
-// Convert an endpoint to a color
-Color endpointToColor(NodeEndpoint endpoint) {
-  Color color = Colors.grey;
-
-  // Switch on the endpoint kind
-  switch (endpoint.kind) {
-    // Stream types
-    case EndpointKind.stream:
-      color = Colors.blue;
-      break;
-
-    // Event and value types
-    case EndpointKind.event || EndpointKind.value:
-      endpoint.type.when(
-        float: () => color = Colors.red,
-        int: () => color = Colors.red,
-        bool: () => color = Colors.red,
-        object: (a) => color = Colors.green,
-        unsupported: () => color = Color.fromRGBO(50, 50, 50, 1.0),
-        void_: () => color = Colors.grey,
-      );
-
-      break;
-  }
-
-  return color;
-}
 
 class Pin extends StatefulWidget {
   Pin({
@@ -61,9 +35,6 @@ class Pin extends StatefulWidget {
               (pinRadius * 2 + 10),
           top);
     }
-
-    // Initialize the pin color
-    color = endpointToColor(endpoint);
   }
 
   final NodeEndpoint endpoint;
@@ -73,7 +44,6 @@ class Pin extends StatefulWidget {
   final void Function(Pin) onRemoveConnections;
 
   Offset offset = Offset(0, 0);
-  Color color = Colors.white;
 
   @override
   _PinState createState() => _PinState();
@@ -144,20 +114,26 @@ class _PinState extends State<Pin> {
                 valueListenable: widget.patch.selectedNodes,
                 builder: (context, selectedNodes, child) {
                   bool is_selected = selectedNodes.contains(widget.node);
-
-                  return Container(
-                    width: pinRadius * 2,
-                    height: pinRadius * 2,
-                    child: CustomPaint(
-                      painter: PinPainter(
-                        color: widget.color,
-                        kind: widget.endpoint.kind,
-                        selected: is_selected,
-                        hovering: hovering,
-                        dragging: dragging,
-                        connected: connected,
-                      ),
-                    ),
+                  return ValueListenableBuilder<GraphTheme>(
+                    valueListenable: Plugins.theme,
+                    builder: (context, theme, child) {
+                      var kind = widget.endpoint.kind;
+                      var type = widget.endpoint.type;
+                      return Container(
+                        width: pinRadius * 2,
+                        height: pinRadius * 2,
+                        child: CustomPaint(
+                          painter: PinPainter(
+                            color: theme.getColor(type, kind),
+                            shape: theme.getShape(type, kind),
+                            selected: is_selected,
+                            hovering: hovering,
+                            dragging: dragging,
+                            connected: connected,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );
@@ -172,7 +148,7 @@ class _PinState extends State<Pin> {
 class PinPainter extends CustomPainter {
   PinPainter({
     required this.color,
-    required this.kind,
+    required this.shape,
     required this.selected,
     required this.hovering,
     required this.dragging,
@@ -180,7 +156,7 @@ class PinPainter extends CustomPainter {
   });
 
   final Color color;
-  final EndpointKind kind;
+  final PinShape shape;
   final bool selected;
   final bool hovering;
   final bool dragging;
@@ -199,13 +175,12 @@ class PinPainter extends CustomPainter {
 
     Path path = Path();
 
-    switch (kind) {
-      case EndpointKind.stream:
+    switch (shape) {
+      case PinShape.circle:
         path.addOval(Rect.fromCircle(center: center, radius: radius));
         break;
-      case EndpointKind.event:
-        final cornerRadius = pinRadius / 3; // Adjust for more/less rounding
-
+      case PinShape.triangle:
+        final corner = pinRadius / 3;
         // Define the three corners of a triangle
         final p1 = Offset(center.dx - radius, center.dy - radius);
         final p2 = Offset(center.dx - radius, center.dy + radius);
@@ -215,25 +190,64 @@ class PinPainter extends CustomPainter {
         path.moveTo(p1.dx, p1.dy + radius);
 
         // Bottom-left corner
-        path.lineTo(p2.dx, p2.dy - cornerRadius);
-        path.quadraticBezierTo(p2.dx, p2.dy, p2.dx + cornerRadius, p2.dy);
+        path.lineTo(p2.dx, p2.dy - corner);
+        path.quadraticBezierTo(p2.dx, p2.dy, p2.dx + corner, p2.dy);
 
         // Right-center corner
-        path.lineTo(p3.dx - cornerRadius, p3.dy + cornerRadius);
-        path.quadraticBezierTo(p3.dx + cornerRadius, p3.dy,
-            p3.dx - cornerRadius, p3.dy - cornerRadius);
+        path.lineTo(p3.dx - corner, p3.dy + corner);
+        path.quadraticBezierTo(
+            p3.dx + corner, p3.dy, p3.dx - corner, p3.dy - corner);
 
         // Top-left corner
-        path.lineTo(p1.dx + cornerRadius, p1.dy);
-        path.quadraticBezierTo(p1.dx, p1.dy, p1.dx, p1.dy + cornerRadius);
+        path.lineTo(p1.dx + corner, p1.dy);
+        path.quadraticBezierTo(p1.dx, p1.dy, p1.dx, p1.dy + corner);
 
         // Return to the center
         path.lineTo(p1.dx, p1.dy + radius);
 
         break;
-      case EndpointKind.value:
+      case PinShape.square:
         var rect = Rect.fromCircle(center: center, radius: radius);
         path.addRRect(RRect.fromRectAndRadius(rect, Radius.circular(3)));
+        break;
+      case PinShape.diamond:
+        final corner = pinRadius / 6;
+        // Top corner
+        path.moveTo(center.dx + corner, corner);
+        path.quadraticBezierTo(center.dx, 0, center.dx - corner, corner);
+
+        // Left corner
+        path.lineTo(corner, center.dy - corner);
+        path.quadraticBezierTo(0.0, center.dy, corner, center.dy + corner);
+
+        // Bottom corner
+        path.lineTo(center.dx - corner, size.height - corner);
+        path.quadraticBezierTo(
+            center.dx, size.height, center.dx + corner, size.height - corner);
+
+        // Right corner
+        path.lineTo(size.width - corner, center.dy + corner);
+        path.quadraticBezierTo(
+            size.width, center.dy, size.width - corner, center.dy - corner);
+
+        path.lineTo(center.dx + corner, corner);
+
+        /*path.moveTo(center.dx, 0.0);
+        path.lineTo(0.0, center.dy);
+        path.lineTo(center.dx, size.height);
+        path.lineTo(size.width, center.dy);
+        path.lineTo(center.dx, 0.0);*/
+        break;
+      case PinShape.unknown:
+        var l = size.width / 4;
+        var r = size.width * 3 / 4;
+        var t = size.width / 4;
+        var b = size.width * 3 / 4;
+
+        path.moveTo(l, t);
+        path.lineTo(r, b);
+        path.moveTo(l, b);
+        path.lineTo(r, t);
         break;
     }
 

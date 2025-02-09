@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:metasampler/settings.dart';
+import 'package:metasampler/utils.dart';
 
 import 'dart:io';
-import 'dart:isolate';
 
 import 'patch/module.dart';
 import 'patch/patch.dart';
@@ -23,6 +25,7 @@ String pathToName(FileSystemEntity moduleFile) {
 class Plugins {
   static final ValueNotifier<List<Module>> _modules = ValueNotifier([]);
   static Stream<FileSystemEvent>? eventStream;
+  static ValueNotifier<GraphTheme> theme = ValueNotifier(GraphTheme.create());
 
   static List<String> lib() {
     return [
@@ -60,37 +63,57 @@ class Plugins {
     // Listen for file changes
     eventStream = GlobalSettings.pluginsDirectory
         .watch(recursive: true)
-        .where((e) => e.path.endsWith(".module"))
         .where((e) => !e.isDirectory);
 
     // Process each event
     await for (final event in eventStream!) {
       var file = File(event.path);
 
-      // Update the module list
-      if (event is FileSystemCreateEvent) {
-        // Skip if the file already exists
-        if (!await file.exists()) continue;
+      if (file.path.endsWith(".module")) {
+        // Update the module list
+        if (event is FileSystemCreateEvent) {
+          // Skip if the file already exists
+          if (!await file.exists()) continue;
 
-        // Skip if the module already exists
-        if (_modules.value.contains((e) => e.path == file.path)) continue;
+          // Skip if the module already exists
+          if (_modules.value.contains((e) => e.path == file.path)) continue;
 
-        // Create the module
-        await _createModule(file);
-      } else if (event is FileSystemMoveEvent) {
-        print("File ${event.path} moved");
-      } else if (event is FileSystemModifyEvent) {
-        if (event.contentChanged) {
-          await _updateModule(event.path);
+          // Create the module
+          await _createModule(file);
+        } else if (event is FileSystemMoveEvent) {
+          print("File ${event.path} moved");
+        } else if (event is FileSystemModifyEvent) {
+          if (event.contentChanged) {
+            await _updateModule(event.path);
+          }
+        } else if (event is FileSystemDeleteEvent) {
+          await _deleteModule(event.path);
         }
-      } else if (event is FileSystemDeleteEvent) {
-        await _deleteModule(event.path);
+      } else if (file.path.endsWith(".lib")) {
+        // Update the module list
+        print("Update lib file");
+      } else if (file.path.endsWith("theme.json")) {
+        // Update the theme
+        await _updateTheme(file);
+      } else {
+        print("Detected change in ${event.path}");
       }
     }
   }
 
   static void endWatch() {
     eventStream = null;
+  }
+
+  static Future<void> _updateTheme(File file) async {
+    print("Updating theme");
+    var contents = await file.readAsString();
+    try {
+      var json = jsonDecode(contents);
+      theme.value = GraphTheme.fromJson(json);
+    } catch (e) {
+      print("Failed to load theme: $e");
+    }
   }
 
   static Future<void> _createModule(File file) async {

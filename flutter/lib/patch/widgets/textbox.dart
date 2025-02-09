@@ -60,7 +60,7 @@ class TextboxWidget extends NodeWidget {
       width: map['width'] ?? 50,
       height: map['height'] ?? 30,
       label: map['label'] ?? "",
-      color: colorFromString(map['color'] ?? "grey"),
+      color: colorFromString(map['color']) ?? Colors.grey,
       initialValue: map['default'] ?? 0.5,
       key: UniqueKey(),
     );

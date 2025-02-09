@@ -5,11 +5,9 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
-part 'endpoint.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `read_value`, `write_value`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `eq`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `eq`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `from`, `handle`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>>
@@ -20,7 +18,7 @@ abstract class NodeEndpoint implements RustOpaqueInterface {
 
   EndpointKind get kind;
 
-  EndpointType get type;
+  String get type;
 
   bool isExternal();
 
@@ -44,18 +42,4 @@ enum EndpointKind {
   value,
   event,
   ;
-}
-
-@freezed
-sealed class EndpointType with _$EndpointType {
-  const EndpointType._();
-
-  const factory EndpointType.float() = EndpointType_Float;
-  const factory EndpointType.int() = EndpointType_Int;
-  const factory EndpointType.bool() = EndpointType_Bool;
-  const factory EndpointType.void_() = EndpointType_Void;
-  const factory EndpointType.object(
-    String field0,
-  ) = EndpointType_Object;
-  const factory EndpointType.unsupported() = EndpointType_Unsupported;
 }

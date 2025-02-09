@@ -10,6 +10,7 @@ use performer::OutputValue;
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use value::Value;
+use value::ValueRef;
 
 use crate::other::voices::*;
 
@@ -52,31 +53,6 @@ impl<T: Copy + Default + SetInputValue> ExecuteAction for ClearValue<T> {
     }
 }
 
-pub struct CopyConvertValue<A, B> {
-    pub src_voices: Arc<Mutex<Voices>>,
-    pub src_handle: Endpoint<OutputValue<A>>,
-    pub dst_voices: Arc<Mutex<Voices>>,
-    pub dst_handle: Endpoint<InputValue<B>>,
-}
-
-impl<A, B> ExecuteAction for CopyConvertValue<A, B>
-where
-    B: Copy + SetInputValue, A: Copy + for<'a> GetOutputValue<Output<'a> = A> + ConvertTo<B>,
-{
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let mut src = self.src_voices
-            .try_lock()
-            .unwrap();
-        let mut dst = self.dst_voices
-            .try_lock()
-            .unwrap();
-
-        // let a = src.get(self.src_handle);
-        // let b = a.convert_to();
-        // dst.set(self.dst_handle, b);
-    }
-}
-
 /*pub struct SendValueTyped<T> {
     pub voices: Arc<Mutex<Voices>>,
     pub handle: Endpoint<OutputValue<T>>,
@@ -115,17 +91,22 @@ impl ExecuteAction for SendValue {
 pub struct ReceiveValue<T> {
     pub voices: Arc<Mutex<Voices>>,
     pub handle: Endpoint<InputValue<T>>,
-    pub queue: Arc<ArrayQueue<T>>
+    pub queue: Arc<ArrayQueue<Value>>
 }
 
-impl<T: Copy + SetInputValue> ExecuteAction for ReceiveValue<T> {
+impl<T> ExecuteAction for ReceiveValue<T>
+    where
+        T: Copy + SetInputValue + for <'a> TryFrom<ValueRef<'a>> {
+
     fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
 
         while let Some(value) = self.queue.pop() {
-            voices.set(self.handle, value);
+            if let Ok(v) = value.as_ref().try_into() {
+                voices.set(self.handle, v);
+            }
         }
     }
 }

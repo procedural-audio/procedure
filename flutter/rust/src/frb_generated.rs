@@ -1983,37 +1983,6 @@ impl SseDecode for crate::api::endpoint::EndpointKind {
     }
 }
 
-impl SseDecode for crate::api::endpoint::EndpointType {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut tag_ = <i32>::sse_decode(deserializer);
-        match tag_ {
-            0 => {
-                return crate::api::endpoint::EndpointType::Float;
-            }
-            1 => {
-                return crate::api::endpoint::EndpointType::Int;
-            }
-            2 => {
-                return crate::api::endpoint::EndpointType::Bool;
-            }
-            3 => {
-                return crate::api::endpoint::EndpointType::Void;
-            }
-            4 => {
-                let mut var_field0 = <String>::sse_decode(deserializer);
-                return crate::api::endpoint::EndpointType::Object(var_field0);
-            }
-            5 => {
-                return crate::api::endpoint::EndpointType::Unsupported;
-            }
-            _ => {
-                unimplemented!("");
-            }
-        }
-    }
-}
-
 impl SseDecode for f64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2382,35 +2351,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::EndpointKind>
         self
     }
 }
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::endpoint::EndpointType {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        match self {
-            crate::api::endpoint::EndpointType::Float => [0.into_dart()].into_dart(),
-            crate::api::endpoint::EndpointType::Int => [1.into_dart()].into_dart(),
-            crate::api::endpoint::EndpointType::Bool => [2.into_dart()].into_dart(),
-            crate::api::endpoint::EndpointType::Void => [3.into_dart()].into_dart(),
-            crate::api::endpoint::EndpointType::Object(field0) => {
-                [4.into_dart(), field0.into_into_dart().into_dart()].into_dart()
-            }
-            crate::api::endpoint::EndpointType::Unsupported => [5.into_dart()].into_dart(),
-            _ => {
-                unimplemented!("");
-            }
-        }
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::api::endpoint::EndpointType
-{
-}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::endpoint::EndpointType>
-    for crate::api::endpoint::EndpointType
-{
-    fn into_into_dart(self) -> crate::api::endpoint::EndpointType {
-        self
-    }
-}
 
 impl SseEncode for Cable {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -2533,36 +2473,6 @@ impl SseEncode for crate::api::endpoint::EndpointKind {
             },
             serializer,
         );
-    }
-}
-
-impl SseEncode for crate::api::endpoint::EndpointType {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        match self {
-            crate::api::endpoint::EndpointType::Float => {
-                <i32>::sse_encode(0, serializer);
-            }
-            crate::api::endpoint::EndpointType::Int => {
-                <i32>::sse_encode(1, serializer);
-            }
-            crate::api::endpoint::EndpointType::Bool => {
-                <i32>::sse_encode(2, serializer);
-            }
-            crate::api::endpoint::EndpointType::Void => {
-                <i32>::sse_encode(3, serializer);
-            }
-            crate::api::endpoint::EndpointType::Object(field0) => {
-                <i32>::sse_encode(4, serializer);
-                <String>::sse_encode(field0, serializer);
-            }
-            crate::api::endpoint::EndpointType::Unsupported => {
-                <i32>::sse_encode(5, serializer);
-            }
-            _ => {
-                unimplemented!("");
-            }
-        }
     }
 }
 

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/plugins.dart';
 
 import '../bindings/api/endpoint.dart';
 import 'module.dart';
@@ -60,7 +61,8 @@ class Connector extends StatelessWidget {
                           roundToGrid(endModuleOffset.dy) +
                           pinRadius,
                     ),
-                    start.color,
+                    Plugins.theme.value
+                        .getColor(start.endpoint.type, start.endpoint.kind),
                     focused,
                   ),
                 );
@@ -118,7 +120,8 @@ class NewConnector extends StatelessWidget {
             painter: ConnectorPainter(
               startOffset,
               endOffset,
-              start!.color,
+              Plugins.theme.value
+                  .getColor(start!.endpoint.type, start!.endpoint.kind),
               true,
             ),
           );

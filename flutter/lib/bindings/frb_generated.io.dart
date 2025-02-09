@@ -162,9 +162,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   EndpointKind dco_decode_endpoint_kind(dynamic raw);
 
   @protected
-  EndpointType dco_decode_endpoint_type(dynamic raw);
-
-  @protected
   double dco_decode_f_64(dynamic raw);
 
   @protected
@@ -342,9 +339,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   EndpointKind sse_decode_endpoint_kind(SseDeserializer deserializer);
-
-  @protected
-  EndpointType sse_decode_endpoint_type(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -525,9 +519,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_endpoint_kind(EndpointKind self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_endpoint_type(EndpointType self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);

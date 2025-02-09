@@ -118,8 +118,7 @@ abstract class RustLibApi extends BaseApi {
   EndpointKind crateApiEndpointNodeEndpointGetKind(
       {required NodeEndpoint that});
 
-  EndpointType crateApiEndpointNodeEndpointGetType(
-      {required NodeEndpoint that});
+  String crateApiEndpointNodeEndpointGetType({required NodeEndpoint that});
 
   bool crateApiEndpointNodeEndpointIsExternal({required NodeEndpoint that});
 
@@ -573,8 +572,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  EndpointType crateApiEndpointNodeEndpointGetType(
-      {required NodeEndpoint that}) {
+  String crateApiEndpointNodeEndpointGetType({required NodeEndpoint that}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
@@ -583,7 +581,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14)!;
       },
       codec: SseCodec(
-        decodeSuccessData: sse_decode_endpoint_type,
+        decodeSuccessData: sse_decode_String,
         decodeErrorData: null,
       ),
       constMeta: kCrateApiEndpointNodeEndpointGetTypeConstMeta,
@@ -1447,29 +1445,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  EndpointType dco_decode_endpoint_type(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    switch (raw[0]) {
-      case 0:
-        return EndpointType_Float();
-      case 1:
-        return EndpointType_Int();
-      case 2:
-        return EndpointType_Bool();
-      case 3:
-        return EndpointType_Void();
-      case 4:
-        return EndpointType_Object(
-          dco_decode_String(raw[1]),
-        );
-      case 5:
-        return EndpointType_Unsupported();
-      default:
-        throw Exception("unreachable");
-    }
-  }
-
-  @protected
   double dco_decode_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
@@ -1810,30 +1785,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return EndpointKind.values[inner];
-  }
-
-  @protected
-  EndpointType sse_decode_endpoint_type(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var tag_ = sse_decode_i_32(deserializer);
-    switch (tag_) {
-      case 0:
-        return EndpointType_Float();
-      case 1:
-        return EndpointType_Int();
-      case 2:
-        return EndpointType_Bool();
-      case 3:
-        return EndpointType_Void();
-      case 4:
-        var var_field0 = sse_decode_String(deserializer);
-        return EndpointType_Object(var_field0);
-      case 5:
-        return EndpointType_Unsupported();
-      default:
-        throw UnimplementedError('');
-    }
   }
 
   @protected
@@ -2222,28 +2173,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_endpoint_type(EndpointType self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    switch (self) {
-      case EndpointType_Float():
-        sse_encode_i_32(0, serializer);
-      case EndpointType_Int():
-        sse_encode_i_32(1, serializer);
-      case EndpointType_Bool():
-        sse_encode_i_32(2, serializer);
-      case EndpointType_Void():
-        sse_encode_i_32(3, serializer);
-      case EndpointType_Object(field0: final field0):
-        sse_encode_i_32(4, serializer);
-        sse_encode_String(field0, serializer);
-      case EndpointType_Unsupported():
-        sse_encode_i_32(5, serializer);
-      default:
-        throw UnimplementedError('');
-    }
-  }
-
-  @protected
   void sse_encode_f_64(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putFloat64(self);
@@ -2540,8 +2469,7 @@ class NodeEndpointImpl extends RustOpaque implements NodeEndpoint {
         that: this,
       );
 
-  EndpointType get type =>
-      RustLib.instance.api.crateApiEndpointNodeEndpointGetType(
+  String get type => RustLib.instance.api.crateApiEndpointNodeEndpointGetType(
         that: this,
       );
 

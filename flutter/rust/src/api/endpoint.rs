@@ -123,19 +123,9 @@ impl NodeEndpoint {
     }
 
     #[frb(sync, getter)]
-    pub fn get_type(&self) -> EndpointType {
-        self.endpoint.get_type()
+    pub fn get_type(&self) -> String {
+        self.endpoint.get_type().to_string()
     }
-}
-
-#[derive(Clone)]
-pub enum EndpointType {
-    Float,
-    Int,
-    Bool,
-    Void,
-    Object(String),
-    Unsupported,
 }
 
 #[derive(Copy, Clone)]
