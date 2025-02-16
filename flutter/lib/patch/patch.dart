@@ -20,25 +20,6 @@ import '../bindings/api/graph.dart' as api;
 
 /* LIBRARY */
 
-class Assets {
-  Assets(String path) {
-    projects = Projects(Directory(path + "projects"));
-  }
-
-  late final Projects projects;
-
-  static Assets platformDefault() {
-    if (Platform.isMacOS) {
-      return Assets("/Users/chasekanipe/Github/assets/");
-    } else if (Platform.isLinux) {
-      return Assets("/home/chase/github/assets/");
-    }
-
-    print("Assets not found in default platform location");
-    exit(1);
-  }
-}
-
 extension FileExtention on FileSystemEntity {
   String get name {
     return path.split("/").last;
@@ -49,6 +30,7 @@ class Patch extends StatefulWidget {
   Patch({
     // required this.rawPatch,
     required this.info,
+    required this.plugins,
   }) : super(key: UniqueKey());
 
   final ValueNotifier<List<Node>> nodes = ValueNotifier([]);
@@ -57,17 +39,18 @@ class Patch extends StatefulWidget {
 
   // final RawPatch rawPatch;
   final PresetInfo info;
+  final List<Plugin> plugins;
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
 
-  static Patch from(PresetInfo info) {
+  static Patch from(PresetInfo info, List<Plugin> plugins) {
     return Patch(
       info: info,
-      // rawPatch: RawPatch.create(),
+      plugins: plugins,
     );
   }
 
-  static Future<Patch?> load(PresetInfo info) async {
+  static Future<Patch?> load(PresetInfo info, List<Plugin> plugins) async {
     var file = File(info.directory.path + "/patch.json");
 
     if (!await file.exists()) {
@@ -76,8 +59,8 @@ class Patch extends StatefulWidget {
 
     print("Skipping Patch.load");
     return Patch(
-      // rawPatch: rawPatch,
       info: info,
+      plugins: plugins
     );
   }
 
@@ -391,6 +374,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
               left: rightClickOffset.dx,
               top: rightClickOffset.dy,
               child: RightClickView(
+                plugins: widget.plugins,
                 onAddModule: (info) {
                   addModule(info, moduleAddPosition);
                   setState(() {

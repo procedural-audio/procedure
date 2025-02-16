@@ -87,8 +87,9 @@ void add_module_to_category(
 }
 
 class RightClickView extends StatefulWidget {
-  RightClickView({super.key, required this.onAddModule});
+  RightClickView({super.key, required this.plugins, required this.onAddModule});
 
+  List<Plugin> plugins;
   void Function(Module) onAddModule;
 
   @override
@@ -100,151 +101,148 @@ class _RightClickView extends State<RightClickView> {
 
   @override
   Widget build(BuildContext context) {
-    // Build the plugin list
-    return ValueListenableBuilder<List<Module>>(
-      valueListenable: Plugins.modules,
-      builder: (context, modules, child) {
-        // Build the module list
-        List<RightClickCategory> categories = [];
+    // Build the module list
+    List<RightClickCategory> categories = [];
 
-        String lowerSearchText = searchText.toLowerCase();
+    String lowerSearchText = searchText.toLowerCase();
 
-        for (var module in modules) {
-          bool matchesSearch =
-              module.name.toLowerCase().contains(lowerSearchText);
+    for (var plugin in widget.plugins) {
+      for (var module in plugin.modules) {
+        bool matchesSearch =
+            module.name.toLowerCase().contains(lowerSearchText);
 
-          for (var category in module.category) {
-            if (category.toLowerCase().contains(lowerSearchText)) {
-              matchesSearch = true;
-              break;
-            }
-          }
-
-          if (matchesSearch) {
-            add_module_to_category(
-              module,
-              4,
-              lowerSearchText,
-              module.category,
-              categories,
-              widget.onAddModule,
-            );
+        for (var category in module.category) {
+          if (category.toLowerCase().contains(lowerSearchText)) {
+            matchesSearch = true;
+            break;
           }
         }
 
-        return MouseRegion(
-          onEnter: (event) {
-            // widget.app.patchingScaleEnabled = false;
-          },
-          onExit: (event) {
-            // widget.app.patchingScaleEnabled = true;
-          },
-          child: Container(
-            width: 300,
-            child: Column(
-              children: [
-                /* Title */
-                Row(
-                  children: [
-                    Container(
-                      height: 35,
-                      padding: const EdgeInsets.all(10.0),
-                      child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Modules",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(child: SizedBox()),
-                    IconButton(
-                      icon: Icon(
-                        Icons.settings,
-                        color: Colors.grey.shade600,
-                        size: 14,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      onPressed: () {
-                        Plugins.openEditor();
-                      },
-                    )
-                  ],
-                ),
+        if (matchesSearch) {
+          add_module_to_category(
+            module,
+            4,
+            lowerSearchText,
+            module.category,
+            categories,
+            widget.onAddModule,
+          );
+        }
+      }
+    }
 
-                /* Search bar */
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-                  child: Container(
-                    height: 25,
-                    child: TextField(
-                      maxLines: 1,
-                      cursorHeight: 14,
-                      style: const TextStyle(
-                        color: Colors.black,
+    return MouseRegion(
+      onEnter: (event) {
+        // widget.app.patchingScaleEnabled = false;
+      },
+      onExit: (event) {
+        // widget.app.patchingScaleEnabled = true;
+      },
+      child: Container(
+        width: 300,
+        child: Column(
+          children: [
+            /* Title */
+            Row(
+              children: [
+                Container(
+                  height: 35,
+                  padding: const EdgeInsets.all(10.0),
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Modules",
+                      style: TextStyle(
+                        color: Colors.white,
                         fontSize: 14,
+                        fontWeight: FontWeight.normal,
                       ),
-                      decoration: InputDecoration(
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(5.0),
-                          ),
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(5.0),
-                          ),
-                          borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.blueGrey,
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
-                      ),
-                      onChanged: (data) {
-                        setState(() {
-                          searchText = data;
-                        });
-                      },
                     ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white70,
+                  ),
+                ),
+                Expanded(child: SizedBox()),
+                IconButton(
+                  icon: Icon(
+                    Icons.filter_list,
+                    color: Colors.grey.shade600,
+                    size: 14,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    print("Should open editor");
+                    // Plugins.openEditor();
+                  },
+                )
+              ],
+            ),
+
+            /* Search bar */
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
+              child: Container(
+                height: 25,
+                child: TextField(
+                  maxLines: 1,
+                  cursorHeight: 14,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                  ),
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(
                         Radius.circular(5.0),
                       ),
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: Colors.blueGrey,
+                      ),
                     ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
+                  ),
+                  onChanged: (data) {
+                    setState(() {
+                      searchText = data;
+                    });
+                  },
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white70,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(5.0),
                   ),
                 ),
+              ),
+            ),
 
-                /* List */
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxHeight: 300,
-                  ),
-                  child: SingleChildScrollView(
-                    controller: ScrollController(),
-                    child: Column(
-                      children: categories,
-                    ),
-                  ),
+            /* List */
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 300,
+              ),
+              child: SingleChildScrollView(
+                controller: ScrollController(),
+                child: Column(
+                  children: categories,
                 ),
-              ],
+              ),
             ),
-            decoration: BoxDecoration(
-              color: MyTheme.grey20,
-              border: Border.all(color: MyTheme.grey40),
-            ),
-          ),
-        );
-      },
+          ],
+        ),
+        decoration: BoxDecoration(
+          color: MyTheme.grey20,
+          border: Border.all(color: MyTheme.grey40),
+        ),
+      ),
     );
   }
 }

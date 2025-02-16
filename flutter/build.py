@@ -99,6 +99,17 @@ def download_framework(output_dir, revision):
     except zipfile.BadZipFile:
         print("Error: The downloaded file is not a valid zip file.")
 
+def package_framework(flutter_build_folder, destination_app, framework):
+    framework_build = os.path.join(flutter_build_folder, f"macos/Build/Products/Release/{framework}/{framework}.framework")
+    destination_frameworks = os.path.join(destination_app, "Contents/Frameworks")
+    os.makedirs(destination_frameworks, exist_ok=True)
+
+    destination_framework = os.path.join(destination_frameworks, f"{framework}.framework")
+
+    if os.path.exists(destination_framework):
+        shutil.rmtree(destination_framework)
+    shutil.copytree(framework_build, destination_framework)
+
 def initialize_framework(path):
     revision = get_framework_revision()
     info_plist_path = os.path.join(path, "Versions/A/Resources/Info.plist")
@@ -214,15 +225,9 @@ def build_app(build_folder):
     shutil.copytree(flutter_framework_build, flutter_framework_destination)
 
     # Package the rust framework
-    rust_framework_build = os.path.join(flutter_build_folder, "macos/Build/Products/Release/rust_lib_metasampler/rust_lib_metasampler.framework")
-    destination_frameworks = os.path.join(destination_app, "Contents/Frameworks")
-    os.makedirs(destination_frameworks, exist_ok=True)
-
-    destination_rust_framework = os.path.join(destination_frameworks, "rust_lib_metasampler.framework")
-
-    if os.path.exists(destination_rust_framework):
-        shutil.rmtree(destination_rust_framework)
-    shutil.copytree(rust_framework_build, destination_rust_framework)
+    package_framework(flutter_build_folder, destination_app, "rust_lib_metasampler")
+    package_framework(flutter_build_folder, destination_app, "path_provider_foundation")
+    package_framework(flutter_build_folder, destination_app, "file_picker")
 
 if __name__ == "__main__":
     build_app("build/")

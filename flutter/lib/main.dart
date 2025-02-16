@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_openai/langchain_openai.dart';
@@ -7,6 +9,7 @@ import 'package:metasampler/bindings/api/graph.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/presets.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'patch/module.dart';
 import 'projects.dart';
@@ -24,8 +27,8 @@ Future<void> main(List<String> args) async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  Plugins.scan();
-  Plugins.beginWatch();
+  // Plugins.scan();
+  // Plugins.beginWatch();
 
   print("Rust backend says: " + greet(name: "Tom"));
 
@@ -45,7 +48,7 @@ Future<void> main(List<String> args) async {
       ),
     );
 
-    Plugins.endWatch();
+    // rlugins.endWatch();
   }
 }
 
@@ -92,48 +95,56 @@ class _Window extends State<Window> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     super.dispose();
   }
 
-  void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info, unloadProject);
-
-    if (project != null) {
-      // widget.app.core.setPatch(project.preset.value.patch);
-      widget.app.project.value = project;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          settings: const RouteSettings(name: "/project"),
-          builder: (context) => Theme(
-            data: ThemeData(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-            child: Material(
-              color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: project,
-            ),
+  void showProjectBrowser(MainDirectory directory) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        settings: const RouteSettings(name: "/projects"),
+        builder: (context) => Theme(
+          data: ThemeData(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: Material(
+            color: const Color.fromRGBO(10, 10, 10, 1.0),
+            child: ProjectsBrowser(directory),
           ),
         ),
-      );
-    }
-  }
-
-  void unloadProject() async {
-    Navigator.pop(context);
-    // TODO: Save the project here
-    widget.app.project.value = null;
-    clearPatch();
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ProjectsBrowser(
-      app: widget.app,
-      onLoadProject: loadProject,
+    return HomeDirectoryBrowser(
+      onUpdateDirectory: (dir) {
+        showProjectBrowser(dir);
+      },
+    );
+  }
+}
+
+class HomeDirectoryBrowser extends StatelessWidget {
+  HomeDirectoryBrowser({required this.onUpdateDirectory, super.key});
+
+  void Function(MainDirectory) onUpdateDirectory;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () async {
+          var picked = await FilePicker.platform.getDirectoryPath();
+          if (picked != null && picked.isNotEmpty) {
+            onUpdateDirectory(MainDirectory(Directory(picked)));
+          }
+        },
+        child: const Text("Browse for projects"),
+      ),
     );
   }
 }

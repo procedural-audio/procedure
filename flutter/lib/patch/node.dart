@@ -117,7 +117,7 @@ class Node extends StatelessWidget {
     required this.onRemoveConnections,
     required Offset position,
   }) : super(key: UniqueKey()) {
-    List<String> source = Plugins.lib();
+    List<String> source = []; // Plugins.lib();
     source.add(module.source);
     rawNode = api.Node.from(source: source, id: NODE_ID++);
 

@@ -37,7 +37,7 @@ impl Node {
     #[frb(sync)]
     pub fn from(source: Vec<String>, id: u32) -> Option<Self> {
         let cmajor = Cmajor::new_from_path(
-            "/Users/chasekanipe/Github/cmajor-build/x64/libCmajPerformer.dylib",
+            "/Users/chase/Code/nodus/flutter/build/libCmajPerformer.dylib",
         )
         .unwrap();
 

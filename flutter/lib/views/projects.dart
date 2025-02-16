@@ -2,21 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:metasampler/plugins.dart';
 
+import '../bindings/api/graph.dart';
+import '../projects.dart';
+import '../settings.dart';
 import 'info.dart';
 
-import '../globals.dart';
-import '../main.dart';
-
 class ProjectsBrowser extends StatefulWidget {
-  ProjectsBrowser({
+  ProjectsBrowser(this.directory, {
     super.key,
-    required this.app,
-    required this.onLoadProject,
   });
 
-  App app;
-  void Function(ProjectInfo) onLoadProject;
+  MainDirectory directory;
 
   @override
   State<ProjectsBrowser> createState() => _ProjectsBrowser();
@@ -26,15 +24,64 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   String searchText = "";
   bool editing = false;
 
+  List<ProjectInfo> projectsInfos = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    scanProjects();
+  }
+
+  Future<void> scanProjects() async {
+    var dir = widget.directory.projects;
+    if (await dir.exists()) {
+      var files = await dir.list();
+
+      await for (var file in files) {
+        if (file is Directory) {
+          var info = await ProjectInfo.load(file.path);
+          if (info != null) {
+            projectsInfos.add(info);
+            setState(() {});
+          }
+        }
+      }
+    }
+  }
+
+  void loadProject(ProjectInfo info) async {
+    var project = await Project.load(info, widget.directory);
+
+    if (project != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          settings: const RouteSettings(name: "/project"),
+          builder: (context) => Theme(
+            data: ThemeData(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+            ),
+            child: Material(
+              color: const Color.fromRGBO(10, 10, 10, 1.0),
+              child: project,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   void newProject() async {
     print("Calling new project");
     var newName = "New Project";
-    var newPath = Globals.assets.projects.directory.path + "/" + newName;
+    var newPath = widget.directory.projects.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = "New Project " + i.toString();
-      newPath = Globals.assets.projects.directory.path + "/" + newName;
+      newPath = widget.directory.projects.path + "/" + newName;
       i++;
     }
 
@@ -45,22 +92,26 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       image: ValueNotifier(null),
       date: ValueNotifier(DateTime.now()),
       tags: [],
+      pluginInfos: [
+        PluginInfo("github.com/0xchase/test-modules", null)
+      ]
     );
 
     await newInfo.save();
 
-    Globals.assets.projects.list().value.add(newInfo);
-    Globals.assets.projects.list().notifyListeners();
+    setState(() {
+      projectsInfos.add(newInfo);
+    });
   }
 
   void duplicateProject(ProjectInfo info) async {
     var newName = info.name.value + " (copy)";
-    var newPath = Globals.assets.projects.directory.path + "/" + newName;
+    var newPath = widget.directory.projects.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = info.name.value + " (copy " + i.toString() + ")";
-      newPath = Globals.assets.projects.directory.path + "/" + newName;
+      newPath = widget.directory.projects.path + "/" + newName;
       i++;
     }
 
@@ -72,16 +123,18 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       newInfo.date.value = DateTime.now();
       await newInfo.save();
 
-      Globals.assets.projects.list().value.add(newInfo);
-      Globals.assets.projects.list().notifyListeners();
+      setState(() {
+        projectsInfos.add(newInfo);
+      });
     }
   }
 
   void removeProject(ProjectInfo info) async {
     print("Removing project");
     await info.directory.delete(recursive: true);
-    Globals.assets.projects.list().value.remove(info);
-    Globals.assets.projects.list().notifyListeners();
+    setState(() {
+      projectsInfos.remove(info);
+    });
   }
 
   @override
@@ -114,14 +167,13 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
               ),
             ),
             Expanded(
-              child: ValueListenableBuilder<List<ProjectInfo>>(
-                valueListenable: Globals.assets.projects.list(),
-                builder: (context, projects, child) {
+              child: Builder(
+                builder: (context) {
                   List<ProjectInfo> filteredProjects = [];
                   if (searchText == "") {
-                    filteredProjects = projects;
+                    filteredProjects = projectsInfos;
                   } else {
-                    for (var project in projects) {
+                    for (var project in projectsInfos) {
                       if (project.name.value
                               .toLowerCase()
                               .contains(searchText.toLowerCase()) ||
@@ -158,7 +210,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                         editing: editing,
                         project: filteredProjects[index],
                         onOpen: (info) {
-                          widget.onLoadProject(info);
+                          loadProject(info);
                         },
                         onDuplicate: (info) {
                           duplicateProject(info);
@@ -271,7 +323,7 @@ class BigTags extends StatelessWidget {
         Expanded(
           child: Container(),
         ),
-        const SizedBox(width: 10),
+        /*const SizedBox(width: 10),
         BigTagDropdown(
           text: "Instrument",
           color: Colors.white,
@@ -396,7 +448,7 @@ class BigTags extends StatelessWidget {
               tags: ["Item 1", "Item 2"],
             ),
           ],
-        ),
+        ),*/
         const SizedBox(width: 10),
         NewInstrumentButton(
           onPressed: () {

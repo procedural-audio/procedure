@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/views/projects.dart';
 
 import '../patch/patch.dart';
+import '../plugins.dart';
+import '../settings.dart';
 import '../ui/ui.dart';
 
 class PresetInfo {
@@ -74,16 +76,16 @@ class Preset {
   final Patch patch;
   final ValueNotifier<UserInterface?> interface;
 
-  static Preset from(PresetInfo info) {
+  static Preset from(PresetInfo info, List<Plugin> plugins) {
     return Preset(
       info: info,
-      patch: Patch.from(info),
+      patch: Patch.from(info, plugins),
       interface: ValueNotifier(null),
     );
   }
 
-  static Future<Preset?> load(PresetInfo info) async {
-    var patch = await Patch.load(info);
+  static Future<Preset?> load(PresetInfo info, List<Plugin> plugins) async {
+    var patch = await Patch.load(info, plugins);
     if (patch != null) {
       var interface = await UserInterface.load(info);
 
@@ -95,6 +97,14 @@ class Preset {
     }
 
     return null;
+  }
+
+  static Preset blank(Directory directory, List<Plugin> plugins) {
+    return Preset(
+      info: PresetInfo.blank(directory),
+      patch: Patch.from(PresetInfo.blank(directory), plugins),
+      interface: ValueNotifier(null)
+    );
   }
 
   Future<bool> save() async {

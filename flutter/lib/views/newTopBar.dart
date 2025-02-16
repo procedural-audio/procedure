@@ -23,7 +23,7 @@ class NewTopBar extends StatefulWidget {
   });
 
   ProjectInfo projectInfo;
-  ValueNotifier<Preset> loadedPreset;
+  Preset loadedPreset;
   final ProjectSidebarDisplay sidebarDisplay;
 
   void Function(ProjectSidebarDisplay) onSidebarChange;
@@ -220,7 +220,7 @@ class PresetsButton extends StatefulWidget {
     Key? key,
   }) : super(key: key);
 
-  final ValueNotifier<Preset> loadedPreset;
+  final Preset loadedPreset;
   final void Function() onTap;
   final void Function() onEdit;
   final void Function() onSave;
@@ -280,22 +280,17 @@ class _PresetsButton extends State<PresetsButton> {
                 onTap: () {},
               ),
               Expanded(
-                child: ValueListenableBuilder<Preset>(
-                  valueListenable: widget.loadedPreset,
-                  builder: (context, preset, child) {
-                    return ValueListenableBuilder<String>(
-                      valueListenable: preset.info.name,
-                      builder: (context, name, child) {
-                        return Center(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        );
-                      },
+                child: ValueListenableBuilder<String>(
+                  valueListenable: widget.loadedPreset.info.name,
+                  builder: (context, name, child) {
+                    return Center(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
                     );
                   },
                 ),

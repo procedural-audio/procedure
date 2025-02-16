@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:file_picker/file_picker.dart';
+//import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:metasampler/plugins.dart';
 
+import '../settings.dart';
 import 'settings.dart';
 
 import '../patch/patch.dart';
@@ -76,6 +78,7 @@ class ProjectInfo {
     required this.image,
     required this.date,
     required this.tags,
+    required this.pluginInfos
   });
 
   final Directory directory;
@@ -84,17 +87,18 @@ class ProjectInfo {
   final ValueNotifier<File?> image;
   final ValueNotifier<DateTime> date;
   final List<String> tags;
+  final List<PluginInfo> pluginInfos;
 
-  static ProjectInfo blank() {
+  static ProjectInfo blank(MainDirectory directory) {
     return ProjectInfo(
-      directory: Directory(
-        "/Users/chasekanipe/Github/assets/projects/NewProject",
+      directory: Directory(directory.projects.path + "/NewProject",
       ),
       name: ValueNotifier("New Project"),
       description: ValueNotifier("Description for a new project"),
       image: ValueNotifier(null),
       date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
       tags: [],
+      pluginInfos: [PluginInfo("github.com/0xchase/test-modules", null)]
     );
   }
 
@@ -113,11 +117,11 @@ class ProjectInfo {
   Future<bool> save() async {
     print("Saving project info");
 
-    if (!await directory.exists()) {
-      await directory.create();
-    }
-
     File file = File(directory.path + "/project.json");
+
+    if (!await file.exists()) {
+      await file.create(recursive: true);
+    }
 
     await file.writeAsString(
       jsonEncode(
@@ -127,45 +131,6 @@ class ProjectInfo {
 
     return true;
   }
-
-  /*Future<int> getPatchCount() async {
-    Directory presetsDirectory = Directory(directory.path + "/patches");
-    if (await presetsDirectory.exists()) {
-      return presetsDirectory.list().length;
-    }
-
-    return 0;
-  }
-
-  Future<int> getInterfaceCount() async {
-    Directory presetsDirectory = Directory(directory.path + "/interfaces");
-    if (await presetsDirectory.exists()) {
-      return presetsDirectory.list().length;
-    }
-
-    return 0;
-  }
-
-  Future<int> getSubPatchCount() async {
-    Directory presetsDirectory = Directory(directory.path + "/interfaces");
-
-    int count = 0;
-
-    if (await presetsDirectory.exists()) {
-      var presets = presetsDirectory.list();
-      await for (var preset in presets) {
-        var presetDirectory = Directory(preset.path);
-        if (await presetDirectory.exists()) {
-          var patchesDirectory = Directory(presetDirectory.path + "/patches");
-          if (await patchesDirectory.exists()) {
-            count += await patchesDirectory.list().length;
-          }
-        }
-      }
-    }
-
-    return count;
-  }*/
 
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
     File? image;
@@ -200,6 +165,7 @@ class ProjectInfo {
       image: ValueNotifier(image),
       date: ValueNotifier(date),
       tags: tags != null ? tags.split(",") : [],
+      pluginInfos: [PluginInfo("github.com/0xchase/test-modules", null)]
     );
   }
 
@@ -521,7 +487,7 @@ class InfoViewTitle extends StatelessWidget {
     );
   }
 }
-
+/*
 class InfoViewImage extends StatefulWidget {
   InfoViewImage(
       {super.key,
@@ -554,8 +520,8 @@ class InfoViewImage extends StatefulWidget {
   }
 
   void browserForImage() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(allowedExtensions: [".png", ".jpg", ".jpeg"]);
+    //FilePickerResult? result = await FilePicker.platform
+    //    .pickFiles(allowedExtensions: [".png", ".jpg", ".jpeg"]);
 
     if (result != null) {
       File file = File(result.files.single.path!);
@@ -889,3 +855,4 @@ class Tag extends StatelessWidget {
     );
   }
 }
+*/

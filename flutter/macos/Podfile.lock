@@ -1,5 +1,10 @@
 PODS:
+  - file_picker (0.0.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - rust_lib_metasampler (0.0.1):
     - FlutterMacOS
   - webview_flutter_wkwebview (0.0.1):
@@ -7,23 +12,31 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - rust_lib_metasampler (from `Flutter/ephemeral/.symlinks/plugins/rust_lib_metasampler/macos`)
   - webview_flutter_wkwebview (from `Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 EXTERNAL SOURCES:
+  file_picker:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   rust_lib_metasampler:
     :path: Flutter/ephemeral/.symlinks/plugins/rust_lib_metasampler/macos
   webview_flutter_wkwebview:
     :path: Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin
 
 SPEC CHECKSUMS:
+  file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  rust_lib_metasampler: a87ed44f2ff54ffb70fc04ee903e53969cea5650
-  webview_flutter_wkwebview: 0982481e3d9c78fd5c6f62a002fcd24fc791f1e4
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  rust_lib_metasampler: bdc503732977002f8a0d3c38436bf3f05e510c44
+  webview_flutter_wkwebview: 44d4dee7d7056d5ad185d25b38404436d56c547c
 
 PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.16.2
