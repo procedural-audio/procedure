@@ -12,7 +12,7 @@ import '../settings.dart';
 import 'pin.dart';
 import '../plugins.dart';
 import 'connector.dart';
-import '../projects.dart';
+import '../project/project.dart';
 import 'node.dart';
 import 'right_click.dart';
 

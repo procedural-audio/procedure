@@ -1,15 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'dart:io';
-
-Directory pathToDirectory(String path) {
-  if (path.startsWith("assets/")) {
-    return Directory("/Users/chasekanipe/Github/assets" + path.substring(6));
-  } else {
-    return Directory(path);
-  }
-}
-
 class Category {
   Category({required this.name, required this.elements});
 
@@ -304,11 +294,13 @@ class _SearchableDropdown extends State<SearchableDropdown>
                         color: Colors.transparent,
                         child: Container(
                           decoration: BoxDecoration(
-                              color: const Color.fromRGBO(20, 20, 20, 1.0),
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                  color: const Color.fromRGBO(40, 40, 40, 1.0),
-                                  width: 1.0)),
+                            color: const Color.fromRGBO(20, 20, 20, 1.0),
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                              color: const Color.fromRGBO(40, 40, 40, 1.0),
+                              width: 1.0,
+                            ),
+                          ),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,15 +329,17 @@ class _SearchableDropdown extends State<SearchableDropdown>
 }
 
 class SearchableDropdownCategory extends StatefulWidget {
+
   final String name;
   final List<CategoryElement> elements;
   void Function(String?) onSelect;
 
-  SearchableDropdownCategory(
-      {super.key,
-      required this.name,
-      required this.elements,
-      required this.onSelect});
+  SearchableDropdownCategory({
+    super.key,
+    required this.name,
+    required this.elements,
+    required this.onSelect
+  });
 
   @override
   State<SearchableDropdownCategory> createState() =>

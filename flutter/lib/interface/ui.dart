@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/ui/layout.dart';
-import 'package:metasampler/ui/tree.dart';
+import 'package:metasampler/interface/layout.dart';
+import 'package:metasampler/interface/tree.dart';
 
 import 'decoration.dart';
 import 'interactive.dart';

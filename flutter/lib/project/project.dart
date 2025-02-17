@@ -7,47 +7,10 @@ import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
 import 'package:metasampler/views/presets.dart';
 
-import 'core.dart';
-import 'patch/patch.dart';
+import '../bindings/api/graph.dart' as api;
 
-import 'bindings/api/graph.dart' as api;
-
-import 'views/info.dart';
-import 'ui/ui.dart';
-
-/* Projects */
-
-class Projects {
-  Projects(this.directory) {
-    scan();
-  }
-
-  final Directory directory;
-  final ValueNotifier<List<ProjectInfo>> _projects = ValueNotifier([]);
-
-  Future<Project?> load(String name) async {
-    return null;
-  }
-
-  ValueNotifier<List<ProjectInfo>> list() {
-    return _projects;
-  }
-
-  void scan() async {
-    List<ProjectInfo> projects = [];
-
-    var list = await directory.list().toList();
-    for (var item in list) {
-      var projectInfo = await ProjectInfo.load(item.path);
-      if (projectInfo != null) {
-        projects.add(projectInfo);
-        _projects.value = projects;
-      }
-    }
-
-    _projects.notifyListeners();
-  }
-}
+import '../views/info.dart';
+import '../interface/ui.dart';
 
 /* Project */
 
@@ -171,7 +134,7 @@ class _Project extends State<Project> {
 
   void save() async {
     await widget.info.save();
-    await preset?.save();
+    await preset.save();
   }
 
   void loadPlugins() async {
@@ -194,7 +157,7 @@ class _Project extends State<Project> {
 
   @override
   Widget build(BuildContext context) {
-    if (preset?.interface.value == null) {
+    if (preset.interface.value == null) {
       uiVisible = false;
     }
 

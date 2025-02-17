@@ -10,7 +10,7 @@ import 'node.dart';
 import 'pin.dart';
 import 'patch.dart';
 
-class Connector extends StatelessWidget {
+class Connector extends StatefulWidget {
   Connector({
     required this.start,
     required this.end,
@@ -30,40 +30,63 @@ class Connector extends StatelessWidget {
     };
   }
 
+  State<StatefulWidget> createState() => _Connector();
+}
+
+class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
+
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    )..repeat(reverse: false);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<List<Node>>(
-      valueListenable: patch.selectedNodes,
+      valueListenable: widget.patch.selectedNodes,
       builder: (context, selectedNodes, child) {
-        bool focused = selectedNodes.contains(start.node) ||
-            selectedNodes.contains(end.node);
+        bool focused = selectedNodes.contains(widget.start.node) ||
+            selectedNodes.contains(widget.end.node);
         return ValueListenableBuilder<Offset>(
-          valueListenable: start.node.position,
+          valueListenable: widget.start.node.position,
           builder: (context, startModuleOffset, child) {
             return ValueListenableBuilder<Offset>(
-              valueListenable: end.node.position,
+              valueListenable: widget.end.node.position,
               builder: (context, endModuleOffset, child) {
                 return CustomPaint(
                   painter: ConnectorPainter(
                     Offset(
-                      start.offset.dx +
+                      widget.start.offset.dx +
                           roundToGrid(startModuleOffset.dx) +
                           pinRadius,
-                      start.offset.dy +
+                      widget.start.offset.dy +
                           roundToGrid(startModuleOffset.dy) +
                           pinRadius,
                     ),
                     Offset(
-                      end.offset.dx +
+                      widget.end.offset.dx +
                           roundToGrid(endModuleOffset.dx) +
                           pinRadius,
-                      end.offset.dy +
+                      widget.end.offset.dy +
                           roundToGrid(endModuleOffset.dy) +
                           pinRadius,
                     ),
                     Plugins.theme.value
-                        .getColor(start.endpoint.type, start.endpoint.kind),
+                        .getColor(widget.start.endpoint.type, widget.start.endpoint.kind),
                     focused,
+                    _controller
                   ),
                 );
               },
@@ -75,10 +98,11 @@ class Connector extends StatelessWidget {
   }
 }
 
-class NewConnector extends StatelessWidget {
+class NewConnector extends StatefulWidget {
   Pin? start;
   final ValueNotifier<Offset?> offset = ValueNotifier(null);
   Pin? end;
+  // AnimationController _controller = AnimationController(vsync: this);
 
   NewConnector({super.key});
 
@@ -100,15 +124,36 @@ class NewConnector extends StatelessWidget {
     offset.value = null;
   }
 
+  State<StatefulWidget> createState() => _NewConnector();
+}
+
+class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: false);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Offset?>(
-      valueListenable: offset,
+      valueListenable: widget.offset,
       builder: (context, offset, child) {
-        if (start != null && offset != null) {
+        if (widget.start != null && offset != null) {
           var startOffset = Offset(
-            start!.offset.dx + start!.node.position.value.dx + 15 / 2,
-            start!.offset.dy + start!.node.position.value.dy + 15 / 2,
+            widget.start!.offset.dx + widget.start!.node.position.value.dx + 15 / 2,
+            widget.start!.offset.dy + widget.start!.node.position.value.dy + 15 / 2,
           );
 
           var endOffset = Offset(
@@ -121,8 +166,9 @@ class NewConnector extends StatelessWidget {
               startOffset,
               endOffset,
               Plugins.theme.value
-                  .getColor(start!.endpoint.type, start!.endpoint.kind),
+                  .getColor(widget.start!.endpoint.type, widget.start!.endpoint.kind),
               true,
+              _controller,
             ),
           );
         } else {
@@ -133,18 +179,21 @@ class NewConnector extends StatelessWidget {
   }
 }
 
-class ConnectorPainter extends CustomPainter {
+class ConnectorPainter extends CustomPainter implements Listenable {
   ConnectorPainter(
     this.initialStart,
     this.initialEnd,
     this.color,
     this.focused,
-  );
+    this.animation,
+  ) : super(repaint: animation);
 
+  Animation<double> animation;
   Offset initialStart;
   Offset initialEnd;
   Color color;
   bool focused;
+  Random source = Random();
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -152,7 +201,7 @@ class ConnectorPainter extends CustomPainter {
       ..color = const Color.fromRGBO(255, 255, 255, 1.0)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-
+    
     paint.color = color.withOpacity(focused ? 1.0 : 0.3);
 
     Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);
@@ -165,19 +214,82 @@ class ConnectorPainter extends CustomPainter {
     Offset end1 = Offset(end.dx - firstOffset, end.dy);
     Offset center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
 
+    // Draw path
     Path path = Path();
-
     path.moveTo(start.dx, start.dy);
     path.quadraticBezierTo(start1.dx + 10, start1.dy, center.dx, center.dy);
-
-    path.moveTo(end.dx, end.dy);
-    path.quadraticBezierTo(end1.dx - 10, end1.dy, center.dx, center.dy);
-
+    path.quadraticBezierTo(end1.dx - 10, end1.dy, end.dx, end.dy);
     canvas.drawPath(path, paint);
+
+    /*final animationPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 3;
+
+    double segmentLength = 50.0;
+    double totalLength = pathLength(path);
+    double segmentCount = totalLength / segmentLength;
+    double segmentFraction = segmentLength / totalLength;
+
+    for (int i = 0; i < segmentCount.ceil(); i++) {
+      double fraction = (animation.value / segmentCount) + i.toDouble() * segmentFraction;
+
+      // Don't draw past total length
+      if (fraction < 1.0) {
+        // Draw animated point
+        var point = pointAlongMultipleContours(path, fraction);
+        if (point != null) {
+          canvas.drawCircle(point, 2.0, animationPaint);
+        }
+      }
+    }*/
+  }
+
+  double pathLength(Path path) {
+    final pathMetrics = path.computeMetrics(forceClosed: false).toList();
+    double totalLength = 0;
+    for (final pm in pathMetrics) {
+      totalLength += pm.length;
+    }
+
+    return totalLength;
+  }
+
+  Offset? pointAlongMultipleContours(Path path, double fraction) {
+    if (fraction < 0.0) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+
+    // 1. Compute all metrics and total length.
+    final pathMetrics = path.computeMetrics(forceClosed: false).toList();
+    double totalLength = 0;
+    for (final pm in pathMetrics) {
+      totalLength += pm.length;
+    }
+
+    // 2. Convert fraction -> absolute distance.
+    final targetDistance = totalLength * fraction;
+
+    // 3. Find which contour (PathMetric) contains that targetDistance.
+    double runningLength = 0.0;
+    for (final pm in pathMetrics) {
+      // If this segment contains the target distance
+      if (targetDistance <= runningLength + pm.length) {
+        final distanceWithinSegment = targetDistance - runningLength;
+        // 4. Get the tangent for the offset within this contour
+        final tangent = pm.getTangentForOffset(distanceWithinSegment);
+        return tangent?.position;
+      }
+      runningLength += pm.length;
+    }
+
+    // If fraction == 1.0, or something else happened, just return last point of last contour.
+    final lastMetric = pathMetrics.last;
+    return lastMetric.getTangentForOffset(lastMetric.length)?.position;
   }
 
   @override
   bool shouldRepaint(ConnectorPainter oldDelegate) {
+    // return true;
     return oldDelegate.initialStart.dx != initialStart.dx ||
         oldDelegate.initialStart.dy != initialStart.dy ||
         oldDelegate.initialEnd.dx != initialEnd.dy ||

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/views/presets.dart';
 
-import '../projects.dart';
+import '../project/project.dart';
 import 'info.dart';
 
 const double barHeight = 35;

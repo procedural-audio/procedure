@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/views/projects.dart';
+import 'package:metasampler/project/browser.dart';
 
 import '../patch/patch.dart';
 import '../plugins.dart';
 import '../settings.dart';
-import '../ui/ui.dart';
+import '../interface/ui.dart';
 
 class PresetInfo {
   PresetInfo({

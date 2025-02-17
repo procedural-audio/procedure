@@ -12,10 +12,10 @@ import 'package:metasampler/views/presets.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'patch/module.dart';
-import 'projects.dart';
+import 'project/project.dart';
 
 import 'views/info.dart';
-import 'views/projects.dart';
+import 'project/browser.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api.dart';

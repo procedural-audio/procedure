@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/ui/ui.dart';
+import 'package:metasampler/interface/ui.dart';
 
 import '../views/variables.dart';
 import '../main.dart';

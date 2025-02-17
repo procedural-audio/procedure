@@ -46,7 +46,6 @@ class Plugin {
             if (file is File) {
               var name = pathToName(file);
               var category = pathToCategory(directory, file);
-              print("{$category}");
               var module = await Module.load(name, category, file.path);
               if (module != null) {
                 modules.add(module);

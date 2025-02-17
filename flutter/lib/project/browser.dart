@@ -5,9 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:metasampler/plugins.dart';
 
 import '../bindings/api/graph.dart';
-import '../projects.dart';
+import 'project.dart';
 import '../settings.dart';
-import 'info.dart';
+import '../views/info.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
