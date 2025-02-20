@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/views/presets.dart';
 
+import '../project/info.dart';
 import '../project/project.dart';
 import 'info.dart';
 
@@ -11,9 +12,7 @@ class NewTopBar extends StatefulWidget {
     super.key,
     required this.loadedPreset,
     required this.projectInfo,
-    required this.sidebarDisplay,
     required this.onPresetsButtonTap,
-    required this.onSidebarChange,
     required this.onViewSwitch,
     required this.onUserInterfaceEdit,
     required this.onEdit,
@@ -24,9 +23,7 @@ class NewTopBar extends StatefulWidget {
 
   ProjectInfo projectInfo;
   Preset loadedPreset;
-  final ProjectSidebarDisplay sidebarDisplay;
 
-  void Function(ProjectSidebarDisplay) onSidebarChange;
   void Function() onPresetsButtonTap;
   void Function() onViewSwitch;
   void Function() onUserInterfaceEdit;
@@ -187,19 +184,14 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(5, 0, 0, 2),
-                child: ValueListenableBuilder<String>(
-                  valueListenable: widget.info.name,
-                  builder: (context, projectName, child) {
-                    return Text(
-                      projectName,
-                      style: TextStyle(
-                        color: hovering
-                            ? Colors.white
-                            : const Color.fromRGBO(200, 200, 200, 1.0),
-                        fontSize: 14,
-                      ),
-                    );
-                  },
+                child: Text(
+                  widget.info.name,
+                  style: TextStyle(
+                    color: hovering
+                        ? Colors.white
+                        : const Color.fromRGBO(200, 200, 200, 1.0),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -280,19 +272,14 @@ class _PresetsButton extends State<PresetsButton> {
                 onTap: () {},
               ),
               Expanded(
-                child: ValueListenableBuilder<String>(
-                  valueListenable: widget.loadedPreset.info.name,
-                  builder: (context, name, child) {
-                    return Center(
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                    );
-                  },
+                child: Center(
+                  child: Text(
+                    widget.loadedPreset.info.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
               BarButton(

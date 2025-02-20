@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'dart:ui' as ui;
 
-import '../../bindings/api/endpoint.dart';
+import '../../../bindings/api/endpoint.dart';
 import '../node.dart';
-import '../../views/settings.dart';
-import '../../utils.dart';
+import '../../../views/settings.dart';
+import '../../../utils.dart';
 
 class KnobWidget extends NodeWidget {
   KnobWidget(

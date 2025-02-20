@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../bindings/api/endpoint.dart';
+import '../../../bindings/api/endpoint.dart';
 import '../node.dart';
-import '../../utils.dart';
+import '../../../utils.dart';
 
 class TextboxWidget extends NodeWidget {
   TextboxWidget(

@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/newTopBar.dart';
-import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/preset/presets.dart';
 
 import '../bindings/api/graph.dart' as api;
 
+import '../preset/info.dart';
 import '../views/info.dart';
-import '../interface/ui.dart';
+import '../preset/interface/ui.dart';
+import 'info.dart';
 
 /* Project */
 
@@ -28,35 +30,10 @@ class Project extends StatefulWidget {
 
   static Project blank(MainDirectory directory) {
     var info = ProjectInfo.blank(directory);
-
-    var patchDirectory = Directory(info.directory.path + "/patches/NewPatch");
-    var presetInfo = PresetInfo.blank(patchDirectory);
-
-    /*var preset = Preset(
-      info: PresetInfo.blank(patchDirectory),
-      patch: Patch.from(presetInfo),
-      interface: ValueNotifier(null),
-    );*/
-
     return Project(
       directory: directory,
       info: info,
-      // preset: ValueNotifier(preset),
     );
-  }
-
-  Future<bool> loadPreset(PresetInfo info) async {
-    print("Skipping Project.loadPreset");
-    /*var newPreset = await Preset.load(info, PLUGINS);
-
-    if (newPreset != null) {
-      preset.value = newPreset;
-      core.setPatch(preset.value.patch);
-      return true;
-    }
-
-    return false;*/
-    return true;
   }
 
   Future<bool> loadInterface(PresetInfo info) async {
@@ -113,9 +90,7 @@ class Project extends StatefulWidget {
 const double sidebarWidth = 300;
 
 class _Project extends State<Project> {
-
-  late Preset preset;
-  ProjectSidebarDisplay display = ProjectSidebarDisplay.None;
+  Preset? preset;
   bool uiVisible = true;
   bool presetsVisible = false;
   List<Plugin> plugins = [];
@@ -124,7 +99,7 @@ class _Project extends State<Project> {
   void initState() {
     super.initState();
     loadPlugins();
-    preset = Preset.blank(Directory(widget.info.directory.path + "/New Project"), plugins);
+    preset = Preset.blank(Directory(widget.info.directory.path), plugins);
   }
 
   @override
@@ -134,7 +109,7 @@ class _Project extends State<Project> {
 
   void save() async {
     await widget.info.save();
-    await preset.save();
+    await preset?.save();
   }
 
   void loadPlugins() async {
@@ -157,7 +132,7 @@ class _Project extends State<Project> {
 
   @override
   Widget build(BuildContext context) {
-    if (preset.interface.value == null) {
+    if (preset?.interface.value == null) {
       uiVisible = false;
     }
 
@@ -220,18 +195,20 @@ class _Project extends State<Project> {
                         Directory(widget.info.directory.path + "/presets"),
                     presets: widget.presetInfos,
                     onLoad: (info) {
-                      widget.loadPreset(info);
+                      // widget.loadPreset(info);
                     },
                     onAddInterface: (info) async {
-                      var newInterface = UserInterface(info);
-                      await newInterface.save();
+                      print("Should add interface");
+                      // var newInterface = UserInterface(info);
+                      // await newInterface.save();
                       // widget.preset.value.interface.value = newInterface;
-                      info.hasInterface.value = true;
+                      // info.hasInterface.value = true;
                     },
                     onRemoveInterface: (info) async {
-                      info.hasInterface.value = false;
+                      print("Should remove interface");
+                      /*info.hasInterface.value = false;
                       await File(info.directory.path + "/interface.json")
-                          .delete();
+                          .delete();*/
                     },
                   ),
                 ),
@@ -247,18 +224,12 @@ class _Project extends State<Project> {
           child: NewTopBar(
             loadedPreset: preset!,
             projectInfo: widget.info,
-            sidebarDisplay: display,
             onEdit: () {
               // widget.preset.value.interface.value?.toggleEditing();
             },
             onPresetsButtonTap: () {
               setState(() {
                 presetsVisible = !presetsVisible;
-              });
-            },
-            onSidebarChange: (ProjectSidebarDisplay newDisplay) {
-              setState(() {
-                display = newDisplay;
               });
             },
             onViewSwitch: () {
@@ -281,74 +252,7 @@ class _Project extends State<Project> {
             onProjectClose: onProjectClose,
           ),
         ),
-        AnimatedPositioned(
-          // Project sidebar
-          top: 40,
-          bottom: 0,
-          right: display != ProjectSidebarDisplay.None ? 0 : -sidebarWidth,
-          curve: Curves.linearToEaseOut,
-          duration: const Duration(milliseconds: 300),
-          child: ProjectSidebar(
-            display: display,
-          ),
-        ),
       ],
-    );
-  }
-}
-
-enum ProjectSidebarDisplay {
-  None,
-  Samples,
-  Notes,
-  Modules,
-  Widgets,
-  Settings,
-}
-
-class ProjectSidebar extends StatelessWidget {
-  const ProjectSidebar({super.key, required this.display});
-
-  final ProjectSidebarDisplay display;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: sidebarWidth,
-      decoration: const BoxDecoration(
-        color: Color.fromRGBO(20, 20, 20, 1.0),
-        border: Border(
-          left: BorderSide(
-            color: Colors.black,
-            width: 1.0,
-          ),
-        ),
-      ),
-      child: Stack(
-        children: [
-          Visibility(
-            visible: display == ProjectSidebarDisplay.Samples,
-            child: const SamplesBrowser(),
-          ),
-          Visibility(
-            visible: display == ProjectSidebarDisplay.Notes,
-            child: const NotesBrowser(),
-          ),
-          Visibility(
-            visible: display == ProjectSidebarDisplay.Modules,
-            child: const ModulesBrowser(),
-          ),
-          Visibility(
-            visible: display == ProjectSidebarDisplay.Widgets,
-            child: const WidgetsBrowser(),
-          ),
-          Visibility(
-            visible: display == ProjectSidebarDisplay.Settings,
-            // child: const Settings(),
-            child: const SizedBox()
-          ),
-        ],
-      ),
     );
   }
 }

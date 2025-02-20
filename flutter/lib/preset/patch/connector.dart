@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:metasampler/plugins.dart';
 
-import '../bindings/api/endpoint.dart';
+import '../../bindings/api/endpoint.dart';
 import 'module.dart';
 import 'node.dart';
 import 'pin.dart';
@@ -21,11 +21,11 @@ class Connector extends StatefulWidget {
   final Pin end;
   final Patch patch;
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> getState() {
     return {
-      // "startId": start.nodeId,
-      // "startIndex": start.pinIndex,
-      // "endId": end.nodeId,
+      "startNode": start.node.module.file.path,
+      // "startIndex": start.,
+      "endNode": end.node.module.file.path,
       // "endIndex": end.pinIndex,
     };
   }

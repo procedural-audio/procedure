@@ -1,73 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/project/browser.dart';
 
-import '../patch/patch.dart';
+import 'info.dart';
+import 'patch/patch.dart';
 import '../plugins.dart';
-import '../settings.dart';
-import '../interface/ui.dart';
-
-class PresetInfo {
-  PresetInfo({
-    required this.directory,
-    required this.name,
-    required this.description,
-    required this.hasInterface,
-  });
-
-  final Directory directory;
-  final ValueNotifier<String> name;
-  final ValueNotifier<String> description;
-  final ValueNotifier<bool> hasInterface;
-
-  static PresetInfo blank(Directory directory) {
-    return PresetInfo(
-      directory: Directory(directory.path + "/New Patch"),
-      name: ValueNotifier("New Patch"),
-      description: ValueNotifier("New patch description"),
-      hasInterface: ValueNotifier(false),
-    );
-  }
-
-  static Future<PresetInfo?> load(Directory directory) async {
-    if (await directory.exists()) {
-      File file = File(directory.path + "/preset.json");
-      if (await file.exists()) {
-        var contents = await file.readAsString();
-        var json = jsonDecode(contents);
-
-        bool interfaceExists =
-            await File(directory.path + "/interface.json").exists();
-
-        return PresetInfo(
-          directory: directory,
-          name: ValueNotifier(json["name"] ?? "Some Name"),
-          description: ValueNotifier(json["description"] ?? "Some Description"),
-          hasInterface: ValueNotifier(interfaceExists),
-        );
-      }
-    }
-
-    return null;
-  }
-
-  Future<bool> save() async {
-    print("Saving preset info");
-    if (!await directory.exists()) {
-      await directory.create();
-    }
-
-    File file = File(directory.path + "/preset.json");
-    await file.writeAsString(jsonEncode({
-      "name": name.value,
-      "description": description.value,
-    }));
-
-    return true;
-  }
-}
+import 'interface/ui.dart';
 
 class Preset {
   Preset({required this.info, required this.patch, required this.interface});
@@ -99,20 +38,20 @@ class Preset {
     return null;
   }
 
-  static Preset blank(Directory directory, List<Plugin> plugins) {
+  static Preset blank(Directory projectDirectory, List<Plugin> plugins) {
+    var directory = Directory(projectDirectory.path + "/presets/New Preset");
+    var info = PresetInfo.blank(directory);
     return Preset(
-      info: PresetInfo.blank(directory),
-      patch: Patch.from(PresetInfo.blank(directory), plugins),
+      info: info,
+      patch: Patch.from(info, plugins),
       interface: ValueNotifier(null)
     );
   }
 
-  Future<bool> save() async {
+  Future<void> save() async {
     print("Saving preset");
-    await info.save();
-    await interface.value?.save();
     await patch.save();
-    return true;
+    await interface.value?.save();
   }
 }
 
@@ -147,12 +86,8 @@ class PresetsBrowser extends StatelessWidget {
 
     var newInfo = PresetInfo(
       directory: Directory(newPath),
-      name: ValueNotifier(newName),
-      description: ValueNotifier("A new project description"),
-      hasInterface: ValueNotifier(false),
+      hasInterface: false,
     );
-
-    await newInfo.save();
 
     presets.value.add(newInfo);
     presets.notifyListeners();
@@ -160,12 +95,12 @@ class PresetsBrowser extends StatelessWidget {
 
   void duplicatePreset(PresetInfo info) async {
     print("Duplicate preset");
-    var newName = info.name.value + " (copy)";
+    var newName = info.name + " (copy)";
     var newPath = info.directory.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
-      newName = info.name.value + " (copy " + i.toString() + ")";
+      newName = info.name + " (copy " + i.toString() + ")";
       newPath = info.directory.path + "/" + newName;
       i++;
     }
@@ -174,9 +109,6 @@ class PresetsBrowser extends StatelessWidget {
     var newInfo = await PresetInfo.load(Directory(newPath));
 
     if (newInfo != null) {
-      newInfo.name.value = newName;
-      await newInfo.save();
-
       presets.value.add(newInfo);
       presets.notifyListeners();
     }
@@ -324,10 +256,9 @@ class _PresetItem extends State<PresetItem> {
                 height: 30,
                 child: Row(
                   children: [
-                    ValueListenableBuilder<bool>(
-                        valueListenable: widget.info.hasInterface,
-                        builder: (context, hasInterface, child) {
-                          if (hasInterface) {
+                    Builder(
+                        builder: (context) {
+                          if (widget.info.hasInterface) {
                             return const Icon(
                               Icons.display_settings,
                               size: 16,
@@ -343,50 +274,40 @@ class _PresetItem extends State<PresetItem> {
                         }),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: ValueListenableBuilder<String>(
-                        valueListenable: widget.info.name,
-                        builder: (context, name, child) {
-                          return Text(
-                            name,
-                            style: TextStyle(
-                              color: hovering
-                                  ? Colors.white
-                                  : const Color.fromRGBO(200, 200, 200, 1.0),
-                            ),
-                          );
-                        },
+                      child: Text(
+                        widget.info.name,
+                        style: TextStyle(
+                          color: hovering
+                              ? Colors.white
+                              : const Color.fromRGBO(200, 200, 200, 1.0),
+                        ),
                       ),
                     ),
-                    ValueListenableBuilder<bool>(
-                      valueListenable: widget.info.hasInterface,
-                      builder: (context, hasInterface, child) {
-                        return MoreDropdown(
-                          items: [
-                            "Load Preset",
-                            "Rename Preset",
-                            "Duplicate Preset",
-                            hasInterface ? "Remove Interface" : "Add Interface",
-                            "Delete Preset"
-                          ],
-                          onAction: (s) {
-                            if (s == "Load Preset") {
-                              widget.onLoad();
-                            } else if (s == "Rename Preset") {
-                              print("Should rename here");
-                            } else if (s == "Duplicate Preset") {
-                              widget.onDuplicate();
-                            } else if (s == "Add Interface") {
-                              widget.onAddInterface();
-                            } else if (s == "Remove Interface") {
-                              widget.onRemoveInterface();
-                            } else if (s == "Delete Preset") {
-                              widget.onDelete();
-                            }
-                          },
-                          color: const Color.fromRGBO(40, 40, 40, 1.0),
-                          hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
-                        );
+                    MoreDropdown(
+                      items: [
+                        "Load Preset",
+                        "Rename Preset",
+                        "Duplicate Preset",
+                        widget.info.hasInterface ? "Remove Interface" : "Add Interface",
+                        "Delete Preset"
+                      ],
+                      onAction: (s) {
+                        if (s == "Load Preset") {
+                          widget.onLoad();
+                        } else if (s == "Rename Preset") {
+                          print("Should rename here");
+                        } else if (s == "Duplicate Preset") {
+                          widget.onDuplicate();
+                        } else if (s == "Add Interface") {
+                          widget.onAddInterface();
+                        } else if (s == "Remove Interface") {
+                          widget.onRemoveInterface();
+                        } else if (s == "Delete Preset") {
+                          widget.onDelete();
+                        }
                       },
+                      color: const Color.fromRGBO(40, 40, 40, 1.0),
+                      hoverColor: const Color.fromRGBO(30, 30, 30, 1.0),
                     ),
                     const SizedBox(width: 5),
                   ],
@@ -398,16 +319,4 @@ class _PresetItem extends State<PresetItem> {
       ),
     );
   }
-}
-
-class PresetDirectory {
-  PresetDirectory({
-    required this.name,
-    required this.path,
-    required this.presets,
-  });
-
-  final String name;
-  final String path;
-  final List<PresetInfo> presets;
 }

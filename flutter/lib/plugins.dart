@@ -6,8 +6,8 @@ import 'package:metasampler/utils.dart';
 
 import 'dart:io';
 
-import 'patch/module.dart';
-import 'patch/patch.dart';
+import 'preset/patch/module.dart';
+import 'preset/patch/patch.dart';
 
 List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleFile) {
   // Use the sub path as a module categories
@@ -15,10 +15,6 @@ List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleF
       .replaceFirst(pluginsDirectory.path, "")
       .split("/")
     ..remove("");
-}
-
-String pathToName(FileSystemEntity moduleFile) {
-  return moduleFile.name.replaceAll(".module", "");
 }
 
 class Plugin {
@@ -44,9 +40,8 @@ class Plugin {
 
           await for (final file in files) {
             if (file is File) {
-              var name = pathToName(file);
               var category = pathToCategory(directory, file);
-              var module = await Module.load(name, category, file.path);
+              var module = await Module.load(category, file);
               if (module != null) {
                 modules.add(module);
               }
@@ -180,16 +175,15 @@ class Plugins extends ChangeNotifier {
 
   static Future<void> _createModule(Directory pluginsDirectory, File file) async {
     // Use the file name as a module name
-    var name = pathToName(file);
     var category = pathToCategory(pluginsDirectory, file);
 
     // Load the module
-    var module = await Module.load(name, category, file.path);
+    var module = await Module.load(category, file);
     if (module != null) {
       print("Loaded module ${file.name}");
 
       List<Module> modules = _modules.value;
-      modules.retainWhere((m) => m.path != module.path);
+      modules.retainWhere((m) => m.file.path != module.file.path);
       _modules.value = [...modules, module];
     } else {
       print("Failed to load module: ${file.path}");
@@ -199,23 +193,22 @@ class Plugins extends ChangeNotifier {
   static Future<void> _updateModule(Directory pluginDirectory, String path) async {
     var moduleFile = File(path);
     if (await moduleFile.exists()) {
-      var name = pathToName(moduleFile);
       var category = pathToCategory(pluginDirectory, moduleFile);
 
       // Load the module
-      var module = await Module.load(name, category, moduleFile.path);
+      var module = await Module.load(category, moduleFile);
       if (module != null) {
         print("Updated module ${moduleFile.path}");
 
         _modules.value =
-            _modules.value.map((m) => m.path == path ? module : m).toList();
+            _modules.value.map((m) => m.file.path == path ? module : m).toList();
       }
     }
   }
 
   static Future<void> _deleteModule(String path) async {
     print("File ${path} deleted");
-    _modules.value = _modules.value.where((m) => m.path != path).toList();
+    _modules.value = _modules.value.where((m) => m.file.path != path).toList();
   }
 
   static ValueNotifier<List<Module>> get modules => _modules;

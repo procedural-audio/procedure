@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../views/settings.dart';
-import '../plugins.dart';
+import '../../views/settings.dart';
+import '../../plugins.dart';
 import 'module.dart';
 
 const int INDENT_SIZE = 10;

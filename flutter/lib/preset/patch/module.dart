@@ -3,13 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:metasampler/preset/patch/patch.dart';
 
-import '../utils.dart';
+import '../../utils.dart';
 
 class Module {
   Module({
-    required this.name,
-    required this.path,
+    required this.file,
     required this.category,
     required this.size,
     required this.source,
@@ -21,14 +21,13 @@ class Module {
     this.iconSize,
   });
 
-  String name;
-  String path;
+  String get name => file.name.replaceAll(".module", "");
+
+  File file;
   List<String> category;
   Size size;
   String source;
-
   Color? color;
-
   String? title;
   Color? titleColor;
   String? icon;
@@ -36,11 +35,9 @@ class Module {
   int? iconSize;
 
   static Future<Module?> load(
-    String name,
     List<String> category,
-    String path,
+    File file,
   ) async {
-    File file = File(path);
     String source = await file.readAsString();
     int width = 1;
     int height = 1;
@@ -57,7 +54,6 @@ class Module {
           line.contains("main")) {
         int start = line.indexOf("[[");
         int end = line.indexOf("]]");
-
         String annotations = line.substring(start + 2, end);
         for (var element in annotations.split(",")) {
           element = element.replaceAll(",", "");
@@ -94,8 +90,7 @@ class Module {
     }
 
     return Module(
-      name: name,
-      path: path,
+      file: file,
       category: category,
       size: Size(width.toDouble(), height.toDouble()),
       source: source,

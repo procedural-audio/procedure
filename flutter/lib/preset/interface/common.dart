@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/interface/ui.dart';
+import 'package:metasampler/preset/interface/ui.dart';
 
-import '../views/variables.dart';
-import '../main.dart';
+import '../../views/variables.dart';
+import '../../main.dart';
 
 class TransformData {
   TransformData(

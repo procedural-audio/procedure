@@ -11,7 +11,7 @@ import 'package:metasampler/settings.dart';
 import 'package:metasampler/views/presets.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'patch/module.dart';
+import 'preset/patch/module.dart';
 import 'project/project.dart';
 
 import 'views/info.dart';
@@ -92,6 +92,11 @@ class _Window extends State<Window> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        showProjectBrowser(MainDirectory(Directory("/Users/chase/Music/Procedural Audio")));
+      },
+    );
   }
 
   @override

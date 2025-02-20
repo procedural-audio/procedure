@@ -1,22 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/patch/module.dart';
-import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/preset/patch/module.dart';
+import 'package:metasampler/preset/presets.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import '../settings.dart';
+import '../../settings.dart';
+import '../info.dart';
 import 'pin.dart';
-import '../plugins.dart';
+import '../../plugins.dart';
 import 'connector.dart';
-import '../project/project.dart';
+import '../../project/project.dart';
 import 'node.dart';
 import 'right_click.dart';
 
-import '../bindings/api/graph.dart' as api;
+import '../../bindings/api/graph.dart' as api;
 
 /* LIBRARY */
 
@@ -37,7 +40,6 @@ class Patch extends StatefulWidget {
   final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
 
-  // final RawPatch rawPatch;
   final PresetInfo info;
   final List<Plugin> plugins;
   final NewConnector newConnector = NewConnector();
@@ -51,9 +53,7 @@ class Patch extends StatefulWidget {
   }
 
   static Future<Patch?> load(PresetInfo info, List<Plugin> plugins) async {
-    var file = File(info.directory.path + "/patch.json");
-
-    if (!await file.exists()) {
+    if (!await info.patchFile.exists()) {
       return null;
     }
 
@@ -64,12 +64,30 @@ class Patch extends StatefulWidget {
     );
   }
 
-  Future<bool> save() async {
-    print("Saving patch");
-    var file = File(info.directory.path + "/patch.json");
-    print("Skipping patch save");
-    // rawPatch.save(file);
-    return true;
+  Future<void> save() async {
+    List<Map<String, dynamic>> nodeStates = [];
+    for (var node in nodes.value) {
+      var state = node.getState();
+      nodeStates.add(state);
+    }
+
+    /*List<Map<String, dynamic>> connectorStates = [];
+    for (var connector in connectors.value) {
+      var state = connector.getState();
+      connectorStates.add(state);
+    }*/
+
+    var contents = jsonEncode(nodeStates);
+    if (!await info.patchFile.exists()) {
+      await info.patchFile.create(recursive: true);
+    }
+
+    await info.patchFile.writeAsString(contents);
+
+    print("Saved patch file:");
+    for (var state in nodeStates) {
+      print(state);
+    }
   }
 
   void moveTo(double x, double y) {

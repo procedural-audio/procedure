@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:metasampler/plugins.dart';
 
 import '../bindings/api/graph.dart';
+import 'info.dart';
 import 'project.dart';
 import '../settings.dart';
 import '../views/info.dart';
@@ -87,7 +88,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
     var newInfo = ProjectInfo(
       directory: Directory(newPath),
-      name: ValueNotifier(newName),
       description: ValueNotifier("A new project description"),
       image: ValueNotifier(null),
       date: ValueNotifier(DateTime.now()),
@@ -105,28 +105,29 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   void duplicateProject(ProjectInfo info) async {
-    var newName = info.name.value + " (copy)";
+    var newName = info.name + " (copy)";
     var newPath = widget.directory.projects.path + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
-      newName = info.name.value + " (copy " + i.toString() + ")";
+      newName = info.name + " (copy " + i.toString() + ")";
       newPath = widget.directory.projects.path + "/" + newName;
       i++;
     }
 
     await Process.run("cp", ["-r", info.directory.path, newPath]);
     var newInfo = await ProjectInfo.load(newPath);
+    print("should duplicate project");
 
-    if (newInfo != null) {
-      newInfo.name.value = newName;
+    /*if (newInfo != null) {
+      newInfo.name = newName;
       newInfo.date.value = DateTime.now();
       await newInfo.save();
 
       setState(() {
         projectsInfos.add(newInfo);
       });
-    }
+    }*/
   }
 
   void removeProject(ProjectInfo info) async {
@@ -174,7 +175,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     filteredProjects = projectsInfos;
                   } else {
                     for (var project in projectsInfos) {
-                      if (project.name.value
+                      if (project.name
                               .toLowerCase()
                               .contains(searchText.toLowerCase()) ||
                           project.description.value
@@ -856,7 +857,7 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
 
   void startEditingProject() {
     setState(() {
-      nameController.text = widget.project.name.value;
+      nameController.text = widget.project.name;
       descController.text = widget.project.description.value;
       editing = true;
     });
@@ -869,7 +870,8 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
   }
 
   void doneEditingProject() {
-    widget.project.name.value = nameController.text;
+    print("Should be done editing project");
+    // widget.project.name = nameController.text;
     widget.project.description.value = descController.text;
     widget.project.save();
     setState(() {
@@ -969,18 +971,13 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
                           ),
                         );
                       } else {
-                        return ValueListenableBuilder<String>(
-                          valueListenable: widget.project.name,
-                          builder: (context, name, child) {
-                            return Text(
-                              widget.project.name.value,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(220, 220, 220, 1.0),
-                              ),
-                            );
-                          },
+                        return Text(
+                          widget.project.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromRGBO(220, 220, 220, 1.0),
+                          ),
                         );
                       }
                     },

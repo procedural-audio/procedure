@@ -3,14 +3,14 @@ import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
 
-import '../plugins.dart';
-import '../settings.dart';
+import '../../plugins.dart';
+import '../../settings.dart';
 import 'node.dart';
 
 import 'patch.dart';
 import 'connector.dart';
 
-import '../bindings/api/endpoint.dart';
+import '../../bindings/api/endpoint.dart';
 
 // Radius of a pin
 const double pinRadius = 6;

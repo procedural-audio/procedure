@@ -2,15 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:metasampler/patch/module.dart';
-import 'package:metasampler/patch/pin.dart';
-import 'package:metasampler/patch/widgets/fader.dart';
-import 'package:metasampler/patch/widgets/textbox.dart';
+import 'package:metasampler/preset/patch/module.dart';
+import 'package:metasampler/preset/patch/pin.dart';
+import 'package:metasampler/preset/patch/widgets/fader.dart';
+import 'package:metasampler/preset/patch/widgets/textbox.dart';
 
-import '../bindings/api/endpoint.dart';
-import '../bindings/api/node.dart' as api;
-import '../plugins.dart';
-import '../settings.dart';
+import '../../bindings/api/endpoint.dart';
+import '../../bindings/api/node.dart' as api;
+import '../../plugins.dart';
+import '../../settings.dart';
 import 'widgets/knob.dart';
 import 'patch.dart';
 import 'widgets/scope.dart';
@@ -224,7 +224,8 @@ class Node extends StatelessWidget {
 
   Map<String, dynamic> getState() {
     return {
-      // "id": id,
+      "name": module.name,
+      "category": module.category.join("/"),
       "x": position.value.dx,
       "y": position.value.dy,
       "widgets": widgets.map((widget) => widget.getState()).toList(),

@@ -9,6 +9,10 @@
 
 #include "NodusProcessor.h"
 
+// #import "GeneratedPluginRegistrant.swift"
+#include "FlutterPluginRegistrarMacOS.h"
+// #include "flutter_juce-Swift.h"
+
 class NodusEditor  : public juce::AudioProcessorEditor
 {
 public:
@@ -89,6 +93,37 @@ private:
         {
             DBG("Flutter engine failed to run");
             return;
+        }
+
+        // [GeneratedPluginRegistrant registerWithRegistry:engine];
+
+        // Make sure you #import "GeneratedPluginRegistrant.h" above
+        // [GeneratedPluginRegistrant registerWithRegistry:engine];
+        // Alternatively: [GeneratedPluginRegistrant registerWithRegistry:flutterViewController]
+        // RegisterGeneratedPlugins(registry: flutterViewController);
+        // Get plugin registrar
+
+        id<FlutterPluginRegistry> pluginRegistry = engine;
+        if (!pluginRegistry) {
+            DBG("Failed to get FlutterPluginRegistry");
+            return;
+        }
+
+        printf("Selecting plugin\n");
+        // Register all available plugins dynamically
+        if ([pluginRegistry respondsToSelector:@selector(registrarForPlugin:)]) {
+            NSArray<NSString *> *plugins = @[
+                @"FilePickerPlugin",
+                @"PathProviderPlugin",
+                @"FLTWebViewFlutterPlugin"
+            ];
+            
+            for (NSString *plugin in plugins) {
+                printf("Registering plugin.\n");
+                [pluginRegistry registrarForPlugin:plugin];
+            }
+        } else {
+            DBG("FlutterPluginRegistry does not support dynamic registration.");
         }
 
         // Get the Flutter NSView and embed it in the JUCE NSViewComponent.
