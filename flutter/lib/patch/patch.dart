@@ -3,23 +3,24 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/preset/patch/module.dart';
+import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/preset/presets.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import '../../settings.dart';
-import '../info.dart';
+import '../settings.dart';
+import '../preset/info.dart';
 import 'pin.dart';
-import '../../plugins.dart';
+import '../plugin/plugin.dart';
 import 'connector.dart';
-import '../../project/project.dart';
+import '../project/project.dart';
 import 'node.dart';
 import 'right_click.dart';
 
-import '../../bindings/api/graph.dart' as api;
+import '../bindings/api/graph.dart' as api;
+import '../project/theme.dart';
 
 /* LIBRARY */
 
@@ -36,6 +37,7 @@ class Patch extends StatefulWidget {
     required this.plugins,
   }) : super(key: UniqueKey());
 
+  final ProjectTheme theme = ProjectTheme.create();
   final ValueNotifier<List<Node>> nodes = ValueNotifier([]);
   final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
@@ -45,7 +47,7 @@ class Patch extends StatefulWidget {
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
 
-  static Patch from(PresetInfo info, List<Plugin> plugins) {
+  static Patch from(PresetInfo info, ProjectTheme theme, List<Plugin> plugins) {
     return Patch(
       info: info,
       plugins: plugins,
@@ -57,7 +59,14 @@ class Patch extends StatefulWidget {
       return null;
     }
 
-    print("Skipping Patch.load");
+    var contents = await info.patchFile.readAsString();
+    var json = jsonDecode(contents);
+
+    for (var element in json["nodes"]) {
+      print(element);
+      // Node.from(element);
+    }
+
     return Patch(
       info: info,
       plugins: plugins
@@ -66,6 +75,15 @@ class Patch extends StatefulWidget {
 
   Future<void> save() async {
     List<Map<String, dynamic>> nodeStates = [];
+
+    // Save the used plugins
+    /*List<PluginInfo> pluginInfos = [];
+    for (var node in nodes.value) {
+      pluginInfos.add(node.module.pluginInfo);
+    }
+
+    info.save(pluginInfos);*/
+
     for (var node in nodes.value) {
       var state = node.getState();
       nodeStates.add(state);
@@ -77,22 +95,19 @@ class Patch extends StatefulWidget {
       connectorStates.add(state);
     }*/
 
-    var contents = jsonEncode(nodeStates);
-    if (!await info.patchFile.exists()) {
-      await info.patchFile.create(recursive: true);
-    }
+    var contents = jsonEncode({
+      "nodes": nodeStates,
+      "connectors": []
+    });
 
+    // Write the patch file
     await info.patchFile.writeAsString(contents);
 
     print("Saved patch file:");
+    print(info.patchFile.path);
     for (var state in nodeStates) {
       print(state);
     }
-  }
-
-  void moveTo(double x, double y) {
-    print("MOVE TO IN PATCH");
-    moveToValue.value = Offset(x, y);
   }
 
   void addNewConnector() {
@@ -123,7 +138,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   Offset rightClickOffset = Offset.zero;
   Offset moduleAddPosition = Offset.zero;
   bool showRightClickMenu = false;
-  // late Timer timer;
+
   final focusNode = FocusNode();
   late final Ticker _ticker;
 
@@ -131,7 +146,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    Plugins.modules.addListener(onModuleListChanged);
+    // Plugins.modules.addListener(onModuleListChanged);
 
     _ticker = createTicker(tick);
     _ticker.start();
@@ -140,7 +155,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     controller.dispose();
-    Plugins.modules.removeListener(onModuleListChanged);
+    // Plugins.modules.removeListener(onModuleListChanged);
 
     _ticker.dispose();
 
@@ -161,7 +176,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
   void onModuleListChanged() {
     // Replace any nodes that have updated modules
-    for (var module in Plugins.modules.value) {
+    /*for (var module in Plugins.modules.value) {
       for (int j = 0; j < widget.nodes.value.length; j++) {
         var node = widget.nodes.value[j];
         if (node.module.name == module.name && node.module != module) {
@@ -172,7 +187,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
           j--;
         }
       }
-    }
+    }*/
 
     // Remove any nodes that are no longer in the module list
     /*int i = 0;

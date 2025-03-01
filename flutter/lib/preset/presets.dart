@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:metasampler/project/browser.dart';
 
+import '../interface/ui.dart';
+import '../patch/patch.dart';
+import '../project/theme.dart';
+import '../plugin/plugin.dart';
 import 'info.dart';
-import 'patch/patch.dart';
-import '../plugins.dart';
-import 'interface/ui.dart';
 
 class Preset {
   Preset({required this.info, required this.patch, required this.interface});
@@ -15,10 +16,10 @@ class Preset {
   final Patch patch;
   final ValueNotifier<UserInterface?> interface;
 
-  static Preset from(PresetInfo info, List<Plugin> plugins) {
+  static Preset from(PresetInfo info, ProjectTheme theme, List<Plugin> plugins) {
     return Preset(
       info: info,
-      patch: Patch.from(info, plugins),
+      patch: Patch.from(info, theme, plugins),
       interface: ValueNotifier(null),
     );
   }
@@ -27,7 +28,6 @@ class Preset {
     var patch = await Patch.load(info, plugins);
     if (patch != null) {
       var interface = await UserInterface.load(info);
-
       return Preset(
         info: info,
         patch: patch,
@@ -38,12 +38,12 @@ class Preset {
     return null;
   }
 
-  static Preset blank(Directory projectDirectory, List<Plugin> plugins) {
-    var directory = Directory(projectDirectory.path + "/presets/New Preset");
+  static Preset blank(Directory projectDirectory, ProjectTheme theme, List<Plugin> plugins) {
+    var directory = Directory(projectDirectory.path + "/presets");
     var info = PresetInfo.blank(directory);
     return Preset(
       info: info,
-      patch: Patch.from(info, plugins),
+      patch: Patch.from(info, theme, plugins),
       interface: ValueNotifier(null)
     );
   }
@@ -73,10 +73,8 @@ class PresetsBrowser extends StatelessWidget {
   final void Function(PresetInfo) onRemoveInterface;
 
   void newPreset() async {
-    print("New preset");
     var newName = "New Preset";
     var newPath = directory.path + "/" + newName;
-
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = "New Preset" + i.toString();

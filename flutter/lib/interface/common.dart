@@ -1,10 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/preset/interface/ui.dart';
+import 'package:metasampler/interface/ui.dart';
 
-import '../../views/variables.dart';
-import '../../main.dart';
+import '../main.dart';
 
 class TransformData {
   TransformData(
@@ -2597,73 +2596,6 @@ class _VarField extends State<VarField> with TickerProviderStateMixin {
       setState(() => _isOpen = true);
       _animationController?.forward();
     }
-  }
-}
-
-class VarFieldElement extends StatefulWidget {
-  VarFieldElement(this.v, this.varName, {super.key});
-
-  Var v;
-  ValueNotifier<String?> varName;
-
-  @override
-  State<VarFieldElement> createState() => _VarFieldElement();
-}
-
-class _VarFieldElement extends State<VarFieldElement> {
-  bool hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    Color color = Colors.black;
-
-    if (widget.v.notifier.value is double) {
-      color = Colors.green;
-    } else if (widget.v.notifier.value is bool) {
-      color = Colors.red;
-    }
-
-    return MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-            onTap: () {
-              // widget.varName.value = widget.v.name;
-              print("SHOULD SET NAME HERE");
-            },
-            child: Container(
-                height: 30,
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                color: hovering
-                    ? const Color.fromRGBO(140, 140, 140, 1.0)
-                    : const Color.fromRGBO(120, 120, 120, 1.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                            color: color,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5))),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text("SOME VAR HERE",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w300))
-                    ]))));
   }
 }
 

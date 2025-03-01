@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../views/settings.dart';
-import '../../plugins.dart';
+import '../plugin/config.dart';
+import '../views/settings.dart';
+import '../plugin/plugin.dart';
 import 'module.dart';
 
 const int INDENT_SIZE = 10;
@@ -163,7 +164,7 @@ class _RightClickView extends State<RightClickView> {
                 Expanded(child: SizedBox()),
                 IconButton(
                   icon: Icon(
-                    Icons.filter_list,
+                    Icons.code,
                     color: Colors.grey.shade600,
                     size: 14,
                   ),
@@ -172,7 +173,18 @@ class _RightClickView extends State<RightClickView> {
                     print("Should open editor");
                     // Plugins.openEditor();
                   },
-                )
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.grey.shade600,
+                    size: 14,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    showPluginConfig(context, widget.plugins);
+                  },
+                ),
               ],
             ),
 

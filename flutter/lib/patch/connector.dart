@@ -2,10 +2,10 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/plugins.dart';
+import 'package:metasampler/settings.dart';
 
-import '../../bindings/api/endpoint.dart';
-import 'module.dart';
+import '../bindings/api/endpoint.dart';
+import '../plugin/plugin.dart';
 import 'node.dart';
 import 'pin.dart';
 import 'patch.dart';
@@ -83,10 +83,10 @@ class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
                           roundToGrid(endModuleOffset.dy) +
                           pinRadius,
                     ),
-                    Plugins.theme.value
-                        .getColor(widget.start.endpoint.type, widget.start.endpoint.kind),
+                    widget.patch.theme.getColor(widget.start.endpoint.type, widget.start.endpoint.kind),
                     focused,
-                    _controller
+                    _controller,
+                    widget.start.endpoint.kind
                   ),
                 );
               },
@@ -165,10 +165,10 @@ class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMi
             painter: ConnectorPainter(
               startOffset,
               endOffset,
-              Plugins.theme.value
-                  .getColor(widget.start!.endpoint.type, widget.start!.endpoint.kind),
+              widget.start!.patch.theme.getColor(widget.start!.endpoint.type, widget.start!.endpoint.kind),
               true,
               _controller,
+              widget.start!.endpoint.kind
             ),
           );
         } else {
@@ -186,6 +186,7 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     this.color,
     this.focused,
     this.animation,
+    this.kind
   ) : super(repaint: animation);
 
   Animation<double> animation;
@@ -194,6 +195,7 @@ class ConnectorPainter extends CustomPainter implements Listenable {
   Color color;
   bool focused;
   Random source = Random();
+  EndpointKind kind;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -221,28 +223,51 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     path.quadraticBezierTo(end1.dx - 10, end1.dy, end.dx, end.dy);
     canvas.drawPath(path, paint);
 
-    /*final animationPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 3;
-
-    double segmentLength = 50.0;
     double totalLength = pathLength(path);
-    double segmentCount = totalLength / segmentLength;
-    double segmentFraction = segmentLength / totalLength;
 
-    for (int i = 0; i < segmentCount.ceil(); i++) {
-      double fraction = (animation.value / segmentCount) + i.toDouble() * segmentFraction;
+    if (totalLength > GlobalSettings.gridSize) {
+      if (kind == EndpointKind.value) {
+        final animationPaint = Paint()
+          ..color = color
+          ..style = PaintingStyle.fill
+          ..strokeWidth = 3;
 
-      // Don't draw past total length
-      if (fraction < 1.0) {
-        // Draw animated point
-        var point = pointAlongMultipleContours(path, fraction);
-        if (point != null) {
-          canvas.drawCircle(point, 2.0, animationPaint);
+        double segmentLength = 50.0;
+        double segmentCount = totalLength / segmentLength;
+        double segmentFraction = segmentLength / totalLength;
+
+        for (int i = 0; i < segmentCount.ceil(); i++) {
+          double fraction = (animation.value / segmentCount) + i.toDouble() * segmentFraction;
+
+          // Don't draw past total length
+          if (fraction < 1.0) {
+            // Draw animated point
+            var point = pointAlongMultipleContours(path, fraction);
+            if (point != null) {
+              canvas.drawCircle(point, 2.0, animationPaint);
+            }
+          }
+        }
+      } else if (kind == EndpointKind.stream) {
+        double totalOffset = 8.0;
+        double step = 2.0;
+
+        final animationPaint = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = step;
+
+        for (double offset = -totalOffset; offset <= totalOffset; offset += step) {
+          double distance = 1.0 - sqrt(pow(offset, 2)).toDouble() / totalOffset;
+          animationPaint.color = color.withOpacity(animation.value * distance);
+          Path path = Path();
+          path.moveTo(start.dx, start.dy + offset);
+          path.quadraticBezierTo(start1.dx + 10, start1.dy + offset, center.dx, center.dy + offset);
+          path.quadraticBezierTo(end1.dx - 10, end1.dy + offset, end.dx, end.dy + offset);
+          canvas.drawPath(path, animationPaint);
         }
       }
-    }*/
+    }
   }
 
   double pathLength(Path path) {

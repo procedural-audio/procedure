@@ -3,9 +3,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:metasampler/preset/patch/patch.dart';
+import 'package:metasampler/patch/patch.dart';
 
-import '../../utils.dart';
+import '../plugin/info.dart';
+import '../plugin/plugin.dart';
+import '../utils.dart';
+import '../project/theme.dart';
+
+List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleFile) {
+  // Use the sub path as a module categories
+  return moduleFile.parent.path
+      .replaceFirst(pluginsDirectory.path, "")
+      .split("/")
+    ..remove("");
+}
 
 class Module {
   Module({
@@ -35,8 +46,8 @@ class Module {
   int? iconSize;
 
   static Future<Module?> load(
-    List<String> category,
     File file,
+    List<String> category
   ) async {
     String source = await file.readAsString();
     int width = 1;

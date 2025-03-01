@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/views/presets.dart';
+import 'package:metasampler/preset/presets.dart';
 
 import '../project/info.dart';
 import '../project/project.dart';
-import 'info.dart';
+import '../views/info.dart';
 
 const double barHeight = 35;
 
@@ -164,7 +164,8 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
         onTap: widget.onTap,
         child: Container(
           height: barHeight,
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          width: barHeight,
+          padding: const EdgeInsets.fromLTRB(10, 0, 5, 0),
           decoration: BoxDecoration(
             color: hovering
                 ? const Color.fromRGBO(40, 40, 40, 1.0)
@@ -173,28 +174,12 @@ class _ProjectCloseButton extends State<ProjectCloseButton> {
               Radius.circular(5),
             ),
           ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.arrow_back_ios,
-                color: hovering
-                    ? Colors.white
-                    : const Color.fromRGBO(200, 200, 200, 1.0),
-                size: 12,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 0, 2),
-                child: Text(
-                  widget.info.name,
-                  style: TextStyle(
-                    color: hovering
-                        ? Colors.white
-                        : const Color.fromRGBO(200, 200, 200, 1.0),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: hovering
+                ? Colors.white
+                : const Color.fromRGBO(200, 200, 200, 1.0),
+            size: 12,
           ),
         ),
       ),
@@ -241,7 +226,7 @@ class _PresetsButton extends State<PresetsButton> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          width: 450,
+          width: 300,
           height: barHeight,
           decoration: BoxDecoration(
             color: (hovering || expanded)
@@ -253,7 +238,7 @@ class _PresetsButton extends State<PresetsButton> {
           ),
           child: Row(
             children: [
-              BarButton(
+              /*BarButton(
                 icon: const Icon(
                   Icons.cable,
                   size: 17,
@@ -270,7 +255,7 @@ class _PresetsButton extends State<PresetsButton> {
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(0)),
                 onTap: () {},
-              ),
+              ),*/
               Expanded(
                 child: Center(
                   child: Text(
@@ -282,7 +267,7 @@ class _PresetsButton extends State<PresetsButton> {
                   ),
                 ),
               ),
-              BarButton(
+              /*BarButton(
                 icon: const Icon(
                   Icons.edit,
                   size: 18,
@@ -301,7 +286,7 @@ class _PresetsButton extends State<PresetsButton> {
                 onTap: () {
                   print("View variables");
                 },
-              ),
+              ),*/
               BarButton(
                 icon: const Icon(
                   Icons.save,

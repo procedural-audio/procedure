@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:metasampler/preset/patch/patch.dart';
+import 'package:metasampler/patch/patch.dart';
+
+import '../plugin/info.dart';
+import '../plugin/plugin.dart';
 
 class PresetInfo {
   PresetInfo({
@@ -14,6 +18,7 @@ class PresetInfo {
   String get name => directory.name;
   File get interfaceFile => File(directory.path + "/interface.json");
   File get patchFile => File(directory.path + "/patch.json");
+  File get infoFile => File(directory.path + "/info.json");
 
   static PresetInfo blank(Directory presetsDirectory) {
     return PresetInfo(
@@ -34,5 +39,20 @@ class PresetInfo {
     }
 
     return null;
+  }
+
+  Future<void> save(List<PluginInfo> plugins) async {
+    if (!await infoFile.exists()) {
+      await infoFile.create(recursive: true);
+    }
+
+    Map<String, dynamic> json = {
+      "tags": [],
+      "plugins": plugins.map((plugin) => plugin.toJson()).toList(),
+    };
+
+    await infoFile.writeAsString(
+      jsonEncode(json)
+    );
   }
 }

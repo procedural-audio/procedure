@@ -1,20 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:langchain/langchain.dart';
-import 'package:langchain_openai/langchain_openai.dart';
-import 'package:metasampler/bindings/api/graph.dart';
-import 'package:metasampler/plugins.dart';
+import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
-import 'package:metasampler/views/presets.dart';
-import 'package:path_provider/path_provider.dart';
 
-import 'preset/patch/module.dart';
 import 'project/project.dart';
-
-import 'views/info.dart';
 import 'project/browser.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
@@ -26,9 +17,6 @@ Future<void> main(List<String> args) async {
   print("In flutter main with arguments: " + args.toString());
 
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Plugins.scan();
-  // Plugins.beginWatch();
 
   print("Rust backend says: " + greet(name: "Tom"));
 
@@ -125,30 +113,17 @@ class _Window extends State<Window> {
 
   @override
   Widget build(BuildContext context) {
-    return HomeDirectoryBrowser(
-      onUpdateDirectory: (dir) {
-        showProjectBrowser(dir);
-      },
-    );
-  }
-}
-
-class HomeDirectoryBrowser extends StatelessWidget {
-  HomeDirectoryBrowser({required this.onUpdateDirectory, super.key});
-
-  void Function(MainDirectory) onUpdateDirectory;
-
-  @override
-  Widget build(BuildContext context) {
     return Center(
       child: ElevatedButton(
         onPressed: () async {
           var picked = await FilePicker.platform.getDirectoryPath();
           if (picked != null && picked.isNotEmpty) {
-            onUpdateDirectory(MainDirectory(Directory(picked)));
+            var dir = Directory(picked);
+            var main = MainDirectory(dir);
+            showProjectBrowser(main);
           }
         },
-        child: const Text("Browse for projects"),
+        child: const Text("Browse"),
       ),
     );
   }

@@ -3,14 +3,15 @@ import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
 
-import '../../plugins.dart';
-import '../../settings.dart';
+import '../plugin/plugin.dart';
+import '../settings.dart';
 import 'node.dart';
 
 import 'patch.dart';
 import 'connector.dart';
 
-import '../../bindings/api/endpoint.dart';
+import '../bindings/api/endpoint.dart';
+import '../project/theme.dart';
 
 // Radius of a pin
 const double pinRadius = 6;
@@ -114,26 +115,21 @@ class _PinState extends State<Pin> {
                 valueListenable: widget.patch.selectedNodes,
                 builder: (context, selectedNodes, child) {
                   bool is_selected = selectedNodes.contains(widget.node);
-                  return ValueListenableBuilder<GraphTheme>(
-                    valueListenable: Plugins.theme,
-                    builder: (context, theme, child) {
-                      var kind = widget.endpoint.kind;
-                      var type = widget.endpoint.type;
-                      return Container(
-                        width: pinRadius * 2,
-                        height: pinRadius * 2,
-                        child: CustomPaint(
-                          painter: PinPainter(
-                            color: theme.getColor(type, kind),
-                            shape: theme.getShape(type, kind),
-                            selected: is_selected,
-                            hovering: hovering,
-                            dragging: dragging,
-                            connected: connected,
-                          ),
-                        ),
-                      );
-                    },
+                  var kind = widget.endpoint.kind;
+                  var type = widget.endpoint.type;
+                  return Container(
+                    width: pinRadius * 2,
+                    height: pinRadius * 2,
+                    child: CustomPaint(
+                      painter: PinPainter(
+                        color: widget.patch.theme.getColor(type, kind),
+                        shape: widget.patch.theme.getShape(type, kind),
+                        selected: is_selected,
+                        hovering: hovering,
+                        dragging: dragging,
+                        connected: connected,
+                      ),
+                    ),
                   );
                 },
               );

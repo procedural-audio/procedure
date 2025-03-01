@@ -6,22 +6,16 @@ import 'package:metasampler/utils.dart';
 
 import 'dart:io';
 
-import 'preset/patch/module.dart';
-import 'preset/patch/patch.dart';
+import '../patch/module.dart';
+import '../patch/patch.dart';
+import 'info.dart';
 
-List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleFile) {
-  // Use the sub path as a module categories
-  return moduleFile.parent.path
-      .replaceFirst(pluginsDirectory.path, "")
-      .split("/")
-    ..remove("");
-}
-
-class Plugin {
+class Plugin extends ChangeNotifier {
   PluginInfo info;
   List<Module> modules;
+  Directory directory;
 
-  Plugin(this.info, this.modules);
+  Plugin(this.directory, this.info, this.modules);
 
   static Future<Plugin?> load(Directory plugins, PluginInfo info) async {
     if (await plugins.exists()) {
@@ -41,7 +35,7 @@ class Plugin {
           await for (final file in files) {
             if (file is File) {
               var category = pathToCategory(directory, file);
-              var module = await Module.load(category, file);
+              var module = await Module.load(file, category);
               if (module != null) {
                 modules.add(module);
               }
@@ -49,7 +43,7 @@ class Plugin {
           }
 
           print("Loaded plugin ${directory.path}");
-          return Plugin(info, modules);
+          return Plugin(directory, info, modules);
         }
       }
     }
@@ -58,14 +52,7 @@ class Plugin {
   }
 }
 
-class PluginInfo {
-  String url;
-  String? version;
-
-  PluginInfo(this.url, this.version);
-}
-
-class Plugins extends ChangeNotifier {
+/*class Plugins extends ChangeNotifier {
   Plugins(this.pluginsDirectory);
 
   final List<Plugin> _plugins = [];
@@ -213,3 +200,4 @@ class Plugins extends ChangeNotifier {
 
   static ValueNotifier<List<Module>> get modules => _modules;
 }
+*/

@@ -2,20 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:metasampler/plugins.dart';
+import 'package:metasampler/plugin/plugin.dart';
 
-import '../bindings/api/graph.dart';
+import '../plugin/info.dart';
 import 'info.dart';
 import 'project.dart';
 import '../settings.dart';
-import '../views/info.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
     super.key,
   });
 
-  MainDirectory directory;
+  final MainDirectory directory;
 
   @override
   State<ProjectsBrowser> createState() => _ProjectsBrowser();
@@ -41,7 +40,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
       await for (var file in files) {
         if (file is Directory) {
-          var info = await ProjectInfo.load(file.path);
+          var info = await ProjectInfo.load(file);
           if (info != null) {
             projectsInfos.add(info);
             setState(() {});
@@ -93,7 +92,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       date: ValueNotifier(DateTime.now()),
       tags: [],
       pluginInfos: [
-        PluginInfo("github.com/0xchase/test-modules", null)
+        // PluginInfo("github.com/0xchase/test-modules", null)
       ]
     );
 
@@ -116,7 +115,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     }
 
     await Process.run("cp", ["-r", info.directory.path, newPath]);
-    var newInfo = await ProjectInfo.load(newPath);
+    var newInfo = await ProjectInfo.load(Directory(newPath));
     print("should duplicate project");
 
     /*if (newInfo != null) {
@@ -210,9 +209,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                         index: index,
                         editing: editing,
                         project: filteredProjects[index],
-                        onOpen: (info) {
-                          loadProject(info);
-                        },
+                        onOpen: loadProject,
                         onDuplicate: (info) {
                           duplicateProject(info);
                         },
@@ -985,14 +982,13 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
                 ),
                 MoreDropdown(
                   items: const [
-                    "Open Project",
-                    "Edit Project",
-                    "Replace Image",
-                    "Duplicate Project",
-                    "Delete Project"
+                    "Open",
+                    "Edit",
+                    "Duplicate",
+                    "Delete"
                   ],
                   onAction: (s) {
-                    if (s == "Edit Project") {
+                    if (s == "Edit") {
                       startEditingProject();
                     } else {
                       widget.onAction(s);

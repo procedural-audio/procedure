@@ -2,15 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:metasampler/preset/patch/module.dart';
-import 'package:metasampler/preset/patch/pin.dart';
-import 'package:metasampler/preset/patch/widgets/fader.dart';
-import 'package:metasampler/preset/patch/widgets/textbox.dart';
+import 'package:metasampler/patch/module.dart';
+import 'package:metasampler/patch/pin.dart';
+import 'package:metasampler/patch/widgets/fader.dart';
+import 'package:metasampler/patch/widgets/textbox.dart';
 
-import '../../bindings/api/endpoint.dart';
-import '../../bindings/api/node.dart' as api;
-import '../../plugins.dart';
-import '../../settings.dart';
+import '../bindings/api/endpoint.dart';
+import '../bindings/api/node.dart' as api;
+import '../plugin/plugin.dart';
+import '../settings.dart';
 import 'widgets/knob.dart';
 import 'patch.dart';
 import 'widgets/scope.dart';
@@ -117,13 +117,12 @@ class Node extends StatelessWidget {
     required this.onRemoveConnections,
     required Offset position,
   }) : super(key: UniqueKey()) {
-    List<String> source = []; // Plugins.lib();
-    source.add(module.source);
-    rawNode = api.Node.from(source: source, id: NODE_ID++);
-
     // Set the initial node position
     this.position.value = position;
 
+    List<String> source = []; // Plugins.lib();
+    source.add(module.source);
+    rawNode = api.Node.from(source: source, id: NODE_ID++);
     if (rawNode != null) {
       // Add input pins and widgets to list
       for (var endpoint in rawNode!.inputs) {
@@ -224,6 +223,7 @@ class Node extends StatelessWidget {
 
   Map<String, dynamic> getState() {
     return {
+      // "plugin": module.plugin,
       "name": module.name,
       "category": module.category.join("/"),
       "x": position.value.dx,

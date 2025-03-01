@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/preset/interface/layout.dart';
-import 'package:metasampler/preset/interface/tree.dart';
+import 'package:metasampler/interface/layout.dart';
+import 'package:metasampler/interface/tree.dart';
 
-import '../info.dart';
+import '../preset/info.dart';
 import 'decoration.dart';
 import 'interactive.dart';
 
-import '../presets.dart';
+import '../preset/presets.dart';
 
 class UserInterface extends StatelessWidget {
   UserInterface(this.info, {super.key});

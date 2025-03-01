@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/preset/patch/patch.dart';
+import 'package:metasampler/patch/patch.dart';
 
-import '../plugins.dart';
+import '../plugin/info.dart';
 import '../settings.dart';
 
 class ProjectInfo {
@@ -18,8 +18,6 @@ class ProjectInfo {
     required this.pluginInfos
   });
 
-  String get name => directory.name;
-
   final Directory directory;
   final ValueNotifier<String> description;
   final ValueNotifier<File?> image;
@@ -27,40 +25,40 @@ class ProjectInfo {
   final List<String> tags;
   final List<PluginInfo> pluginInfos;
 
+  String get path => directory.path;
+  String get name => directory.name;
+  File get projectFile => File(directory.path + "/project.json");
+  Directory get presetsDirectory => Directory(directory.path + "/presets");
+  Directory get pluginsDirectory => Directory(directory.path + "/plugins");
+
   static ProjectInfo blank(MainDirectory directory) {
     return ProjectInfo(
-      directory: Directory(directory.projects.path + "/New Project",
-      ),
+      directory: Directory(directory.projects.path + "/New Project"),
       description: ValueNotifier("Description for a new project"),
       image: ValueNotifier(null),
       date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
       tags: [],
-      pluginInfos: [PluginInfo("github.com/0xchase/test-modules", null)]
+      pluginInfos: []
     );
   }
 
-  static Future<ProjectInfo?> load(String path) async {
-    File file = File(path + "/project.json");
-
+  static Future<ProjectInfo?> load(Directory directory) async {
+    File file = File(directory.path + "/project.json");
     if (await file.exists()) {
       String contents = await file.readAsString();
       Map<String, dynamic> json = jsonDecode(contents);
-      return ProjectInfo.fromJson(path, json);
+      return ProjectInfo.fromJson(directory.path, json);
     }
 
     return null;
   }
 
   Future<bool> save() async {
-    print("Saving project info");
-
-    File file = File(directory.path + "/project.json");
-
-    if (!await file.exists()) {
-      await file.create(recursive: true);
+    if (!await projectFile.exists()) {
+      await projectFile.create(recursive: true);
     }
 
-    await file.writeAsString(
+    await projectFile.writeAsString(
       jsonEncode(
         toJson(),
       ),
@@ -101,13 +99,15 @@ class ProjectInfo {
       image: ValueNotifier(image),
       date: ValueNotifier(date),
       tags: tags != null ? tags.split(",") : [],
-      pluginInfos: [PluginInfo("github.com/0xchase/test-modules", null)]
+      pluginInfos: [
+        PluginInfo(username: "0xchase", repository: "test-modules", tag: "0.2", tags: ["0.1", "0.2"]),
+      ]
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'description': description.value,
-        'date': date.value.toIso8601String(),
-        'tags': tags.join(","),
-      };
+    'description': description.value,
+    'date': date.value.toIso8601String(),
+    'tags': tags.join(","),
+  };
 }

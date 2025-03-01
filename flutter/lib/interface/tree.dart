@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/preset/interface/common.dart';
-import 'package:metasampler/preset/interface/ui.dart';
+import 'package:metasampler/interface/common.dart';
+import 'package:metasampler/interface/ui.dart';
 
 class WidgetTreeElement extends StatelessWidget {
   WidgetTreeElement({super.key, required this.widget, required this.ui});

@@ -2,16 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/plugins.dart';
+import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
-import 'package:metasampler/views/newTopBar.dart';
+import 'package:metasampler/patch/newTopBar.dart';
 import 'package:metasampler/preset/presets.dart';
 
 import '../bindings/api/graph.dart' as api;
 
+import '../patch/patch.dart';
+import 'theme.dart';
 import '../preset/info.dart';
-import '../views/info.dart';
-import '../preset/interface/ui.dart';
+import '../interface/ui.dart';
 import 'info.dart';
 
 /* Project */
@@ -21,47 +22,56 @@ class Project extends StatefulWidget {
     super.key,
     required this.directory,
     required this.info,
+    required this.preset,
+    required this.plugins,
+    required this.theme
   });
 
   final MainDirectory directory;
   final ProjectInfo info;
+  Preset preset;
+  List<Plugin> plugins;
+  ProjectTheme theme;
 
-  final ValueNotifier<List<PresetInfo>> presetInfos = ValueNotifier([]);
-
-  static Project blank(MainDirectory directory) {
-    var info = ProjectInfo.blank(directory);
-    return Project(
-      directory: directory,
-      info: info,
-    );
-  }
 
   Future<bool> loadInterface(PresetInfo info) async {
     return false;
   }
 
   static Future<Project?> load(ProjectInfo info, MainDirectory mainDirectory) async {
-    /*var directory = Directory(info.directory.path + "/presets");
+    ProjectTheme theme = ProjectTheme.create();
 
-    if (await directory.exists()) {
-      await for (var item in directory.list()) {
-        var presetsDirectory = Directory(item.path);
-        var presetInfo = await PresetInfo.load(presetsDirectory);
-        if (presetInfo != null) {
-          var preset = await Preset.load(presetInfo);
-          if (preset != null) {
-            return Project(
-              directory: mainDirectory,
-              info: info,
-            );
-          }
+    List<Plugin> plugins = [];
+    for (var pluginInfo in info.pluginInfos) {
+      var plugin = await Plugin.load(mainDirectory.plugins, pluginInfo);
+      if (plugin != null) {
+        plugins.add(plugin);
+      }
+    }
+
+    await for (var item in info.presetsDirectory.list()) {
+      var presetDirectory = Directory(item.path);
+      var presetInfo = await PresetInfo.load(presetDirectory);
+      if (presetInfo != null) {
+        var preset = await Preset.load(presetInfo, plugins);
+        if (preset != null) {
+          return Project(
+            directory: mainDirectory,
+            info: info,
+            preset: preset,
+            plugins: plugins,
+            theme: theme,
+          );
         }
       }
-    }*/
+    }
 
     return Project(
       directory: mainDirectory,
       info: info,
+      preset: Preset.blank(info.presetsDirectory, theme, plugins),
+      plugins: plugins,
+      theme: theme,
     );
   }
 
@@ -90,16 +100,13 @@ class Project extends StatefulWidget {
 const double sidebarWidth = 300;
 
 class _Project extends State<Project> {
-  Preset? preset;
-  bool uiVisible = true;
+  bool uiVisible = false;
   bool presetsVisible = false;
-  List<Plugin> plugins = [];
+  ValueNotifier<List<PresetInfo>> presetInfos = ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
-    loadPlugins();
-    preset = Preset.blank(Directory(widget.info.directory.path), plugins);
   }
 
   @override
@@ -107,24 +114,15 @@ class _Project extends State<Project> {
     super.dispose();
   }
 
-  void save() async {
+  Future<void> save() async {
     await widget.info.save();
-    await preset?.save();
-  }
-
-  void loadPlugins() async {
-    for (var pluginInfo in widget.info.pluginInfos) {
-      var plugin = await Plugin.load(widget.directory.plugins, pluginInfo);
-      if (plugin != null) {
-        plugins.add(plugin);
-      }
-    }
+    await widget.preset.save();
   }
 
   void onProjectClose() async {
     widget.info.date.value = DateTime.now();
 
-    save();
+    await save();
 
     api.clearPatch();
     Navigator.pop(context);
@@ -132,7 +130,7 @@ class _Project extends State<Project> {
 
   @override
   Widget build(BuildContext context) {
-    if (preset?.interface.value == null) {
+    if (widget.preset.interface.value == null) {
       uiVisible = false;
     }
 
@@ -148,23 +146,19 @@ class _Project extends State<Project> {
             duration: const Duration(milliseconds: 300),
             child: Builder(
               builder: (context) {
-                if (preset != null) {
-                  if (!uiVisible) {
-                    return preset!.patch;
-                  } else {
-                    return ValueListenableBuilder<UserInterface?>(
-                      valueListenable: preset!.interface,
-                      builder: (context, ui, child) {
-                        if (ui != null) {
-                          return ui;
-                        } else {
-                          return Container();
-                        }
-                      },
-                    );
-                  }
+                if (!uiVisible) {
+                  return widget.preset.patch;
                 } else {
-                  return Container();
+                  return ValueListenableBuilder<UserInterface?>(
+                    valueListenable: widget.preset.interface,
+                    builder: (context, ui, child) {
+                      if (ui != null) {
+                        return ui;
+                      } else {
+                        return Container();
+                      }
+                    },
+                  );
                 }
               },
             ),
@@ -191,9 +185,8 @@ class _Project extends State<Project> {
                 child: GestureDetector(
                   onTap: () {},
                   child: PresetsBrowser(
-                    directory:
-                        Directory(widget.info.directory.path + "/presets"),
-                    presets: widget.presetInfos,
+                    directory: widget.info.presetsDirectory,
+                    presets: presetInfos,
                     onLoad: (info) {
                       // widget.loadPreset(info);
                     },
@@ -222,7 +215,7 @@ class _Project extends State<Project> {
           right: 0,
           top: 0,
           child: NewTopBar(
-            loadedPreset: preset!,
+            loadedPreset: widget.preset,
             projectInfo: widget.info,
             onEdit: () {
               // widget.preset.value.interface.value?.toggleEditing();
