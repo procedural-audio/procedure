@@ -7,6 +7,7 @@ use crate::api::node::*;
 
 use cmajor::*;
 
+use crossbeam::atomic::AtomicCell;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -30,6 +31,7 @@ pub struct CopyStream<T: StreamType> {
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputStream<T>>,
     pub buffer: Vec<T>,
+    // pub feedback: Arc<AtomicCell<T>>,
 }
 
 impl<T: StreamType> ExecuteAction for CopyStream<T> {

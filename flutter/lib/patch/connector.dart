@@ -37,12 +37,17 @@ class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
 
+  int blocksPerDot = 20;
+
   @override
   void initState() {
     super.initState();
+    var blocksPerSecond = widget.patch.sampleRate ~/ widget.patch.blockSize;
+    var secondsPerBlock = 1.0 / blocksPerSecond;
+    var millisecondsPerBlock = (1000 * secondsPerBlock).toInt();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: Duration(milliseconds: millisecondsPerBlock * blocksPerDot),
     )..repeat(reverse: false);
   }
 
@@ -50,6 +55,10 @@ class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void update() {
+    _controller.value = 0.0;
   }
 
   @override
@@ -135,7 +144,7 @@ class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMi
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 200),
     )..repeat(reverse: false);
   }
 
@@ -232,7 +241,7 @@ class ConnectorPainter extends CustomPainter implements Listenable {
           ..style = PaintingStyle.fill
           ..strokeWidth = 3;
 
-        double segmentLength = 50.0;
+        double segmentLength = 50;
         double segmentCount = totalLength / segmentLength;
         double segmentFraction = segmentLength / totalLength;
 
@@ -261,9 +270,17 @@ class ConnectorPainter extends CustomPainter implements Listenable {
           double distance = 1.0 - sqrt(pow(offset, 2)).toDouble() / totalOffset;
           animationPaint.color = color.withOpacity(animation.value * distance);
           Path path = Path();
+
           path.moveTo(start.dx, start.dy + offset);
-          path.quadraticBezierTo(start1.dx + 10, start1.dy + offset, center.dx, center.dy + offset);
-          path.quadraticBezierTo(end1.dx - 10, end1.dy + offset, end.dx, end.dy + offset);
+
+          if (start.dy >= end.dy) {
+            path.quadraticBezierTo(start1.dx + 10, start1.dy + offset, center.dx + offset, center.dy + offset);
+            path.quadraticBezierTo(end1.dx - 10, end1.dy + offset, end.dx, end.dy + offset);
+          } else {
+            path.quadraticBezierTo(start1.dx + 10, start1.dy + offset, center.dx + offset, center.dy + offset);
+            path.quadraticBezierTo(end1.dx - 10, end1.dy + offset, end.dx, end.dy + offset);
+          }
+
           canvas.drawPath(path, animationPaint);
         }
       }

@@ -7,6 +7,7 @@ use crate::api::node::*;
 
 use cmajor::*;
 
+use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
@@ -32,6 +33,7 @@ pub struct CopyEvent {
     pub src_handle: Endpoint<OutputEvent>,
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputEvent>,
+    pub feedback: Arc<AtomicCell<Value>>,
 }
 
 impl ExecuteAction for CopyEvent {
@@ -107,5 +109,20 @@ impl ExecuteAction for ReceiveEvents {
         while let Some(event) = self.queue.pop() {
             let _ = voices.post(self.handle, &event);
         }
+    }
+}
+
+pub struct EventFeedback {
+    pub voices: Arc<Mutex<Voices>>,
+    pub handle: Endpoint<InputEvent>,
+    pub queue: AtomicCell<u32>
+}
+
+impl ExecuteAction for EventFeedback {
+    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+        let mut voices = self.voices
+            .try_lock()
+            .unwrap();
+
     }
 }

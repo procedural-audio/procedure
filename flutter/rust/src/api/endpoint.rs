@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use cmajor::value::Value;
 use cmajor::{
     endpoint::EndpointInfo,
@@ -9,7 +11,7 @@ use flutter_rust_bridge::*;
 
 use crate::other::handle::*;
 
-#[derive(PartialEq, Clone)]
+#[derive(Clone)]
 #[frb(opaque)]
 pub struct NodeEndpoint {
     endpoint: EndpointHandle,

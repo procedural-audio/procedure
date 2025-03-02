@@ -47,6 +47,9 @@ class Patch extends StatefulWidget {
   final NewConnector newConnector = NewConnector();
   final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
 
+  final double sampleRate = 44100.0;
+  final int blockSize = 512;
+
   static Patch from(PresetInfo info, ProjectTheme theme, List<Plugin> plugins) {
     return Patch(
       info: info,

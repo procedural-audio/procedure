@@ -3,6 +3,7 @@ use std::sync::Mutex;
 
 use cmajor::*;
 
+use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
 use performer::Endpoint;
 use performer::InputValue;
@@ -21,6 +22,7 @@ pub struct CopyValue<T> {
     pub src_handle: Endpoint<OutputValue<T>>,
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputValue<T>>,
+    pub feedback: Arc<AtomicCell<Value>>,
 }
 
 impl<T> ExecuteAction for CopyValue<T>

@@ -7,6 +7,7 @@ use crate::api::node::*;
 
 use cmajor::*;
 
+use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
@@ -131,7 +132,7 @@ impl Actions {
 
     fn process_output(&mut self, node: &Node, handle: &OutputEndpoint) {
         match handle {
-            OutputEndpoint::Endpoint(_) => {
+            OutputEndpoint::Endpoint { handle, .. } => {
                 // Do nothing for output endpoints
             }
             OutputEndpoint::External { handle, channel } => {
@@ -153,12 +154,13 @@ impl Actions {
             let dst_handle = cable.destination.endpoint.handle();
 
             match (src_handle, dst_handle) {
-                (EndpointHandle::Output(OutputEndpoint::Endpoint(src_handle)),
+                (EndpointHandle::Output(OutputEndpoint::Endpoint { handle: src_handle, feedback}),
                     EndpointHandle::Input(InputEndpoint::Endpoint(dst_handle))) => {
                     if dst_node == node && dst_handle == handle {
                         let _ = self.process_cable(
                             src_node.voices(),
                             src_handle.clone(),
+                            feedback.clone(),
                             dst_node.voices(),
                             dst_handle.clone()
                         );
@@ -178,7 +180,7 @@ impl Actions {
 
     fn process_input_external(&mut self, node: &Node, handle: &InputHandle, channel: usize) {
         match handle {
-            InputHandle::Stream(_) => println!(" - External input streams are not supproted"),
+            InputHandle::Stream(_) => println!(" - External input streams are not supported"),
             InputHandle::Event(_) => println!(" - External events are not supported"),
             InputHandle::Value(_) => println!(" - External values are not supported")
         }
@@ -355,16 +357,17 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputHandle,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputHandle) -> Result<(), &'static str> {
 
         match (src_handle, dst_handle) {
             (OutputHandle::Stream(src_handle), InputHandle::Stream(dst_handle)) => self
-                .connect_streams(src_voices, src_handle, dst_voices, dst_handle)?,
+                .connect_streams(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
             (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => self
-                .connect_events(src_voices, src_handle, dst_voices, dst_handle)?,
+                .connect_events(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
             (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => self
-                .connect_values(src_voices, src_handle, dst_voices, dst_handle)?,
+                .connect_values(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
             _ => return Err("Connection not between different endpoint kinds")
         };
 
@@ -375,14 +378,15 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputStreamHandle,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
         match (src_handle, dst_handle) {
             (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::MonoFloat32(dst)) => self
-                .copy_stream(src_voices, src, dst_voices, dst),
+                .copy_stream(src_voices, src, feedback, dst_voices, dst),
             (OutputStreamHandle::StereoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
-                .copy_stream(src_voices, src, dst_voices, dst),
+                .copy_stream(src_voices, src, feedback, dst_voices, dst),
             (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
                 .copy_convert_stream(src_voices, src, dst_voices, dst),
             _ => return Err("Endpoints streams types are not compatible")
@@ -395,6 +399,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputEventHandle,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputEventHandle) -> Result<(), &'static str> {
         
@@ -402,16 +407,16 @@ impl Actions {
             OutputEventHandle::Primitive(src_handle) => {
                 match dst_handle {
                     InputEventHandle::Primitive(dst_handle) => self
-                        .copy_event(src_voices, src_handle, dst_voices, dst_handle),
+                        .copy_event(src_voices, src_handle, feedback, dst_voices, dst_handle),
                     InputEventHandle::Object { .. } => return Err("Endpoints event types are not compatible"),
                     InputEventHandle::Err(e) => return Err(e),
                 }
             }
             OutputEventHandle::Object { handle: src_handle, object } => {
                 match dst_handle {
-                    InputEventHandle::Primitive(dst_handle) => todo!(),
+                    InputEventHandle::Primitive(dst_handle) => return Err("Endpoints event types are not compatible"),
                     InputEventHandle::Object { handle: dst_handle, object } => self
-                        .copy_event(src_voices, src_handle, dst_voices, dst_handle),
+                        .copy_event(src_voices, src_handle, feedback, dst_voices, dst_handle),
                     InputEventHandle::Err(e) => return Err(e),
                 }
             }
@@ -425,20 +430,21 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputValueHandle,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputValueHandle) -> Result<(), &'static str> {
 
         match (src_handle, dst_handle) {
             (OutputValueHandle::Float32(src), InputValueHandle::Float32(dst)) => self
-                .copy_value(src_voices, src, dst_voices, dst),
+                .copy_value(src_voices, src, feedback, dst_voices, dst),
             (OutputValueHandle::Float64(src), InputValueHandle::Float64(dst)) => self
-                .copy_value(src_voices, src, dst_voices, dst),
+                .copy_value(src_voices, src, feedback, dst_voices, dst),
             (OutputValueHandle::Int32(src), InputValueHandle::Int32(dst)) => self
-                .copy_value(src_voices, src, dst_voices, dst),
+                .copy_value(src_voices, src, feedback, dst_voices, dst),
             (OutputValueHandle::Int64(src), InputValueHandle::Int64(dst)) => self
-                .copy_value(src_voices, src, dst_voices, dst),
+                .copy_value(src_voices, src, feedback, dst_voices, dst),
             (OutputValueHandle::Bool(src), InputValueHandle::Bool(dst)) => self
-                .copy_value(src_voices, src, dst_voices, dst),
+                .copy_value(src_voices, src, feedback, dst_voices, dst),
             _ => return Err("Endpoints value types are not compatible"),
         }
 
@@ -449,6 +455,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputStream<T>>,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputStream<T>>)
         where
@@ -461,7 +468,7 @@ impl Actions {
                 src_handle,
                 dst_voices,
                 dst_handle,
-                buffer
+                buffer,
             }
         );
     }
@@ -494,6 +501,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputEvent>,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputEvent>) {
 
@@ -503,6 +511,7 @@ impl Actions {
                 src_handle,
                 dst_voices,
                 dst_handle,
+                feedback
             }
         );
     }
@@ -511,10 +520,11 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputValue<T>>,
+        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputValue<T>>)
         where
-            T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static {
+            T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static{
 
         self.push(
             CopyValue {
@@ -522,6 +532,7 @@ impl Actions {
                 src_handle,
                 dst_voices,
                 dst_handle,
+                feedback,
             }
         );
     }
@@ -535,8 +546,8 @@ pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst
     let dst_handle = dst_endpoint.handle();
 
     if let (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) = (src_handle, dst_handle) {
-        if let (OutputEndpoint::Endpoint(src_handle), InputEndpoint::Endpoint(dst_handle)) = (src_handle, dst_handle) {
-                return actions.process_cable(src_voices, src_handle.clone(), dst_voices, dst_handle.clone());
+        if let (OutputEndpoint::Endpoint { handle: src_handle, feedback }, InputEndpoint::Endpoint(dst_handle)) = (src_handle, dst_handle) {
+                return actions.process_cable(src_voices, src_handle.clone(), feedback.clone(), dst_voices, dst_handle.clone());
         } else {
             return Err("Connection not between endpoints");
         }
