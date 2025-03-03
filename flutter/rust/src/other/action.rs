@@ -132,7 +132,7 @@ impl Actions {
 
     fn process_output(&mut self, node: &Node, handle: &OutputEndpoint) {
         match handle {
-            OutputEndpoint::Endpoint { handle, .. } => {
+            OutputEndpoint::Endpoint { .. } => {
                 // Do nothing for output endpoints
             }
             OutputEndpoint::External { handle, channel } => {
@@ -154,13 +154,12 @@ impl Actions {
             let dst_handle = cable.destination.endpoint.handle();
 
             match (src_handle, dst_handle) {
-                (EndpointHandle::Output(OutputEndpoint::Endpoint { handle: src_handle, feedback}),
+                (EndpointHandle::Output(OutputEndpoint::Endpoint(src_handle)),
                     EndpointHandle::Input(InputEndpoint::Endpoint(dst_handle))) => {
                     if dst_node == node && dst_handle == handle {
                         let _ = self.process_cable(
                             src_node.voices(),
                             src_handle.clone(),
-                            feedback.clone(),
                             dst_node.voices(),
                             dst_handle.clone()
                         );
@@ -188,7 +187,7 @@ impl Actions {
 
     fn process_output_external(&mut self, node: &Node, handle: &OutputHandle, channel: usize) {
         match handle {
-            OutputHandle::Stream(handle) => {
+            OutputHandle::Stream { handle, feedback } => {
                 match handle {
                     OutputStreamHandle::MonoFloat32(handle) => {
                         println!(" - External mono ouput channel {} to node {}", channel, node.id);
@@ -217,8 +216,8 @@ impl Actions {
                     OutputStreamHandle::Err(e) => ()
                 }
             }
-            OutputHandle::Event(_) => println!(" - External events are not supported"),
-            OutputHandle::Value(_) => println!(" - External values are not supported")
+            OutputHandle::Event { .. } => println!(" - External events are not supported"),
+            OutputHandle::Value { .. } => println!(" - External values are not supported")
         }
     }
 
@@ -286,10 +285,10 @@ impl Actions {
 
     fn process_output_widget(&mut self, node: &Node, handle: &OutputHandle, queue: &Arc<ArrayQueue<Value>>) {
         match handle {
-            OutputHandle::Stream(handle) => {
+            OutputHandle::Stream { handle, feedback } => {
                 println!(" - Unsupported widget output stream");
             },
-            OutputHandle::Event(handle) => {
+            OutputHandle::Event { handle, feedback } => {
                 println!(" - Send events to widget");
                 match handle {
                     OutputEventHandle::Primitive(handle) => {
@@ -307,7 +306,7 @@ impl Actions {
                     OutputEventHandle::Err(_) => ()
                 }
             },
-            OutputHandle::Value(handle) => {
+            OutputHandle::Value { handle, feedback } => {
                 println!(" - Unsupported widget output value");
             },
         }
@@ -357,17 +356,16 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputHandle,
-        feedback: Arc<AtomicCell<Value>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputHandle) -> Result<(), &'static str> {
 
         match (src_handle, dst_handle) {
-            (OutputHandle::Stream(src_handle), InputHandle::Stream(dst_handle)) => self
-                .connect_streams(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
-            (OutputHandle::Event(src_handle), InputHandle::Event(dst_handle)) => self
-                .connect_events(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
-            (OutputHandle::Value(src_handle), InputHandle::Value(dst_handle)) => self
-                .connect_values(src_voices, src_handle, feedback, dst_voices, dst_handle)?,
+            (OutputHandle::Stream { handle, feedback }, InputHandle::Stream(dst_handle)) => self
+                .connect_streams(src_voices, handle, feedback, dst_voices, dst_handle)?,
+            (OutputHandle::Event { handle, feedback }, InputHandle::Event(dst_handle)) => self
+                .connect_events(src_voices, handle, feedback, dst_voices, dst_handle)?,
+            (OutputHandle::Value { handle, feedback }, InputHandle::Value(dst_handle)) => self
+                .connect_values(src_voices, handle, feedback, dst_voices, dst_handle)?,
             _ => return Err("Connection not between different endpoint kinds")
         };
 
@@ -378,7 +376,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputStreamHandle,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<f32>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
@@ -399,7 +397,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputEventHandle,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<usize>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputEventHandle) -> Result<(), &'static str> {
         
@@ -430,7 +428,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: OutputValueHandle,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<bool>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputValueHandle) -> Result<(), &'static str> {
 
@@ -455,7 +453,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputStream<T>>,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<f32>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputStream<T>>)
         where
@@ -469,6 +467,7 @@ impl Actions {
                 dst_voices,
                 dst_handle,
                 buffer,
+                feedback
             }
         );
     }
@@ -501,7 +500,7 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputEvent>,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<usize>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputEvent>) {
 
@@ -520,11 +519,11 @@ impl Actions {
         &mut self,
         src_voices: Arc<Mutex<Voices>>,
         src_handle: Endpoint<OutputValue<T>>,
-        feedback: Arc<AtomicCell<Value>>,
+        feedback: Arc<AtomicCell<bool>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: Endpoint<InputValue<T>>)
         where
-            T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static{
+            T: Copy + Default + Send + Sync + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static {
 
         self.push(
             CopyValue {
@@ -533,6 +532,7 @@ impl Actions {
                 dst_voices,
                 dst_handle,
                 feedback,
+                previous: T::default(),
             }
         );
     }
@@ -546,8 +546,8 @@ pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst
     let dst_handle = dst_endpoint.handle();
 
     if let (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) = (src_handle, dst_handle) {
-        if let (OutputEndpoint::Endpoint { handle: src_handle, feedback }, InputEndpoint::Endpoint(dst_handle)) = (src_handle, dst_handle) {
-                return actions.process_cable(src_voices, src_handle.clone(), feedback.clone(), dst_voices, dst_handle.clone());
+        if let (OutputEndpoint::Endpoint(src_handle), InputEndpoint::Endpoint(dst_handle)) = (src_handle, dst_handle) {
+                return actions.process_cable(src_voices, src_handle.clone(), dst_voices, dst_handle.clone());
         } else {
             return Err("Connection not between endpoints");
         }

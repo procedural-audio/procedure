@@ -33,7 +33,7 @@ pub struct CopyEvent {
     pub src_handle: Endpoint<OutputEvent>,
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputEvent>,
-    pub feedback: Arc<AtomicCell<Value>>,
+    pub feedback: Arc<AtomicCell<usize>>,
 }
 
 impl ExecuteAction for CopyEvent {

@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:metasampler/settings.dart';
 
 import '../bindings/api/endpoint.dart';
@@ -35,26 +36,51 @@ class Connector extends StatefulWidget {
 
 class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
 
+  late Ticker _ticker;
   late AnimationController _controller;
+  ValueNotifier<double> sinceLastUpdate = ValueNotifier(0.0);
 
   int blocksPerDot = 20;
 
   @override
   void initState() {
     super.initState();
+
+    // Ticker
+    _ticker = createTicker((Duration elapsed) {
+      if (_controller.isAnimating) {
+        sinceLastUpdate.value += elapsed.inMilliseconds.toDouble() / _controller.duration!.inMilliseconds.toDouble();
+      } else {
+        if (widget.start.endpoint.feedbackValue()) {
+          sinceLastUpdate.value = 0;
+          _controller.forward(from: 0.0);
+        }
+      }
+    });
+
+    _ticker.start();
+
+    // Animation
     var blocksPerSecond = widget.patch.sampleRate ~/ widget.patch.blockSize;
     var secondsPerBlock = 1.0 / blocksPerSecond;
     var millisecondsPerBlock = (1000 * secondsPerBlock).toInt();
+
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: millisecondsPerBlock * blocksPerDot),
-    )..repeat(reverse: false);
+    );// ..repeat(reverse: false);
   }
 
   @override
   void dispose() {
+    _ticker.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void tick() {
+
   }
 
   void update() {
@@ -95,7 +121,8 @@ class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
                     widget.patch.theme.getColor(widget.start.endpoint.type, widget.start.endpoint.kind),
                     focused,
                     _controller,
-                    widget.start.endpoint.kind
+                    widget.start.endpoint.kind,
+                    sinceLastUpdate,
                   ),
                 );
               },
@@ -177,7 +204,8 @@ class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMi
               widget.start!.patch.theme.getColor(widget.start!.endpoint.type, widget.start!.endpoint.kind),
               true,
               _controller,
-              widget.start!.endpoint.kind
+              widget.start!.endpoint.kind,
+              ValueNotifier(0.0),
             ),
           );
         } else {
@@ -195,10 +223,12 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     this.color,
     this.focused,
     this.animation,
-    this.kind
+    this.kind,
+    this.sinceLastUpdate
   ) : super(repaint: animation);
 
   Animation<double> animation;
+  ValueNotifier<double> sinceLastUpdate;
   Offset initialStart;
   Offset initialEnd;
   Color color;
@@ -213,7 +243,10 @@ class ConnectorPainter extends CustomPainter implements Listenable {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
     
-    paint.color = color.withOpacity(focused ? 1.0 : 0.3);
+    double activeOpacity = 1.0;
+    double inactiveOpacity = 0.3;
+    
+    paint.color = color.withOpacity(focused ? activeOpacity : inactiveOpacity);
 
     Offset start = Offset(initialStart.dx + 9, initialStart.dy + 2);
     Offset end = Offset(initialEnd.dx - 3, initialEnd.dy + 2);
@@ -235,11 +268,13 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     double totalLength = pathLength(path);
 
     if (totalLength > GlobalSettings.gridSize) {
-      if (kind == EndpointKind.value) {
+      if (kind == EndpointKind.value && animation.isAnimating) {
         final animationPaint = Paint()
           ..color = color
           ..style = PaintingStyle.fill
           ..strokeWidth = 3;
+
+        animationPaint.color = color.withOpacity(1.0 - (animation.value * (activeOpacity - inactiveOpacity)));
 
         double segmentLength = 50;
         double segmentCount = totalLength / segmentLength;

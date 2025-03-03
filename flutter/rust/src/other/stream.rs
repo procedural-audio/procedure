@@ -1,13 +1,19 @@
 use std::collections::HashMap;
+use std::iter::Sum;
+use std::ops::Add;
+use std::ops::Mul;
 use std::sync::Arc;
 use std::sync::Mutex;
 
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
+use cmajor::value::Value;
 use cmajor::*;
 
 use crossbeam::atomic::AtomicCell;
+use num_traits::Float;
+use num_traits::FromPrimitive;
 use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
@@ -31,7 +37,27 @@ pub struct CopyStream<T: StreamType> {
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputStream<T>>,
     pub buffer: Vec<T>,
-    // pub feedback: Arc<AtomicCell<T>>,
+    pub feedback: Arc<AtomicCell<f32>>,
+}
+
+/*fn rms<T: Mul<Output = T> + Sum>(buffer: &[T]) -> T
+where
+    T: StreamType,
+{
+    buffer.iter().map(|x| *x * *x).sum::<T>() / T::from_usize(buffer.len())
+}*/
+
+fn rms<T>(values: &[T]) -> T
+where
+    T: Float + FromPrimitive + Sum,
+{
+    if values.is_empty() {
+        return T::zero();
+    }
+
+    let sum_of_squares: T = values.iter().map(|&x| x * x).sum();
+    let mean_square = sum_of_squares / T::from_usize(values.len()).unwrap();
+    mean_square.sqrt()
 }
 
 impl<T: StreamType> ExecuteAction for CopyStream<T> {
@@ -46,6 +72,9 @@ impl<T: StreamType> ExecuteAction for CopyStream<T> {
             self.dst_handle,
             &mut self.buffer[..num_frames],
         );
+
+        // let rms = rms(&self.buffer[..num_frames]);
+        // self.feedback.store(Value::Float32(rms.to_f32().unwrap()));
     }
 }
 

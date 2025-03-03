@@ -338,11 +338,20 @@ impl InputHandle {
     }
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(Clone)]
 pub enum OutputHandle {
-    Stream(OutputStreamHandle),
-    Value(OutputValueHandle),
-    Event(OutputEventHandle),
+    Stream {
+        handle: OutputStreamHandle,
+        feedback: Arc<AtomicCell<f32>>,
+    },
+    Value {
+        handle: OutputValueHandle,
+        feedback: Arc<AtomicCell<bool>>,
+    },
+    Event {
+        handle: OutputEventHandle,
+        feedback: Arc<AtomicCell<usize>>
+    },
 }
 
 impl OutputHandle {
@@ -350,30 +359,50 @@ impl OutputHandle {
         // Build normal endpoint
         match info {
             EndpointInfo::Stream(stream) => {
-                OutputHandle::Stream(OutputStreamHandle::from_endpoint(engine, stream))
+                OutputHandle::Stream {
+                    handle: OutputStreamHandle::from_endpoint(engine, stream),
+                    feedback: Arc::new(AtomicCell::new(0.0)),
+                }
             }
             EndpointInfo::Event(event) => {
-                OutputHandle::Event(OutputEventHandle::from_endpoint(engine, event))
+                OutputHandle::Event {
+                    handle: OutputEventHandle::from_endpoint(engine, event),
+                    feedback: Arc::new(AtomicCell::new(0)),
+                }
             }
             EndpointInfo::Value(value) => {
-                OutputHandle::Value(OutputValueHandle::from_endpoint(engine, value))
+                OutputHandle::Value {
+                    handle: OutputValueHandle::from_endpoint(engine, value),
+                    feedback: Arc::new(AtomicCell::new(false)),
+                }
             }
         }
     }
 
     pub fn get_kind(&self) -> EndpointKind {
         match self {
-            Self::Stream(_) => EndpointKind::Stream,
-            Self::Value(_) => EndpointKind::Value,
-            Self::Event(_) => EndpointKind::Event,
+            Self::Stream { .. } => EndpointKind::Stream,
+            Self::Value { .. } => EndpointKind::Value,
+            Self::Event { .. } => EndpointKind::Event,
         }
     }
 
     pub fn get_type(&self) -> &str {
         match self {
-            Self::Stream(handle) => handle.get_type(),
-            Self::Value(handle) => handle.get_type(),
-            Self::Event(handle) => handle.get_type(),
+            Self::Stream { handle, ..} => handle.get_type(),
+            Self::Value{ handle, ..} => handle.get_type(),
+            Self::Event{ handle, .. } => handle.get_type(),
+        }
+    }
+}
+
+impl PartialEq for OutputHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (OutputHandle::Stream { handle: a, .. }, OutputHandle::Stream { handle: b, .. }) => a == b,
+            (OutputHandle::Value { handle: a, .. }, OutputHandle::Value { handle: b, .. }) => a == b,
+            (OutputHandle::Event { handle: a, .. }, OutputHandle::Event { handle: b, .. }) => a == b,
+            _ => false,
         }
     }
 }
@@ -456,10 +485,7 @@ impl PartialEq for InputEndpoint {
 
 #[derive(Clone)]
 pub enum OutputEndpoint {
-    Endpoint {
-        handle: OutputHandle,
-        feedback: Arc<AtomicCell<Value>>,
-    },
+    Endpoint(OutputHandle),
     External {
         handle: OutputHandle,
         channel: usize,
@@ -493,10 +519,9 @@ impl OutputEndpoint {
         }
 
         // Build regular endpoints
-        return Self::Endpoint {
-            handle: OutputHandle::from_info(engine, info),
-            feedback: Arc::new(AtomicCell::new(Value::Void)),
-        };
+        return Self::Endpoint(
+            OutputHandle::from_info(engine, info),
+        );
     }
 
     fn is_external(&self) -> bool {
@@ -508,7 +533,7 @@ impl OutputEndpoint {
 
     fn get_kind(&self) -> EndpointKind {
         match self {
-            OutputEndpoint::Endpoint { handle, ..} => handle.get_kind(),
+            OutputEndpoint::Endpoint(handle) => handle.get_kind(),
             OutputEndpoint::External { handle, .. } => handle.get_kind(),
             OutputEndpoint::Widget { handle, .. } => handle.get_kind(),
         }
@@ -516,7 +541,7 @@ impl OutputEndpoint {
 
     fn get_type(&self) -> &str {
         match self {
-            OutputEndpoint::Endpoint { handle, ..} => handle.get_type(),
+            OutputEndpoint::Endpoint(handle) => handle.get_type(),
             OutputEndpoint::External { handle, .. } => handle.get_type(),
             OutputEndpoint::Widget { handle, .. } => handle.get_type(),
         }
@@ -526,7 +551,7 @@ impl OutputEndpoint {
 impl PartialEq for OutputEndpoint {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (OutputEndpoint::Endpoint { handle: h1, .. }, OutputEndpoint::Endpoint { handle: h2, .. }) => h1 == h2,
+            (OutputEndpoint::Endpoint(h1), OutputEndpoint::Endpoint(h2)) => h1 == h2,
             (OutputEndpoint::External { handle, .. }, OutputEndpoint::External { handle: other, .. }) => handle == other,
             (OutputEndpoint::Widget { handle, .. }, OutputEndpoint::Widget { handle: other, .. }) => handle == other,
             _ => false,

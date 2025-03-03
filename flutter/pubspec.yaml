@@ -61,7 +61,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   rust_lib_metasampler:
     path: rust_builder
-  flutter_rust_bridge: 2.3.0
+  flutter_rust_bridge: 2.8.0
   freezed_annotation: ^2.4.4
   langchain: ^0.7.7+2
   langchain_openai: ^0.7.3

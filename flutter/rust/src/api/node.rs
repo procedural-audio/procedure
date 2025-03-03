@@ -3,7 +3,6 @@ use cmajor::engine::{Engine, Error, Linked, Loaded};
 use cmajor::performer::*;
 use cmajor::*;
 use endpoints::stream::StreamType;
-use for_generated::dart_sys::Dart_SourceFile;
 use value::ValueRef;
 
 use super::endpoint::*;

@@ -110,6 +110,22 @@ impl NodeEndpoint {
     }
 
     #[frb(sync)]
+    pub fn feedback_value(&self) -> bool {
+        // If it's an output
+        if let EndpointHandle::Output(handle) = &self.endpoint {
+            // If it's an endpoint
+            if let OutputEndpoint::Endpoint(handle) = handle {
+                // If it's a value
+                if let OutputHandle::Value {feedback, .. } = handle {
+                    return feedback.load();
+                }
+            }
+        }
+
+        false
+    }
+
+    #[frb(sync)]
     pub fn is_input(&self) -> bool {
         self.endpoint.is_input()
     }

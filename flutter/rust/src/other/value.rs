@@ -17,17 +17,18 @@ use crate::other::voices::*;
 
 use super::action::ExecuteAction;
 
-pub struct CopyValue<T> {
+pub struct CopyValue<T: Default> {
     pub src_voices: Arc<Mutex<Voices>>,
     pub src_handle: Endpoint<OutputValue<T>>,
     pub dst_voices: Arc<Mutex<Voices>>,
     pub dst_handle: Endpoint<InputValue<T>>,
-    pub feedback: Arc<AtomicCell<Value>>,
+    pub previous: T,
+    pub feedback: Arc<AtomicCell<bool>>,
 }
 
 impl<T> ExecuteAction for CopyValue<T>
 where
-    T: Copy + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
+    T: Copy + Default + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
 {
     fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
         let mut src = self.src_voices
@@ -36,8 +37,46 @@ where
         let mut dst = self.dst_voices
             .try_lock()
             .unwrap();
+        
+        match *src {
+            Voices::Mono(ref mut src_voice) => {
+                let value = src_voice.get(self.src_handle);
 
-        src.copy_values_to(self.src_handle, &mut dst, self.dst_handle);
+                if self.previous != value {
+                    self.feedback.store(true);
+                } else {
+                    self.feedback.store(false);
+                }
+
+                self.previous = value;
+
+                match *dst {
+                    Voices::Mono(ref mut dst_voice) => {
+                        dst_voice.set(self.dst_handle, value);
+                    }
+                    Voices::Poly(ref mut dst_voices) => {
+                        /*for dst_voice in dst_voices.iter_mut() {
+                            dst_voice.set(self.dst_handle, value);
+                        }*/
+                    }
+                }
+            }
+            Voices::Poly(ref mut src_voices) => {
+                match *dst {
+                    Voices::Mono(ref mut dst_voice) => {
+                        // let value = src_voices[0].get(self.src_handle);
+                        // dst_voice.set(self.dst_handle, value);
+                    }
+                    Voices::Poly(ref mut dst_voices) => {
+                        for (src_voice, dst_voice) in src_voices.iter_mut().zip(dst_voices.iter_mut()) {
+                            let value = src_voice.get(self.src_handle);
+                            dst_voice.set(self.dst_handle, value);
+                        }
+                    }
+                }
+            }
+        }
+        // src.copy_values_to(self.src_handle, &mut dst, self.dst_handle);
     }
 }
 
