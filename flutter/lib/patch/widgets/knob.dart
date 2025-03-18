@@ -59,15 +59,15 @@ class KnobWidget extends NodeWidget {
     return KnobWidget(
       node,
       endpoint,
-      left: map['left'] ?? 0,
-      top: map['top'] ?? 0,
-      width: map['width'] ?? 50,
-      height: map['height'] ?? 50,
+      left: int.tryParse(map['left'].toString()) ?? 0,
+      top: int.tryParse(map['top'].toString()) ?? 0,
+      width: int.tryParse(map['width'].toString()) ?? 50,
+      height: int.tryParse(map['height'].toString()) ?? 50,
       label: map['label'] ?? "",
       color: colorFromString(map['color']) ?? Colors.grey,
-      min: map['min'] ?? 0.0,
-      max: map['max'] ?? 1.0,
-      initialValue: map['default'] ?? 0.5,
+      min: double.tryParse(map['min'].toString()) ?? 0.0,
+      max: double.tryParse(map['max'].toString()) ?? 1.0,
+      initialValue: double.tryParse(map['default'].toString()) ?? 0.5,
       key: UniqueKey(),
     );
   }
