@@ -9,6 +9,7 @@ import 'info.dart';
 import 'project.dart';
 import '../settings.dart';
 import '../preset/info.dart';
+import '../plugin/config.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -26,6 +27,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   bool editing = false;
 
   List<ProjectInfo> projectsInfos = [];
+  List<Plugin> plugins = [];
 
   @override
   void initState() {
@@ -86,7 +88,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       i++;
     }
 
-    // Create the project info using the blank method
     var newInfo = ProjectInfo.blank(widget.directory);
 
     await newInfo.save();
@@ -111,7 +112,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     var newInfo = await ProjectInfo.load(Directory(newPath));
 
     if (newInfo != null) {
-      // Update the project info
       newInfo.description.value = info.description.value;
       newInfo.date.value = DateTime.now();
       await newInfo.save();
@@ -211,6 +211,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                     searchText = s;
                   });
                 },
+                plugins: plugins,
               ),
             ),
             Expanded(
@@ -359,11 +360,13 @@ class BigTags extends StatelessWidget {
     required this.onEditPressed,
     required this.onNewPressed,
     required this.onSearch,
+    required this.plugins,
   });
 
   void Function() onEditPressed;
   void Function() onNewPressed;
   void Function(String) onSearch;
+  final List<Plugin> plugins;
 
   @override
   Widget build(BuildContext context) {
@@ -373,132 +376,14 @@ class BigTags extends StatelessWidget {
         Expanded(
           child: Container(),
         ),
-        /*const SizedBox(width: 10),
-        BigTagDropdown(
-          text: "Instrument",
-          color: Colors.white,
-          iconData: Icons.piano,
-          rows: const [
-            TagRow(
-              name: "Sources",
-              color: Colors.red,
-              tags: [
-                "Sampled",
-                "Multi-sampled",
-                "Physical Modelling",
-              ],
-            ),
-            TagRow(
-              name: "Keyboards",
-              color: Colors.red,
-              tags: [
-                "Acoustic Piano",
-                "Electric Piano",
-                "Harpsichord",
-                "Clavichord",
-              ],
-            ),
-            TagRow(
-              name: "Guitars",
-              color: Colors.red,
-              tags: [
-                "Acoustic Guitar",
-                "Electric Guitar",
-                "Mandolin",
-                "Bass Guitar",
-              ],
-            ),
-            TagRow(
-              name: "Synthesizer",
-              color: Colors.red,
-              tags: [
-                "Synth Lead",
-                "Synth Pluck",
-                "Synth Pad",
-                "Synth Bass",
-                "Digital",
-                "Virtual Analog",
-              ],
-            ),
-            TagRow(
-              name: "Orchestral",
-              color: Colors.red,
-              tags: [
-                "Strings",
-                "Woodwinds",
-                "Brass",
-                "Percussion",
-              ],
-            ),
-            TagRow(
-              name: "Orchestral",
-              color: Colors.red,
-              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
-            ),
-            TagRow(
-              name: "Orchestral",
-              color: Colors.red,
-              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
-            ),
-            TagRow(
-              name: "Orchestral",
-              color: Colors.red,
-              tags: ["Strings", "Woodwinds", "Brass", "Percussion"],
-            ),
-          ],
-        ),
         const SizedBox(width: 10),
-        BigTagDropdown(
-          text: "Effect",
+        IconButton(
+          icon: const Icon(Icons.settings),
           color: Colors.white,
-          iconData: Icons.waves,
-          rows: const [
-            TagRow(
-              name: "Row",
-              color: Colors.red,
-              tags: ["Item 1", "Item 2"],
-            ),
-          ],
+          onPressed: () {
+            showPluginConfig(context, plugins);
+          },
         ),
-        const SizedBox(width: 10),
-        BigTagDropdown(
-          text: "Sequencer",
-          color: Colors.white,
-          iconData: Icons.music_note,
-          rows: const [
-            TagRow(
-              name: "Row",
-              color: Colors.red,
-              tags: ["Item 1", "Item 2"],
-            ),
-          ],
-        ),
-        const SizedBox(width: 10),
-        BigTagDropdown(
-          text: "Song",
-          color: Colors.white,
-          iconData: Icons.equalizer,
-          rows: const [
-            TagRow(
-              name: "Row",
-              color: Colors.red,
-              tags: ["Item 1", "Item 2"],
-            ),
-          ],
-        ),
-        const SizedBox(width: 10),
-        BigTagDropdown(
-          text: "Utility",
-          color: Colors.white,
-          iconData: Icons.developer_board,
-          rows: const [
-            TagRow(
-              name: "Row",
-              color: Colors.red,
-              tags: ["Item 1", "Item 2"],
-            ),
-          ],
-        ),*/
         const SizedBox(width: 10),
         NewInstrumentButton(
           onPressed: () {
@@ -631,7 +516,6 @@ class _BigTagDropdown extends State<BigTagDropdown>
                                             name: e.name,
                                             tags: e.tags,
                                             onTap: (n) {
-                                              // widget.onAction(n);
                                               toggleDropdown(open: false);
                                             },
                                           );
@@ -793,7 +677,6 @@ class _ProjectPreview extends State<ProjectPreview> {
             "/background." +
             tempImage!.path.split(".").last;
 
-        // Only try to delete the old image if it exists and is a file
         if (widget.project.image != null) {
           var oldFile = widget.project.image!;
           if (await oldFile.exists()) {
@@ -804,11 +687,9 @@ class _ProjectPreview extends State<ProjectPreview> {
         await tempImage!.copy(dest);
         var newFile = File(dest);
         
-        // Update the project with the new file
         widget.onImageChanged(widget.project, newFile);
         print("Image updated to: ${newFile.path}");
         
-        // Clear the temporary image
         if (mounted) {
           setState(() {
             tempImage = null;
@@ -827,7 +708,7 @@ class _ProjectPreview extends State<ProjectPreview> {
 
   Future<void> doneEditingProject() async {
     if (editing) {
-      await saveImage(); // Ensure image is saved when editing is completed
+      await saveImage();
     }
     stopEditingProject();
   }
@@ -926,9 +807,7 @@ class _ProjectPreview extends State<ProjectPreview> {
             onDelete: () => widget.onDelete(widget.project),
             editing: editing,
             onProjectUpdated: (updatedProject) {
-              // Pass the updated project to the parent
               setState(() {
-                // Local update can still be needed for UI refresh
               });
             },
           )
@@ -977,7 +856,6 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
   }
 
   void cancelEditingProject() {
-    // Reset the controllers to their original values
     nameController.text = widget.project.name;
     descController.text = widget.project.description.value;
     widget.onEdit();
@@ -985,31 +863,24 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
 
   Future<void> doneEditingProject() async {
     try {
-        // Update the project name and rename the directory if needed
         if (nameController.text != widget.project.name) {
             var oldPath = widget.project.directory.path;
             var newPath = widget.project.directory.parent.path + "/" + nameController.text;
             
-            // Check if both old and new directories exist
             if (await widget.project.directory.exists() && !await Directory(newPath).exists()) {
                 try {
                     await widget.project.directory.rename(newPath);
-                    // Create a new ProjectInfo with the updated directory
                     var newInfo = await ProjectInfo.load(Directory(newPath));
                     if (newInfo != null) {
-                        // Update the project info directly
                         widget.project = newInfo;
-                        // Notify parent about the update
                         widget.onProjectUpdated(newInfo);
                     }
                 } catch (e) {
-                    // If rename fails, just update the description
                     print("Failed to rename project directory: $e");
                 }
             }
         }
 
-        // Update the project description
         if (await widget.project.directory.exists()) {
             widget.project.description.value = descController.text;
             await widget.project.save();
@@ -1018,7 +889,6 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
         widget.onEdit();
     } catch (e) {
         print("Error saving project changes: $e");
-        // Still exit edit mode even if save failed
         widget.onEdit();
     }
   }

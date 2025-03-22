@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'plugin.dart';
 
-Future<void> showPluginConfig(BuildContext context, List<Plugin> plugins) {
-  return showDialog<void>(
+Future<List<Plugin>?> showPluginConfig(BuildContext context, List<Plugin> plugins) async {
+  showDialog<void>(
     context: context,
     routeSettings: const RouteSettings(name: "/config"),
     builder: (BuildContext context) {
@@ -15,6 +15,8 @@ Future<void> showPluginConfig(BuildContext context, List<Plugin> plugins) {
       );
     },
   );
+
+  return null;
 }
 
 class PluginConfig extends StatefulWidget {
