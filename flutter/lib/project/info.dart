@@ -6,6 +6,7 @@ import 'package:metasampler/patch/patch.dart';
 
 import '../plugin/info.dart';
 import '../settings.dart';
+import '../preset/info.dart';
 
 class ProjectInfo {
   ProjectInfo({

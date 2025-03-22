@@ -8,6 +8,7 @@ import '../plugin/info.dart';
 import 'info.dart';
 import 'project.dart';
 import '../settings.dart';
+import '../preset/info.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -85,30 +86,8 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       i++;
     }
 
-    // Create the project directory
-    var projectDir = Directory(newPath);
-    await projectDir.create();
-
-    // Create the presets directory
-    var presetsDir = Directory(newPath + "/presets");
-    await presetsDir.create();
-
-    // Create a default preset
-    var defaultPresetName = "Default";
-    var defaultPresetPath = presetsDir.path + "/" + defaultPresetName;
-    var defaultPresetDir = Directory(defaultPresetPath);
-    await defaultPresetDir.create();
-
-    var newInfo = ProjectInfo(
-      directory: projectDir,
-      description: ValueNotifier("A new project description"),
-      image: null,
-      date: ValueNotifier(DateTime.now()),
-      tags: [],
-      pluginInfos: [
-        // PluginInfo("github.com/0xchase/test-modules", null)
-      ]
-    );
+    // Create the project info using the blank method
+    var newInfo = ProjectInfo.blank(widget.directory);
 
     await newInfo.save();
 

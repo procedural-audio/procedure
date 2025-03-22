@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/patch/module.dart';
-import 'package:metasampler/preset/presets.dart';
+import 'package:metasampler/preset/preset.dart';
 
 import 'dart:async';
 import 'dart:io';

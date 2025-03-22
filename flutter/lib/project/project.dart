@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/patch/newTopBar.dart';
-import 'package:metasampler/preset/presets.dart';
+import 'package:metasampler/preset/preset.dart';
 
 import '../bindings/api/graph.dart' as api;
 
 import '../patch/patch.dart';
+import '../preset/browser.dart';
 import 'theme.dart';
 import '../preset/info.dart';
 import '../interface/ui.dart';
@@ -24,7 +25,8 @@ class Project extends StatefulWidget {
     required this.info,
     required this.preset,
     required this.plugins,
-    required this.theme
+    required this.theme,
+    required this.presetInfos,
   });
 
   final MainDirectory directory;
@@ -32,7 +34,7 @@ class Project extends StatefulWidget {
   Preset preset;
   List<Plugin> plugins;
   ProjectTheme theme;
-
+  final List<PresetInfo> presetInfos;
 
   Future<bool> loadInterface(PresetInfo info) async {
     return false;
@@ -49,39 +51,38 @@ class Project extends StatefulWidget {
       }
     }
 
-    // Create a default preset info without creating the directory
-    var defaultPresetPath = info.presetsDirectory.path + "/Default";
-    var defaultPresetDir = Directory(defaultPresetPath);
-    var defaultPresetInfo = PresetInfo(
-      directory: defaultPresetDir,
-      hasInterface: false,
-    );
+    // Load all available presets
+    var presetsDir = info.presetsDirectory;
+    List<PresetInfo> availablePresets = [];
+    if (await presetsDir.exists()) {
+      var items = presetsDir.list();
+      await for (var item in items) {
+        if (item is Directory) {
+          var presetInfo = await PresetInfo.load(item);
+          if (presetInfo != null) {
+            availablePresets.add(presetInfo);
+          }
+        }
+      }
+    }
+
+    // Sort presets alphabetically by name
+    availablePresets.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    Directory newPresetDir = Directory(info.presetsDirectory.path + "/New Preset");
+    Preset preset = Preset.blank(newPresetDir, theme, plugins, false);
+    if (availablePresets.isNotEmpty) {
+      preset = await Preset.load(availablePresets.first, plugins, false) ?? preset;
+    }
 
     return Project(
       directory: mainDirectory,
       info: info,
-      preset: Preset.blank(defaultPresetInfo.directory, theme, plugins),
+      preset: preset,
       plugins: plugins,
       theme: theme,
+      presetInfos: availablePresets,
     );
-  }
-
-  void scan() async {
-    /*List<PresetInfo> infos = [];
-    var patchesDir = Directory(info.directory.path + "/presets");
-
-    if (await patchesDir.exists()) {
-      var items = patchesDir.list();
-      await for (var item in items) {
-        var dir = Directory(item.path);
-        var info = await PresetInfo.load(dir);
-        if (info != null) {
-          infos.add(info);
-          infos.sort((a, b) => a.name.value.compareTo(b.name.value));
-          presets.value = infos;
-        }
-      }
-    }*/
   }
 
   @override
@@ -93,11 +94,24 @@ const double sidebarWidth = 300;
 class _Project extends State<Project> {
   bool uiVisible = false;
   bool presetsVisible = false;
-  ValueNotifier<List<PresetInfo>> presetInfos = ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
+  }
+
+  void loadPreset(PresetInfo info) async {
+    print("Loading preset: ${info.name}");
+  }
+
+  void renamePreset(PresetInfo info, String newName) async {
+    var newPath = info.directory.parent.path + "/" + newName;
+    if (await info.directory.exists() && !await Directory(newPath).exists()) {
+      await info.directory.rename(newPath);
+      setState(() {
+        info.directory = Directory(newPath);
+      });
+    }
   }
 
   @override
@@ -119,41 +133,68 @@ class _Project extends State<Project> {
     Navigator.pop(context);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (widget.preset.interface.value == null) {
-      uiVisible = false;
+  void newPreset() async {
+    var newName = "New Preset";
+    var newPath = widget.info.presetsDirectory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = "New Preset " + i.toString();
+      newPath = widget.info.presetsDirectory.path + "/" + newName;
+      i++;
     }
 
+    var newInfo = PresetInfo(
+      directory: Directory(newPath),
+      hasInterface: false,
+      tags: ["New"],
+    );
+
+    await newInfo.save();
+
+    setState(() {
+      widget.presetInfos.add(newInfo);
+    });
+  }
+
+  void duplicatePreset(PresetInfo info) async {
+    var newName = info.name + " (copy)";
+    var newPath = info.directory.path + "/" + newName;
+
+    int i = 2;
+    while (await Directory(newPath).exists()) {
+      newName = info.name + " (copy " + i.toString() + ")";
+      newPath = info.directory.path + "/" + newName;
+      i++;
+    }
+
+    await Process.run("cp", ["-r", info.directory.path, newPath]);
+    var newInfo = await PresetInfo.load(Directory(newPath));
+
+    if (newInfo != null) {
+      setState(() {
+        widget.presetInfos.add(newInfo);
+      });
+    }
+  }
+
+  void deletePreset(PresetInfo info) async {
+    await info.directory.delete(recursive: true);
+    setState(() {
+      widget.presetInfos.remove(info);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         Positioned(
-          // Patch or user interface
           left: 0,
           right: 0,
           top: 0,
           bottom: 0,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Builder(
-              builder: (context) {
-                if (!uiVisible) {
-                  return widget.preset.patch;
-                } else {
-                  return ValueListenableBuilder<UserInterface?>(
-                    valueListenable: widget.preset.interface,
-                    builder: (context, ui, child) {
-                      if (ui != null) {
-                        return ui;
-                      } else {
-                        return Container();
-                      }
-                    },
-                  );
-                }
-              },
-            ),
-          ),
+          child: widget.preset,
         ),
         Positioned(
           left: 0,
@@ -173,35 +214,26 @@ class _Project extends State<Project> {
               },
               child: Align(
                 alignment: Alignment.topCenter,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: PresetsBrowser(
-                    directory: widget.info.presetsDirectory,
-                    presets: presetInfos,
-                    onLoad: (info) {
-                      // widget.loadPreset(info);
-                    },
-                    onAddInterface: (info) async {
-                      print("Should add interface");
-                      // var newInterface = UserInterface(info);
-                      // await newInterface.save();
-                      // widget.preset.value.interface.value = newInterface;
-                      // info.hasInterface.value = true;
-                    },
-                    onRemoveInterface: (info) async {
-                      print("Should remove interface");
-                      /*info.hasInterface.value = false;
-                      await File(info.directory.path + "/interface.json")
-                          .delete();*/
-                    },
-                  ),
+                child: PresetsBrowser(
+                  directory: widget.info.presetsDirectory,
+                  presets: widget.presetInfos,
+                  onLoad: loadPreset,
+                  onAddInterface: (info) async {
+                    print("Should add interface");
+                  },
+                  onRemoveInterface: (info) async {
+                    print("Should remove interface");
+                  },
+                  onNewPreset: newPreset,
+                  onDuplicatePreset: duplicatePreset,
+                  onDeletePreset: deletePreset,
+                  onRenamePreset: renamePreset,
                 ),
               ),
             ),
           ),
         ),
         Positioned(
-          // Project top bar
           left: 0,
           right: 0,
           top: 0,
@@ -209,7 +241,6 @@ class _Project extends State<Project> {
             loadedPreset: widget.preset,
             projectInfo: widget.info,
             onEdit: () {
-              // widget.preset.value.interface.value?.toggleEditing();
             },
             onPresetsButtonTap: () {
               setState(() {
@@ -222,10 +253,8 @@ class _Project extends State<Project> {
               });
             },
             onUserInterfaceEdit: () {
-              // widget.preset.value.interface.value?.toggleEditing();
             },
             onSave: () {
-              // widget.save();
             },
             onUiSwitch: () {
               print("switch");
