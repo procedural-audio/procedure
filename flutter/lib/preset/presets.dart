@@ -38,9 +38,11 @@ class Preset {
     return null;
   }
 
-  static Preset blank(Directory projectDirectory, ProjectTheme theme, List<Plugin> plugins) {
-    var directory = Directory(projectDirectory.path + "/presets");
-    var info = PresetInfo.blank(directory);
+  static Preset blank(Directory presetDirectory, ProjectTheme theme, List<Plugin> plugins) {
+    var info = PresetInfo(
+      directory: presetDirectory,
+      hasInterface: false,
+    );
     return Preset(
       info: info,
       patch: Patch.from(info, theme, plugins),
@@ -50,6 +52,9 @@ class Preset {
 
   Future<void> save() async {
     print("Saving preset");
+    // Create the preset directory if it doesn't exist
+    await info.directory.create(recursive: true);
+    
     await patch.save();
     await interface.value?.save();
   }

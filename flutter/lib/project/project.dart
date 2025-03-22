@@ -49,27 +49,18 @@ class Project extends StatefulWidget {
       }
     }
 
-    await for (var item in info.presetsDirectory.list()) {
-      var presetDirectory = Directory(item.path);
-      var presetInfo = await PresetInfo.load(presetDirectory);
-      if (presetInfo != null) {
-        var preset = await Preset.load(presetInfo, plugins);
-        if (preset != null) {
-          return Project(
-            directory: mainDirectory,
-            info: info,
-            preset: preset,
-            plugins: plugins,
-            theme: theme,
-          );
-        }
-      }
-    }
+    // Create a default preset info without creating the directory
+    var defaultPresetPath = info.presetsDirectory.path + "/Default";
+    var defaultPresetDir = Directory(defaultPresetPath);
+    var defaultPresetInfo = PresetInfo(
+      directory: defaultPresetDir,
+      hasInterface: false,
+    );
 
     return Project(
       directory: mainDirectory,
       info: info,
-      preset: Preset.blank(info.presetsDirectory, theme, plugins),
+      preset: Preset.blank(defaultPresetInfo.directory, theme, plugins),
       plugins: plugins,
       theme: theme,
     );

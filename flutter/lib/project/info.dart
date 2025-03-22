@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -20,7 +19,7 @@ class ProjectInfo {
 
   final Directory directory;
   final ValueNotifier<String> description;
-  final ValueNotifier<File?> image;
+  File? image;
   final ValueNotifier<DateTime> date;
   final List<String> tags;
   final List<PluginInfo> pluginInfos;
@@ -35,7 +34,7 @@ class ProjectInfo {
     return ProjectInfo(
       directory: Directory(directory.projects.path + "/New Project"),
       description: ValueNotifier("Description for a new project"),
-      image: ValueNotifier(null),
+      image: null,
       date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
       tags: [],
       pluginInfos: []
@@ -96,7 +95,7 @@ class ProjectInfo {
     return ProjectInfo(
       directory: Directory(path),
       description: ValueNotifier(json['description']),
-      image: ValueNotifier(image),
+      image: image,
       date: ValueNotifier(date),
       tags: tags != null ? tags.split(",") : [],
       pluginInfos: [

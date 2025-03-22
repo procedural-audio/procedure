@@ -85,10 +85,24 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       i++;
     }
 
+    // Create the project directory
+    var projectDir = Directory(newPath);
+    await projectDir.create();
+
+    // Create the presets directory
+    var presetsDir = Directory(newPath + "/presets");
+    await presetsDir.create();
+
+    // Create a default preset
+    var defaultPresetName = "Default";
+    var defaultPresetPath = presetsDir.path + "/" + defaultPresetName;
+    var defaultPresetDir = Directory(defaultPresetPath);
+    await defaultPresetDir.create();
+
     var newInfo = ProjectInfo(
-      directory: Directory(newPath),
+      directory: projectDir,
       description: ValueNotifier("A new project description"),
-      image: ValueNotifier(null),
+      image: null,
       date: ValueNotifier(DateTime.now()),
       tags: [],
       pluginInfos: [
@@ -116,24 +130,78 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
     await Process.run("cp", ["-r", info.directory.path, newPath]);
     var newInfo = await ProjectInfo.load(Directory(newPath));
-    print("should duplicate project");
 
-    /*if (newInfo != null) {
-      newInfo.name = newName;
+    if (newInfo != null) {
+      // Update the project info
+      newInfo.description.value = info.description.value;
       newInfo.date.value = DateTime.now();
       await newInfo.save();
 
       setState(() {
         projectsInfos.add(newInfo);
       });
-    }*/
+    }
   }
 
   void removeProject(ProjectInfo info) async {
-    print("Removing project");
-    await info.directory.delete(recursive: true);
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromRGBO(30, 30, 30, 1.0),
+          title: const Text(
+            'Delete Project',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to delete "${info.name}"?',
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await info.directory.delete(recursive: true);
+      setState(() {
+        projectsInfos.remove(info);
+      });
+    }
+  }
+
+  void updateProject(ProjectInfo oldProject, ProjectInfo newProject) {
     setState(() {
-      projectsInfos.remove(info);
+      int index = projectsInfos.indexWhere((p) => p.path == oldProject.path);
+      if (index != -1) {
+        projectsInfos[index] = newProject;
+      }
     });
   }
 
@@ -215,6 +283,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                         },
                         onDelete: (info) {
                           removeProject(info);
+                        },
+                        onImageChanged: (project, file) {
+                          setState(() {
+                            project.image = file;
+                          });
                         },
                       );
                     },
@@ -681,14 +754,14 @@ class _BigTagDropdown extends State<BigTagDropdown>
 
 class ProjectPreview extends StatefulWidget {
   ProjectPreview({
-    super.key,
     required this.index,
     required this.editing,
     required this.project,
     required this.onOpen,
     required this.onDuplicate,
     required this.onDelete,
-  });
+    required this.onImageChanged,
+  }) : super(key: UniqueKey());
 
   int index;
   bool editing;
@@ -696,46 +769,88 @@ class ProjectPreview extends StatefulWidget {
   void Function(ProjectInfo) onOpen;
   void Function(ProjectInfo) onDuplicate;
   void Function(ProjectInfo) onDelete;
+  void Function(ProjectInfo, File) onImageChanged;
 
   @override
   State<ProjectPreview> createState() => _ProjectPreview();
 }
 
-class _ProjectPreview extends State<ProjectPreview>
-    with TickerProviderStateMixin {
+class _ProjectPreview extends State<ProjectPreview> {
   bool mouseOver = false;
-  bool playing = false;
-  late AnimationController controller;
-  int updateCount = 0;
+  bool editing = false;
+  File? tempImage;
 
-  @override
-  void initState() {
-    super.initState();
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
+  void startEditingProject() {
+    setState(() {
+      editing = true;
+    });
+  }
+
+  void stopEditingProject() {
+    setState(() {
+      editing = false;
+      tempImage = null;
+    });
   }
 
   void replaceImage() async {
     var result = await FilePicker.platform.pickFiles(
-      dialogTitle: "Select a project image",
       type: FileType.image,
       allowMultiple: false,
-      allowedExtensions: ["jpg", "png", "jpeg"],
     );
 
     if (result != null) {
       var file = File(result.files.first.path!);
-      String dest = widget.project.directory.path +
-          "/background." +
-          file.path.split(".").last;
-
-      await widget.project.image.value?.delete();
-      await file.copy(dest);
-      updateCount += 1;
-      widget.project.image.value = File(dest);
+      setState(() {
+        tempImage = file;
+      });
     }
+  }
+
+  Future<void> saveImage() async {
+    if (tempImage != null && mounted) {
+      try {
+        String dest = widget.project.directory.path +
+            "/background." +
+            tempImage!.path.split(".").last;
+
+        // Only try to delete the old image if it exists and is a file
+        if (widget.project.image != null) {
+          var oldFile = widget.project.image!;
+          if (await oldFile.exists()) {
+            await oldFile.delete();
+          }
+        }
+        
+        await tempImage!.copy(dest);
+        var newFile = File(dest);
+        
+        // Update the project with the new file
+        widget.onImageChanged(widget.project, newFile);
+        print("Image updated to: ${newFile.path}");
+        
+        // Clear the temporary image
+        if (mounted) {
+          setState(() {
+            tempImage = null;
+          });
+        }
+      } catch (e) {
+        print("Error saving image: $e");
+        if (mounted) {
+          setState(() {
+            tempImage = null;
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> doneEditingProject() async {
+    if (editing) {
+      await saveImage(); // Ensure image is saved when editing is completed
+    }
+    stopEditingProject();
   }
 
   @override
@@ -759,30 +874,40 @@ class _ProjectPreview extends State<ProjectPreview>
                 });
               },
               child: GestureDetector(
-                onTap: () => widget.onOpen(widget.project),
+                onTap: () {
+                  if (editing) {
+                    replaceImage();
+                  } else {
+                    widget.onOpen(widget.project);
+                  }
+                },
                 child: Stack(
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.all(
                         Radius.circular(10),
                       ),
-                      child: ValueListenableBuilder<File?>(
-                        valueListenable: widget.project.image,
-                        builder: (context, file, child) {
-                          if (file != null) {
-                            return Image.file(
-                              file,
-                              key: ValueKey(updateCount),
+                      child: tempImage != null
+                          ? Image.file(
+                              tempImage!,
+                              key: ValueKey(tempImage!.path),
                               width: 290,
+                              height: 290,
                               fit: BoxFit.cover,
-                            );
-                          } else {
-                            return Container(
-                              color: const Color.fromRGBO(40, 40, 40, 1.0),
-                            );
-                          }
-                        },
-                      ),
+                            )
+                          : widget.project.image != null
+                              ? Image.file(
+                                  widget.project.image!,
+                                  key: ValueKey(widget.project.image!.path),
+                                  width: 290,
+                                  height: 290,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 290,
+                                  height: 290,
+                                  color: const Color.fromRGBO(40, 40, 40, 1.0),
+                                ),
                     ),
                     AnimatedOpacity(
                       duration: const Duration(milliseconds: 200),
@@ -794,9 +919,9 @@ class _ProjectPreview extends State<ProjectPreview>
                             Radius.circular(10),
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Icon(
-                            Icons.open_in_new,
+                            editing ? Icons.image : Icons.open_in_new,
                             color: Colors.white,
                             size: 32,
                           ),
@@ -810,16 +935,22 @@ class _ProjectPreview extends State<ProjectPreview>
           ),
           ProjectPreviewDescription(
             project: widget.project,
-            onAction: (action) {
-              if (action == "Open Project") {
-                widget.onOpen(widget.project);
-              } else if (action == "Replace Image") {
-                replaceImage();
-              } else if (action == "Duplicate Project") {
-                widget.onDuplicate(widget.project);
-              } else if (action == "Delete Project") {
-                widget.onDelete(widget.project);
+            onOpen: () => widget.onOpen(widget.project),
+            onEdit: () async {
+              if (editing) {
+                await doneEditingProject();
+              } else {
+                startEditingProject();
               }
+            },
+            onDuplicate: () => widget.onDuplicate(widget.project),
+            onDelete: () => widget.onDelete(widget.project),
+            editing: editing,
+            onProjectUpdated: (updatedProject) {
+              // Pass the updated project to the parent
+              setState(() {
+                // Local update can still be needed for UI refresh
+              });
             },
           )
         ],
@@ -832,48 +963,85 @@ class ProjectPreviewDescription extends StatefulWidget {
   ProjectPreviewDescription({
     super.key,
     required this.project,
-    required this.onAction,
+    required this.onOpen,
+    required this.onEdit,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.editing,
+    required this.onProjectUpdated,
   });
 
   ProjectInfo project;
-  void Function(String) onAction;
+  void Function() onOpen;
+  void Function() onEdit;
+  void Function() onDuplicate;
+  void Function() onDelete;
+  bool editing;
+  void Function(ProjectInfo) onProjectUpdated;
 
   @override
-  State<ProjectPreviewDescription> createState() =>
-      _ProjectPreviewDescription();
+  State<ProjectPreviewDescription> createState() => _ProjectPreviewDescription();
 }
 
 class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
   bool barHovering = false;
-  bool editing = false;
-
   TextEditingController nameController = TextEditingController();
   TextEditingController descController = TextEditingController();
 
   bool nameSubmitHovering = false;
 
-  void startEditingProject() {
-    setState(() {
-      nameController.text = widget.project.name;
-      descController.text = widget.project.description.value;
-      editing = true;
-    });
+  @override
+  void initState() {
+    super.initState();
+    nameController.text = widget.project.name;
+    descController.text = widget.project.description.value;
   }
 
   void cancelEditingProject() {
-    setState(() {
-      editing = false;
-    });
+    // Reset the controllers to their original values
+    nameController.text = widget.project.name;
+    descController.text = widget.project.description.value;
+    widget.onEdit();
   }
 
-  void doneEditingProject() {
-    print("Should be done editing project");
-    // widget.project.name = nameController.text;
-    widget.project.description.value = descController.text;
-    widget.project.save();
-    setState(() {
-      editing = false;
-    });
+  Future<void> doneEditingProject() async {
+    try {
+        // Update the project name and rename the directory if needed
+        if (nameController.text != widget.project.name) {
+            var oldPath = widget.project.directory.path;
+            var newPath = widget.project.directory.parent.path + "/" + nameController.text;
+            
+            // Check if both old and new directories exist
+            if (await widget.project.directory.exists() && !await Directory(newPath).exists()) {
+                try {
+                    await widget.project.directory.rename(newPath);
+                    // Create a new ProjectInfo with the updated directory
+                    var newInfo = await ProjectInfo.load(Directory(newPath));
+                    if (newInfo != null) {
+                        // Update the project info directly
+                        widget.project = newInfo;
+                        // Notify parent about the update
+                        widget.onProjectUpdated(newInfo);
+                    }
+                } catch (e) {
+                    // If rename fails, just update the description
+                    print("Failed to rename project directory: $e");
+                }
+            }
+        }
+
+        // Update the project description
+        if (await widget.project.directory.exists()) {
+            widget.project.description.value = descController.text;
+            await widget.project.save();
+        }
+        
+        widget.onEdit();
+    } catch (e) {
+        print("Error saving project changes: $e");
+        // Still exit edit mode even if save failed
+        widget.onEdit();
+    }
   }
 
   @override
@@ -902,7 +1070,7 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
                 Expanded(
                   child: Builder(
                     builder: (context) {
-                      if (editing) {
+                      if (widget.editing) {
                         return Container(
                           height: 24,
                           padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
@@ -987,11 +1155,20 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
                     "Duplicate",
                     "Delete"
                   ],
-                  onAction: (s) {
-                    if (s == "Edit") {
-                      startEditingProject();
-                    } else {
-                      widget.onAction(s);
+                  onAction: (action) {
+                    switch (action) {
+                      case "Open":
+                        widget.onOpen();
+                        break;
+                      case "Edit":
+                        widget.onEdit();
+                        break;
+                      case "Duplicate":
+                        widget.onDuplicate();
+                        break;
+                      case "Delete":
+                        widget.onDelete();
+                        break;
                     }
                   },
                 )
@@ -1002,7 +1179,7 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
           Expanded(
             child: Builder(
               builder: (context) {
-                if (editing) {
+                if (widget.editing) {
                   return TextField(
                     maxLines: 2,
                     controller: descController,

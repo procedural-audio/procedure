@@ -20,9 +20,15 @@ class PresetInfo {
   File get patchFile => File(directory.path + "/patch.json");
   File get infoFile => File(directory.path + "/info.json");
 
-  static PresetInfo blank(Directory presetsDirectory) {
+  static PresetInfo blank(Directory projectDirectory) {
+    var directory = Directory(projectDirectory.path + "/New Preset");
+    directory.createSync(recursive: true);
+    
+    // Create initial patch.json
+    File(directory.path + "/patch.json").createSync();
+    
     return PresetInfo(
-      directory: Directory(presetsDirectory.path + "/New Preset"),
+      directory: directory,
       hasInterface: false,
     );
   }

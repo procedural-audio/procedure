@@ -6,7 +6,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:metasampler/settings.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../plugin/plugin.dart';
 import 'node.dart';
 import 'pin.dart';
 import 'patch.dart';
@@ -34,7 +33,7 @@ class Connector extends StatefulWidget {
   State<StatefulWidget> createState() => _Connector();
 }
 
-class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
+class _Connector extends State<Connector> with TickerProviderStateMixin {
 
   late Ticker _ticker;
   late AnimationController _controller;
@@ -123,6 +122,7 @@ class _Connector extends State<Connector> with SingleTickerProviderStateMixin {
                     _controller,
                     widget.start.endpoint.kind,
                     sinceLastUpdate,
+                    widget.start.endpoint,
                   ),
                 );
               },
@@ -206,6 +206,7 @@ class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMi
               _controller,
               widget.start!.endpoint.kind,
               ValueNotifier(0.0),
+              widget.start!.endpoint,
             ),
           );
         } else {
@@ -224,7 +225,8 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     this.focused,
     this.animation,
     this.kind,
-    this.sinceLastUpdate
+    this.sinceLastUpdate,
+    this.endpoint,
   ) : super(repaint: animation);
 
   Animation<double> animation;
@@ -233,8 +235,10 @@ class ConnectorPainter extends CustomPainter implements Listenable {
   Offset initialEnd;
   Color color;
   bool focused;
-  Random source = Random();
   EndpointKind kind;
+  int _lastAnimationCycle = 0;
+  bool _lastFeedbackValue = false;
+  final NodeEndpoint endpoint;
 
   @override
   void paint(Canvas canvas, ui.Size size) {
@@ -268,13 +272,33 @@ class ConnectorPainter extends CustomPainter implements Listenable {
     double totalLength = pathLength(path);
 
     if (totalLength > GlobalSettings.gridSize) {
+      // Value connector
       if (kind == EndpointKind.value && animation.isAnimating) {
         final animationPaint = Paint()
           ..color = color
           ..style = PaintingStyle.fill
           ..strokeWidth = 3;
 
-        animationPaint.color = color.withOpacity(1.0 - (animation.value * (activeOpacity - inactiveOpacity)));
+        // Check if we're in a new animation cycle
+        int currentCycle = (animation.value * 2).floor();
+        if (currentCycle > _lastAnimationCycle) {
+          _lastAnimationCycle = currentCycle;
+          // Check if feedback value has changed
+          bool currentFeedbackValue = endpoint.feedbackValue();
+          if (currentFeedbackValue == _lastFeedbackValue) {
+            // If value hasn't changed and we're past first cycle, start dimming
+            if (_lastAnimationCycle > 1) {
+              animationPaint.color = color.withOpacity(1.0 - (animation.value * (activeOpacity - inactiveOpacity)));
+            } else {
+              animationPaint.color = color.withOpacity(activeOpacity);
+            }
+          } else {
+            // Value changed, reset opacity
+            animationPaint.color = color.withOpacity(activeOpacity);
+            _lastAnimationCycle = 0;
+          }
+          _lastFeedbackValue = currentFeedbackValue;
+        }
 
         double segmentLength = 50;
         double segmentCount = totalLength / segmentLength;
@@ -288,10 +312,11 @@ class ConnectorPainter extends CustomPainter implements Listenable {
             // Draw animated point
             var point = pointAlongMultipleContours(path, fraction);
             if (point != null) {
-              canvas.drawCircle(point, 2.0, animationPaint);
+              canvas.drawCircle(point, 4.0, animationPaint);
             }
           }
         }
+      // Stream connector
       } else if (kind == EndpointKind.stream) {
         double totalOffset = 8.0;
         double step = 2.0;
