@@ -1,15 +1,16 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:metasampler/plugin/plugin.dart';
 
-import '../plugin/info.dart';
 import 'info.dart';
 import 'project.dart';
+
 import '../settings.dart';
-import '../preset/info.dart';
 import '../plugin/config.dart';
+import '../plugin/info.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -28,12 +29,31 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
   List<ProjectInfo> projectsInfos = [];
   List<Plugin> plugins = [];
+  List<PluginInfo> pluginInfos = [];
 
   @override
   void initState() {
     super.initState();
 
+    loadPluginInfos();
     scanProjects();
+  }
+
+  Future<void> loadPluginInfos() async {
+    final file = File('${widget.directory.plugins.path}/plugins.json');
+    if (await file.exists()) {
+      final contents = await file.readAsString();
+      final List<dynamic> jsonList = jsonDecode(contents);
+      setState(() {
+        pluginInfos = jsonList.map((json) => PluginInfo.fromJson(json)).toList();
+      });
+    }
+  }
+
+  Future<void> savePluginInfos() async {
+    final file = File('${widget.directory.plugins.path}/plugins.json');
+    final jsonList = pluginInfos.map((info) => info.toJson()).toList();
+    await file.writeAsString(jsonEncode(jsonList));
   }
 
   Future<void> scanProjects() async {
@@ -197,21 +217,31 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: BigTags(
-                onEditPressed: () {
-                  setState(() {
-                    editing = !editing;
-                  });
-                },
-                onNewPressed: () {
-                  newProject();
-                },
-                onSearch: (s) {
-                  setState(() {
-                    searchText = s;
-                  });
-                },
-                plugins: plugins,
+              child: Row(
+                children: [
+                  SearchBar(onFilter: (s) {
+                    setState(() {
+                      searchText = s;
+                    });
+                  }),
+                  Expanded(
+                    child: Container(),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    color: Colors.white,
+                    onPressed: () {
+                      showPluginConfigDialog();
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  NewInstrumentButton(
+                    onPressed: () {
+                      newProject();
+                    },
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -278,6 +308,48 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           ],
         ),
       ),
+    );
+  }
+
+  void updatePlugins() {
+    setState(() {
+      // Logic to update plugins if needed
+    });
+  }
+
+  void addPluginInfo(PluginInfo newPluginInfo) {
+    setState(() {
+      pluginInfos.add(newPluginInfo);
+      print('Added PluginInfo:');
+      print('Username: ${newPluginInfo.username}');
+      print('Repository: ${newPluginInfo.repository}');
+      print('Current PluginInfos:');
+      print(pluginInfos);
+    });
+    savePluginInfos();
+  }
+
+  void removePluginInfo(int index) {
+    if (index >= 0 && index < pluginInfos.length) {
+      setState(() {
+        pluginInfos.removeAt(index);
+      });
+      savePluginInfos();
+    } else {
+      print("Invalid index: $index");
+    }
+  }
+
+  void showPluginConfigDialog() {
+    showPluginConfig(
+      context,
+      pluginInfos,
+      (updatedPluginInfos) {
+        setState(() {
+          pluginInfos = updatedPluginInfos;
+        });
+        savePluginInfos();
+      },
     );
   }
 }
@@ -352,47 +424,6 @@ class TagRow {
   final String name;
   final Color color;
   final List<String> tags;
-}
-
-class BigTags extends StatelessWidget {
-  BigTags({
-    super.key,
-    required this.onEditPressed,
-    required this.onNewPressed,
-    required this.onSearch,
-    required this.plugins,
-  });
-
-  void Function() onEditPressed;
-  void Function() onNewPressed;
-  void Function(String) onSearch;
-  final List<Plugin> plugins;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SearchBar(onFilter: onSearch),
-        Expanded(
-          child: Container(),
-        ),
-        const SizedBox(width: 10),
-        IconButton(
-          icon: const Icon(Icons.settings),
-          color: Colors.white,
-          onPressed: () {
-            showPluginConfig(context, plugins);
-          },
-        ),
-        const SizedBox(width: 10),
-        NewInstrumentButton(
-          onPressed: () {
-            onNewPressed();
-          },
-        ),
-      ],
-    );
-  }
 }
 
 class BigTagDropdown extends StatefulWidget {

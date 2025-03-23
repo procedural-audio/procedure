@@ -182,7 +182,10 @@ class _RightClickView extends State<RightClickView> {
                   ),
                   visualDensity: VisualDensity.compact,
                   onPressed: () {
-                    showPluginConfig(context, widget.plugins);
+                    /*showPluginConfig(context, widget.plugins, () {
+                      // Define the updatePlugins function here
+                      // This function should update the plugins list as needed
+                    });*/
                   },
                 ),
               ],

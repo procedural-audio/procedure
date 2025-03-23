@@ -31,8 +31,12 @@ class PluginInfo {
     var json = jsonDecode(response.body);
 
     List<String> tags = [];
-    for (var tag in json) {
-      tags.add(tag["name"]);
+    if (json is List) {
+      for (var tag in json) {
+        if (tag is Map && tag.containsKey("name")) {
+          tags.add(tag["name"]);
+        }
+      }
     }
 
     return tags;
@@ -52,12 +56,12 @@ class PluginInfo {
     };
   }
 
-  PluginInfo fromJson(Map<String, dynamic> json) {
+  static PluginInfo fromJson(Map<String, dynamic> json) {
     return PluginInfo(
-      username: json["username"],
-      repository: json["repository"],
-      tag: json["tag"],
-      tags: json["tags"]
+      username: json["username"] ?? "unknown",
+      repository: json["repository"] ?? "unknown",
+      tag: json["tag"] ?? "",
+      tags: List<String>.from(json["tags"] ?? []),
     );
   }
 }

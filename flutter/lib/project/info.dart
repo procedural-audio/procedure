@@ -38,7 +38,9 @@ class ProjectInfo {
       image: null,
       date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
       tags: [],
-      pluginInfos: []
+      pluginInfos: [
+        PluginInfo(username: "0xchase", repository: "test-modules", tag: "0.2", tags: ["0.1", "0.2"]),
+      ]
     );
   }
 
