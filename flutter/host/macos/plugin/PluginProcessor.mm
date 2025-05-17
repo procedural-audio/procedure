@@ -45,7 +45,7 @@ Flutter_juceAudioProcessor::Flutter_juceAudioProcessor()
         ffiCreateHost = (FFIHost* (*)()) dlsym(handle, "ffi_create_host");
         ffiDestroyHost = (void (*)(FFIHost*)) dlsym(handle, "ffi_destroy_host");
         ffiHostPrepare = (void (*)(FFIHost*, uint32_t, uint32_t)) dlsym(handle, "ffi_host_prepare");
-        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, NoteMessage*, uint32_t)) dlsym(handle, "ffi_host_process");
+        ffiHostProcess = (void (*)(FFIHost*, float**, uint32_t, uint32_t, uint32_t*, uint32_t)) dlsym(handle, "ffi_host_process");
 
         core = ffiCreateHost();
     } else {
@@ -323,11 +323,7 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+    // channels that didn't contain input data
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
@@ -344,41 +340,23 @@ void Flutter_juceAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         // ..do something to the data...
     }
 
-    events.clear();
+    messages.clear();
 
     for (auto data : midiMessages) {
         auto message = data.getMessage();
 
-        if (message.isNoteOn()) {
-            // std::cout << message.getDescription() << std::endl;
+        uint8_t rawData = msg.getRawData();
+        int size = msg.getRawDataSize();
 
-            NoteMessage event;
-            event.tag = NoteTag::NoteOn;
-            event.id = (unsigned short) message.getNoteNumber();
-            event.offset = (size_t) data.samplePosition;
+        uint32_t msgBytes = 0;
 
-            NoteValue value;
-            value.noteOn = NoteOn {
-                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
-                pressure: ((float) message.getVelocity()) / 127,
-            };
-
-            event.value = value;
-            events.push_back(event);
-        } else if (message.isNoteOff()) {
-            // std::cout << message.getDescription() << std::endl;
-
-            auto event = NoteMessage {
-                id: (unsigned short) message.getNoteNumber(),
-                offset: (size_t) data.samplePosition,
-                tag: NoteTag::NoteOff,
-            };
-
-            event.value.noteOff = NoteOff {
-            };
-
-            events.push_back(event);
+        for (int i = 0; i < size && i < 4; i++) {
+            msgBytes <<= 8;
+            msgBytes |= rawData[i];
         }
+
+        std::cout << "MIDI Message: " << msgBytes << std::endl;
+        messages.push_back(msgBytes);
     }
 
     if (ffiHostProcess != nullptr && core != nullptr) {

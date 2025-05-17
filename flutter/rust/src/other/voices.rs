@@ -1,3 +1,5 @@
+use std::fmt::Pointer;
+
 use cmajor::performer::*;
 use cmajor::*;
 use endpoints::stream::StreamType;
@@ -223,17 +225,21 @@ impl Voices {
             (Voices::Mono(src_voice), Voices::Mono(dst_voice)) => {
                 src_voice
                     .fetch(src_endpoint, |_, event| {
-                        dst_voice.post(dst_endpoint, event).unwrap();
+                        dst_voice
+                        .post(dst_endpoint, event)
+                        .unwrap_or_else(| e | println!("Error posting event: {}", e));
                     })
-                    .unwrap();
+                    .unwrap_or_else(| e | println!("Error fetching event: {}", e));
             }
             (Voices::Poly(src_voices), Voices::Poly(dst_voices)) => {
                 for (src_voice, dst_voice) in src_voices.iter_mut().zip(dst_voices.iter_mut()) {
                     src_voice
                         .fetch(src_endpoint, |_, event| {
-                            dst_voice.post(dst_endpoint, event).unwrap();
+                            dst_voice
+                            .post(dst_endpoint, event)
+                            .unwrap_or_else(| e | println!("Error posting event: {}", e));
                         })
-                        .unwrap();
+                        .unwrap_or_else(| e | println!("Error fetching event: {}", e));
                 }
             }
             _ => todo!(),

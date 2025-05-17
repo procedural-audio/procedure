@@ -16,6 +16,7 @@ use value::ValueRef;
 use crate::other::voices::*;
 
 use super::action::ExecuteAction;
+use super::action::IO;
 
 pub struct CopyValue<T: Default> {
     pub src_voices: Arc<Mutex<Voices>>,
@@ -30,7 +31,7 @@ impl<T> ExecuteAction for CopyValue<T>
 where
     T: Copy + Default + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
 {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut src = self.src_voices
             .try_lock()
             .unwrap();
@@ -86,7 +87,7 @@ pub struct ClearValue<T> {
 }
 
 impl<T: Copy + Default + SetInputValue> ExecuteAction for ClearValue<T> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         self.voices
             .try_lock()
             .unwrap()
@@ -119,7 +120,7 @@ pub struct SendValue {
 }
 
 impl ExecuteAction for SendValue {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
@@ -139,7 +140,7 @@ impl<T> ExecuteAction for ReceiveValue<T>
     where
         T: Copy + SetInputValue + for <'a> TryFrom<ValueRef<'a>> {
 
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();

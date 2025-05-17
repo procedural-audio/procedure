@@ -30,23 +30,34 @@ use super::stream::*;
 use super::value::*;
 use super::event::*;
 
-pub trait ExecuteAction {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]);
+pub struct IO<'a> {
+    pub audio: &'a mut [&'a mut [f32]],
+    pub midi_input: &'a [u32],
+    pub midi_output: &'a mut Vec<u32>,
 }
 
-pub fn get_num_frames(audio: &mut [&mut [f32]]) -> usize {
-    audio
-        .get(0)
-        .unwrap()
-        .len()
+impl<'a> IO<'a> {
+    pub fn get_num_frames(&self) -> usize {
+        self
+            .audio
+            .get(0)
+            .unwrap()
+            .len()
+    }
+}
+
+
+pub trait ExecuteAction {
+    fn execute(&mut self, io: &mut IO);
 }
 
 struct Advance(Arc<Mutex<Voices>>);
 
 impl ExecuteAction for Advance {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
-        let mut voices = self.0
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
+        let mut voices = self
+            .0
             .try_lock()
             .unwrap();
 
@@ -56,13 +67,14 @@ impl ExecuteAction for Advance {
 }
 
 pub struct Actions {
-    actions: Vec<Box<dyn ExecuteAction + Send + Sync>>
+    actions: Vec<Box<dyn ExecuteAction + Send + Sync>>,
+
 }
 
 impl ExecuteAction for Actions {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         for action in self.actions.iter_mut() {
-            action.execute(audio, midi);
+            action.execute(io);
         }
     }
 }
@@ -180,7 +192,14 @@ impl Actions {
     fn process_input_external(&mut self, node: &Node, handle: &InputHandle, channel: usize) {
         match handle {
             InputHandle::Stream(_) => println!(" - External input streams are not supported"),
-            InputHandle::Event(_) => println!(" - External events are not supported"),
+            InputHandle::Event( InputEventHandle { handle, types }) => {
+                self.push(
+                    ExternalInputEvent {
+                        voices: node.voices(),
+                        handle: handle.clone(),
+                    }
+                );
+            }
             InputHandle::Value(_) => println!(" - External values are not supported")
         }
     }
@@ -216,7 +235,14 @@ impl Actions {
                     OutputStreamHandle::Err(e) => ()
                 }
             }
-            OutputHandle::Event { .. } => println!(" - External events are not supported"),
+            OutputHandle::Event { handle, feedback } => {
+                self.push(
+                    ExternalOutputEvent {
+                        voices: node.voices(),
+                        handle: handle.handle.clone(),
+                    }
+                );
+            }
             OutputHandle::Value { .. } => println!(" - External values are not supported")
         }
     }
@@ -226,23 +252,14 @@ impl Actions {
             InputHandle::Stream(handle) => {
                 println!(" - Unsupported widget input stream");
             },
-            InputHandle::Event(handle) => {
-                match handle {
-                    InputEventHandle::Primitive(handle) => {
-                        println!(" - Receive events from widget");
-                        self.push(
-                            ReceiveEvents {
-                                voices: node.voices(),
-                                handle: handle.clone(),
-                                queue: queue.clone(),
-                            }
-                        );
-                    },
-                    InputEventHandle::Object { handle, object } => {
-                        println!(" - Unsupported widget input event object");
-                    },
-                    InputEventHandle::Err(_) => ()
-                }
+            InputHandle::Event(InputEventHandle { handle, types }) => {
+                self.push(
+                    ReceiveEvents {
+                        voices: node.voices(),
+                        handle: handle.clone(),
+                        queue: queue.clone(),
+                    }
+                );
             },
             InputHandle::Value(handle) => {
                 println!(" - Receive values from widget");
@@ -290,21 +307,13 @@ impl Actions {
             },
             OutputHandle::Event { handle, feedback } => {
                 println!(" - Send events to widget");
-                match handle {
-                    OutputEventHandle::Primitive(handle) => {
-                        self.push(
-                            SendEvents {
-                                voices: node.voices(),
-                                handle: handle.clone(),
-                                queue: queue.clone(),
-                            }
-                        );
-                    },
-                    OutputEventHandle::Object { handle, object } => {
-                        println!(" - Unsupported widget output event object");
-                    },
-                    OutputEventHandle::Err(_) => ()
-                }
+                self.push(
+                    SendEvents {
+                        voices: node.voices(),
+                        handle: handle.handle.clone(),
+                        queue: queue.clone(),
+                    }
+                );
             },
             OutputHandle::Value { handle, feedback } => {
                 println!(" - Unsupported widget output value");
@@ -400,26 +409,8 @@ impl Actions {
         feedback: Arc<AtomicCell<usize>>,
         dst_voices: Arc<Mutex<Voices>>,
         dst_handle: InputEventHandle) -> Result<(), &'static str> {
-        
-        match src_handle {
-            OutputEventHandle::Primitive(src_handle) => {
-                match dst_handle {
-                    InputEventHandle::Primitive(dst_handle) => self
-                        .copy_event(src_voices, src_handle, feedback, dst_voices, dst_handle),
-                    InputEventHandle::Object { .. } => return Err("Endpoints event types are not compatible"),
-                    InputEventHandle::Err(e) => return Err(e),
-                }
-            }
-            OutputEventHandle::Object { handle: src_handle, object } => {
-                match dst_handle {
-                    InputEventHandle::Primitive(dst_handle) => return Err("Endpoints event types are not compatible"),
-                    InputEventHandle::Object { handle: dst_handle, object } => self
-                        .copy_event(src_voices, src_handle, feedback, dst_voices, dst_handle),
-                    InputEventHandle::Err(e) => return Err(e),
-                }
-            }
-            OutputEventHandle::Err(e) => return Err(e),
-        }
+
+        self.copy_event(src_voices, src_handle.handle, feedback, dst_voices, dst_handle.handle);
 
         Ok(())
     }

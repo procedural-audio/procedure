@@ -61,8 +61,8 @@ where
 }
 
 impl<T: StreamType> ExecuteAction for CopyStream<T> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
         let src = self.src_voices.try_lock().unwrap();
         let mut dst = self.dst_voices.try_lock().unwrap();
 
@@ -88,8 +88,8 @@ pub struct ConvertCopyStream<A: StreamType, B: StreamType> {
 }
 
 impl<B: StreamType, A: StreamType + ConvertTo<B>> ExecuteAction for ConvertCopyStream<A, B> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
         let src = self.src_voices.try_lock().unwrap();
         let mut dst = self.dst_voices.try_lock().unwrap();
 
@@ -110,8 +110,8 @@ pub struct ClearStream<T: StreamType + Default> {
 }
 
 impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
         self.voices
             .try_lock()
             .unwrap()
@@ -127,9 +127,9 @@ pub struct ExternalOutputStream<T: StreamType> {
 }
 
 impl ExecuteAction for ExternalOutputStream<f32> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
-        if let Some(channel) = audio.get_mut(self.channel) {
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
+        if let Some(channel) = io.audio.get_mut(self.channel) {
             self.voices
                 .try_lock()
                 .unwrap()
@@ -139,8 +139,8 @@ impl ExecuteAction for ExternalOutputStream<f32> {
 }
 
 impl ExecuteAction for ExternalOutputStream<[f32; 2]> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
-        let num_frames = get_num_frames(audio);
+    fn execute(&mut self, io: &mut IO) {
+        let num_frames = io.get_num_frames();
 
         self
             .voices
@@ -149,14 +149,14 @@ impl ExecuteAction for ExternalOutputStream<[f32; 2]> {
             .read(self.handle, &mut self.buffer[..num_frames]);
 
         // Copy the left channel
-        if let Some(left) = audio.get_mut(self.channel * 2) {
+        if let Some(left) = io.audio.get_mut(self.channel * 2) {
             for (l, b) in left.iter_mut().zip(self.buffer.iter()) {
                 *l = b[0];
             }
         }
 
         // Copy the right channel
-        if let Some(right) = audio.get_mut(self.channel * 2 + 1) {
+        if let Some(right) = io.audio.get_mut(self.channel * 2 + 1) {
             for (r, b) in right.iter_mut().zip(self.buffer.iter()) {
                 *r = b[1];
             }

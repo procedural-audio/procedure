@@ -10,6 +10,7 @@ use flutter_rust_bridge::*;
 
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Actions>> = RwLock::new(None);
+    static ref MIDI_OUTPUT: RwLock<Vec<u32>> = RwLock::new(Vec::new());
     // static ref GRAPH_PLAYING: RwLock<Option<Graph>> = RwLock::new(None);
     // static ref GRAPH_PENDING: RwLock<Option<Graph>> = RwLock::new(None);
 }
@@ -33,7 +34,7 @@ pub fn clear_patch() {
 #[frb(ignore)]
 #[no_mangle]
 pub unsafe extern "C" fn prepare_patch(sample_rate: f64, block_size: u32) {
-    println!("Should re-generate the graph here");
+    println!("Should prepare the graph here");
 }
 
 #[frb(sync)]
@@ -63,7 +64,7 @@ pub unsafe extern "C" fn process_patch(
     audio: *const *mut f32,
     channels: u32,
     frames: u32,
-    midi: *mut u8,
+    midi: *mut u32,
     size: u32,
 ) {
     let mut buffer_1 = [0.0f32];
@@ -93,12 +94,29 @@ pub unsafe extern "C" fn process_patch(
 
     let midi = unsafe { std::slice::from_raw_parts_mut(midi, size as usize) };
 
+    let mut i = 0;
+    while midi[i] != 0 {
+        i += 1;
+    }
+
+    let midi_input = &midi[..i];
+    let midi_output = &mut *MIDI_OUTPUT.write().unwrap();
+    midi_output.clear();
+
     // TODO: Update patch from pending patch if it exists
     if let Ok(mut actions) = ACTIONS.try_write() {
         if let Some(actions) = &mut *actions {
-            actions.execute(&mut buffer, midi);
+            let mut io = IO {
+                audio: &mut buffer,
+                midi_input,
+                midi_output,
+            };
+
+            actions.execute(&mut io);
         }
     }
+
+    midi.copy_from_slice(midi_output);
 }
 
 #[frb(opaque)]

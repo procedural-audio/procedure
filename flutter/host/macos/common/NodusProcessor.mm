@@ -27,7 +27,7 @@ NodusProcessor::NodusProcessor()
     }
 
     preparePatch = (void (*) (double, uint32_t)) dlsym(handle, "prepare_patch");
-    processPatch = (void (*) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t)) dlsym(handle, "process_patch");
+    processPatch = (void (*) (float *const *, uint32_t, uint32_t, uint32_t*, uint32_t)) dlsym(handle, "process_patch");
 
     if (!preparePatch || !processPatch) {
         preparePatch = nullptr;
@@ -324,7 +324,6 @@ bool NodusProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     buffer.clear();
-    midiMessages.clear();
 
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -338,46 +337,46 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
         juce::ignoreUnused (channelData);
     }
 
-    events.clear();
+    for (int i = 0; i < MAX_MIDI_MESSAGES; i++) {
+        messages[i] = 0;
+    }
 
-    /*for (auto data : midiMessages) {
+    int j = 0;
+    for (auto data : midiMessages) {
         auto message = data.getMessage();
 
-        if (message.isNoteOn()) {
-            // std::cout << message.getDescription() << std::endl;
+        const uint8_t *raw = message.getRawData();
+        int len = message.getRawDataSize();
 
-            NoteMessage event;
-            event.id = (unsigned short) message.getNoteNumber();
-            event.offset =  (size_t) data.samplePosition;
-            event.tag = NoteTag::NoteOn;
+        // Pack the message
+        uint8_t b0 = (len > 0 ? raw[0] : 0),
+                b1 = (len > 1 ? raw[1] : 0),
+                b2 = (len > 2 ? raw[2] : 0);
 
-            NoteValue value;
-            value.noteOn = NoteOn {
-                pitch: (float) juce::MidiMessage::getMidiNoteInHertz(message.getNoteNumber()),
-                pressure: ((float) message.getVelocity()) / 127,
-            };
-
-            event.value = value;
-
-            events.push_back(event);
-        } else if (message.isNoteOff()) {
-            // std::cout << message.getDescription() << std::endl;
-
-            auto event = NoteMessage {
-                id: (unsigned short) message.getNoteNumber(),
-                offset: (size_t) data.samplePosition,
-                tag: NoteTag::NoteOff,
-            };
-
-            event.value.noteOff = NoteOff {};
-            events.push_back(event);
-        }
-    }*/
+        int32_t packed = b2 | (b1 << 8) | (b0 << 16);
+        messages[j] = packed;
+        j += 1;
+    }
 
     if (processPatch) {
-        processPatch(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), nullptr, 0);
+        processPatch(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(), messages, MAX_MIDI_MESSAGES);
     }
-    
+
+    midiMessages.clear();
+    for (int i = 0; i < MAX_MIDI_MESSAGES; i++) {
+        uint32_t message = messages[i];
+
+        // Unpack the message
+        uint8_t b0 = (message >> 16) & 0xFF,
+                b1 = (message >> 8) & 0xFF,
+                b2 = message & 0xFF;
+
+        if (b0 != 0) {
+            auto message = juce::MidiMessage(b0, b1, b2);
+            midiMessages.addEvent(message, 0);
+        }
+    }
+
     /*for (auto& plugin : plugins) {
         plugin->processBlock(buffer, midiMessages);
     }*/

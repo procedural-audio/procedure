@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
+use cmajor::value::ObjectValueRef;
 use cmajor::*;
 
 use crossbeam::atomic::AtomicCell;
@@ -27,6 +28,7 @@ use crate::other::handle::*;
 use crate::other::voices::*;
 
 use super::action::ExecuteAction;
+use super::action::IO;
 
 pub struct CopyEvent {
     pub src_voices: Arc<Mutex<Voices>>,
@@ -37,7 +39,7 @@ pub struct CopyEvent {
 }
 
 impl ExecuteAction for CopyEvent {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut src = self.src_voices
             .try_lock()
             .unwrap();
@@ -49,9 +51,7 @@ impl ExecuteAction for CopyEvent {
     }
 }
 
-pub struct CopyConvertEvent {}
-
-pub struct CopyPrimitiveEventToValue<T> {
+/*pub struct CopyPrimitiveEventToValue<T> {
     pub src_voices: Arc<Mutex<Voices>>,
     pub src_handle: Endpoint<OutputEvent>,
     pub dst_voices: Arc<Mutex<Voices>>,
@@ -61,7 +61,7 @@ pub struct CopyPrimitiveEventToValue<T> {
 impl<T> ExecuteAction for CopyPrimitiveEventToValue<T>
     where
         T: Copy + SetInputValue + for<'a> TryFrom<ValueRef<'a>> {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u32]) {
         let mut src = self.src_voices
             .try_lock()
             .unwrap();
@@ -75,7 +75,7 @@ impl<T> ExecuteAction for CopyPrimitiveEventToValue<T>
             }
         }).unwrap();
     }
-}
+}*/
 
 pub struct SendEvents {
     pub voices: Arc<Mutex<Voices>>,
@@ -84,7 +84,7 @@ pub struct SendEvents {
 }
 
 impl ExecuteAction for SendEvents {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
@@ -101,7 +101,7 @@ pub struct ReceiveEvents {
 }
 
 impl ExecuteAction for ReceiveEvents {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
@@ -119,10 +119,48 @@ pub struct EventFeedback {
 }
 
 impl ExecuteAction for EventFeedback {
-    fn execute(&mut self, audio: &mut [&mut [f32]], midi: &mut [u8]) {
+    fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
 
+    }
+}
+
+pub struct ExternalInputEvent {
+    pub voices: Arc<Mutex<Voices>>,
+    pub handle: Endpoint<InputEvent>,
+}
+
+impl ExecuteAction for ExternalInputEvent {
+    fn execute(&mut self, io: &mut IO) {
+        for msg in io.midi_input.iter() {
+            let event = Value::Int32(*msg as i32);
+            self
+                .voices
+                .try_lock()
+                .unwrap()
+                .post(self.handle, &event)
+                .unwrap_or_else(| e | println!("Error posting event: {:?}", e));
+        }
+    }
+}
+
+pub struct ExternalOutputEvent {
+    pub voices: Arc<Mutex<Voices>>,
+    pub handle: Endpoint<OutputEvent>,
+}
+
+impl ExecuteAction for ExternalOutputEvent {
+    fn execute(&mut self, io: &mut IO) {
+        /*for msg in midi.iter() {
+            let event = Value::Int32(*msg as i32);
+            self
+                .voices
+                .try_lock()
+                .unwrap()
+                .post(self.handle, &event)
+                .unwrap();
+        }*/
     }
 }

@@ -71,7 +71,7 @@ public:
 private:
     FFIHost* core = nullptr;
     
-    std::vector<NoteMessage> events;
+    std::vector<uint32_t> messages;
 
     void * handle = nullptr;
 

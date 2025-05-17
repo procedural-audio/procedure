@@ -205,96 +205,58 @@ impl OutputValueHandle {
 }
 
 #[derive(Clone, PartialEq)]
-pub enum InputEventHandle {
-    Primitive(Endpoint<InputEvent>),
-    Object {
-        handle: Endpoint<InputEvent>,
-        object: Box<Object>,
-    },
-    Err(&'static str),
+pub struct InputEventHandle {
+    pub handle: Endpoint<InputEvent>,
+    pub types: Vec<Type>,
 }
 
 impl InputEventHandle {
-    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Self {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Result<Self, &'static str> {
         // Get the endpoint id
         let id = endpoint.id();
 
-        let types = endpoint.types();
-
-        if types.len() == 1 {
-            let ty = &types[0];
-            // Ensure it's a primitive otherwise error
-            return match ty {
-                Type::Primitive(_) => Self::Primitive(
-                    engine.endpoint(id).unwrap()
-                ),
-                Type::String => return Self::Err("unsupported endpoint type string value"),
-                Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
-                Type::Object(object) => {
-                    return Self::Object {
-                        handle: engine.endpoint(id).unwrap(),
-                        object: object.clone(),
-                    };
-                }
-            };
+        match engine.endpoint(id) {
+            Ok(handle) => {
+                let types = endpoint.types().to_vec();
+                Ok(Self {
+                    handle,
+                    types,
+                })
+            }
+            Err(_) => Err("unsupported endpoint type")
         }
-
-        Self::Err("unsupported event endpoint type")
     }
 
     pub fn get_type(&self) -> &str {
-        match self {
-            Self::Primitive(_) => "primitive",
-            Self::Object { object, .. } => object.class(),
-            Self::Err(_) => "unknown"
-        }
+        "event"
     }
 }
 
 #[derive(Clone, PartialEq)]
-pub enum OutputEventHandle {
-    Primitive(Endpoint<OutputEvent>),
-    Object {
-        handle: Endpoint<OutputEvent>,
-        object: Box<Object>,
-    },
-    Err(&'static str),
+pub struct OutputEventHandle {
+    pub handle: Endpoint<OutputEvent>,
+    pub types: Vec<Type>,
 }
 
 impl OutputEventHandle {
-    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Self {
+    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Result<Self, &'static str> {
         // Get the endpoint id
         let id = endpoint.id();
 
-        let types = endpoint.types();
-
-        if types.len() == 1 {
-            let ty = &types[0];
-            // Ensure it's a primitive otherwise error
-            return match ty {
-                Type::Primitive(p) => Self::Primitive(
-                    engine.endpoint(id).unwrap(),
-                ),
-                Type::String => return Self::Err("unsupported endpoint type string value"),
-                Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
-                Type::Object(object) => {
-                    return Self::Object {
-                        handle: engine.endpoint(id).unwrap(),
-                        object: object.clone(),
-                    };
-                }
-            };
+        match engine.endpoint(id) {
+            Ok(handle) => {
+                let types = endpoint.types().to_vec();
+                Ok(Self {
+                    handle,
+                    types,
+                })
+            }
+            Err(_) => Err("unsupported endpoint type")
         }
-
-        Self::Err("unsupported event endpoint type")
     }
 
     pub fn get_type(&self) -> &str {
-        match self {
-            Self::Primitive(_) => "primitive",
-            Self::Object { object, .. } => object.class(),
-            Self::Err(_) => "unknown"
-        }
+        "event"
     }
 }
 
@@ -313,7 +275,9 @@ impl InputHandle {
                 InputHandle::Stream(InputStreamHandle::from_endpoint(engine, stream))
             }
             EndpointInfo::Event(event) => {
-                InputHandle::Event(InputEventHandle::from_endpoint(engine, event))
+                InputHandle::Event(
+                    InputEventHandle::from_endpoint(engine, event).unwrap()
+                )
             }
             EndpointInfo::Value(value) => {
                 InputHandle::Value(InputValueHandle::from_endpoint(engine, value))
@@ -366,7 +330,7 @@ impl OutputHandle {
             }
             EndpointInfo::Event(event) => {
                 OutputHandle::Event {
-                    handle: OutputEventHandle::from_endpoint(engine, event),
+                    handle: OutputEventHandle::from_endpoint(engine, event).unwrap(),
                     feedback: Arc::new(AtomicCell::new(0)),
                 }
             }

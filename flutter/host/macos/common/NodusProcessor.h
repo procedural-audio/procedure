@@ -11,6 +11,8 @@
 
 struct FFIHost {};
 
+#define MAX_MIDI_MESSAGES 1024
+
 class NodusProcessor  : public juce::AudioProcessor
 {
 public:
@@ -52,17 +54,17 @@ public:
 
 private:
     FFIHost* core = nullptr;
-    std::vector<NoteMessage> events;
+    uint32_t messages[MAX_MIDI_MESSAGES] = { 0 };
 
     void * handle = nullptr;
 
     void (*preparePatch) (double, uint32_t) = nullptr;
-    void (*processPatch) (float *const *, uint32_t, uint32_t, uint8_t*, uint32_t) = nullptr;
+    void (*processPatch) (float *const *, uint32_t, uint32_t, uint32_t*, uint32_t) = nullptr;
 
     FFIHost* (*ffiCreateHost)() = nullptr;
     void (*ffiDestroyHost)(FFIHost*) = nullptr;
     void (*ffiHostPrepare)(FFIHost*, uint32_t, uint32_t) = nullptr;
-    void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, NoteMessage*, uint32_t) = nullptr;
+    void (*ffiHostProcess)(FFIHost*, float**, uint32_t, uint32_t, uint32_t*, uint32_t) = nullptr;
     
     /*void (^audioPluginsCallback)(id _Nullable, FlutterReply  _Nonnull) = ^(id _Nullable encoded, FlutterReply _Nonnull callback) {
         if (encoded) {
