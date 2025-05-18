@@ -153,14 +153,17 @@ pub struct ExternalOutputEvent {
 
 impl ExecuteAction for ExternalOutputEvent {
     fn execute(&mut self, io: &mut IO) {
-        /*for msg in midi.iter() {
-            let event = Value::Int32(*msg as i32);
-            self
-                .voices
-                .try_lock()
-                .unwrap()
-                .post(self.handle, &event)
-                .unwrap();
-        }*/
+        self
+            .voices
+            .try_lock()
+            .unwrap()
+            .fetch(self.handle, | _, v | {
+                if let ValueRef::Int32(v) = v {
+                    println!("Event: {:?}", v);
+                    io.midi_output.push(v as u32);
+                } else {
+                    println!("Error fetching event: {:?}", v);
+                }
+            }).unwrap_or_else(| e | println!("Error fetching event: {:?}", e));
     }
 }

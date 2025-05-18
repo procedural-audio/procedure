@@ -371,9 +371,12 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
                 b1 = (message >> 8) & 0xFF,
                 b2 = message & 0xFF;
 
-        if (b0 != 0) {
+        if (message != 0) {
             auto message = juce::MidiMessage(b0, b1, b2);
+            std::cout << "Outgoing midi message: " << message.getDescription() << std::endl;
             midiMessages.addEvent(message, 0);
+        } else {
+            break;
         }
     }
 

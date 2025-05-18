@@ -3,7 +3,7 @@
 
 // #include <juce_gui_basics/juce_gui_basics.h>
 
-class GuiAppApplication final : public juce::JUCEApplication, public juce::AudioIODeviceCallback, public juce::MidiInputCallback {
+class GuiAppApplication final : public juce::JUCEApplication, public juce::AudioIODeviceCallback, public juce::MidiInputCallback, private juce::ChangeListener {
 public:
     GuiAppApplication() {
     }
@@ -20,12 +20,30 @@ public:
         manager.initialise(2, 2, nullptr, true);
         manager.addAudioCallback(this);
         manager.addMidiInputDeviceCallback("", this);
+        manager.addChangeListener (this);
 
         collector.ensureStorageAllocated(2048);
         midiBuffer.ensureSize(2048);
 
         mainWindow.reset (new MainWindow (getApplicationName(), processor));
         settingsWindow.reset (new SettingsWindow(manager));
+
+        if (auto* out = manager.getDefaultMidiOutput()) {
+            midiOutput = out;
+        }
+
+        if (!midiOutput) {
+            puts("No midi output");
+        }
+    }
+
+    void changeListenerCallback (juce::ChangeBroadcaster*) override
+    {
+        std::cout << "Change listener callback" << std::endl;
+        midiOutput = manager.getDefaultMidiOutput();
+        if (!midiOutput) {
+            puts("No midi output");
+        }
     }
 
     void shutdown() override
@@ -56,6 +74,10 @@ public:
         midiBuffer.clear();
         collector.removeNextBlockOfMessages(midiBuffer, numSamples);
         processor.processBlock(audioBuffer, midiBuffer);
+
+        if (midiOutput) {
+            midiOutput->sendBlockOfMessagesNow(midiBuffer);
+        }
     }
 
     void audioDeviceStopped() {
@@ -137,6 +159,7 @@ private:
 
     juce::MidiMessageCollector collector;
     juce::MidiBuffer midiBuffer;
+    juce::MidiOutput* midiOutput = nullptr;
 };
 
 START_JUCE_APPLICATION (GuiAppApplication)

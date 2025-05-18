@@ -116,7 +116,12 @@ pub unsafe extern "C" fn process_patch(
         }
     }
 
-    midi.copy_from_slice(midi_output);
+    midi.fill(0);
+    for (i, msg) in midi_output.iter().enumerate() {
+        if i < midi.len() {
+            midi[i] = *msg;
+        }
+    }
 }
 
 #[frb(opaque)]

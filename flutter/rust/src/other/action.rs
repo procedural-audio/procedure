@@ -280,9 +280,8 @@ impl Actions {
                         self.process_input_widget_value(node, handle, queue);
                     }
                     InputValueHandle::Object { .. } => todo!(),
-                    InputValueHandle::Err(_) => (),
+                    InputValueHandle::Err(_) => println!(" - Unsupported widget input value"),
                 }
-                println!(" - Unsupported widget input value");
             },
         }
     }
