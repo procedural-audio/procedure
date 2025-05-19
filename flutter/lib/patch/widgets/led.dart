@@ -42,8 +42,8 @@ class LedWidget extends NodeWidget {
 
   @override
   void tick(Duration elapsed) {
-    int newColor = readInt() ?? 0;
-    if (color.value != newColor) {
+    int? newColor = readInt();
+    if (newColor != null && color.value != newColor) {
       color.value = newColor;
     }
   }
