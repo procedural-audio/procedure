@@ -23,7 +23,7 @@ pub struct Node {
     source: Vec<String>,
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
-    voices: Arc<Mutex<Voices>>,
+    pub performer: Arc<Mutex<Performer>>,
 }
 
 impl PartialEq for Node {
@@ -95,18 +95,14 @@ impl Node {
             }
         };
 
-        let voices = if id == 0 {
-            Arc::new(Mutex::new(Voices::Mono(engine.performer())))
-        } else {
-            Arc::new(Mutex::new(Voices::Mono(engine.performer())))
-        };
+        let performer = Arc::new(Mutex::new(engine.performer()));
 
         Some(Self {
             id,
             source,
             inputs,
             outputs,
-            voices,
+            performer,
         })
     }
 
@@ -118,10 +114,5 @@ impl Node {
     #[frb(sync, getter)]
     pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
-    }
-
-    #[frb(ignore)]
-    pub fn voices(&self) -> Arc<Mutex<Voices>> {
-        self.voices.clone()
     }
 }

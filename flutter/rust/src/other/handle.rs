@@ -155,6 +155,7 @@ pub enum OutputValueHandle {
     Int32(Endpoint<OutputValue<i32>>),
     Int64(Endpoint<OutputValue<i64>>),
     Bool(Endpoint<OutputValue<bool>>),
+    String(Endpoint<OutputValue<String>>),
     Object {
         handle: Endpoint<OutputValue<Object>>,
         object: Box<Object>,
@@ -170,8 +171,12 @@ impl OutputValueHandle {
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
-            Type::String => return Self::Err("unsupported endpoint type string value"),
             Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
+            Type::String => {
+                return Self::String(
+                    engine.endpoint(id).unwrap()
+                );
+            }
             Type::Object(object) => {
                 return Self::Object {
                     handle: engine.endpoint(id).unwrap(),
@@ -198,6 +203,7 @@ impl OutputValueHandle {
             Self::Int32(_) => "int32",
             Self::Int64(_) => "int64",
             Self::Bool(_) => "bool",
+            Self::String(_) => "string",
             Self::Object { object, .. } => object.class(),
             Self::Err(_) => "unknown"
         }
@@ -227,8 +233,18 @@ impl InputEventHandle {
         }
     }
 
-    pub fn get_type(&self) -> &str {
-        "event"
+    pub fn get_type(&self) -> String {
+        self
+            .types
+            .iter()
+            .map(|t| t
+                .as_object()
+                .map_or(
+                    "unknown".to_string(),
+                    | b: &Object | b.class().to_string()
+                ))
+            .collect::<Vec<String>>()
+            .join(",")
     }
 }
 
@@ -255,8 +271,18 @@ impl OutputEventHandle {
         }
     }
 
-    pub fn get_type(&self) -> &str {
-        "event"
+    pub fn get_type(&self) -> String {
+        self
+            .types
+            .iter()
+            .map(|t| match t {
+                Type::Primitive(p) => "primitive".to_string(),
+                Type::String => "string".to_string(),
+                Type::Object(object) => object.class().to_string(),
+                Type::Array(a) => "array".to_string(),
+            })
+            .collect::<Vec<String>>()
+            .join(",")
     }
 }
 
@@ -293,10 +319,10 @@ impl InputHandle {
         }
     }
 
-    pub fn get_type(&self) -> &str {
+    pub fn get_type(&self) -> String {
         match self {
-            Self::Stream(handle) => handle.get_type(),
-            Self::Value(handle) => handle.get_type(),
+            Self::Stream(handle) => handle.get_type().to_string(),
+            Self::Value(handle) => handle.get_type().to_string(),
             Self::Event(handle) => handle.get_type(),
         }
     }
@@ -351,10 +377,10 @@ impl OutputHandle {
         }
     }
 
-    pub fn get_type(&self) -> &str {
+    pub fn get_type(&self) -> String {
         match self {
-            Self::Stream { handle, ..} => handle.get_type(),
-            Self::Value{ handle, ..} => handle.get_type(),
+            Self::Stream { handle, ..} => handle.get_type().to_string(),
+            Self::Value{ handle, ..} => handle.get_type().to_string(),
             Self::Event{ handle, .. } => handle.get_type(),
         }
     }
@@ -427,7 +453,7 @@ impl InputEndpoint {
         }
     }
 
-    fn get_type(&self) -> &str {
+    fn get_type(&self) -> String {
         match self {
             InputEndpoint::Endpoint(handle) => handle.get_type(),
             InputEndpoint::External { handle, .. } => handle.get_type(),
@@ -503,7 +529,7 @@ impl OutputEndpoint {
         }
     }
 
-    fn get_type(&self) -> &str {
+    fn get_type(&self) -> String {
         match self {
             OutputEndpoint::Endpoint(handle) => handle.get_type(),
             OutputEndpoint::External { handle, .. } => handle.get_type(),
@@ -562,10 +588,10 @@ impl EndpointHandle {
         }
     }
 
-    pub fn get_type(&self) -> &str {
+    pub fn get_type(&self) -> String {
         match self {
             EndpointHandle::Input(handle) => handle.get_type(),
-            EndpointHandle::Output(handle) => handle.get_type(),
+            EndpointHandle::Output(handle) => handle.get_type().to_string(),
         }
     }
 }

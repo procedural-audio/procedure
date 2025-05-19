@@ -7,7 +7,7 @@ use value::{Value, ValueRef};
 
 use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 
-pub enum Voices {
+/*pub enum Voices {
     Mono(Performer),
     Poly(Vec<Performer>),
 }
@@ -245,7 +245,7 @@ impl Voices {
             _ => todo!(),
         }
     }
-}
+}*/
 
 pub trait Primitive {
     fn from_f32(value: f32) -> Self;

@@ -1,3 +1,4 @@
+use core::num;
 use std::collections::HashMap;
 use std::iter::Sum;
 use std::ops::Add;
@@ -8,6 +9,7 @@ use std::sync::Mutex;
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
+use cmajor::performer::Performer;
 use cmajor::value::Value;
 use cmajor::*;
 
@@ -32,9 +34,9 @@ use crate::other::voices::*;
 use super::action::*;
 
 pub struct CopyStream<T: StreamType> {
-    pub src_voices: Arc<Mutex<Voices>>,
+    pub src_voices: Arc<Mutex<Performer>>,
     pub src_handle: Endpoint<OutputStream<T>>,
-    pub dst_voices: Arc<Mutex<Voices>>,
+    pub dst_voices: Arc<Mutex<Performer>>,
     pub dst_handle: Endpoint<InputStream<T>>,
     pub buffer: Vec<T>,
     pub feedback: Arc<AtomicCell<f32>>,
@@ -66,23 +68,19 @@ impl<T: StreamType> ExecuteAction for CopyStream<T> {
         let src = self.src_voices.try_lock().unwrap();
         let mut dst = self.dst_voices.try_lock().unwrap();
 
-        src.copy_streams_to(
-            self.src_handle,
-            &mut dst,
-            self.dst_handle,
-            &mut self.buffer[..num_frames],
-        );
+        src.read(self.src_handle, &mut self.buffer[..num_frames]);
+        dst.write(self.dst_handle, &self.buffer[..num_frames]);
 
         // let rms = rms(&self.buffer[..num_frames]);
         // self.feedback.store(Value::Float32(rms.to_f32().unwrap()));
     }
 }
 
-pub struct ConvertCopyStream<A: StreamType, B: StreamType> {
-    pub src_voices: Arc<Mutex<Voices>>,
+/*pub struct ConvertCopyStream<A: StreamType, B: StreamType> {
+    pub src_voices: Arc<Mutex<Performer>>,
     pub src_handle: Endpoint<OutputStream<A>>,
     pub src_buffer: Vec<A>,
-    pub dst_voices: Arc<Mutex<Voices>>,
+    pub dst_voices: Arc<Mutex<Performer>>,
     pub dst_handle: Endpoint<InputStream<B>>,
     pub dst_buffer: Vec<B>,
 }
@@ -101,10 +99,10 @@ impl<B: StreamType, A: StreamType + ConvertTo<B>> ExecuteAction for ConvertCopyS
             &mut self.dst_buffer[..num_frames],
         );
     }
-}
+}*/
 
 pub struct ClearStream<T: StreamType + Default> {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputStream<T>>,
     pub buffer: Vec<T>,
 }
@@ -120,7 +118,7 @@ impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
 }
 
 pub struct ExternalOutputStream<T: StreamType> {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<OutputStream<T>>,
     pub buffer: Vec<T>,
     pub channel: usize,

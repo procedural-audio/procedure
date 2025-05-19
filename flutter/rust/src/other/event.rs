@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
+use cmajor::performer::Performer;
 use cmajor::value::ObjectValueRef;
 use cmajor::*;
 
@@ -31,9 +32,9 @@ use super::action::ExecuteAction;
 use super::action::IO;
 
 pub struct CopyEvent {
-    pub src_voices: Arc<Mutex<Voices>>,
+    pub src_voices: Arc<Mutex<Performer>>,
     pub src_handle: Endpoint<OutputEvent>,
-    pub dst_voices: Arc<Mutex<Voices>>,
+    pub dst_voices: Arc<Mutex<Performer>>,
     pub dst_handle: Endpoint<InputEvent>,
     pub feedback: Arc<AtomicCell<usize>>,
 }
@@ -47,14 +48,20 @@ impl ExecuteAction for CopyEvent {
             .try_lock()
             .unwrap();
 
-        src.copy_events_to(self.src_handle, &mut dst, self.dst_handle);
+        src
+            .fetch(self.src_handle, |_, event| {
+                dst
+                .post(self.dst_handle, event)
+                .unwrap_or_else(| e | println!("Error posting event: {}", e));
+            })
+            .unwrap_or_else(| e | println!("Error fetching event: {}", e));
     }
 }
 
 /*pub struct CopyPrimitiveEventToValue<T> {
-    pub src_voices: Arc<Mutex<Voices>>,
+    pub src_voices: Arc<Mutex<Performer>>,
     pub src_handle: Endpoint<OutputEvent>,
-    pub dst_voices: Arc<Mutex<Voices>>,
+    pub dst_voices: Arc<Mutex<Performer>>,
     pub dst_handle: Endpoint<InputValue<T>>,
 }
 
@@ -78,24 +85,46 @@ impl<T> ExecuteAction for CopyPrimitiveEventToValue<T>
 }*/
 
 pub struct SendEvents {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<OutputEvent>,
     pub queue: Arc<ArrayQueue<Value>>
 }
 
 impl ExecuteAction for SendEvents {
-    fn execute(&mut self, io: &mut IO) {
+    fn execute(&mut self, _io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
             .unwrap();
-
-        // let v = voices.get(self.handle);
-        // self.queue.force_push(v);
+        
+        let _ = voices.fetch(self.handle, | _, event| {
+            match event {
+                // ValueRef::Void => todo!(),
+                ValueRef::Bool(b) => {
+                    self.queue.force_push(Value::Bool(b));
+                },
+                ValueRef::Int32(i) => {
+                    self.queue.force_push(Value::Int32(i));
+                },
+                ValueRef::Int64(i) => {
+                    self.queue.force_push(Value::Int64(i));
+                },
+                ValueRef::Float32(f) => {
+                    self.queue.force_push(Value::Float32(f));
+                },
+                ValueRef::Float64(f) => {
+                    self.queue.force_push(Value::Float64(f));
+                },
+                // ValueRef::String(string_handle) => todo!(),
+                // ValueRef::Array(array_value_ref) => todo!(),
+                // ValueRef::Object(object_value_ref) => todo!(),
+                _ => println!("Unsupported sending event: {:?}", event),
+            };
+        });
     }
 }
 
 pub struct ReceiveEvents {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputEvent>,
     pub queue: Arc<ArrayQueue<Value>>
 }
@@ -113,7 +142,7 @@ impl ExecuteAction for ReceiveEvents {
 }
 
 pub struct EventFeedback {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputEvent>,
     pub queue: AtomicCell<u32>
 }
@@ -128,7 +157,7 @@ impl ExecuteAction for EventFeedback {
 }
 
 pub struct ExternalInputEvent {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputEvent>,
 }
 
@@ -147,7 +176,7 @@ impl ExecuteAction for ExternalInputEvent {
 }
 
 pub struct ExternalOutputEvent {
-    pub voices: Arc<Mutex<Voices>>,
+    pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<OutputEvent>,
 }
 
@@ -159,7 +188,6 @@ impl ExecuteAction for ExternalOutputEvent {
             .unwrap()
             .fetch(self.handle, | _, v | {
                 if let ValueRef::Int32(v) = v {
-                    println!("Event: {:?}", v);
                     io.midi_output.push(v as u32);
                 } else {
                     println!("Error fetching event: {:?}", v);

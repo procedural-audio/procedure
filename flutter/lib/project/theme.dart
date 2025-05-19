@@ -22,7 +22,7 @@ class ProjectTheme {
         EndpointTheme(
           kind: EndpointKind.event,
           type: null,
-          shape: PinShape.square,
+          shape: PinShape.triangle,
           color: Colors.green,
         ),
         EndpointTheme(
@@ -30,6 +30,18 @@ class ProjectTheme {
           type: null,
           shape: PinShape.square,
           color: Colors.red,
+        ),
+        EndpointTheme(
+          kind: EndpointKind.value,
+          type: "int32",
+          shape: null,
+          color: Colors.cyan,
+        ),
+        EndpointTheme(
+          kind: EndpointKind.event,
+          type: "Position",
+          shape: null,
+          color: Colors.deepPurple,
         ),
       ],
     );
@@ -67,10 +79,9 @@ class ProjectTheme {
 
   Color getColor(String type, EndpointKind kind) {
     Color color = Colors.grey;
-
     for (var entry in endpointThemes) {
       if ((entry.kind == kind || entry.kind == null) &&
-          (entry.type == type || entry.type == null)) {
+          (entry.type != null && type.contains(entry.type!) || entry.type == null)) {
         var themeColor = entry.color;
         if (themeColor != null) {
           color = themeColor;
@@ -83,7 +94,6 @@ class ProjectTheme {
 
   PinShape getShape(String type, EndpointKind kind) {
     PinShape shape = PinShape.unknown;
-
     for (var entry in endpointThemes) {
       if ((entry.kind == kind || entry.kind == null) &&
           (entry.type == type || entry.type == null)) {

@@ -37,8 +37,8 @@ impl NodeEndpoint {
 
     #[frb(ignore)]
     fn read_value(&self) -> Option<Value> {
-        if let EndpointHandle::Input(handle) = &self.endpoint {
-            if let InputEndpoint::Widget { queue, .. } = handle {
+        if let EndpointHandle::Output(handle) = &self.endpoint {
+            if let OutputEndpoint::Widget { queue, .. } = handle {
                 return queue.pop();
             }
         }
@@ -101,7 +101,7 @@ impl NodeEndpoint {
 
     #[frb(sync)]
     pub fn write_int(&self, v: i64) -> Result<(), String> {
-        self.write_value(Value::Int64(v)).map_err(|e| e.to_string())
+        self.write_value(Value::Int32(v as i32)).map_err(|e| e.to_string())
     }
 
     #[frb(sync)]

@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
 
+use cmajor::performer::Performer;
 use cmajor::*;
 
 use crossbeam::atomic::AtomicCell;
@@ -51,7 +52,7 @@ pub trait ExecuteAction {
     fn execute(&mut self, io: &mut IO);
 }
 
-struct Advance(Arc<Mutex<Voices>>);
+struct Advance(Arc<Mutex<Performer>>);
 
 impl ExecuteAction for Advance {
     fn execute(&mut self, io: &mut IO) {
@@ -61,14 +62,13 @@ impl ExecuteAction for Advance {
             .try_lock()
             .unwrap();
 
-        voices.set_block_size(num_frames);
+        voices.set_block_size(num_frames as u32);
         voices.advance();
     }
 }
 
 pub struct Actions {
     actions: Vec<Box<dyn ExecuteAction + Send + Sync>>,
-
 }
 
 impl ExecuteAction for Actions {
@@ -118,7 +118,7 @@ impl Actions {
     
         // Generate actions for each node advance
         println!(" - Advance node {}", dst_node.id);
-        self.push(Advance(dst_node.voices()));
+        self.push(Advance(dst_node.performer.clone()));
     
         // Generate output endpoint actions
         for endpoint in dst_node.get_outputs().iter() {
@@ -170,9 +170,9 @@ impl Actions {
                     EndpointHandle::Input(InputEndpoint::Endpoint(dst_handle))) => {
                     if dst_node == node && dst_handle == handle {
                         let _ = self.process_cable(
-                            src_node.voices(),
+                            src_node.performer.clone(),
                             src_handle.clone(),
-                            dst_node.voices(),
+                            dst_node.performer.clone(),
                             dst_handle.clone()
                         );
 
@@ -185,7 +185,7 @@ impl Actions {
 
         // Generate actions to fill missing input streams
         if !filled {
-            self.process_input_endpoint_clear(node.voices(), handle.clone());
+            self.process_input_endpoint_clear(node.performer.clone(), handle.clone());
         }
     }
 
@@ -195,7 +195,7 @@ impl Actions {
             InputHandle::Event( InputEventHandle { handle, types }) => {
                 self.push(
                     ExternalInputEvent {
-                        voices: node.voices(),
+                        voices: node.performer.clone(),
                         handle: handle.clone(),
                     }
                 );
@@ -213,7 +213,7 @@ impl Actions {
                         let buffer = vec![0.0; 1024];
                         self.push(
                             ExternalOutputStream {
-                                voices: node.voices(),
+                                voices: node.performer.clone(),
                                 handle: *handle,
                                 buffer,
                                 channel,
@@ -225,7 +225,7 @@ impl Actions {
                         let buffer = vec![[0.0, 0.0]; 1024];
                         self.push(
                             ExternalOutputStream {
-                                voices: node.voices(),
+                                voices: node.performer.clone(),
                                 handle: *handle,
                                 buffer,
                                 channel,
@@ -238,7 +238,7 @@ impl Actions {
             OutputHandle::Event { handle, feedback } => {
                 self.push(
                     ExternalOutputEvent {
-                        voices: node.voices(),
+                        voices: node.performer.clone(),
                         handle: handle.handle.clone(),
                     }
                 );
@@ -255,7 +255,7 @@ impl Actions {
             InputHandle::Event(InputEventHandle { handle, types }) => {
                 self.push(
                     ReceiveEvents {
-                        voices: node.voices(),
+                        voices: node.performer.clone(),
                         handle: handle.clone(),
                         queue: queue.clone(),
                     }
@@ -292,7 +292,7 @@ impl Actions {
 
         self.push(
             ReceiveValue {
-                voices: node.voices(),
+                voices: node.performer.clone(),
                 handle: handle.clone(),
                 queue: queue.clone(),
             }
@@ -308,7 +308,7 @@ impl Actions {
                 println!(" - Send events to widget");
                 self.push(
                     SendEvents {
-                        voices: node.voices(),
+                        voices: node.performer.clone(),
                         handle: handle.handle.clone(),
                         queue: queue.clone(),
                     }
@@ -320,7 +320,7 @@ impl Actions {
         }
     }
 
-    fn process_input_endpoint_clear(&mut self, voices: Arc<Mutex<Voices>>, handle: InputHandle) {
+    fn process_input_endpoint_clear(&mut self, voices: Arc<Mutex<Performer>>, handle: InputHandle) {
         match handle {
             InputHandle::Stream(handle) => {
                 match handle {
@@ -362,9 +362,9 @@ impl Actions {
 
     fn process_cable(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: OutputHandle,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: InputHandle) -> Result<(), &'static str> {
 
         match (src_handle, dst_handle) {
@@ -382,10 +382,10 @@ impl Actions {
 
     fn connect_streams(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: OutputStreamHandle,
         feedback: Arc<AtomicCell<f32>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
         match (src_handle, dst_handle) {
@@ -393,8 +393,6 @@ impl Actions {
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
             (OutputStreamHandle::StereoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
-                .copy_convert_stream(src_voices, src, dst_voices, dst),
             _ => return Err("Endpoints streams types are not compatible")
         }
 
@@ -403,12 +401,13 @@ impl Actions {
 
     fn connect_events(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: OutputEventHandle,
         feedback: Arc<AtomicCell<usize>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: InputEventHandle) -> Result<(), &'static str> {
 
+        println!(" - Connect events");
         self.copy_event(src_voices, src_handle.handle, feedback, dst_voices, dst_handle.handle);
 
         Ok(())
@@ -416,11 +415,13 @@ impl Actions {
 
     fn connect_values(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: OutputValueHandle,
         feedback: Arc<AtomicCell<bool>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: InputValueHandle) -> Result<(), &'static str> {
+
+        println!(" - Connect values");
 
         match (src_handle, dst_handle) {
             (OutputValueHandle::Float32(src), InputValueHandle::Float32(dst)) => self
@@ -441,10 +442,10 @@ impl Actions {
 
     fn copy_stream<T>(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: Endpoint<OutputStream<T>>,
         feedback: Arc<AtomicCell<f32>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: Endpoint<InputStream<T>>)
         where
             T: StreamType + Default + Send + Sync + 'static {
@@ -462,36 +463,12 @@ impl Actions {
         );
     }
 
-    fn copy_convert_stream<T, U>(
-        &mut self,
-        src_voices: Arc<Mutex<Voices>>,
-        src_handle: Endpoint<OutputStream<T>>,
-        dst_voices: Arc<Mutex<Voices>>,
-        dst_handle: Endpoint<InputStream<U>>)
-        where
-            T: StreamType + Default + Send + Sync + 'static + ConvertTo<U>,
-            U: StreamType + Default + Send + Sync + 'static {
-
-        let src_buffer = vec![T::default(); 1024];
-        let dst_buffer = vec![U::default(); 1024];
-        self.push(
-            ConvertCopyStream {
-                src_voices,
-                src_handle,
-                src_buffer,
-                dst_voices,
-                dst_handle,
-                dst_buffer
-            }
-        );
-    }
-
     fn copy_event(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: Endpoint<OutputEvent>,
         feedback: Arc<AtomicCell<usize>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: Endpoint<InputEvent>) {
 
         self.push(
@@ -507,10 +484,10 @@ impl Actions {
 
     fn copy_value<T>(
         &mut self,
-        src_voices: Arc<Mutex<Voices>>,
+        src_voices: Arc<Mutex<Performer>>,
         src_handle: Endpoint<OutputValue<T>>,
         feedback: Arc<AtomicCell<bool>>,
-        dst_voices: Arc<Mutex<Voices>>,
+        dst_voices: Arc<Mutex<Performer>>,
         dst_handle: Endpoint<InputValue<T>>)
         where
             T: Copy + Default + Send + Sync + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static {
@@ -530,9 +507,9 @@ impl Actions {
 
 pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> Result<(), &'static str> {
     let mut actions = Actions::new();
-    let src_voices = src_node.voices();
+    let src_voices = src_node.performer.clone();
     let src_handle = src_endpoint.handle();
-    let dst_voices = dst_node.voices();
+    let dst_voices = dst_node.performer.clone();
     let dst_handle = dst_endpoint.handle();
 
     if let (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) = (src_handle, dst_handle) {

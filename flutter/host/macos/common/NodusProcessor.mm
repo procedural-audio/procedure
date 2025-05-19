@@ -348,6 +348,8 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
         const uint8_t *raw = message.getRawData();
         int len = message.getRawDataSize();
 
+        // std::cout << "IN:\t" << message.getDescription() << std::endl;
+
         // Pack the message
         uint8_t b0 = (len > 0 ? raw[0] : 0),
                 b1 = (len > 1 ? raw[1] : 0),
@@ -373,7 +375,7 @@ void NodusProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiB
 
         if (message != 0) {
             auto message = juce::MidiMessage(b0, b1, b2);
-            std::cout << "Outgoing midi message: " << message.getDescription() << std::endl;
+            // std::cout << "OUT:\t " << message.getDescription() << std::endl;
             midiMessages.addEvent(message, 0);
         } else {
             break;

@@ -19,20 +19,17 @@ class TextboxWidget extends NodeWidget {
     required this.initialValue,
     super.key,
   }) : super(node, endpoint) {
-    value = initialValue;
-    writeFloat(value);
-    controller.text = initialValue.toString();
+    controller.text = initialValue;
+    writeValue(initialValue);
   }
 
-  final int left;
-  final int top;
-  final int width;
-  final int height;
+  final double left;
+  final double top;
+  final double width;
+  final double height;
   final String label;
   final Color color;
-  final double initialValue;
-
-  double value = 0.0;
+  final String initialValue;
 
   TextEditingController controller = TextEditingController();
 
@@ -48,6 +45,18 @@ class TextboxWidget extends NodeWidget {
     // TODO
   }
 
+  writeValue(String value) {
+    var i = int.tryParse(value);
+    if (i != null) {
+      writeInt(i);
+    }
+
+    var d = double.tryParse(value);
+    if (d != null) {
+      writeFloat(d);
+    }
+  }
+
   static TextboxWidget from(
     Node node,
     NodeEndpoint endpoint,
@@ -56,13 +65,13 @@ class TextboxWidget extends NodeWidget {
     return TextboxWidget(
       node,
       endpoint,
-      left: map['left'] ?? 0,
-      top: map['top'] ?? 0,
-      width: map['width'] ?? 50,
-      height: map['height'] ?? 30,
-      label: map['label'] ?? "",
-      color: colorFromString(map['color']) ?? Colors.grey,
-      initialValue: map['default'] ?? 0.5,
+      left: double.tryParse(map['left'].toString()) ?? 0.0,
+      top: double.tryParse(map['top'].toString()) ?? 0.0,
+      width: double.tryParse(map['width'].toString()) ?? 50.0,
+      height: double.tryParse(map['height'].toString()) ?? 50.0,
+      label: map['label'].toString(),
+      color: colorFromString(map['color'].toString()) ?? Colors.grey,
+      initialValue: map['default'].toString(),
       key: UniqueKey(),
     );
   }
@@ -70,11 +79,11 @@ class TextboxWidget extends NodeWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: left.toDouble(),
-      top: top.toDouble(),
+      left: left,
+      top: top,
       child: SizedBox(
-        width: width.toDouble(),
-        height: height.toDouble(),
+        width: width,
+        height: height,
         child: Container(
           decoration: BoxDecoration(
             color: Color.fromRGBO(10, 10, 10, 1.0),
@@ -85,11 +94,7 @@ class TextboxWidget extends NodeWidget {
             controller: controller,
             textAlign: TextAlign.center,
             onChanged: (s) {
-              var v = double.tryParse(s);
-              if (v != null) {
-                value = v;
-                writeFloat(value);
-              }
+              writeValue(s);
             },
             style: TextStyle(
               fontSize: 14,

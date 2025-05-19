@@ -13,6 +13,7 @@ import '../plugin/plugin.dart';
 import '../settings.dart';
 import 'widgets/knob.dart';
 import 'patch.dart';
+import 'widgets/led.dart';
 import 'widgets/scope.dart';
 
 int NODE_ID = 1;
@@ -97,6 +98,8 @@ abstract class NodeWidget extends StatelessWidget {
           return TextboxWidget.from(node, endpoint, map);
         case "scope":
           return ScopeWidget.from(node, endpoint, map);
+        case "led":
+          return LedWidget.from(node, endpoint, map);
         default:
           print("Unknown widget type: $type");
       }
@@ -128,6 +131,8 @@ class Node extends StatelessWidget {
       for (var endpoint in rawNode!.inputs) {
         Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
+        print("Endpoint: ${endpoint.type}");
+
         // Skip pin if it's an external endpoint
         if (annotations.containsKey("external")) {
           continue;
@@ -157,6 +162,13 @@ class Node extends StatelessWidget {
       // Add output pins to list
       for (var endpoint in rawNode!.outputs) {
         Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
+
+        print("Endpoint: ${endpoint.type}");
+
+        // Skip pin if it's a string endpoint
+        if (endpoint.type.contains("string")) {
+          continue;
+        }
 
         // Skip pin if it's an external endpoint
         if (annotations.containsKey("external")) {
