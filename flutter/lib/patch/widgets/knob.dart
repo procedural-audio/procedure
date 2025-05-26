@@ -64,7 +64,7 @@ class KnobWidget extends NodeWidget {
       width: int.tryParse(map['width'].toString()) ?? 50,
       height: int.tryParse(map['height'].toString()) ?? 50,
       label: map['label'] ?? "",
-      color: colorFromString(map['color']) ?? Colors.grey,
+      color: colorFromString(map['color'] ?? "grey") ?? Colors.grey,
       min: double.tryParse(map['min'].toString()) ?? 0.0,
       max: double.tryParse(map['max'].toString()) ?? 1.0,
       initialValue: double.tryParse(map['default'].toString()) ?? 0.5,
