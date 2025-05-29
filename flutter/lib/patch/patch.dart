@@ -79,16 +79,9 @@ class Patch extends StatefulWidget {
   Future<void> save() async {
     List<Map<String, dynamic>> nodeStates = [];
 
-    // Save the used plugins
-    /*List<PluginInfo> pluginInfos = [];
-    for (var node in nodes.value) {
-      pluginInfos.add(node.module.pluginInfo);
-    }
-
-    info.save(pluginInfos);*/
-
     for (var node in nodes.value) {
       var state = node.getState();
+      print(state);
       nodeStates.add(state);
     }
 

@@ -20,6 +20,9 @@ class Plugin extends ChangeNotifier {
   static Future<Plugin?> load(Directory plugins, PluginInfo info) async {
     if (await plugins.exists()) {
       await for (var directory in plugins.list()) {
+        if (directory.name.contains(".git")) {
+          continue;
+        }
         // TODO: Check if matches github url or branch
         // TODO: If no matches, clone repository
 

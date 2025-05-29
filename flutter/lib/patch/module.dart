@@ -5,9 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:metasampler/patch/patch.dart';
 
-import '../plugin/info.dart';
-import '../plugin/plugin.dart';
-import '../utils.dart';
 import '../project/theme.dart';
 
 List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleFile) {
@@ -20,7 +17,7 @@ List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleF
 
 class Module {
   Module({
-    required this.file,
+    required this.name,
     required this.category,
     required this.size,
     required this.source,
@@ -32,9 +29,7 @@ class Module {
     this.iconSize,
   });
 
-  String get name => file.name.replaceAll(".module", "");
-
-  File file;
+  String name;
   List<String> category;
   Size size;
   String source;
@@ -45,11 +40,7 @@ class Module {
   Color? iconColor;
   int? iconSize;
 
-  static Future<Module?> load(
-    File file,
-    List<String> category
-  ) async {
-    String source = await file.readAsString();
+  static Module? parse(String name, List<String> category, String source) {
     int width = 1;
     int height = 1;
     Color? color;
@@ -85,10 +76,11 @@ class Module {
               } else if (key == "titleColor") {
                 titleColor = colorFromString(value);
               } else if (key == "icon") {
-                File iconFile = File(file.parent.path + "/" + value);
+                /*File iconFile = File(file.parent.path + "/" + value);
                 if (await iconFile.exists()) {
                   icon = await iconFile.readAsString();
-                }
+                }*/
+                print("Skipping icon: $value");
               } else if (key == "iconSize") {
                 iconSize = int.tryParse(value);
               } else if (key == "iconColor") {
@@ -101,7 +93,7 @@ class Module {
     }
 
     return Module(
-      file: file,
+      name: name,
       category: category,
       size: Size(width.toDouble(), height.toDouble()),
       source: source,
@@ -112,5 +104,22 @@ class Module {
       iconColor: iconColor,
       iconSize: iconSize,
     );
+  }
+
+  static Future<Module?> load(
+    File file,
+    List<String> category
+  ) async {
+    String name = file.name.replaceAll(".module", "");
+    String source = await file.readAsString();
+    return parse(name, category, source);
+  }
+
+  Map<String, dynamic> getState() {
+    return {
+      "name": name,
+      "category": category,
+      "source": source,
+    };
   }
 }

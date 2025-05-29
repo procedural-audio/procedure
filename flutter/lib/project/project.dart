@@ -100,6 +100,11 @@ class _Project extends State<Project> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   void loadPreset(PresetInfo info) async {
     print("Loading preset: ${info.name}");
   }
@@ -112,11 +117,6 @@ class _Project extends State<Project> {
         info.directory = Directory(newPath);
       });
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   Future<void> save() async {

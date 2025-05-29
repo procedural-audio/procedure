@@ -233,14 +233,22 @@ class Node extends StatelessWidget {
 
   void refreshSize() {}
 
+  Node? fromState(Map<String, dynamic> state) {
+    /*var module = Module.fromState(state["module"]);
+    var position = Offset(state["x"], state["y"]);
+
+    return Node(
+      module: module,
+      patch: patch,
+    );*/
+  }
+
   Map<String, dynamic> getState() {
     return {
-      // "plugin": module.plugin,
-      "name": module.name,
-      "category": module.category.join("/"),
+      "module": module.getState(),
+      // "id": rawNode!.id,
       "x": position.value.dx,
       "y": position.value.dy,
-      "widgets": widgets.map((widget) => widget.getState()).toList(),
     };
   }
 

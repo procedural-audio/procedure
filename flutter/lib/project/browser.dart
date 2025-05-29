@@ -37,6 +37,12 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
     loadPluginInfos();
     scanProjects();
+
+    for (var plugin in plugins) {
+      plugin.directory.watch(recursive: true).listen((event) {
+        print("File ${event.path} has been modified");
+      });
+    }
   }
 
   Future<void> loadPluginInfos() async {

@@ -23,9 +23,9 @@ class Connector extends StatefulWidget {
 
   Map<String, dynamic> getState() {
     return {
-      "startNode": start.node.module.file.path,
+      "startNode": null,
       // "startIndex": start.,
-      "endNode": end.node.module.file.path,
+      "endNode": null,
       // "endIndex": end.pinIndex,
     };
   }
