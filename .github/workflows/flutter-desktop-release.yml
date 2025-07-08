@@ -75,7 +75,7 @@ jobs:
       # Package the release build
       - name: Package Windows release
         run: |
-          cd build/windows/runner/Release
+          cd build/windows/x64/Release
           7z a ../../../../procedure-windows-x64.zip .
 
       # Upload to GitHub release
