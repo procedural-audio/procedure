@@ -37,14 +37,14 @@ jobs:
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
-          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../../Procedure.dmg
+          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
 
       # Upload the packaged build as an artifact
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-macos
-          path: Procedure.dmg
+          path: flutter/build/Procedure.dmg
 
   # # Job to build the Windows application
   # build-windows:
@@ -118,14 +118,14 @@ jobs:
       - name: Package Linux release
         run: |
           cd build/linux/x64/release/bundle/
-          zip -r ../../../../../release-linux.zip .
+          zip -r ../../../../release-linux.zip .
 
       # Upload the packaged build as an artifact
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-linux
-          path: release-linux.zip
+          path: flutter/build/release-linux.zip
 
   # # Job to build the Android APK
   # build-android:
