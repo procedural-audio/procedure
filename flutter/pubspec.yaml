@@ -37,7 +37,7 @@ dependencies:
   # json_serializable: ^6.1.4
   # flutter_colorpicker: ^1.0.3
   file_picker: ^8.3.5
-  flutter_svg: ^1.0.3
+  flutter_svg: ^1.1.6
   yaml: ^3.1.2
   path_provider: ^2.1.5
   # statsfl: ^2.0.1+1

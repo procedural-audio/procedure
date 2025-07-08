@@ -47,6 +47,13 @@ jobs:
           if-no-files-found: error
           path: flutter/build/Procedure.dmg
 
+      # Upload to GitHub release
+      - name: Upload to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} flutter/build/Procedure.dmg --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # # Job to build the Windows application
   # build-windows:
   #   runs-on: windows-latest # Use the latest available Windows runner
@@ -86,6 +93,9 @@ jobs:
   # Job to build the Linux application
   build-linux:
     runs-on: ubuntu-latest # Use the latest available Ubuntu runner
+    strategy:
+      matrix:
+        arch: [x64, arm64]
     defaults:
       run:
         working-directory: flutter
@@ -113,21 +123,28 @@ jobs:
 
       # Builds the Linux release application
       - name: Build Linux release
-        run: flutter build linux --release
+        run: flutter build linux --release --target-platform=linux-${{ matrix.arch }}
 
       # Package the release build
       - name: Package Linux release
         run: |
-          cd build/linux/x64/release/bundle/
-          zip -r ../../../../release-linux.zip .
+          cd build/linux/${{ matrix.arch }}/release/bundle/
+          zip -r ../../../../../release-linux-${{ matrix.arch }}.zip .
 
       # Upload the packaged build as an artifact
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-linux
+          name: release-linux-${{ matrix.arch }}
           if-no-files-found: error
-          path: flutter/build/release-linux.zip
+          path: flutter/build/release-linux-${{ matrix.arch }}.zip
+
+      # Upload to GitHub release
+      - name: Upload to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} flutter/build/release-linux-${{ matrix.arch }}.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # # Job to build the Android APK
   # build-android:
