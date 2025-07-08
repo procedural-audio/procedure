@@ -37,54 +37,57 @@ jobs:
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
-          hdiutil create -volname "procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../procedure.dmg
+          hdiutil create -volname "procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../procedure-macos.dmg
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} build/procedure.dmg --clobber
+          gh release upload ${{ github.ref_name }} build/procedure-macos.dmg --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # # Job to build the Windows application
-  # build-windows:
-  #   runs-on: windows-latest # Use the latest available Windows runner
+  # Job to build the Windows application
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: flutter
 
-  #   steps:
-  #     # Checks-outs your repository
-  #     - uses: actions/checkout@v4
+    steps:
+      # Checks-outs your repository
+      - uses: actions/checkout@v4
 
-  #     # Sets up the Flutter SDK
-  #     - uses: subosito/flutter-action@v2
-  #       with:
-  #         channel: 'stable'
-  #         flutter-version-file: flutter/pubspec.yaml
-  #         cache: true
+      # Sets up the Flutter SDK
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version-file: flutter/pubspec.yaml
+          cache: true
 
-  #     # Gets the Flutter dependencies
-  #     - name: Get Flutter dependencies
-  #       run: flutter pub get
+      # Gets the Flutter dependencies
+      - name: Get Flutter dependencies
+        run: flutter pub get
 
-  #     # Builds the Windows release application
-  #     - name: Build Windows release
-  #       run: flutter build windows --release
+      # Builds the Windows release application
+      - name: Build Windows release
+        run: flutter build windows --release
 
-  #     # Package the release build
-  #     - name: Package Windows release
-  #       run: |
-  #         cd build/windows/runner/Release
-  #         7z a ../../../../release-windows.zip .
+      # Package the release build
+      - name: Package Windows release
+        run: |
+          cd build/windows/runner/Release
+          7z a ../../../../procedure-windows-x64.zip .
 
-  #     # Upload the packaged build as an artifact
-  #     - name: Upload Windows artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: release-windows
-  #         path: release-windows.zip
+      # Upload to GitHub release
+      - name: Upload to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} build/procedure-windows-x64.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Job to build the Linux x64 application
   build-linux-x64:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: flutter
@@ -118,12 +121,12 @@ jobs:
       - name: Package Linux release
         run: |
           cd build/linux/x64/release/
-          zip -r ../../../release-linux-x64.zip bundle
+          zip -r ../../../procedure-linux-x64.zip bundle
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} build/release-linux-x64.zip --clobber
+          gh release upload ${{ github.ref_name }} build/procedure-linux-x64.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -163,12 +166,12 @@ jobs:
       - name: Package Linux release
         run: |
           cd build/linux/arm64/release/
-          zip -r ../../../release-linux-arm64.zip bundle
+          zip -r ../../../procedure-linux-arm64.zip bundle
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} build/release-linux-arm64.zip --clobber
+          gh release upload ${{ github.ref_name }} build/procedure-linux-arm64.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
