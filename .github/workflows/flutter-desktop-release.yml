@@ -18,8 +18,8 @@ jobs:
       # Sets up the Flutter SDK for use in the workflow
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          flutter-version: '3.24.0'
+          channel: 'stable' # Use the stable channel of Flutter
+          flutter-version-file: flutter/pubspec.yaml
           cache: true
 
       # Gets the Flutter dependencies
@@ -40,7 +40,7 @@ jobs:
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: procedure-macos-${{ github.ref_name }}
+          name: release-macos
           path: Procedure.dmg
 
   # # Job to build the Windows application
@@ -108,24 +108,18 @@ jobs:
       - name: Build Linux release
         run: flutter build linux --release
 
-      # Install Snapcraft
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v3
+      # Package the release build
+      - name: Package Linux release
+        run: |
+          cd build/flutter/linux/x64/release/bundle
+          zip -r ../../../../../release-linux.zip .
 
-      # Copy snapcraft configuration
-      - name: Copy snapcraft configuration
-        run: cp configs/snapcraft.yaml .
-
-      # Build the snap package
-      - name: Build snap package
-        run: snapcraft --destructive-mode
-
-      # Upload the snap package as an artifact
+      # Upload the packaged build as an artifact
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: procedure-linux-${{ github.ref_name }}
-          path: procedure_1.0_amd64.snap
+          name: release-linux
+          path: release-linux.zip
 
   # # Job to build the Android APK
   # build-android:
