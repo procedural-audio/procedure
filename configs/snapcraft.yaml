@@ -1,0 +1,26 @@
+name: procedure
+version: '1.0'
+summary: Procedure application
+description: A Flutter desktop application
+base: core22
+grade: stable
+confinement: strict
+
+apps:
+  procedure:
+    command: desktop-launch $SNAP/opt/procedure/procedure
+    desktop: procedure.desktop
+    plugs: [home, x11, opengl, network, network-bind]
+
+parts:
+  procedure:
+    plugin: dump
+    source: build/flutter/linux/x64/release/bundle
+    organize:
+      '*': opt/procedure/
+
+layouts:
+  /usr/share/applications:
+    bind: $SNAP/usr/share/applications
+  /usr/share/icons:
+    bind: $SNAP/usr/share/icons 
