@@ -1,69 +1,188 @@
-# This GitHub Actions workflow uses a matrix strategy to build and package a
-# Flutter desktop application for Windows, macOS, and Linux on every new tag.
-
-name: Build Flutter Desktop App (Matrix)
+name: Build Procedure
 
 # Controls when the workflow will run
 on:
   push:
     tags:
-      - 'v*' # Triggers the workflow on new version tags (e.g., v1.0.0, v2.1.3)
+      - 'v*'
 
 jobs:
-  build:
-    # The strategy matrix defines the different configurations to run the job with.
-    # In this case, we are defining a configuration for each target platform.
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            platform: macos
-            package_command: 'cd build/macos/Build/Products/Release && zip -r ../../../../release-macos.zip .'
-            artifact_path: release-macos.zip
-          - os: windows-latest
-            platform: windows
-            package_command: 'cd build/windows/runner/Release && 7z a ../../../../release-windows.zip .'
-            artifact_path: release-windows.zip
-          - os: ubuntu-latest
-            platform: linux
-            package_command: 'cd build/linux/x64/release/bundle && zip -r ../../../../../release-linux.zip .'
-            artifact_path: release-linux.zip
-
-    # The job will run on the operating system defined in the matrix
-    runs-on: ${{ matrix.os }}
+  # Job to build the macOS application
+  build-macos:
+    runs-on: macos-latest # Use the latest available macOS runner
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
       # Sets up the Flutter SDK for use in the workflow
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable' # Use the stable channel of Flutter
+          flutter-version-file: flutter/pubspec.yaml
+          cache: true
 
-      # Install Linux-specific dependencies only when running on Ubuntu
-      - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
-
-      # Gets the Flutter dependencies (common for all platforms)
+      # Gets the Flutter dependencies
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # Builds the release application for the platform specified in the matrix
-      - name: Build ${{ matrix.platform }} release
-        run: flutter build ${{ matrix.platform }} --release
+      # Builds the macOS release application
+      - name: Build macOS release
+        run: flutter build macos --release
 
-      # Packages the release build using the command specified in the matrix
-      - name: Package ${{ matrix.platform }} release
-        run: ${{ matrix.package_command }}
+      # Package the release build
+      - name: Package macOS release
+        run: |
+          cd build/flutter/macos/Build/Products/Release
+          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
 
-      # Uploads the packaged build as an artifact. The artifact name will be
-      # based on the platform (e.g., release-macos, release-windows).
-      - name: Upload ${{ matrix.platform }} artifact
+      # Upload the packaged build as an artifact
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.platform }}
-          path: ${{ matrix.artifact_path }}
+          name: release-macos
+          path: Procedure.dmg
+
+  # # Job to build the Windows application
+  # build-windows:
+  #   runs-on: windows-latest # Use the latest available Windows runner
+
+  #   steps:
+  #     # Checks-outs your repository
+  #     - uses: actions/checkout@v4
+
+  #     # Sets up the Flutter SDK
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version-file: flutter/pubspec.yaml
+  #         cache: true
+
+  #     # Gets the Flutter dependencies
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
+
+  #     # Builds the Windows release application
+  #     - name: Build Windows release
+  #       run: flutter build windows --release
+
+  #     # Package the release build
+  #     - name: Package Windows release
+  #       run: |
+  #         cd build/windows/runner/Release
+  #         7z a ../../../../release-windows.zip .
+
+  #     # Upload the packaged build as an artifact
+  #     - name: Upload Windows artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-windows
+  #         path: release-windows.zip
+
+  # # Job to build the Linux application
+  # build-linux:
+  #   runs-on: ubuntu-latest # Use the latest available Ubuntu runner
+
+  #   steps:
+  #     # Checks-outs your repository
+  #     - uses: actions/checkout@v4
+
+  #     # Sets up the Flutter SDK
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version-file: flutter/pubspec.yaml
+  #         cache: true
+
+  #     # Install Linux dependencies
+  #     - name: Install Linux dependencies
+  #       run: |
+  #         sudo apt-get update -y
+  #         sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+  #     # Gets the Flutter dependencies
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
+
+  #     # Builds the Linux release application
+  #     - name: Build Linux release
+  #       run: flutter build linux --release
+
+  #     # Package the release build
+  #     - name: Package Linux release
+  #       run: |
+  #         cd build/linux/x64/release/bundle
+  #         zip -r ../../../../../release-linux.zip .
+
+  #     # Upload the packaged build as an artifact
+  #     - name: Upload Linux artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-linux
+  #         path: release-linux.zip
+
+  # # Job to build the Android APK
+  # build-android:
+  #   runs-on: ubuntu-latest # Use the latest available Ubuntu runner
+
+  #   steps:
+  #     # Checks-outs your repository
+  #     - uses: actions/checkout@v4
+
+  #     # Sets up the Flutter SDK
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version-file: flutter/pubspec.yaml
+  #         cache: true
+
+  #     # Gets the Flutter dependencies
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
+
+  #     # Builds the Android APK
+  #     - name: Build Android APK
+  #       run: flutter build apk --release
+
+  #     # Upload the APK as an artifact
+  #     - name: Upload Android APK
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-android
+  #         path: build/app/outputs/flutter-apk/app-release.apk
+
+  # # Job to build the iOS application
+  # build-ios:
+  #   runs-on: macos-latest # iOS builds require macOS
+
+  #   steps:
+  #     # Checks-outs your repository
+  #     - uses: actions/checkout@v4
+
+  #     # Sets up the Flutter SDK
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version-file: flutter/pubspec.yaml
+  #         cache: true
+
+  #     # Gets the Flutter dependencies
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
+
+  #     # Builds the iOS release application (without code signing)
+  #     - name: Build iOS release
+  #       run: flutter build ios --release --no-codesign
+
+  #     # Package the iOS build
+  #     - name: Package iOS build
+  #       run: |
+  #         cd build/flutter/ios/iphoneos
+  #         zip -r ../../../../release-ios.zip .
+
+  #     # Upload the iOS build as an artifact
+  #     - name: Upload iOS artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: release-ios
+  #         path: release-ios.zip
