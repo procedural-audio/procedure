@@ -94,11 +94,11 @@ jobs:
           flutter-version-file: flutter/pubspec.yaml
           cache: true
 
-      # Install Linux dependencies and snapcraft
+      # Install Linux dependencies
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev snapcraft
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
@@ -107,6 +107,10 @@ jobs:
       # Builds the Linux release application
       - name: Build Linux release
         run: flutter build linux --release
+
+      # Install Snapcraft
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v3
 
       # Copy snapcraft configuration
       - name: Copy snapcraft configuration

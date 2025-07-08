@@ -15,12 +15,12 @@ apps:
 parts:
   procedure:
     plugin: dump
-    source: build/flutter/linux/x64/release/bundle
+    source: flutter/build/flutter/linux/x64/release/bundle
     organize:
       '*': opt/procedure/
 
-layouts:
-  /usr/share/applications:
-    bind: $SNAP/usr/share/applications
-  /usr/share/icons:
-    bind: $SNAP/usr/share/icons 
+#layouts:
+#  /usr/share/applications:
+#    bind: $SNAP/usr/share/applications
+#  /usr/share/icons:
+#    bind: $SNAP/usr/share/icons 
