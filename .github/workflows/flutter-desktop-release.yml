@@ -47,7 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Job to build the Windows application
-  build-windows:
+  build-windows-x64:
     runs-on: windows-latest
     defaults:
       run:
@@ -131,49 +131,49 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Job to build the Linux ARM64 application
-  build-linux-arm64:
-    runs-on: ubuntu-24.04-arm
-    defaults:
-      run:
-        working-directory: flutter
+  # build-linux-arm64:
+  #   runs-on: ubuntu-24.04-arm
+  #   defaults:
+  #     run:
+  #       working-directory: flutter
 
-    steps:
-      # Checks-outs your repository
-      - uses: actions/checkout@v4
+  #   steps:
+  #     # Checks-outs your repository
+  #     - uses: actions/checkout@v4
 
-      # Sets up the Flutter SDK
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          flutter-version-file: flutter/pubspec.yaml
-          cache: true
+  #     # Sets up the Flutter SDK
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         channel: 'stable'
+  #         flutter-version-file: flutter/pubspec.yaml
+  #         cache: true
 
-      # Install Linux dependencies
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+  #     # Install Linux dependencies
+  #     - name: Install Linux dependencies
+  #       run: |
+  #         sudo apt-get update -y
+  #         sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
 
-      # Gets the Flutter dependencies
-      - name: Get Flutter dependencies
-        run: flutter pub get
+  #     # Gets the Flutter dependencies
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
 
-      # Builds the Linux release application
-      - name: Build Linux release
-        run: flutter build linux --release
+  #     # Builds the Linux release application
+  #     - name: Build Linux release
+  #       run: flutter build linux --release
 
-      # Package the release build
-      - name: Package Linux release
-        run: |
-          cd build/linux/arm64/release/
-          zip -r ../../../procedure-linux-arm64.zip bundle
+  #     # Package the release build
+  #     - name: Package Linux release
+  #       run: |
+  #         cd build/linux/arm64/release/
+  #         zip -r ../../../procedure-linux-arm64.zip bundle
 
-      # Upload to GitHub release
-      - name: Upload to GitHub Release
-        run: |
-          gh release upload ${{ github.ref_name }} build/procedure-linux-arm64.zip --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     # Upload to GitHub release
+  #     - name: Upload to GitHub Release
+  #       run: |
+  #         gh release upload ${{ github.ref_name }} build/procedure-linux-arm64.zip --clobber
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # # Job to build the Android APK
   # build-android:
