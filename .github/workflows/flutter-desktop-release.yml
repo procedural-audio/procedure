@@ -37,20 +37,12 @@ jobs:
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
-          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
-
-      # Upload the packaged build as an artifact
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-macos
-          if-no-files-found: error
-          path: flutter/build/Procedure.dmg
+          hdiutil create -volname "procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../procedure.dmg
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} build/Procedure.dmg --clobber
+          gh release upload ${{ github.ref_name }} build/procedure.dmg --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -92,7 +84,7 @@ jobs:
 
   # Job to build the Linux x64 application
   build-linux-x64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: flutter
@@ -128,14 +120,6 @@ jobs:
           cd build/linux/x64/release/
           zip -r ../../../../release-linux-x64.zip bundle
 
-      # Upload the packaged build as an artifact
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-linux-x64
-          if-no-files-found: error
-          path: flutter/build/release-linux-x64.zip
-
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
@@ -145,7 +129,7 @@ jobs:
 
   # Job to build the Linux ARM64 application
   build-linux-arm64:
-    runs-on: ubuntu-latest-arm64
+    runs-on: ubuntu-24.04-arm
     defaults:
       run:
         working-directory: flutter
@@ -178,16 +162,8 @@ jobs:
       # Package the release build
       - name: Package Linux release
         run: |
-          cd build/linux/x64/release/
+          cd build/linux/arm64/release/
           zip -r ../../../../release-linux-arm64.zip bundle
-
-      # Upload the packaged build as an artifact
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-linux-arm64
-          if-no-files-found: error
-          path: flutter/build/release-linux-arm64.zip
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
