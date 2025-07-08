@@ -1,6 +1,0 @@
-[submodule "host/juce"]
-	path = host/juce
-	url = https://github.com/juce-framework/JUCE
-[submodule "juce-rs"]
-	path = juce-rs
-	url = git@github.com:0xchase/cxx-juce.git
