@@ -41,4 +41,16 @@ A new Flutter FFI plugin project.
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
     'OTHER_LDFLAGS' => '-force_load ${BUILT_PRODUCTS_DIR}/librust_lib_metasampler.a',
   }
+
+  #s.vendored_libraries = 'macos/libRustLibMetasampler.a'   # adjust the path/name
+
+  # ---- dependencies the .a needs ----
+  s.frameworks = 'Accelerate',
+                 'AudioToolbox',
+                 'CoreAudio',
+                 'CoreMIDI',
+                 'Cocoa',
+                 'CoreFoundation',
+                 'IOKit'
+  s.libraries  = 'c++'          # libc++
 end

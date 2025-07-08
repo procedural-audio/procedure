@@ -321,7 +321,6 @@ dependencies = [
 [[package]]
 name = "cxx-juce"
 version = "0.8.0"
-source = "git+https://github.com/0xchase/cxx-juce#069da5fd0895e3384e7671060819f7ad8170b5af"
 dependencies = [
  "cmake",
  "cxx",

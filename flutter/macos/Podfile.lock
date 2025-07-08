@@ -34,7 +34,7 @@ SPEC CHECKSUMS:
   file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
-  rust_lib_metasampler: bdc503732977002f8a0d3c38436bf3f05e510c44
+  rust_lib_metasampler: 039220ef776d207be982219b6aae3a7fe62c30f0
   webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
 
 PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
