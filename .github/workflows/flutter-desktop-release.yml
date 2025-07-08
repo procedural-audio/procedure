@@ -50,7 +50,7 @@ jobs:
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} flutter/build/Procedure.dmg --clobber
+          gh release upload ${{ github.ref_name }} build/Procedure.dmg --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -90,12 +90,9 @@ jobs:
   #         name: release-windows
   #         path: release-windows.zip
 
-  # Job to build the Linux application
-  build-linux:
-    runs-on: ubuntu-latest # Use the latest available Ubuntu runner
-    strategy:
-      matrix:
-        arch: [x64, arm64]
+  # Job to build the Linux x64 application
+  build-linux-x64:
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: flutter
@@ -123,26 +120,79 @@ jobs:
 
       # Builds the Linux release application
       - name: Build Linux release
-        run: flutter build linux --release --target-platform=linux-${{ matrix.arch }}
+        run: flutter build linux --release
 
       # Package the release build
       - name: Package Linux release
         run: |
-          cd build/linux/${{ matrix.arch }}/release/bundle/
-          zip -r ../../../../../release-linux-${{ matrix.arch }}.zip .
+          cd build/linux/x64/release/
+          zip -r ../../../../release-linux-x64.zip bundle
 
       # Upload the packaged build as an artifact
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-linux-${{ matrix.arch }}
+          name: release-linux-x64
           if-no-files-found: error
-          path: flutter/build/release-linux-${{ matrix.arch }}.zip
+          path: flutter/build/release-linux-x64.zip
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
         run: |
-          gh release upload ${{ github.ref_name }} flutter/build/release-linux-${{ matrix.arch }}.zip --clobber
+          gh release upload ${{ github.ref_name }} build/release-linux-x64.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job to build the Linux ARM64 application
+  build-linux-arm64:
+    runs-on: ubuntu-latest-arm64
+    defaults:
+      run:
+        working-directory: flutter
+
+    steps:
+      # Checks-outs your repository
+      - uses: actions/checkout@v4
+
+      # Sets up the Flutter SDK
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version-file: flutter/pubspec.yaml
+          cache: true
+
+      # Install Linux dependencies
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+      # Gets the Flutter dependencies
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # Builds the Linux release application
+      - name: Build Linux release
+        run: flutter build linux --release
+
+      # Package the release build
+      - name: Package Linux release
+        run: |
+          cd build/linux/x64/release/
+          zip -r ../../../../release-linux-arm64.zip bundle
+
+      # Upload the packaged build as an artifact
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-arm64
+          if-no-files-found: error
+          path: flutter/build/release-linux-arm64.zip
+
+      # Upload to GitHub release
+      - name: Upload to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} build/release-linux-arm64.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
