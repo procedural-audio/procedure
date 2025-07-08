@@ -16,7 +16,7 @@ use crate::other::voices::*;
 use flutter_rust_bridge::*;
 
 /// This is a single processor unit in the graph
-#[frb(opaque)]
+#[frb]
 #[derive(Clone)]
 pub struct Node {
     pub id: u32,

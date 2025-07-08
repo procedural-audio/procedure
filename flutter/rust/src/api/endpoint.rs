@@ -12,7 +12,7 @@ use flutter_rust_bridge::*;
 use crate::other::handle::*;
 
 #[derive(Clone)]
-#[frb(opaque)]
+#[frb]
 pub struct NodeEndpoint {
     endpoint: EndpointHandle,
     pub annotation: String,

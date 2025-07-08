@@ -5,6 +5,9 @@ pub mod node;
 
 use cmajor::*;
 
+pub use std::sync::{Arc, Mutex};
+pub use cmajor::performer::Performer;
+
 #[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
 pub fn greet(name: String) -> String {
     format!("Hello, {name}!")
