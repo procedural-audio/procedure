@@ -10,6 +10,9 @@ jobs:
   # Job to build the macOS application
   build-macos:
     runs-on: macos-latest # Use the latest available macOS runner
+    defaults:
+      run:
+        working-directory: flutter
 
     steps:
       # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -24,20 +27,16 @@ jobs:
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
-        run: |
-          cd flutter
-          flutter pub get
+        run: flutter pub get
 
       # Builds the macOS release application
       - name: Build macOS release
-        run: |
-          cd flutter
-          flutter build macos --release
+        run: flutter build macos --release
 
       # Package the release build
       - name: Package macOS release
         run: |
-          cd flutter/build/flutter/macos/Build/Products/Release
+          cd build/flutter/macos/Build/Products/Release
           hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
 
       # Upload the packaged build as an artifact
@@ -86,6 +85,9 @@ jobs:
   # Job to build the Linux application
   build-linux:
     runs-on: ubuntu-latest # Use the latest available Ubuntu runner
+    defaults:
+      run:
+        working-directory: flutter
 
     steps:
       # Checks-outs your repository
@@ -106,20 +108,16 @@ jobs:
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
-        run: |
-          cd flutter
-          flutter pub get
+        run: flutter pub get
 
       # Builds the Linux release application
       - name: Build Linux release
-        run: |
-          cd flutter
-          flutter build linux --release
+        run: flutter build linux --release
 
       # Package the release build
       - name: Package Linux release
         run: |
-          cd flutter/build/flutter/linux/x64/release/bundle
+          cd build/flutter/linux/x64/release/bundle
           zip -r ../../../../../release-linux.zip .
 
       # Upload the packaged build as an artifact
