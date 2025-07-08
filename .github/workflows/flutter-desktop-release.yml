@@ -18,8 +18,8 @@ jobs:
       # Sets up the Flutter SDK for use in the workflow
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # Use the stable channel of Flutter
-          flutter-version-file: flutter/pubspec.yaml
+          channel: 'stable'
+          flutter-version: '3.24.0'
           cache: true
 
       # Gets the Flutter dependencies
