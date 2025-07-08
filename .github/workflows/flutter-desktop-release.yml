@@ -118,7 +118,7 @@ jobs:
       - name: Package Linux release
         run: |
           cd build/linux/x64/release/
-          zip -r ../../../../release-linux-x64.zip bundle
+          zip -r ../../../release-linux-x64.zip bundle
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
@@ -163,7 +163,7 @@ jobs:
       - name: Package Linux release
         run: |
           cd build/linux/arm64/release/
-          zip -r ../../../../release-linux-arm64.zip bundle
+          zip -r ../../../release-linux-arm64.zip bundle
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
