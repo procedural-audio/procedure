@@ -44,6 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-macos
+          if-no-files-found: error
           path: flutter/build/Procedure.dmg
 
   # # Job to build the Windows application
@@ -125,6 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-linux
+          if-no-files-found: error
           path: flutter/build/release-linux.zip
 
   # # Job to build the Android APK
