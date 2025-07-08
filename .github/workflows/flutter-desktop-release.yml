@@ -28,7 +28,9 @@ jobs:
 
       # Builds the macOS release application
       - name: Build macOS release
-        run: flutter build macos --release
+        run: |
+          cd flutter
+          flutter build macos --release
 
       # Package the release build
       - name: Package macOS release
@@ -102,7 +104,9 @@ jobs:
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
-        run: flutter pub get
+        run: |
+          cd flutter
+          flutter pub get
 
       # Builds the Linux release application
       - name: Build Linux release
