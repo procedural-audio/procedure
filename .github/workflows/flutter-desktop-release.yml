@@ -37,7 +37,7 @@ jobs:
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
-          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
+          hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../../Procedure.dmg
 
       # Upload the packaged build as an artifact
       - name: Upload macOS artifact
@@ -117,7 +117,7 @@ jobs:
       # Package the release build
       - name: Package Linux release
         run: |
-          cd build/linux/x64/release/bundle/nodus
+          cd build/linux/x64/release/bundle/
           zip -r ../../../../../release-linux.zip .
 
       # Upload the packaged build as an artifact
