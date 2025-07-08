@@ -40,7 +40,7 @@ jobs:
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-macos
+          name: procedure-macos-${{ github.ref_name }}
           path: Procedure.dmg
 
   # # Job to build the Windows application
@@ -124,7 +124,7 @@ jobs:
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-linux
+          name: procedure-linux-${{ github.ref_name }}
           path: procedure_1.0_amd64.snap
 
   # # Job to build the Android APK
