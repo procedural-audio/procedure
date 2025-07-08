@@ -24,7 +24,9 @@ jobs:
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
-        run: flutter pub get
+        run: |
+          cd flutter
+          flutter pub get
 
       # Builds the macOS release application
       - name: Build macOS release
@@ -35,7 +37,7 @@ jobs:
       # Package the release build
       - name: Package macOS release
         run: |
-          cd build/flutter/macos/Build/Products/Release
+          cd flutter/build/flutter/macos/Build/Products/Release
           hdiutil create -volname "Procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../Procedure.dmg
 
       # Upload the packaged build as an artifact
@@ -110,12 +112,14 @@ jobs:
 
       # Builds the Linux release application
       - name: Build Linux release
-        run: flutter build linux --release
+        run: |
+          cd flutter
+          flutter build linux --release
 
       # Package the release build
       - name: Package Linux release
         run: |
-          cd build/flutter/linux/x64/release/bundle
+          cd flutter/build/flutter/linux/x64/release/bundle
           zip -r ../../../../../release-linux.zip .
 
       # Upload the packaged build as an artifact
