@@ -21,10 +21,10 @@ class Preset extends StatelessWidget {
     required this.uiVisible,
   });
 
-  static Preset from(PresetInfo info, ProjectTheme theme, List<Plugin> plugins, bool uiVisible) {
+  static Preset from(PresetInfo info, List<Plugin> plugins, bool uiVisible) {
     return Preset(
       info: info,
-      patch: Patch.from(info, theme, plugins),
+      patch: Patch.from(info, plugins),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
     );
@@ -45,14 +45,14 @@ class Preset extends StatelessWidget {
     return null;
   }
 
-  static Preset blank(Directory presetDirectory, ProjectTheme theme, List<Plugin> plugins, bool uiVisible) {
+  static Preset blank(Directory presetDirectory, List<Plugin> plugins, bool uiVisible) {
     var info = PresetInfo(
       directory: presetDirectory,
       hasInterface: false,
     );
     return Preset(
       info: info,
-      patch: Patch.from(info, theme, plugins),
+      patch: Patch.from(info, plugins),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
     );

@@ -20,8 +20,10 @@ use crate::api::endpoint::{EndpointKind};
 
 #[derive(Clone, PartialEq)]
 pub enum InputStreamHandle {
-    MonoFloat32(Endpoint<InputStream<f32>>),
-    StereoFloat32(Endpoint<InputStream<[f32; 2]>>),
+    Float32(Endpoint<InputStream<f32>>),
+    Float64(Endpoint<InputStream<f64>>),
+    Int32(Endpoint<InputStream<i32>>),
+    Int64(Endpoint<InputStream<i64>>),
     Err(&'static str),
 }
 
@@ -29,8 +31,14 @@ impl InputStreamHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Self {
         let id = endpoint.id();
         match endpoint.ty() {
-            Type::Primitive(Primitive::Float32) => Self::MonoFloat32(engine.endpoint(id).unwrap()),
-            Type::Array(array) => match array.elem_ty() {
+            Type::Primitive(p) => match p {
+                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
+                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
+                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
+                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
+                _ => Self::Err("unsupported endpoint type stream"),
+            },
+            /*Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
                     2 => Self::StereoFloat32(engine.endpoint(id).unwrap()),
                     _ => Self::Err("unsupported endpoint type array stream"),
@@ -39,8 +47,8 @@ impl InputStreamHandle {
                 Type::Array(_) => Self::Err("unsupported endpoint type array stream"),
                 Type::Object(_) => Self::Err("unsupported endpoint type array stream"),
                 Type::String => Self::Err("unsupported endpoint type array stream"),
-            },
-            Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
+            },*/
+            Type::Array(array) => Self::Err("unsupported endpoint type array stream"),
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
         }
@@ -48,8 +56,10 @@ impl InputStreamHandle {
 
     pub fn get_type(&self) -> &str {
         match self {
-            Self::MonoFloat32(_) => "float32",
-            Self::StereoFloat32(_) => "float32<2>",
+            Self::Float32(_) => "float32",
+            Self::Float64(_) => "float64",
+            Self::Int32(_) => "int32",
+            Self::Int64(_) => "int64",
             Self::Err(_) => "unknown"
         }
     }
@@ -57,8 +67,10 @@ impl InputStreamHandle {
 
 #[derive(Clone, PartialEq)]
 pub enum OutputStreamHandle {
-    MonoFloat32(Endpoint<OutputStream<f32>>),
-    StereoFloat32(Endpoint<OutputStream<[f32; 2]>>),
+    Float32(Endpoint<OutputStream<f32>>),
+    Float64(Endpoint<OutputStream<f64>>),
+    Int32(Endpoint<OutputStream<i32>>),
+    Int64(Endpoint<OutputStream<i64>>),
     Err(&'static str),
 }
 
@@ -66,8 +78,14 @@ impl OutputStreamHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Self {
         let id = endpoint.id();
         match endpoint.ty() {
-            Type::Primitive(Primitive::Float32) => Self::MonoFloat32(engine.endpoint(id).unwrap()),
-            Type::Array(array) => match array.elem_ty() {
+            Type::Primitive(p) => match p {
+                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
+                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
+                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
+                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
+                _ => Self::Err("unsupported endpoint type stream"),
+            },
+            /*Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
                     2 => Self::StereoFloat32(engine.endpoint(id).unwrap()),
                     _ => Self::Err("unsupported endpoint type array stream"),
@@ -76,8 +94,8 @@ impl OutputStreamHandle {
                 Type::Array(_) => Self::Err("unsupported endpoint type array stream"),
                 Type::Object(_) => Self::Err("unsupported endpoint type array stream"),
                 Type::String => Self::Err("unsupported endpoint type array stream"),
-            },
-            Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
+            },*/
+            Type::Array(array) => Self::Err("unsupported endpoint type array stream"),
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
         }
@@ -85,8 +103,10 @@ impl OutputStreamHandle {
 
     pub fn get_type(&self) -> &str {
         match self {
-            Self::MonoFloat32(_) => "float32",
-            Self::StereoFloat32(_) => "float32<2>",
+            Self::Float32(_) => "float32",
+            Self::Float64(_) => "float64",
+            Self::Int32(_) => "int32",
+            Self::Int64(_) => "int64",
             Self::Err(_) => "unknown"
         }
     }
@@ -276,7 +296,14 @@ impl OutputEventHandle {
             .types
             .iter()
             .map(|t| match t {
-                Type::Primitive(p) => "primitive".to_string(),
+                Type::Primitive(p) => match p {
+                    Primitive::Float32 => "float32".to_string(),
+                    Primitive::Float64 => "float64".to_string(),
+                    Primitive::Int32 => "int32".to_string(),
+                    Primitive::Int64 => "int64".to_string(),
+                    Primitive::Bool => "bool".to_string(),
+                    Primitive::Void => "void".to_string(),
+                },
                 Type::String => "string".to_string(),
                 Type::Object(object) => object.class().to_string(),
                 Type::Array(a) => "array".to_string(),

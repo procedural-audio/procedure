@@ -25,7 +25,6 @@ class Project extends StatefulWidget {
     required this.info,
     required this.preset,
     required this.plugins,
-    required this.theme,
     required this.presetInfos,
   });
 
@@ -33,7 +32,6 @@ class Project extends StatefulWidget {
   final ProjectInfo info;
   Preset preset;
   List<Plugin> plugins;
-  ProjectTheme theme;
   final List<PresetInfo> presetInfos;
 
   Future<bool> loadInterface(PresetInfo info) async {
@@ -41,8 +39,6 @@ class Project extends StatefulWidget {
   }
 
   static Future<Project?> load(ProjectInfo info, MainDirectory mainDirectory) async {
-    ProjectTheme theme = ProjectTheme.create();
-
     List<Plugin> plugins = [];
     for (var pluginInfo in info.pluginInfos) {
       var plugin = await Plugin.load(mainDirectory.plugins, pluginInfo);
@@ -70,7 +66,7 @@ class Project extends StatefulWidget {
     availablePresets.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     Directory newPresetDir = Directory(info.presetsDirectory.path + "/New Preset");
-    Preset preset = Preset.blank(newPresetDir, theme, plugins, false);
+    Preset preset = Preset.blank(newPresetDir, plugins, false);
     if (availablePresets.isNotEmpty) {
       preset = await Preset.load(availablePresets.first, plugins, false) ?? preset;
     }
@@ -80,7 +76,6 @@ class Project extends StatefulWidget {
       info: info,
       preset: preset,
       plugins: plugins,
-      theme: theme,
       presetInfos: availablePresets,
     );
   }

@@ -4,122 +4,36 @@ import 'package:flutter/material.dart';
 import '../bindings/api/endpoint.dart';
 
 class ProjectTheme {
-  ProjectTheme({
-    required this.endpointThemes,
-  });
+  static final Map<EndpointKind, PinShape> pinShapes = {
+    EndpointKind.stream: PinShape.circle,
+    EndpointKind.event: PinShape.triangle,
+    EndpointKind.value: PinShape.square, // TODO: change to diamond
+  };
 
-  final List<EndpointTheme> endpointThemes;
+  static final Map<String, Color> typeColors = {
+    "float32": Colors.blue,
+    "float64": Colors.blue.shade800,
+    "int32": Colors.purple,
+    "int64": Colors.deepPurple,
+    "bool": Colors.red,
+    "Note": Colors.green,
+  };
 
-  static ProjectTheme create() {
-    return ProjectTheme(
-      endpointThemes: [
-        EndpointTheme(
-          kind: EndpointKind.stream,
-          type: null,
-          shape: PinShape.circle,
-          color: Colors.blue,
-        ),
-        EndpointTheme(
-          kind: EndpointKind.event,
-          type: null,
-          shape: PinShape.triangle,
-          color: Colors.green,
-        ),
-        EndpointTheme(
-          kind: EndpointKind.value,
-          type: null,
-          shape: PinShape.square,
-          color: Colors.red,
-        ),
-        EndpointTheme(
-          kind: EndpointKind.value,
-          type: "int32",
-          shape: null,
-          color: Colors.cyan,
-        ),
-        EndpointTheme(
-          kind: EndpointKind.event,
-          type: "Position",
-          shape: null,
-          color: Colors.deepPurple,
-        ),
-      ],
-    );
-  }
-
-  static ProjectTheme fromJson(Map<String, dynamic> map) {
-    var theme = ProjectTheme.create();
-    var endpoint = map['endpoint'];
-    if (endpoint != null) {
-      for (var endpointMap in endpoint) {
-        var kind = switch (endpointMap['kind']) {
-          "stream" => EndpointKind.stream,
-          "event" => EndpointKind.event,
-          "value" => EndpointKind.value,
-          _ => null
-        };
-
-        var type = endpointMap['type'];
-        var shape = shapeFromString(endpointMap['shape']);
-        var color = colorFromString(endpointMap['color']);
-
-        theme.endpointThemes.add(
-          EndpointTheme(
-            kind: kind,
-            type: type,
-            shape: shape,
-            color: color,
-          ),
-        );
-      }
+  static Color getColor(String type) {
+    if (!typeColors.containsKey(type)) {
+      print("Unknown type color $type");
     }
 
-    return theme;
+    return typeColors[type] ?? Colors.grey;
   }
 
-  Color getColor(String type, EndpointKind kind) {
-    Color color = Colors.grey;
-    for (var entry in endpointThemes) {
-      if ((entry.kind == kind || entry.kind == null) &&
-          (entry.type != null && type.contains(entry.type!) || entry.type == null)) {
-        var themeColor = entry.color;
-        if (themeColor != null) {
-          color = themeColor;
-        }
-      }
+  static PinShape getShape(EndpointKind kind) {
+    if (!pinShapes.containsKey(kind)) {
+      print("Unknown pin shape: $kind");
     }
 
-    return color;
+    return pinShapes[kind] ?? PinShape.unknown;
   }
-
-  PinShape getShape(String type, EndpointKind kind) {
-    PinShape shape = PinShape.unknown;
-    for (var entry in endpointThemes) {
-      if ((entry.kind == kind || entry.kind == null) &&
-          (entry.type == type || entry.type == null)) {
-        var themeShape = entry.shape;
-        if (themeShape != null) {
-          shape = themeShape;
-        }
-      }
-    }
-
-    return shape;
-  }
-}
-
-class EndpointTheme {
-  EndpointTheme({
-    required this.kind,
-    required this.type,
-    required this.shape,
-    required this.color,
-  });
-
-  final EndpointKind? kind;
-  final String? type;
-  final PinShape? shape;
-  final Color? color;
 }
 
 Color? colorFromString(String color) {

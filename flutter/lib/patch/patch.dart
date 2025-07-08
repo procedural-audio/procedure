@@ -37,7 +37,6 @@ class Patch extends StatefulWidget {
     required this.plugins,
   }) : super(key: UniqueKey());
 
-  final ProjectTheme theme = ProjectTheme.create();
   final ValueNotifier<List<Node>> nodes = ValueNotifier([]);
   final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
   final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
@@ -50,7 +49,7 @@ class Patch extends StatefulWidget {
   final double sampleRate = 44100.0;
   final int blockSize = 512;
 
-  static Patch from(PresetInfo info, ProjectTheme theme, List<Plugin> plugins) {
+  static Patch from(PresetInfo info, List<Plugin> plugins) {
     return Patch(
       info: info,
       plugins: plugins,

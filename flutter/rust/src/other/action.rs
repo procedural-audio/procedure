@@ -207,33 +207,7 @@ impl Actions {
     fn process_output_external(&mut self, node: &Node, handle: &OutputHandle, channel: usize) {
         match handle {
             OutputHandle::Stream { handle, feedback } => {
-                match handle {
-                    OutputStreamHandle::MonoFloat32(handle) => {
-                        println!(" - External mono ouput channel {} to node {}", channel, node.id);
-                        let buffer = vec![0.0; 1024];
-                        self.push(
-                            ExternalOutputStream {
-                                voices: node.performer.clone(),
-                                handle: *handle,
-                                buffer,
-                                channel,
-                            }
-                        );
-                    },
-                    OutputStreamHandle::StereoFloat32(handle) => {
-                        println!(" - External stereo output channel {} to node {}", channel, node.id);
-                        let buffer = vec![[0.0, 0.0]; 1024];
-                        self.push(
-                            ExternalOutputStream {
-                                voices: node.performer.clone(),
-                                handle: *handle,
-                                buffer,
-                                channel,
-                            }
-                        );
-                    }
-                    OutputStreamHandle::Err(e) => ()
-                }
+                println!(" - Unsupported external output stream");
             }
             OutputHandle::Event { handle, feedback } => {
                 self.push(
@@ -324,13 +298,21 @@ impl Actions {
         match handle {
             InputHandle::Stream(handle) => {
                 match handle {
-                    InputStreamHandle::MonoFloat32(handle) => {
+                    InputStreamHandle::Float32(handle) => {
                         let buffer = vec![0.0; 1024];
                         self.push( ClearStream { voices, handle, buffer });
                     }
-                    InputStreamHandle::StereoFloat32(handle) => {
-                        let buffer = vec![[0.0; 2]; 1024];
+                    InputStreamHandle::Float64(handle) => {
+                        let buffer = vec![0.0; 1024];
                         self.push( ClearStream { voices, handle, buffer });
+                    }
+                    InputStreamHandle::Int32(handle) => {
+                        let buffer = vec![0; 1024];
+                        self.push( ClearStream { voices, handle, buffer });
+                    }
+                    InputStreamHandle::Int64(handle) => {
+                        let buffer = vec![0; 1024];
+                        self.push(ClearStream { voices, handle, buffer });
                     }
                     InputStreamHandle::Err(_) => ()
                 }
@@ -389,9 +371,13 @@ impl Actions {
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
         match (src_handle, dst_handle) {
-            (OutputStreamHandle::MonoFloat32(src), InputStreamHandle::MonoFloat32(dst)) => self
+            (OutputStreamHandle::Float32(src), InputStreamHandle::Float32(dst)) => self
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::StereoFloat32(src), InputStreamHandle::StereoFloat32(dst)) => self
+            (OutputStreamHandle::Float64(src), InputStreamHandle::Float64(dst)) => self
+                .copy_stream(src_voices, src, feedback, dst_voices, dst),
+            (OutputStreamHandle::Int32(src), InputStreamHandle::Int32(dst)) => self
+                .copy_stream(src_voices, src, feedback, dst_voices, dst),
+            (OutputStreamHandle::Int64(src), InputStreamHandle::Int64(dst)) => self
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
             _ => return Err("Endpoints streams types are not compatible")
         }

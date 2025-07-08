@@ -122,8 +122,8 @@ class _PinState extends State<Pin> {
                     height: pinRadius * 2,
                     child: CustomPaint(
                       painter: PinPainter(
-                        color: widget.patch.theme.getColor(type, kind),
-                        shape: widget.patch.theme.getShape(type, kind),
+                        color: ProjectTheme.getColor(type),
+                        shape: ProjectTheme.getShape(kind),
                         selected: is_selected,
                         hovering: hovering,
                         dragging: dragging,

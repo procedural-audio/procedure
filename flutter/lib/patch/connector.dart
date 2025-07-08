@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:metasampler/settings.dart';
 
 import '../bindings/api/endpoint.dart';
+import '../project/theme.dart';
 import 'node.dart';
 import 'pin.dart';
 import 'patch.dart';
@@ -117,7 +118,7 @@ class _Connector extends State<Connector> with TickerProviderStateMixin {
                           roundToGrid(endModuleOffset.dy) +
                           pinRadius,
                     ),
-                    widget.patch.theme.getColor(widget.start.endpoint.type, widget.start.endpoint.kind),
+                    ProjectTheme.getColor(widget.start.endpoint.type),
                     focused,
                     _controller,
                     widget.start.endpoint.kind,
@@ -201,7 +202,7 @@ class _NewConnector extends State<NewConnector> with SingleTickerProviderStateMi
             painter: ConnectorPainter(
               startOffset,
               endOffset,
-              widget.start!.patch.theme.getColor(widget.start!.endpoint.type, widget.start!.endpoint.kind),
+              ProjectTheme.getColor(widget.start!.endpoint.type),
               true,
               _controller,
               widget.start!.endpoint.kind,
