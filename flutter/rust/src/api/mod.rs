@@ -2,8 +2,7 @@ pub mod cable;
 pub mod endpoint;
 pub mod graph;
 pub mod node;
-
-use cmajor::*;
+pub mod io;
 
 pub use std::sync::{Arc, Mutex};
 pub use cmajor::performer::Performer;
@@ -17,5 +16,5 @@ pub fn greet(name: String) -> String {
 pub fn init_app() {
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
-    // cxx_juce::JUCE::initialise();
+    // let juce = cxx_juce::JUCE::initialise();
 }

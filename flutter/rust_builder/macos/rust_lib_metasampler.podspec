@@ -51,6 +51,7 @@ A new Flutter FFI plugin project.
                  'CoreMIDI',
                  'Cocoa',
                  'CoreFoundation',
+                 # 'SystemConfiguration',
                  'IOKit'
   s.libraries  = 'c++'          # libc++
 end

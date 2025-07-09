@@ -63,6 +63,7 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=CoreFoundation");
         println!("cargo:rustc-link-lib=framework=CoreMIDI");
         println!("cargo:rustc-link-lib=framework=IOKit");
+        // println!("cargo:rustc-link-lib=framework=SystemConfiguration");
     }
 
     if cfg!(target_os = "windows") {

@@ -16,14 +16,14 @@ use crate::other::voices::*;
 use flutter_rust_bridge::*;
 
 /// This is a single processor unit in the graph
-#[frb]
+#[frb(opaque)]
 #[derive(Clone)]
 pub struct Node {
     pub id: u32,
     source: Vec<String>,
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
-    pub performer: Arc<Mutex<Performer>>,
+    performer: Arc<Mutex<Performer>>,
 }
 
 impl PartialEq for Node {
@@ -114,5 +114,10 @@ impl Node {
     #[frb(sync, getter)]
     pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
+    }
+
+    #[frb(ignore)]
+    pub fn get_performer(&self) -> Arc<Mutex<Performer>> {
+        self.performer.clone()
     }
 }

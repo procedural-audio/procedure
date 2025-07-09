@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["staticlib"]
 
 [dependencies]
 flutter_rust_bridge = "=2.11.1"
@@ -16,5 +16,6 @@ crossbeam = "0.8.4"
 crossbeam-queue = "0.3.12"
 num-traits = "0.2"
 
-# cxx-juce = { path = "../../juce-rs" }
+cxx-juce = { path = "../../juce-rs" }
+
 # git2 = { version = "0.20.0", features = ["vendored-libgit2"]}

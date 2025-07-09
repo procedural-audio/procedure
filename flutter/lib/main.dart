@@ -10,6 +10,7 @@ import 'project/browser.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api.dart';
+import 'package:metasampler/bindings/api/io.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
@@ -19,6 +20,11 @@ Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   print("Rust backend says: " + greet(name: "Tom"));
+
+  // initializePlayback();
+
+  // playback.reset(inputChannels: 2, outputChannels: 2);
+  // playback.addAudioCallback(graph: Graph.defaultGraph());
 
   if (args.isEmpty) {
     runApp(
