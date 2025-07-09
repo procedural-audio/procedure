@@ -3,10 +3,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+
 import 'package:metasampler/plugin/plugin.dart';
+import 'package:metasampler/settings.dart';
+import 'package:metasampler/bindings/api.dart';
+import 'package:metasampler/bindings/api/io.dart';
 
 import 'info.dart';
 import 'project.dart';
+import 'audio_config.dart';
 
 import '../settings.dart';
 import '../plugin/config.dart';
@@ -15,9 +20,11 @@ import '../plugin/info.dart';
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
     super.key,
+    this.audioManager,
   });
 
   final MainDirectory directory;
+  final AudioManager? audioManager;
 
   @override
   State<ProjectsBrowser> createState() => _ProjectsBrowser();
@@ -235,6 +242,14 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                   ),
                   const SizedBox(width: 10),
                   IconButton(
+                    icon: const Icon(Icons.audiotrack),
+                    color: Colors.white,
+                    onPressed: () {
+                      showAudioConfigDialog();
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
                     icon: const Icon(Icons.settings),
                     color: Colors.white,
                     onPressed: () {
@@ -355,6 +370,15 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
           pluginInfos = updatedPluginInfos;
         });
         savePluginInfos();
+      },
+    );
+  }
+
+  void showAudioConfigDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AudioConfigDialog(audioManager: widget.audioManager);
       },
     );
   }

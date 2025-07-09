@@ -6,10 +6,63 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `add_audio_callback`, `init`, `remove_audio_callback`, `reset`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `PlaybackHandle`, `Playback`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `stopped`
-// These functions are ignored (category: IgnoreBecauseExplicitAttribute): `about_to_start`, `process_block`
+// These functions are ignored because they are not marked as `pub`: `run_juce_message_loop`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AudioMessage`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`, `fmt`
 
-Future<void> initializePlayback() =>
-    RustLib.instance.api.crateApiIoInitializePlayback();
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AudioManager>>
+abstract class AudioManager implements RustOpaqueInterface {
+  Future<String?> getDeviceType();
+
+  Future<List<String>> getDeviceTypes();
+
+  Future<List<String>> getInputDevices({required String deviceType});
+
+  Future<List<String>> getOutputDevices({required String deviceType});
+
+  Future<AudioConfiguration> getSetup();
+
+  factory AudioManager() => RustLib.instance.api.crateApiIoAudioManagerNew();
+
+  Future<void> setDeviceType({required String deviceType});
+
+  Future<void> setSetup({required AudioConfiguration config});
+
+  Future<void> shutdown();
+
+  Future<void> stopPlayback();
+}
+
+class AudioConfiguration {
+  final String inputDevice;
+  final String outputDevice;
+  final double sampleRate;
+  final BigInt bufferSize;
+
+  const AudioConfiguration({
+    required this.inputDevice,
+    required this.outputDevice,
+    required this.sampleRate,
+    required this.bufferSize,
+  });
+
+  static Future<AudioConfiguration> default_() =>
+      RustLib.instance.api.crateApiIoAudioConfigurationDefault();
+
+  @override
+  int get hashCode =>
+      inputDevice.hashCode ^
+      outputDevice.hashCode ^
+      sampleRate.hashCode ^
+      bufferSize.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AudioConfiguration &&
+          runtimeType == other.runtimeType &&
+          inputDevice == other.inputDevice &&
+          outputDevice == other.outputDevice &&
+          sampleRate == other.sampleRate &&
+          bufferSize == other.bufferSize;
+}

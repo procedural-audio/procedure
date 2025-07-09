@@ -1,69 +1,234 @@
-use cxx_juce::juce_audio_devices::{AudioCallbackHandle, AudioDeviceManager, AudioIODevice, AudioIODeviceCallback, InputAudioSampleBuffer, OutputAudioSampleBuffer};
-
 use flutter_rust_bridge::frb;
+use cxx_juce::{juce_audio_devices::{AudioDeviceManager, AudioDeviceSetup, AudioIODevice, AudioIODeviceType, ChannelCount}, JUCE};
+use std::sync::mpsc;
+use tokio::sync::oneshot;
 
-use crate::api::graph::Graph;
-
-
-pub fn initialize_playback() {
-    let juce = cxx_juce::JUCE::initialise();
-    let manager = AudioDeviceManager::new(&juce);
-    println!("Initialized playback");
+#[derive(Clone, Debug)]
+#[frb]
+pub struct AudioConfiguration {
+    pub input_device: String,
+    pub output_device: String,
+    pub sample_rate: f64,
+    pub buffer_size: usize,
 }
 
-struct PlaybackHandle(AudioCallbackHandle);
-
-struct Playback {
-    manager: AudioDeviceManager,
-}
-
-unsafe impl Send for Playback {}
-
-impl Playback {
-    fn init() -> Self {
-        let juce = cxx_juce::JUCE::initialise();
-        let manager = AudioDeviceManager::new(&juce);
-
-        Self { manager }
-    }
-
-    fn reset(&mut self, input_channels: usize, output_channels: usize) {
-        self.manager.initialise(input_channels, output_channels).unwrap();
-    }
-
-    fn add_audio_callback(&mut self, graph: Graph) -> PlaybackHandle {
-        let handle = self.manager.add_audio_callback(graph);
-        PlaybackHandle(handle)
-    }
-
-    fn remove_audio_callback(&mut self, handle: PlaybackHandle) {
-        self.manager.remove_audio_callback(handle.0);
+impl Default for AudioConfiguration {
+    fn default() -> Self {
+        Self {
+            input_device: "Default".to_string(),
+            output_device: "Default".to_string(),
+            sample_rate: 44100.0,
+            buffer_size: 512,
+        }
     }
 }
 
-impl AudioIODeviceCallback for Graph {
-    #[frb(ignore)]
-    fn about_to_start(&mut self, device: &mut dyn AudioIODevice) {
-        println!("preparing to start");
+// Messages that can be sent to the audio thread
+#[derive(Debug)]
+enum AudioMessage {
+    GetDeviceTypes(oneshot::Sender<Vec<String>>),
+    GetInputDevices(String, oneshot::Sender<Vec<String>>),
+    GetOutputDevices(String, oneshot::Sender<Vec<String>>),
+    GetSetup(oneshot::Sender<AudioConfiguration>),
+    SetSetup(AudioConfiguration),
+    GetDeviceType(oneshot::Sender<Option<String>>),
+    SetDeviceType(String, oneshot::Sender<Result<(), String>>),
+    StopPlayback,
+    Shutdown,
+}
 
-        let sizes = device.available_buffer_sizes();
-        let rates = device.available_sample_rates();
-        let size = device.buffer_size();
-        let rate = device.sample_rate();
+fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
+    let juce = JUCE::initialise();
+    let mut manager = AudioDeviceManager::new(&juce);
+
+    manager.initialise(0, 2).unwrap();
+
+    manager
+        .device_types()
+        .iter_mut()
+        .for_each(|dt| dt.scan_for_devices());
+
+    loop {
+        while let Ok(message) = rx.try_recv() {
+            match message {
+                AudioMessage::GetDeviceTypes(response) => {
+                    let _ = response.send(
+                        manager
+                            .device_types()
+                            .iter()
+                            .map(|dt| dt.name())
+                            .collect()
+                    );
+                }
+                AudioMessage::GetInputDevices(device_type, response) => {
+                    let _ = response.send(
+                        manager
+                            .device_types()
+                            .iter()
+                            .find(| dt | dt.name() == device_type)
+                            .map(|dt| dt.input_devices())
+                            .unwrap_or(Vec::new())
+                    );
+                }
+                AudioMessage::GetOutputDevices(device_type, response) => {
+                    let _ = response.send(
+                        manager
+                            .device_types()
+                            .iter()
+                            .find(| dt | dt.name() == device_type)
+                            .map(|dt| dt.output_devices())
+                            .unwrap_or(Vec::new())
+                    );
+                }
+                AudioMessage::GetSetup(response) => {
+                    println!("Getting setup");
+                    let setup = manager.audio_device_setup();
+                    let output_channels = match setup.output_channels() {
+                        cxx_juce::juce_audio_devices::ChannelCount::Default => 2, // Default to stereo
+                        cxx_juce::juce_audio_devices::ChannelCount::Custom(count) => count as usize,
+                    };
+                    let config = AudioConfiguration {
+                        input_device: setup.input_device_name().to_string(),
+                        output_device: setup.output_device_name().to_string(),
+                        sample_rate: setup.sample_rate(),
+                        buffer_size: setup.buffer_size(),
+                    };
+                    let _ = response.send(config);
+                }
+                AudioMessage::SetSetup(config) => {
+                    println!("Setting setup");
+                    let setup = AudioDeviceSetup::default()
+                        .with_buffer_size(config.buffer_size)
+                        .with_sample_rate(config.sample_rate)
+                        .with_input_channels(ChannelCount::Default)
+                        .with_output_channels(ChannelCount::Default)
+                        .with_input_device_name(config.input_device)
+                        .with_output_device_name(config.output_device);
+
+                    manager.set_audio_device_setup(&setup);
+                }
+                AudioMessage::GetDeviceType(response) => {
+                    let _ = response.send(
+                        manager
+                            .current_device_type()
+                            .map(|dt| dt.name())
+                    );
+                }
+                AudioMessage::SetDeviceType(device_type, response) => {
+                    manager.set_current_audio_device_type(&device_type);
+                    let _ = response.send(Ok(()));
+                }
+                AudioMessage::StopPlayback => {},
+                AudioMessage::Shutdown => {
+                    println!("Shutting down audio thread");
+                    return;
+                }
+            }
+        }
+
+        std::thread::sleep(std::time::Duration::from_millis(10));
     }
+}
 
-    #[frb(ignore)]
-    fn process_block(
-        &mut self,
-        _input: &InputAudioSampleBuffer<'_>,
-        output: &mut OutputAudioSampleBuffer<'_>,
-    ) {
-        for channel in 0..output.channels() {
-            ()
+#[frb]
+pub struct AudioManager {
+    thread: std::thread::JoinHandle<()>,
+    tx: mpsc::Sender<AudioMessage>,
+}
+
+impl AudioManager {
+    #[frb(sync)]
+    pub fn new() -> Self {
+        let (tx, rx) = mpsc::channel();
+        
+        let thread = std::thread::spawn(move || {
+            run_juce_message_loop(rx);
+        });
+        
+        Self {
+            thread,
+            tx,
+        }
+    }
+    
+    pub async fn get_input_devices(&self, device_type: String) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetInputDevices(device_type, tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            vec![]
+        }
+    }
+    
+    pub async fn get_output_devices(&self, device_type: String) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetOutputDevices(device_type, tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            vec![]
+        }
+    }
+    
+    #[frb]
+    pub async fn get_device_types(&self) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetDeviceTypes(tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            vec![]
         }
     }
 
-    fn stopped(&mut self) {
-        println!("stopped");
+    #[frb]
+    pub async fn get_setup(&self) -> AudioConfiguration {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetSetup(tx)).is_ok() {
+            rx.await.unwrap()
+        } else {
+            AudioConfiguration::default()
+        }
+    }
+
+    #[frb]
+    pub async fn set_setup(&self, config: AudioConfiguration) -> Result<(), String> {
+        if self.tx.send(AudioMessage::SetSetup(config)).is_ok() {
+            Ok(())
+        } else {
+            Err("Failed to send configuration".to_string())
+        }
+    }
+
+    #[frb]
+    pub async fn get_device_type(&self) -> Option<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetDeviceType(tx)).is_ok() {
+            rx.await.unwrap()
+        } else {
+            None
+        }
+    }
+
+    #[frb]
+    pub async fn set_device_type(&self, device_type: String) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::SetDeviceType(device_type, tx)).is_ok() {
+            rx.await.unwrap_or(Err("Failed to receive response".to_string()))
+        } else {
+            Err("Failed to send device type".to_string())
+        }
+    }
+    
+    pub fn stop_playback(&self) -> Result<(), String> {
+        self.tx.send(AudioMessage::StopPlayback)
+            .map_err(|e| format!("Failed to send stop message: {}", e))
+    }
+    
+    pub fn shutdown(self) -> Result<(), String> {
+        self.tx.send(AudioMessage::Shutdown)
+            .map_err(|e| format!("Failed to send shutdown message: {}", e))?;
+        match self.thread.join() {
+            Ok(_) => Ok(()),
+            Err(_) => Ok(()), // Thread already finished
+        }
     }
 }

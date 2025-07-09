@@ -2,54 +2,33 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 
 import 'project/project.dart';
 import 'project/browser.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
-import 'package:metasampler/bindings/api.dart';
 import 'package:metasampler/bindings/api/io.dart';
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
 
-  print("In flutter main with arguments: " + args.toString());
-
   WidgetsFlutterBinding.ensureInitialized();
+  AudioManager audioManager = AudioManager();
 
-  print("Rust backend says: " + greet(name: "Tom"));
-
-  // initializePlayback();
-
-  // playback.reset(inputChannels: 2, outputChannels: 2);
-  // playback.addAudioCallback(graph: Graph.defaultGraph());
-
-  if (args.isEmpty) {
-    runApp(
-      App(
-        project: ValueNotifier(null),
-      ),
-    );
-  } else {
-    // var addr = int.tryParse(args[0].split(": ").last);
-    // globals.core = Core.from(addr);
-
-    runApp(
-      App(
-        project: ValueNotifier(null),
-      ),
-    );
-
-    // rlugins.endWatch();
-  }
+  runApp(
+    App(
+      project: ValueNotifier(null),
+      audioManager: audioManager,
+    ),
+  );
 }
 
 class App extends StatelessWidget {
-  App({super.key, required this.project});
+  App({super.key, required this.project, required this.audioManager});
 
   final ValueNotifier<Project?> project;
+  final AudioManager? audioManager;
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +89,7 @@ class _Window extends State<Window> {
           ),
           child: Material(
             color: const Color.fromRGBO(10, 10, 10, 1.0),
-            child: ProjectsBrowser(directory),
+            child: ProjectsBrowser(directory, audioManager: widget.app.audioManager),
           ),
         ),
       ),
