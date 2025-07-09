@@ -81,12 +81,7 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
                     );
                 }
                 AudioMessage::GetSetup(response) => {
-                    println!("Getting setup");
                     let setup = manager.audio_device_setup();
-                    let output_channels = match setup.output_channels() {
-                        cxx_juce::juce_audio_devices::ChannelCount::Default => 2, // Default to stereo
-                        cxx_juce::juce_audio_devices::ChannelCount::Custom(count) => count as usize,
-                    };
                     let config = AudioConfiguration {
                         input_device: setup.input_device_name().to_string(),
                         output_device: setup.output_device_name().to_string(),
@@ -96,7 +91,6 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
                     let _ = response.send(config);
                 }
                 AudioMessage::SetSetup(config) => {
-                    println!("Setting setup");
                     let setup = AudioDeviceSetup::default()
                         .with_buffer_size(config.buffer_size)
                         .with_sample_rate(config.sample_rate)

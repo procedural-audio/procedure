@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::api::cable::*;
@@ -11,8 +10,6 @@ use flutter_rust_bridge::*;
 lazy_static::lazy_static! {
     static ref ACTIONS: RwLock<Option<Actions>> = RwLock::new(None);
     static ref MIDI_OUTPUT: RwLock<Vec<u32>> = RwLock::new(Vec::new());
-    // static ref GRAPH_PLAYING: RwLock<Option<Graph>> = RwLock::new(None);
-    // static ref GRAPH_PENDING: RwLock<Option<Graph>> = RwLock::new(None);
 }
 
 #[frb(sync)]
