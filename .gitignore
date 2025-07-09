@@ -1,3 +1,5 @@
 build/**
 plugins/target/
 .DS_Store
+juce-rs/Cargo.lock
+juce-rs/target
