@@ -91,7 +91,7 @@ class _Window extends State<Window> {
           child: Material(
             color: const Color.fromRGBO(10, 10, 10, 1.0),
             // child: ProjectsBrowser(directory, audioManager: widget.app.audioManager),
-            child: HomeWidget(),
+            child: TitleBar(child: HomeWidget()),
           ),
         ),
       ),

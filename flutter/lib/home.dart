@@ -9,6 +9,44 @@ import 'plugin/config.dart';
 import 'settings/settings.dart';
 import 'settings.dart' as old_settings;
 
+class TitleBar extends StatelessWidget {
+  const TitleBar({
+    super.key,
+    required this.child,
+    this.color = AppColors.background,
+    this.dividerColor = AppColors.backgroundBorder,
+  });
+
+  final Widget child;
+  final Color color;
+  final Color dividerColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 28,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: dividerColor,
+                  width: 1,
+                ),
+              ),
+            )
+          ),
+          Expanded(child: child),
+        ],
+      )
+    );
+  }
+}
+
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
 
