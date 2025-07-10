@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:metasampler/home.dart';
 import 'package:metasampler/settings.dart';
+import 'package:metasampler/style/colors.dart';
 
 import 'project/project.dart';
 import 'project/browser.dart';
