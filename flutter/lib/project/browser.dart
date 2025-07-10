@@ -6,16 +6,16 @@ import 'package:file_picker/file_picker.dart';
 
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
-import 'package:metasampler/bindings/api.dart';
 import 'package:metasampler/bindings/api/io.dart';
 
 import 'info.dart';
 import 'project.dart';
 import 'audio_config.dart';
 
-import '../settings.dart';
 import '../plugin/config.dart';
 import '../plugin/info.dart';
+import '../theme/input.dart';
+import '../theme/buttons.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -219,116 +219,115 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(20, 20, 20, 1.0),
-        ),
-        constraints: const BoxConstraints(maxWidth: 300 * 5),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: Row(
-                children: [
-                  SearchBar(onFilter: (s) {
-                    setState(() {
-                      searchText = s;
-                    });
-                  }),
-                  Expanded(
-                    child: Container(),
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: const Icon(Icons.audiotrack),
-                    color: Colors.white,
-                    onPressed: () {
-                      showAudioConfigDialog();
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    color: Colors.white,
-                    onPressed: () {
-                      showPluginConfigDialog();
-                    },
-                  ),
-                  const SizedBox(width: 10),
-                  NewInstrumentButton(
-                    onPressed: () {
-                      newProject();
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Builder(
-                builder: (context) {
-                  List<ProjectInfo> filteredProjects = [];
-                  if (searchText == "") {
-                    filteredProjects = projectsInfos;
-                  } else {
-                    for (var project in projectsInfos) {
-                      if (project.name
-                              .toLowerCase()
-                              .contains(searchText.toLowerCase()) ||
-                          project.description.value
-                              .toLowerCase()
-                              .contains(searchText.toLowerCase())) {
-                        filteredProjects.add(project);
-                      }
-                    }
-                  }
-
-                  if (filteredProjects.isEmpty) {
-                    return Container();
-                  }
-
-                  filteredProjects.sort((a, b) {
-                    return b.date.value.compareTo(a.date.value);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+          child: Row(
+            children: [
+              SearchBarLarge(
+                width: 300,
+                hintText: 'Search projects...',
+                onChanged: (s) {
+                  setState(() {
+                    searchText = s;
                   });
+                },
+              ),
+              const SizedBox(width: 10),
+              IconTextButtonLarge(
+                icon: Icons.grid_view,
+                label: 'Grid',
+                isSelected: false,
+                onTap: () {
+                  // Handle grid view
+                },
+              ),
+              const SizedBox(width: 10),
+              IconTextButtonLarge(
+                icon: Icons.view_list,
+                label: 'Rows',
+                isSelected: false,
+                onTap: () {
+                  // Handle rows view
+                },
+              ),
+              Expanded(
+                child: Container(),
+              ),
+              IconTextButtonLarge(
+                icon: Icons.add,
+                label: 'New Project',
+                isSelected: false,
+                onTap: () {
+                  newProject();
+                },
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Builder(
+            builder: (context) {
+              List<ProjectInfo> filteredProjects = [];
+              if (searchText == "") {
+                filteredProjects = projectsInfos;
+              } else {
+                for (var project in projectsInfos) {
+                  if (project.name
+                          .toLowerCase()
+                          .contains(searchText.toLowerCase()) ||
+                      project.description.value
+                          .toLowerCase()
+                          .contains(searchText.toLowerCase())) {
+                    filteredProjects.add(project);
+                  }
+                }
+              }
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                      mainAxisExtent: 300,
-                      maxCrossAxisExtent: 300,
-                      childAspectRatio: 1.0,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 15,
-                    ),
-                    itemCount: filteredProjects.length,
-                    itemBuilder: (BuildContext ctx, index) {
-                      return ProjectPreview(
-                        index: index,
-                        editing: editing,
-                        project: filteredProjects[index],
-                        onOpen: loadProject,
-                        onDuplicate: (info) {
-                          duplicateProject(info);
-                        },
-                        onDelete: (info) {
-                          removeProject(info);
-                        },
-                        onImageChanged: (project, file) {
-                          setState(() {
-                            project.image = file;
-                          });
-                        },
-                      );
+              if (filteredProjects.isEmpty) {
+                return Container();
+              }
+
+              filteredProjects.sort((a, b) {
+                return b.date.value.compareTo(a.date.value);
+              });
+
+              return GridView.builder(
+                padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+                gridDelegate:
+                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                  mainAxisExtent: 240,
+                  maxCrossAxisExtent: 240,
+                  childAspectRatio: 1.0,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 15,
+                ),
+                itemCount: filteredProjects.length,
+                itemBuilder: (BuildContext ctx, index) {
+                  return ProjectPreview(
+                    index: index,
+                    editing: editing,
+                    project: filteredProjects[index],
+                    onOpen: loadProject,
+                    onDuplicate: (info) {
+                      duplicateProject(info);
+                    },
+                    onDelete: (info) {
+                      removeProject(info);
+                    },
+                    onImageChanged: (project, file) {
+                      setState(() {
+                        project.image = file;
+                      });
                     },
                   );
                 },
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -410,270 +409,12 @@ class NewInstrumentButton extends StatelessWidget {
   }
 }
 
-class SearchBar extends StatelessWidget {
-  SearchBar({super.key, required this.onFilter});
-
-  void Function(String) onFilter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 250,
-      height: 35,
-      decoration: const BoxDecoration(
-        color: Color.fromRGBO(30, 30, 30, 1.0),
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
-      child: TextField(
-        textAlignVertical: TextAlignVertical.center,
-        maxLines: 1,
-        style: const TextStyle(
-          color: Color.fromRGBO(220, 220, 220, 1.0),
-          fontSize: 14,
-        ),
-        decoration: const InputDecoration(
-          isDense: true,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.all(8),
-          prefixIconColor: Colors.grey,
-          prefixIcon: Icon(
-            Icons.search,
-          ),
-        ),
-        onChanged: (text) {
-          onFilter(text);
-        },
-      ),
-    );
-  }
-}
-
 class TagRow {
   const TagRow({required this.name, required this.color, required this.tags});
 
   final String name;
   final Color color;
   final List<String> tags;
-}
-
-class BigTagDropdown extends StatefulWidget {
-  BigTagDropdown({
-    super.key,
-    required this.text,
-    required this.color,
-    required this.iconData,
-    required this.rows,
-  });
-
-  String text;
-  Color color;
-  IconData iconData;
-  List<TagRow> rows;
-
-  @override
-  State<BigTagDropdown> createState() => _BigTagDropdown();
-}
-
-class _BigTagDropdown extends State<BigTagDropdown>
-    with TickerProviderStateMixin {
-  final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
-  bool _isOpen = false;
-
-  bool hovering = false;
-  bool active = false;
-
-  final FocusScopeNode _focusScopeNode = FocusScopeNode();
-  final ScrollController _scrollController = ScrollController();
-
-  void toggleDropdown({bool? open}) async {
-    if (_isOpen || open == false) {
-      _overlayEntry?.remove();
-      setState(() {
-        _isOpen = false;
-      });
-    } else if (!_isOpen || open == true) {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context).insert(_overlayEntry!);
-      setState(() => _isOpen = true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusScopeNode.dispose();
-    super.dispose();
-  }
-
-  OverlayEntry _createOverlayEntry() {
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-
-    var size = renderBox.size;
-    var offset = renderBox.localToGlobal(Offset.zero);
-
-    return OverlayEntry(
-      maintainState: false,
-      opaque: false,
-      builder: (entryContext) {
-        return FocusScope(
-          node: _focusScopeNode,
-          child: GestureDetector(
-            onTap: () {
-              toggleDropdown(open: false);
-            },
-            onSecondaryTap: () {
-              toggleDropdown(open: false);
-            },
-            onPanStart: (e) {
-              toggleDropdown(open: false);
-            },
-            behavior: HitTestBehavior.opaque,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: offset.dx - 50,
-                    top: offset.dy + size.height + 5,
-                    child: CompositedTransformFollower(
-                      offset: Offset(0, size.height),
-                      link: _layerLink,
-                      showWhenUnlinked: false,
-                      child: Material(
-                        elevation: 0,
-                        borderRadius: BorderRadius.zero,
-                        color: Colors.transparent,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-                          child: GestureDetector(
-                            onTap: () {},
-                            onSecondaryTap: () {},
-                            onPanStart: (e) {},
-                            child: Container(
-                              width: 500,
-                              decoration: BoxDecoration(
-                                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  color: const Color.fromRGBO(60, 60, 60, 1.0),
-                                  width: 1.0,
-                                ),
-                              ),
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                controller: _scrollController,
-                                child: SingleChildScrollView(
-                                  controller: _scrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: widget.rows.map(
-                                        (e) {
-                                          return TagDropdownRow(
-                                            name: e.name,
-                                            tags: e.tags,
-                                            onTap: (n) {
-                                              toggleDropdown(open: false);
-                                            },
-                                          );
-                                        },
-                                      ).toList(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: MouseRegion(
-        onEnter: (e) {
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-          onTap: () {
-            toggleDropdown();
-          },
-          child: Container(
-            height: 35,
-            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-            decoration: BoxDecoration(
-              color: (hovering || _isOpen)
-                  ? const Color.fromRGBO(40, 40, 40, 1.0)
-                  : const Color.fromRGBO(30, 30, 30, 1.0),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(5),
-              ),
-              border: Border.all(
-                color: active ? Colors.white : Colors.transparent,
-                width: 2,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      widget.iconData,
-                      size: 16,
-                      color: active ? Colors.white : Colors.grey,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      widget.text,
-                      style: TextStyle(
-                        color: active ? Colors.white : Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 30,
-                  height: 35,
-                  child: Icon(
-                    Icons.arrow_drop_down,
-                    color: active ? Colors.white : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class ProjectPreview extends StatefulWidget {

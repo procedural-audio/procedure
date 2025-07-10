@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:metasampler/home.dart';
 import 'package:metasampler/settings.dart';
 
 import 'project/project.dart';
@@ -89,7 +90,8 @@ class _Window extends State<Window> {
           ),
           child: Material(
             color: const Color.fromRGBO(10, 10, 10, 1.0),
-            child: ProjectsBrowser(directory, audioManager: widget.app.audioManager),
+            // child: ProjectsBrowser(directory, audioManager: widget.app.audioManager),
+            child: HomeWidget(),
           ),
         ),
       ),
