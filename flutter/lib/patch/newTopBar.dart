@@ -41,39 +41,12 @@ class _NewTopBar extends State<NewTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: ProjectCloseButton(
-                    info: widget.projectInfo,
-                    onTap: widget.onProjectClose,
-                  ),
-                ),
-                Expanded(child: Container()),
-              ],
-            ),
-          ),
-          PresetsButton(
-            loadedPreset: widget.loadedPreset,
-            onTap: widget.onPresetsButtonTap,
-            onEdit: widget.onEdit,
-            onSave: widget.onSave,
-            onSwitch: widget.onUiSwitch,
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(child: Container()),
-              ],
-            ),
-          ),
-        ],
+    return Container(
+      width: 45,
+      padding: const EdgeInsets.only(left: 10, top: 10),
+      child: ProjectCloseButton(
+        info: widget.projectInfo,
+        onTap: widget.onProjectClose,
       ),
     );
   }

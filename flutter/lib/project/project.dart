@@ -193,44 +193,6 @@ class _Project extends State<Project> {
         ),
         Positioned(
           left: 0,
-          right: 0,
-          top: 46,
-          bottom: 0,
-          child: Visibility(
-            visible: presetsVisible,
-            child: GestureDetector(
-              behavior: presetsVisible
-                  ? HitTestBehavior.opaque
-                  : HitTestBehavior.deferToChild,
-              onTap: () {
-                setState(() {
-                  presetsVisible = false;
-                });
-              },
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: PresetsBrowser(
-                  directory: widget.info.presetsDirectory,
-                  presets: widget.presetInfos,
-                  onLoad: loadPreset,
-                  onAddInterface: (info) async {
-                    print("Should add interface");
-                  },
-                  onRemoveInterface: (info) async {
-                    print("Should remove interface");
-                  },
-                  onNewPreset: newPreset,
-                  onDuplicatePreset: duplicatePreset,
-                  onDeletePreset: deletePreset,
-                  onRenamePreset: renamePreset,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
           top: 0,
           child: NewTopBar(
             loadedPreset: widget.preset,

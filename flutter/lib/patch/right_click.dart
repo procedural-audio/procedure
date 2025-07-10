@@ -169,7 +169,6 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
                     indicatorColor: Colors.blueGrey,
                     labelColor: AppColors.textPrimary,
                     unselectedLabelColor: AppColors.textMuted,
-                    labelStyle: TextStyle(fontSize: 12),
                     unselectedLabelStyle: TextStyle(fontSize: 12),
                     labelPadding: EdgeInsets.only(left: 4, right: 4, top: 6),
                     indicatorPadding: EdgeInsets.zero,
