@@ -1,19 +1,50 @@
-# nodus
+<h1 align="center">
+  <br>
+  <a href="http://www.amitmerchant.com/electron-markdownify"><img src="https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.png" alt="Procedure" width="120"></a>
+  <br>
+  Procedure
+  <br>
+</h1>
 
-### Overview
+<h4 align="center">A procedural audio editor built on top of <a href="https://cmajor.dev" target="_blank">cmajor</a>.</h4>
 
-Here are two example apps to create Flutter based AudioUnit/VST plugins. We'll build both of those and then try them in a DAW that supports them like Ableton Live. We would expect both plugins to display their own Flutter app. `flutter_juce` will display a blue hellow world app that increments by 1 when the plus button is clicked. `flutter_juce_red` should display a red app that increments by 2. However, with both plugins installed, they'll both display the app for `flutter_juce` in blue. When `flutter_juce` is deleted and your DAW restarted, then the `flutter_juce_red` will display it's own red app.
+<p align="center">
+  <a href="https://badge.fury.io/js/electron-markdownify">
+    <img src="https://badge.fury.io/js/electron-markdownify.svg" alt="Gitter">
+  </a>
+  <a href="https://gitter.im/amitmerchant1990/electron-markdownify"><img src="https://badges.gitter.im/amitmerchant1990/electron-markdownify.svg"></a>
+  <a href="https://saythanks.io/to/bullredeyes@gmail.com">
+      <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
+  </a>
+  <a href="https://www.paypal.me/0xchase">
+    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
+  </a>
+</p>
 
-### How To Build for MacOSX
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#download">Download</a> •
+  <a href="#build">Build</a> •
+  <a href="#credits">Credits</a> •
+  <a href="#support">Support</a> •
+  <a href="#other">Other</a>
+</p>
 
-In the `flutter_juce` folder from the terminal, run:
+![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif)
 
-`flutter build macos --debug`
+## Features
 
-Open the `flutter_juce.xcodeproj` located in `flutter_juce/juce/Builds/MacOSX/flutter_juce.xcodeproj`.
+* Node editing
+* Module generation
+* Project exporting
+* And so on and so forth
 
-Build the AU (AudioUnit) target. This will install your AudioUnit plugin to `~/Library/Audio/Plug-Ins/Components`.
+## Download
 
-Launch your DAW, and make sure AudioUnit plugins are enabled. Add the plugin to an audio track, and you should see the flutter Hello World application in blue.
+## Build
 
-Repeat the above steps for `flutter_juce_red`.
+## Credits
+
+## Support
+
+## Other
