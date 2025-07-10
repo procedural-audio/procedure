@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/style/colors.dart';
+import 'package:metasampler/style/text.dart';
 
 import '../plugin/config.dart';
 import '../views/settings.dart';
@@ -97,11 +99,123 @@ class RightClickView extends StatefulWidget {
   State<RightClickView> createState() => _RightClickView();
 }
 
-class _RightClickView extends State<RightClickView> {
+class _RightClickView extends State<RightClickView> with SingleTickerProviderStateMixin {
   String searchText = "";
+  late TabController _tabController;
+  String currentTitle = "Modules"; // Default title
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        switch (_tabController.index) {
+          case 0:
+            currentTitle = "Modules";
+            break;
+          case 1:
+            currentTitle = "Samples";
+            break;
+          case 2:
+            currentTitle = "Variables";
+            break;
+          case 3:
+            currentTitle = "Plugins";
+            break;
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (event) {
+        // widget.app.patchingScaleEnabled = false;
+      },
+      onExit: (event) {
+        // widget.app.patchingScaleEnabled = true;
+      },
+      child: Container(
+        width: 300,
+        height: 240,
+        child: Column(
+          children: [
+            /* Title and Tab Bar */
+            SizedBox(
+              height: 30,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, top: 5),
+                    child: Text(
+                      currentTitle,
+                      style: AppTextStyles.body,
+                    ),
+                  ),
+                  Expanded(child: SizedBox()),
+                  /* Tab Bar */
+                  TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    indicatorColor: Colors.blueGrey,
+                    labelColor: AppColors.textPrimary,
+                    unselectedLabelColor: AppColors.textMuted,
+                    labelStyle: TextStyle(fontSize: 12),
+                    unselectedLabelStyle: TextStyle(fontSize: 12),
+                    labelPadding: EdgeInsets.only(left: 4, right: 4, top: 6),
+                    indicatorPadding: EdgeInsets.zero,
+                    dividerColor: Colors.transparent,
+                    dividerHeight: 0,
+                    tabs: [
+                      Tab(icon: Icon(Icons.widgets, size: 14), iconMargin: EdgeInsets.zero),
+                      Tab(icon: Icon(Icons.audiotrack, size: 14), iconMargin: EdgeInsets.zero),
+                      Tab(icon: Icon(Icons.data_usage, size: 14), iconMargin: EdgeInsets.zero),
+                      Tab(icon: Icon(Icons.extension, size: 14), iconMargin: EdgeInsets.zero),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            /* Tab Content */
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Modules Tab
+                  _buildModulesTab(),
+                  
+                  // Samples Tab
+                  _buildSamplesTab(),
+                  
+                  // Variables Tab
+                  _buildVariablesTab(),
+                  
+                  // Plugins Tab
+                  _buildPluginsTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+        decoration: BoxDecoration(
+          color: MyTheme.grey20,
+          border: Border.all(color: MyTheme.grey40),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModulesTab() {
     // Build the module list
     List<RightClickCategory> categories = [];
 
@@ -132,131 +246,164 @@ class _RightClickView extends State<RightClickView> {
       }
     }
 
-    return MouseRegion(
-      onEnter: (event) {
-        // widget.app.patchingScaleEnabled = false;
-      },
-      onExit: (event) {
-        // widget.app.patchingScaleEnabled = true;
-      },
-      child: Container(
-        width: 300,
-        child: Column(
-          children: [
-            /* Title */
-            Row(
-              children: [
-                Container(
-                  height: 35,
-                  padding: const EdgeInsets.all(10.0),
-                  child: const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Modules",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(child: SizedBox()),
-                IconButton(
-                  icon: Icon(
-                    Icons.code,
-                    color: Colors.grey.shade600,
-                    size: 14,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    print("Should open editor");
-                    // Plugins.openEditor();
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.settings,
-                    color: Colors.grey.shade600,
-                    size: 14,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    /*showPluginConfig(context, widget.plugins, () {
-                      // Define the updatePlugins function here
-                      // This function should update the plugins list as needed
-                    });*/
-                  },
-                ),
-              ],
-            ),
-
-            /* Search bar */
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
-              child: Container(
-                height: 25,
-                child: TextField(
-                  maxLines: 1,
-                  cursorHeight: 14,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                  ),
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5.0),
-                      ),
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: Colors.blueGrey,
-                      ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5.0),
-                      ),
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: Colors.blueGrey,
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
-                  ),
-                  onChanged: (data) {
-                    setState(() {
-                      searchText = data;
-                    });
-                  },
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white70,
+    return Column(
+      children: [
+        /* Search bar */
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+          child: Container(
+            height: 25,
+            child: TextField(
+              maxLines: 1,
+              cursorHeight: 14,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(
                     Radius.circular(5.0),
                   ),
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: Colors.blueGrey,
+                  ),
                 ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(5.0),
+                  ),
+                  borderSide: BorderSide(
+                    width: 2,
+                    color: Colors.blueGrey,
+                  ),
+                ),
+                contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
+              ),
+              onChanged: (data) {
+                setState(() {
+                  searchText = data;
+                });
+              },
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white70,
+              borderRadius: BorderRadius.all(
+                Radius.circular(5.0),
               ),
             ),
+          ),
+        ),
 
-            /* List */
-            ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 300,
-              ),
-              child: SingleChildScrollView(
-                controller: ScrollController(),
-                child: Column(
-                  children: categories,
-                ),
-              ),
+        /* Module List */
+        Expanded(
+          child: SingleChildScrollView(
+            controller: ScrollController(),
+            child: Column(
+              children: categories,
             ),
-          ],
+          ),
         ),
-        decoration: BoxDecoration(
-          color: MyTheme.grey20,
-          border: Border.all(color: MyTheme.grey40),
-        ),
+      ],
+    );
+  }
+
+  Widget _buildSamplesTab() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(
+            Icons.audiotrack,
+            size: 48,
+            color: Colors.grey.shade600,
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Samples",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Sample library coming soon",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVariablesTab() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(
+            Icons.data_usage,
+            size: 48,
+            color: Colors.grey.shade600,
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Variables",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Variable management coming soon",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPluginsTab() {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(
+            Icons.extension,
+            size: 48,
+            color: Colors.grey.shade600,
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Plugins",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Plugin management coming soon",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

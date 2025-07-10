@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/theme/colors.dart';
+import 'package:metasampler/style/colors.dart';
 import 'dart:io';
-import 'theme/text.dart';
-import 'theme/buttons.dart';
+import 'style/text.dart';
+import 'style/buttons.dart';
 import 'project/browser.dart';
 import 'project/audio_config.dart';
 import 'plugin/config.dart';
-import 'settings.dart';
+import 'settings/settings.dart';
+import 'settings.dart' as old_settings;
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -49,7 +50,7 @@ class _HomeWidgetState extends State<HomeWidget> {
             color: AppColors.sidebar,
             border: Border(
               right: BorderSide(
-                color: AppColors.border,
+                color: AppColors.backgroundBorder,
                 width: 1,
               ),
             ),
@@ -124,7 +125,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               Column(
                 children: [
                   const Divider(
-                    color: AppColors.border,
+                    color: AppColors.backgroundBorder,
                     height: 1,
                   ),
                   IconTextButtonLarge(
@@ -160,17 +161,19 @@ class _HomeWidgetState extends State<HomeWidget> {
         Expanded(
           child: Container(
             color: AppColors.background,
-            child: selectedIndex == 0 
-              ? ProjectsBrowser(
-                  MainDirectory(Directory("/Users/chase/Music/Procedural Audio")),
-                  audioManager: null,
-                )
-              : Center(
-                  child: Text(
-                    'Selected: ${getSelectedLabel()}',
-                    style: AppTextStyles.headingLarge,
+            child: selectedIndex == 4 
+              ? SettingsWidget()
+              : selectedIndex == 0 
+                ? ProjectsBrowser(
+                    old_settings.MainDirectory(Directory("/Users/chase/Music/Procedural Audio")),
+                    audioManager: null,
+                  )
+                : Center(
+                    child: Text(
+                      'Selected: ${getSelectedLabel()}',
+                      style: AppTextStyles.headingLarge,
+                    ),
                   ),
-                ),
           ),
         ),
       ],

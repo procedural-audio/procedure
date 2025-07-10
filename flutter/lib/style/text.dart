@@ -22,26 +22,11 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
 
-  // Body styles
-  static const TextStyle bodyLarge = TextStyle(
+  static const TextStyle body = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
     height: 1.5,
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
-    height: 1.4,
-  );
-
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    height: 1.3,
   );
 
   // Caption styles

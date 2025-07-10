@@ -7,7 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/bindings/api/io.dart';
-import 'package:metasampler/theme/colors.dart';
+import 'package:metasampler/style/colors.dart';
 
 import 'info.dart';
 import 'project.dart';
@@ -15,9 +15,9 @@ import 'audio_config.dart';
 
 import '../plugin/config.dart';
 import '../plugin/info.dart';
-import '../theme/input.dart';
-import '../theme/buttons.dart';
-import '../theme/text.dart';
+import '../style/input.dart';
+import '../style/buttons.dart';
+import '../style/text.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -559,7 +559,7 @@ class _ProjectListTileState extends State<ProjectListTile> {
                           builder: (context, description, child) {
                             return Text(
                               description,
-                              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+                              style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             );
@@ -996,11 +996,7 @@ class _ProjectPreviewDescription extends State<ProjectPreviewDescription> {
                                 child: TextField(
                                   textAlignVertical: TextAlignVertical.center,
                                   controller: nameController,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(220, 220, 220, 1.0),
-                                  ),
+                                  style: AppTextStyles.headingSmall,
                                   decoration: const InputDecoration(
                                     enabledBorder: OutlineInputBorder(
                                       borderSide: BorderSide(

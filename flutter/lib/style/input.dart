@@ -68,7 +68,7 @@ class _InputBoxState extends State<InputBox> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(widget.borderRadius),
         border: Border.all(
-          color: AppColors.border,
+          color: AppColors.backgroundBorder,
           width: 1,
         ),
       ),
@@ -135,8 +135,8 @@ class SearchBarLarge extends StatelessWidget {
       borderRadius: 5,
       horizontalPadding: 12,
       verticalPadding: 6,
-      textStyle: AppTextStyles.bodyLarge,
-      hintStyle: AppTextStyles.bodyLarge.copyWith(color: AppColors.textMuted),
+      textStyle: AppTextStyles.body,
+      hintStyle: AppTextStyles.body.copyWith(color: AppColors.textMuted),
     );
   }
 }
