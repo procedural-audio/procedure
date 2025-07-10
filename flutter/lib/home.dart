@@ -4,7 +4,6 @@ import 'dart:io';
 import 'theme/text.dart';
 import 'theme/buttons.dart';
 import 'project/browser.dart';
-import 'project/project.dart';
 import 'project/audio_config.dart';
 import 'plugin/config.dart';
 import 'settings.dart';
@@ -160,7 +159,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         // Main content area
         Expanded(
           child: Container(
-            color: AppColors.surface,
+            color: AppColors.background,
             child: selectedIndex == 0 
               ? ProjectsBrowser(
                   MainDirectory(Directory("/Users/chase/Music/Procedural Audio")),

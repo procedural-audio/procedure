@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/bindings/api/io.dart';
+import 'package:metasampler/theme/colors.dart';
 
 import 'info.dart';
 import 'project.dart';
@@ -16,6 +17,7 @@ import '../plugin/config.dart';
 import '../plugin/info.dart';
 import '../theme/input.dart';
 import '../theme/buttons.dart';
+import '../theme/text.dart';
 
 class ProjectsBrowser extends StatefulWidget {
   ProjectsBrowser(this.directory, {
@@ -33,6 +35,7 @@ class ProjectsBrowser extends StatefulWidget {
 class _ProjectsBrowser extends State<ProjectsBrowser> {
   String searchText = "";
   bool editing = false;
+  bool isGridView = true; // true for grid, false for list
 
   List<ProjectInfo> projectsInfos = [];
   List<Plugin> plugins = [];
@@ -234,27 +237,32 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                   });
                 },
               ),
+              Expanded(
+                child: Container(),
+              ),
               const SizedBox(width: 10),
               IconTextButtonLarge(
                 icon: Icons.grid_view,
                 label: 'Grid',
-                isSelected: false,
+                isSelected: isGridView,
                 onTap: () {
-                  // Handle grid view
+                  setState(() {
+                    isGridView = true;
+                  });
                 },
               ),
               const SizedBox(width: 10),
               IconTextButtonLarge(
                 icon: Icons.view_list,
                 label: 'Rows',
-                isSelected: false,
+                isSelected: !isGridView,
                 onTap: () {
-                  // Handle rows view
+                  setState(() {
+                    isGridView = false;
+                  });
                 },
               ),
-              Expanded(
-                child: Container(),
-              ),
+              const SizedBox(width: 10),
               IconTextButtonLarge(
                 icon: Icons.add,
                 label: 'New Project',
@@ -269,61 +277,35 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
         Expanded(
           child: Builder(
             builder: (context) {
-              List<ProjectInfo> filteredProjects = [];
-              if (searchText == "") {
-                filteredProjects = projectsInfos;
+              List<ProjectInfo> filteredProjects = getFilteredProjects();
+
+              if (isGridView) {
+                return ProjectGrid(
+                  projects: filteredProjects,
+                  editing: editing,
+                  onOpen: loadProject,
+                  onDuplicate: duplicateProject,
+                  onDelete: removeProject,
+                  onImageChanged: (project, file) {
+                    setState(() {
+                      project.image = file;
+                    });
+                  },
+                );
               } else {
-                for (var project in projectsInfos) {
-                  if (project.name
-                          .toLowerCase()
-                          .contains(searchText.toLowerCase()) ||
-                      project.description.value
-                          .toLowerCase()
-                          .contains(searchText.toLowerCase())) {
-                    filteredProjects.add(project);
-                  }
-                }
+                return ProjectList(
+                  projects: filteredProjects,
+                  editing: editing,
+                  onOpen: loadProject,
+                  onDuplicate: duplicateProject,
+                  onDelete: removeProject,
+                  onImageChanged: (project, file) {
+                    setState(() {
+                      project.image = file;
+                    });
+                  },
+                );
               }
-
-              if (filteredProjects.isEmpty) {
-                return Container();
-              }
-
-              filteredProjects.sort((a, b) {
-                return b.date.value.compareTo(a.date.value);
-              });
-
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-                gridDelegate:
-                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                  mainAxisExtent: 240,
-                  maxCrossAxisExtent: 240,
-                  childAspectRatio: 1.0,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 15,
-                ),
-                itemCount: filteredProjects.length,
-                itemBuilder: (BuildContext ctx, index) {
-                  return ProjectPreview(
-                    index: index,
-                    editing: editing,
-                    project: filteredProjects[index],
-                    onOpen: loadProject,
-                    onDuplicate: (info) {
-                      duplicateProject(info);
-                    },
-                    onDelete: (info) {
-                      removeProject(info);
-                    },
-                    onImageChanged: (project, file) {
-                      setState(() {
-                        project.image = file;
-                      });
-                    },
-                  );
-                },
-              );
             },
           ),
         ),
@@ -380,6 +362,289 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
         return AudioConfigDialog(audioManager: widget.audioManager);
       },
     );
+  }
+
+  List<ProjectInfo> getFilteredProjects() {
+    List<ProjectInfo> filteredProjects = [];
+    
+    if (searchText.isEmpty) {
+      filteredProjects = projectsInfos;
+    } else {
+      for (var project in projectsInfos) {
+        if (project.name.toLowerCase().contains(searchText.toLowerCase()) ||
+            project.description.value.toLowerCase().contains(searchText.toLowerCase())) {
+          filteredProjects.add(project);
+        }
+      }
+    }
+
+    // Sort by date (newest first)
+    filteredProjects.sort((a, b) => b.date.value.compareTo(a.date.value));
+    
+    return filteredProjects;
+  }
+}
+
+class ProjectGrid extends StatelessWidget {
+  final List<ProjectInfo> projects;
+  final bool editing;
+  final Function(ProjectInfo) onOpen;
+  final Function(ProjectInfo) onDuplicate;
+  final Function(ProjectInfo) onDelete;
+  final Function(ProjectInfo, File) onImageChanged;
+
+  const ProjectGrid({
+    super.key,
+    required this.projects,
+    required this.editing,
+    required this.onOpen,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.onImageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (projects.isEmpty) {
+      return Container();
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        mainAxisExtent: 300,
+        maxCrossAxisExtent: 300,
+        childAspectRatio: 1.0,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 15,
+      ),
+      itemCount: projects.length,
+      itemBuilder: (BuildContext ctx, index) {
+        return ProjectPreview(
+          index: index,
+          editing: editing,
+          project: projects[index],
+          onOpen: onOpen,
+          onDuplicate: onDuplicate,
+          onDelete: onDelete,
+          onImageChanged: onImageChanged,
+        );
+      },
+    );
+  }
+}
+
+class ProjectList extends StatelessWidget {
+  final List<ProjectInfo> projects;
+  final bool editing;
+  final Function(ProjectInfo) onOpen;
+  final Function(ProjectInfo) onDuplicate;
+  final Function(ProjectInfo) onDelete;
+  final Function(ProjectInfo, File) onImageChanged;
+
+  const ProjectList({
+    super.key,
+    required this.projects,
+    required this.editing,
+    required this.onOpen,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.onImageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (projects.isEmpty) {
+      return Container();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+      itemCount: projects.length,
+      itemBuilder: (BuildContext ctx, index) {
+        return ProjectListTile(
+          project: projects[index],
+          editing: editing,
+          onOpen: onOpen,
+          onDuplicate: onDuplicate,
+          onDelete: onDelete,
+          onImageChanged: onImageChanged,
+        );
+      },
+    );
+  }
+}
+
+class ProjectListTile extends StatefulWidget {
+  final ProjectInfo project;
+  final bool editing;
+  final Function(ProjectInfo) onOpen;
+  final Function(ProjectInfo) onDuplicate;
+  final Function(ProjectInfo) onDelete;
+  final Function(ProjectInfo, File) onImageChanged;
+
+  const ProjectListTile({
+    super.key,
+    required this.project,
+    required this.editing,
+    required this.onOpen,
+    required this.onDuplicate,
+    required this.onDelete,
+    required this.onImageChanged,
+  });
+
+  @override
+  State<ProjectListTile> createState() => _ProjectListTileState();
+}
+
+class _ProjectListTileState extends State<ProjectListTile> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHovered = true),
+      onExit: (_) => setState(() => isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        height: isHovered ? 100 : 70,
+        margin: const EdgeInsets.only(bottom: 4),
+        clipBehavior: Clip.none,
+        decoration: BoxDecoration(
+          color: isHovered 
+              ? const Color.fromRGBO(40, 40, 40, 1.0)
+              : const Color.fromRGBO(30, 30, 30, 1.0),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: const Color.fromRGBO(50, 50, 50, 1.0),
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => widget.onOpen(widget.project),
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  // Project icon
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(60, 60, 60, 1.0),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(
+                      Icons.folder,
+                      color: Colors.grey,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Project info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.project.name,
+                          style: AppTextStyles.headingSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        ValueListenableBuilder<String>(
+                          valueListenable: widget.project.description,
+                          builder: (context, description, child) {
+                            return Text(
+                              description,
+                              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
+                        ),
+                        AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 100),
+                          crossFadeState: isHovered 
+                              ? CrossFadeState.showSecond 
+                              : CrossFadeState.showFirst,
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 2),
+                              Text(
+                                'Modified: ${_formatDate(widget.project.date.value)}',
+                                style: AppTextStyles.caption,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Actions
+                  if (isHovered)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () => widget.onDuplicate(widget.project),
+                          icon: const Icon(
+                            Icons.copy,
+                            color: Colors.grey,
+                            size: 16,
+                          ),
+                          tooltip: 'Duplicate',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 24,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => widget.onDelete(widget.project),
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 16,
+                          ),
+                          tooltip: 'Delete',
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return '$weeks week${weeks == 1 ? '' : 's'} ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
   }
 }
 
@@ -547,7 +812,7 @@ class _ProjectPreview extends State<ProjectPreview> {
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.all(
-                        Radius.circular(10),
+                        Radius.circular(5),
                       ),
                       child: tempImage != null
                           ? Image.file(
@@ -578,7 +843,7 @@ class _ProjectPreview extends State<ProjectPreview> {
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: const BorderRadius.all(
-                            Radius.circular(10),
+                            Radius.circular(5),
                           ),
                         ),
                         child: Center(
