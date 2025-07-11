@@ -144,12 +144,21 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
     });
   }
 
-  bool _isInProject() {
-    return _currentRoute == "/project";
-  }
 
-  String _getProjectName() {
-    return _projectName ?? "Project";
+  String _getRouteDisplayName() {
+    if (_currentRoute == null) {
+      return "Home";
+    }
+    
+    switch (_currentRoute) {
+      case "/project":
+        return _projectName ?? "Project";
+      case "/":
+      case null:
+        return "Home";
+      default:
+        return _currentRoute!.startsWith("/") ? _currentRoute!.substring(1) : _currentRoute!;
+    }
   }
 
   void _toggleModuleBrowser() {
@@ -203,7 +212,7 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            child: _isInProject() ? _buildProjectTitleBar() : Container(),
+            child: _buildTitleBar(),
           ),
           
           // Module browser (expands from top)
@@ -270,31 +279,35 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildProjectTitleBar() {
+  Widget _buildTitleBar() {
+    final navigator = TitleBarNavigatorObserver.instance.navigatorState;
+    final canGoBack = navigator?.canPop() ?? false;
+    final isInProject = _currentRoute == "/project";
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
         children: [
-          const SizedBox(width: 60),
-          // Back button
-          _buildTitleBarButton(
-            icon: Icons.arrow_back,
-            isActive: false,
-            onTap: () {
-              final navigator = TitleBarNavigatorObserver.instance.navigatorState;
-              if (navigator != null && navigator.canPop()) {
-                navigator.pop();
-              }
-            },
-            tooltip: 'Back',
-          ),
-          const SizedBox(width: 8),
+          // Back button (show if we can go back)
+          if (canGoBack) ...[
+            _buildTitleBarButton(
+              icon: Icons.arrow_back,
+              isActive: false,
+              onTap: () {
+                if (navigator != null && navigator.canPop()) {
+                  navigator.pop();
+                }
+              },
+              tooltip: 'Back',
+            ),
+            const SizedBox(width: 8),
+          ],
           
-          // Centered route text
+          // Centered route text (always show)
           Expanded(
             child: Center(
               child: Text(
-                _getProjectName(),
+                _getRouteDisplayName(),
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 13,
@@ -304,23 +317,26 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
             ),
           ),
           
-          const SizedBox(width: 8),
-          
-          // Module browser toggle
-          _buildTitleBarButton(
-            icon: Icons.widgets,
-            isActive: _isModuleBrowserOpen,
-            onTap: _toggleModuleBrowser,
-            tooltip: 'Module Browser',
-          ),
-          const SizedBox(width: 4),
-          // Sample browser toggle
-          _buildTitleBarButton(
-            icon: Icons.graphic_eq,
-            isActive: _isSampleBrowserOpen,
-            onTap: _toggleSampleBrowser,
-            tooltip: 'Sample Browser',
-          ),
+          // Project controls (only show when in project)
+          if (isInProject) ...[
+            const SizedBox(width: 8),
+            
+            // Module browser toggle
+            _buildTitleBarButton(
+              icon: Icons.widgets,
+              isActive: _isModuleBrowserOpen,
+              onTap: _toggleModuleBrowser,
+              tooltip: 'Module Browser',
+            ),
+            const SizedBox(width: 4),
+            // Sample browser toggle
+            _buildTitleBarButton(
+              icon: Icons.graphic_eq,
+              isActive: _isSampleBrowserOpen,
+              onTap: _toggleSampleBrowser,
+              tooltip: 'Sample Browser',
+            ),
+          ],
         ],
       ),
     );
