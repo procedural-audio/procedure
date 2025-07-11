@@ -44,10 +44,7 @@ class _NewTopBar extends State<NewTopBar> {
     return Container(
       width: 45,
       padding: const EdgeInsets.only(left: 10, top: 10),
-      child: ProjectCloseButton(
-        info: widget.projectInfo,
-        onTap: widget.onProjectClose,
-      ),
+      // Back button moved to title bar
     );
   }
 }

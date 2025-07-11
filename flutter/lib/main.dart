@@ -9,7 +9,6 @@ import 'package:metasampler/style/colors.dart';
 import 'project/project.dart';
 import 'titleBar.dart';
 import 'project/browser.dart';
-import 'project_state.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api/io.dart';
@@ -37,6 +36,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [TitleBar.navigatorObserver],
       theme: ThemeData(
         splashColor: Colors.transparent,
         scaffoldBackgroundColor: AppColors.backgroundDark,
@@ -53,23 +53,28 @@ class App extends StatelessWidget {
         ),
       ),
       builder: (context, child) {
-        // Wrap the entire app with TitleBar so it stays on top of all routes
+        // Create TitleBar with observer callback
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: ValueListenableBuilder<bool>(
-            valueListenable: ProjectState.isInProject,
-            builder: (context, isInProject, _) {
-              return TitleBar(
-                showProjectControls: isInProject,
-                child: ClipRect(
-                  child: child ?? Container()
-                )
-              );
-            },
+          body: TitleBarWrapper(
+            child: ClipRect(
+              child: child ?? Container()
+            )
           ),
         );
       },
       home: HomeWidget(audioManager: audioManager),
     );
+  }
+}
+
+class TitleBarWrapper extends StatelessWidget {
+  const TitleBarWrapper({super.key, required this.child});
+  
+  final Widget child;
+  
+  @override
+  Widget build(BuildContext context) {
+    return TitleBar(child: child);
   }
 }

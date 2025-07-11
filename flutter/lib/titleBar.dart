@@ -2,19 +2,71 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/style/colors.dart';
 
+class TitleBarNavigatorObserver extends NavigatorObserver {
+  static TitleBarNavigatorObserver? _instance;
+  void Function(String?, Map<String, dynamic>?)? _onRouteChanged;
+  NavigatorState? _navigatorState;
+  
+  static TitleBarNavigatorObserver get instance {
+    _instance ??= TitleBarNavigatorObserver._();
+    return _instance!;
+  }
+  
+  TitleBarNavigatorObserver._();
+  
+  void setCallback(void Function(String?, Map<String, dynamic>?) callback) {
+    _onRouteChanged = callback;
+  }
+  
+  NavigatorState? get navigatorState => _navigatorState;
+  
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _navigatorState = navigator;
+    _updateRoute(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (previousRoute != null) {
+      _updateRoute(previousRoute);
+    } else {
+      _onRouteChanged?.call(null, null);
+    }
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (newRoute != null) {
+      _updateRoute(newRoute);
+    }
+  }
+
+  void _updateRoute(Route<dynamic> route) {
+    final routeName = route.settings.name;
+    final arguments = route.settings.arguments;
+    final argumentsMap = arguments is Map<String, dynamic> ? arguments : <String, dynamic>{};
+    
+    _onRouteChanged?.call(routeName, argumentsMap);
+  }
+}
+
 class TitleBar extends StatefulWidget {
   const TitleBar({
     super.key,
     required this.child,
     this.color = AppColors.background,
     this.dividerColor = AppColors.backgroundBorder,
-    this.showProjectControls = false,
   });
 
   final Widget child;
   final Color color;
   final Color dividerColor;
-  final bool showProjectControls;
+
+  static TitleBarNavigatorObserver get navigatorObserver => TitleBarNavigatorObserver.instance;
 
   @override
   State<TitleBar> createState() => _TitleBarState();
@@ -23,6 +75,8 @@ class TitleBar extends StatefulWidget {
 class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
   bool _isModuleBrowserOpen = false;
   bool _isSampleBrowserOpen = false;
+  String? _currentRoute;
+  String? _projectName;
   
   late AnimationController _moduleBrowserController;
   late AnimationController _sampleBrowserController;
@@ -50,6 +104,9 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       parent: _sampleBrowserController,
       curve: Curves.easeInOut,
     );
+    
+    // Connect to the navigator observer
+    TitleBarNavigatorObserver.instance.setCallback(_onRouteChanged);
   }
 
   @override
@@ -58,7 +115,42 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
     _sampleBrowserController.dispose();
     super.dispose();
   }
+  
+  void _onRouteChanged(String? routeName, Map<String, dynamic>? arguments) {
+    // Defer setState to avoid calling it during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _currentRoute = routeName;
+          _projectName = arguments?['projectName'];
+        });
+        
+        // If we exit the project, close all browsers
+        if (routeName != "/project") {
+          if (_isModuleBrowserOpen) {
+            setState(() {
+              _isModuleBrowserOpen = false;
+              _moduleBrowserController.reverse();
+            });
+          }
+          if (_isSampleBrowserOpen) {
+            setState(() {
+              _isSampleBrowserOpen = false;
+              _sampleBrowserController.reverse();
+            });
+          }
+        }
+      }
+    });
+  }
 
+  bool _isInProject() {
+    return _currentRoute == "/project";
+  }
+
+  String _getProjectName() {
+    return _projectName ?? "Project";
+  }
 
   void _toggleModuleBrowser() {
     setState(() {
@@ -111,10 +203,10 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            child: widget.showProjectControls ? _buildProjectTitleBar() : Container(),
+            child: _isInProject() ? _buildProjectTitleBar() : Container(),
           ),
           
-          // Expandable panels
+          // Module browser (expands from top)
           AnimatedBuilder(
             animation: _moduleBrowserAnimation,
             builder: (context, child) {
@@ -137,30 +229,42 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
             },
           ),
           
-          AnimatedBuilder(
-            animation: _sampleBrowserAnimation,
-            builder: (context, child) {
-              return SizeTransition(
-                sizeFactor: _sampleBrowserAnimation,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: widget.dividerColor,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: const SampleBrowserPlaceholder(),
-                ),
-              );
-            },
-          ),
-          
           // Main content
-          Expanded(child: widget.child),
+          Expanded(
+            child: Stack(
+              children: [
+                widget.child,
+                // Sample browser (expands from bottom)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedBuilder(
+                    animation: _sampleBrowserAnimation,
+                    builder: (context, child) {
+                      return SizeTransition(
+                        sizeFactor: _sampleBrowserAnimation,
+                        axisAlignment: -1.0, // Align to bottom
+                        child: Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            border: Border(
+                              top: BorderSide(
+                                color: widget.dividerColor,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: const SampleBrowserPlaceholder(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -171,7 +275,37 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
         children: [
-          const Spacer(),
+          const SizedBox(width: 60),
+          // Back button
+          _buildTitleBarButton(
+            icon: Icons.arrow_back,
+            isActive: false,
+            onTap: () {
+              final navigator = TitleBarNavigatorObserver.instance.navigatorState;
+              if (navigator != null && navigator.canPop()) {
+                navigator.pop();
+              }
+            },
+            tooltip: 'Back',
+          ),
+          const SizedBox(width: 8),
+          
+          // Centered route text
+          Expanded(
+            child: Center(
+              child: Text(
+                _getProjectName(),
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 8),
+          
           // Module browser toggle
           _buildTitleBarButton(
             icon: Icons.widgets,
@@ -191,6 +325,7 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       ),
     );
   }
+  
 
   Widget _buildTitleBarButton({
     required IconData icon,
