@@ -44,7 +44,11 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
   Future<void> loadAudioConfig() async {
     try {
       if (widget.audioManager == null) {
-        throw Exception('AudioManager not provided');
+        // AudioManager not provided, set loading to false and show message
+        setState(() {
+          isLoading = false;
+        });
+        return;
       }
       
       // Get current configuration
@@ -124,6 +128,32 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
             const Center(
               child: CircularProgressIndicator(
                 color: Colors.white,
+              ),
+            )
+          else if (widget.audioManager == null)
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.warning,
+                    size: 48,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Audio System Unavailable',
+                    style: AppTextStyles.headingSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The audio system is not currently initialized. Audio settings will be available once the audio system is running.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             )
           else
@@ -255,12 +285,4 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
     );
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
 }

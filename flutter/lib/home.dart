@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/style/colors.dart';
+import 'package:metasampler/bindings/api/io.dart';
 import 'style/text.dart';
 import 'style/buttons.dart';
 import 'project/browser.dart';
@@ -46,7 +47,9 @@ class TitleBar extends StatelessWidget {
 }
 
 class HomeWidget extends StatefulWidget {
-  const HomeWidget({super.key});
+  const HomeWidget({super.key, this.audioManager});
+  
+  final AudioManager? audioManager;
 
   @override
   State<HomeWidget> createState() => _HomeWidgetState();
@@ -58,7 +61,7 @@ class _HomeWidgetState extends State<HomeWidget> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AudioConfigDialog(audioManager: null);
+        return AudioConfigDialog(audioManager: widget.audioManager);
       },
     );
   }
@@ -197,10 +200,10 @@ class _HomeWidgetState extends State<HomeWidget> {
           child: Container(
             color: AppColors.background,
             child: selectedIndex == 4 
-              ? SettingsWidget()
+              ? SettingsWidget(audioManager: widget.audioManager)
               : selectedIndex == 0 
                 ? ProjectsBrowser(
-                    audioManager: null,
+                    audioManager: widget.audioManager,
                   )
                 : Center(
                     child: Text(

@@ -46,7 +46,7 @@ class App extends StatelessWidget {
       ),
       home: Scaffold(
         backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
-        body: TitleBar(child: HomeWidget())
+        body: TitleBar(child: HomeWidget(audioManager: audioManager))
       ),
     );
   }
