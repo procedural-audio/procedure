@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:metasampler/style/colors.dart';
+import 'package:metasampler/preset/browser.dart';
+import 'dart:io';
 
 class TitleBarNavigatorObserver extends NavigatorObserver {
   static TitleBarNavigatorObserver? _instance;
@@ -75,8 +77,10 @@ class TitleBar extends StatefulWidget {
 class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
   bool _isModuleBrowserOpen = false;
   bool _isSampleBrowserOpen = false;
+  bool _isPresetBrowserOpen = false;
   String? _currentRoute;
   String? _projectName;
+  OverlayEntry? _presetBrowserOverlay;
   
   late AnimationController _moduleBrowserController;
   late AnimationController _sampleBrowserController;
@@ -111,9 +115,96 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _presetBrowserOverlay?.remove();
     _moduleBrowserController.dispose();
     _sampleBrowserController.dispose();
     super.dispose();
+  }
+  
+  void _togglePresetBrowser() {
+    if (_isPresetBrowserOpen) {
+      _closePresetBrowser();
+    } else {
+      _openPresetBrowser();
+    }
+  }
+  
+  void _openPresetBrowser() {
+    if (_currentRoute != "/project" || _projectName == null) return;
+    
+    setState(() {
+      _isPresetBrowserOpen = true;
+    });
+    
+    // Create overlay entry
+    _presetBrowserOverlay = OverlayEntry(
+      builder: (overlayContext) => Stack(
+        children: [
+          // Barrier
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _closePresetBrowser,
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.3),
+              ),
+            ),
+          ),
+          // Preset browser
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500, maxHeight: 400),
+              margin: const EdgeInsets.all(40),
+              child: PresetsBrowser(
+                presets: [], // TODO: Load actual presets
+                directory: Directory(""), // TODO: Get actual preset directory
+                onLoad: (preset) {
+                  // TODO: Implement preset loading
+                  _closePresetBrowser();
+                },
+                onAddInterface: (preset) {
+                  // TODO: Implement interface adding
+                },
+                onRemoveInterface: (preset) {
+                  // TODO: Implement interface removal
+                },
+                onNewPreset: () {
+                  // TODO: Implement new preset creation
+                },
+                onDuplicatePreset: (preset) {
+                  // TODO: Implement preset duplication
+                },
+                onDeletePreset: (preset) {
+                  // TODO: Implement preset deletion
+                },
+                onRenamePreset: (preset, newName) {
+                  // TODO: Implement preset renaming
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    
+    // Insert overlay using the title bar's context (now has overlay access)
+    try {
+      Overlay.of(context).insert(_presetBrowserOverlay!);
+    } catch (e) {
+      // If overlay insertion fails, clean up and reset state
+      _presetBrowserOverlay = null;
+      setState(() {
+        _isPresetBrowserOpen = false;
+      });
+      print('Failed to insert overlay: $e');
+    }
+  }
+  
+  void _closePresetBrowser() {
+    _presetBrowserOverlay?.remove();
+    _presetBrowserOverlay = null;
+    setState(() {
+      _isPresetBrowserOpen = false;
+    });
   }
   
   void _onRouteChanged(String? routeName, Map<String, dynamic>? arguments) {
@@ -127,6 +218,7 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
         
         // If we exit the project, close all browsers
         if (routeName != "/project") {
+          _closePresetBrowser();
           if (_isModuleBrowserOpen) {
             setState(() {
               _isModuleBrowserOpen = false;
@@ -310,13 +402,38 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
                 const SizedBox(width: 8),
               ],
               
-              // Route text
-              Text(
-                _getRouteDisplayName(),
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              // Route text (clickable if in project)
+              GestureDetector(
+                onTap: isInProject ? _togglePresetBrowser : null,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: isInProject && _isPresetBrowserOpen 
+                        ? AppColors.primary.withValues(alpha: 0.2)
+                        : Colors.transparent,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _getRouteDisplayName(),
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (isInProject) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          _isPresetBrowserOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          size: 16,
+                          color: AppColors.textMuted,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ],

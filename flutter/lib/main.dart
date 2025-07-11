@@ -56,10 +56,16 @@ class App extends StatelessWidget {
         // Create TitleBar with observer callback
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: TitleBarWrapper(
-            child: ClipRect(
-              child: child ?? Container()
-            )
+          body: Overlay(
+            initialEntries: [
+              OverlayEntry(
+                builder: (context) => TitleBarWrapper(
+                  child: ClipRect(
+                    child: child ?? Container()
+                  )
+                ),
+              ),
+            ],
           ),
         );
       },
