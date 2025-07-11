@@ -7,7 +7,9 @@ import 'package:metasampler/settings.dart';
 import 'package:metasampler/style/colors.dart';
 
 import 'project/project.dart';
+import 'titleBar.dart';
 import 'project/browser.dart';
+import 'project_state.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api/io.dart';
@@ -37,15 +39,15 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         splashColor: Colors.transparent,
-        scaffoldBackgroundColor: AppColors.background,
-        canvasColor: AppColors.background,
+        scaffoldBackgroundColor: AppColors.backgroundDark,
+        canvasColor: AppColors.backgroundDark,
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
             TargetPlatform.linux: ZoomPageTransitionsBuilder(
-              backgroundColor: AppColors.background,
+              backgroundColor: AppColors.backgroundDark,
             ),
             TargetPlatform.macOS: ZoomPageTransitionsBuilder(
-              backgroundColor: AppColors.background,
+              backgroundColor: AppColors.backgroundDark,
             ),
           },
         ),
@@ -54,10 +56,16 @@ class App extends StatelessWidget {
         // Wrap the entire app with TitleBar so it stays on top of all routes
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: TitleBar(
-            child: ClipRect(
-              child: child ?? Container()
-            )
+          body: ValueListenableBuilder<bool>(
+            valueListenable: ProjectState.isInProject,
+            builder: (context, isInProject, _) {
+              return TitleBar(
+                showProjectControls: isInProject,
+                child: ClipRect(
+                  child: child ?? Container()
+                )
+              );
+            },
           ),
         );
       },

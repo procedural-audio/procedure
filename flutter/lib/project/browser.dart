@@ -8,6 +8,7 @@ import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart' as old_settings;
 import 'package:metasampler/bindings/api/io.dart';
 import 'package:metasampler/style/colors.dart';
+import 'package:metasampler/project_state.dart';
 
 import 'info.dart';
 import 'project.dart';
@@ -143,6 +144,9 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     var project = await Project.load(info, tempMainDirectory);
 
     if (project != null) {
+      // Set the flag that we're entering a project
+      ProjectState.isInProject.value = true;
+      
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -158,7 +162,10 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
             ),
           ),
         ),
-      );
+      ).then((_) {
+        // When the project route is popped, we're no longer in a project
+        ProjectState.isInProject.value = false;
+      });
     }
   }
 

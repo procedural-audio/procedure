@@ -5,6 +5,7 @@ class AppColors {
   static const primary = Color.fromRGBO(0, 122, 204, 1.0);
   static const background = Color.fromRGBO(20, 20, 20, 1.0);
   static const backgroundBorder = Color.fromRGBO(30, 30, 30, 1.0);
+  static const backgroundDark = Color.fromRGBO(10, 10, 10, 1.0);
   static const surface = Color.fromRGBO(30, 30, 30, 1.0);
   static const surfaceBorder = Color.fromRGBO(40, 40, 40, 1.0);
   static const element = Color.fromRGBO(40, 40, 40, 1.0);

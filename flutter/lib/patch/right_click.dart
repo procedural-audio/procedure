@@ -1,13 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/style/colors.dart';
-import 'package:metasampler/style/text.dart';
 
 import '../plugin/config.dart';
 import '../views/settings.dart';
-import '../settings.dart' as settings_service;
-import 'package:file_picker/file_picker.dart';
 import '../plugin/plugin.dart';
 import 'module.dart';
 
@@ -101,43 +97,41 @@ class RightClickView extends StatefulWidget {
   State<RightClickView> createState() => _RightClickView();
 }
 
-class _RightClickView extends State<RightClickView> with SingleTickerProviderStateMixin {
+class _RightClickView extends State<RightClickView> {
   String searchText = "";
-  late TabController _tabController;
-  String currentTitle = "Modules"; // Default title
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        switch (_tabController.index) {
-          case 0:
-            currentTitle = "Modules";
-            break;
-          case 1:
-            currentTitle = "Samples";
-            break;
-          case 2:
-            currentTitle = "Variables";
-            break;
-          case 3:
-            currentTitle = "Plugins";
-            break;
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
+    // Build the module list
+    List<RightClickCategory> categories = [];
+
+    String lowerSearchText = searchText.toLowerCase();
+
+    for (var plugin in widget.plugins) {
+      for (var module in plugin.modules) {
+        bool matchesSearch =
+            module.name.toLowerCase().contains(lowerSearchText);
+
+        for (var category in module.category) {
+          if (category.toLowerCase().contains(lowerSearchText)) {
+            matchesSearch = true;
+            break;
+          }
+        }
+
+        if (matchesSearch) {
+          add_module_to_category(
+            module,
+            4,
+            lowerSearchText,
+            module.category,
+            categories,
+            widget.onAddModule,
+          );
+        }
+      }
+    }
+
     return MouseRegion(
       onEnter: (event) {
         // widget.app.patchingScaleEnabled = false;
@@ -147,158 +141,59 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
       },
       child: Container(
         width: 300,
-        height: 240,
         child: Column(
           children: [
-            /* Title and Tab Bar */
-            SizedBox(
-              height: 30,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, top: 5),
+            /* Title */
+            Row(
+              children: [
+                Container(
+                  height: 35,
+                  padding: const EdgeInsets.all(10.0),
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
                     child: Text(
-                      currentTitle,
-                      style: AppTextStyles.body,
+                      "Modules",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
                   ),
-                  Expanded(child: SizedBox()),
-                  /* Tab Bar */
-                  TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    indicatorColor: Colors.blueGrey,
-                    labelColor: AppColors.textPrimary,
-                    unselectedLabelColor: AppColors.textMuted,
-                    unselectedLabelStyle: TextStyle(fontSize: 12),
-                    labelPadding: EdgeInsets.only(left: 4, right: 4, top: 6),
-                    indicatorPadding: EdgeInsets.zero,
-                    dividerColor: Colors.transparent,
-                    dividerHeight: 0,
-                    tabs: [
-                      Tab(icon: Icon(Icons.widgets, size: 14), iconMargin: EdgeInsets.zero),
-                      Tab(icon: Icon(Icons.audiotrack, size: 14), iconMargin: EdgeInsets.zero),
-                      Tab(icon: Icon(Icons.data_usage, size: 14), iconMargin: EdgeInsets.zero),
-                      Tab(icon: Icon(Icons.extension, size: 14), iconMargin: EdgeInsets.zero),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            /* Tab Content */
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Modules Tab
-                  _buildModulesTab(),
-                  
-                  // Samples Tab
-                  _buildSamplesTab(),
-                  
-                  // Variables Tab
-                  _buildVariablesTab(),
-                  
-                  // Plugins Tab
-                  _buildPluginsTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-        decoration: BoxDecoration(
-          color: MyTheme.grey20,
-          border: Border.all(color: MyTheme.grey40),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModulesTab() {
-    return FutureBuilder<String?>(
-      future: settings_service.SettingsService.getPluginsDirectory(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data == null) {
-          // Plugins directory not set
-          return Container(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.widgets,
-                  size: 48,
-                  color: Colors.grey.shade600,
                 ),
-                SizedBox(height: 16),
-                Text(
-                  "Modules",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                Expanded(child: SizedBox()),
+                IconButton(
+                  icon: Icon(
+                    Icons.code,
+                    color: Colors.grey.shade600,
+                    size: 14,
                   ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    print("Should open editor");
+                    // Plugins.openEditor();
+                  },
                 ),
-                SizedBox(height: 8),
-                Text(
-                  "Plugins directory not set",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
+                IconButton(
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.grey.shade600,
+                    size: 14,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: _browseForPluginsDirectory,
-                  icon: Icon(Icons.folder, size: 16),
-                  label: Text("Browse for Plugins Directory"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    /*showPluginConfig(context, widget.plugins, () {
+                      // Define the updatePlugins function here
+                      // This function should update the plugins list as needed
+                    });*/
+                  },
                 ),
               ],
             ),
-          );
-        }
 
-        // Plugins directory is set, show modules
-        List<RightClickCategory> categories = [];
-        String lowerSearchText = searchText.toLowerCase();
-
-        for (var plugin in widget.plugins) {
-          for (var module in plugin.modules) {
-            bool matchesSearch =
-                module.name.toLowerCase().contains(lowerSearchText);
-
-            for (var category in module.category) {
-              if (category.toLowerCase().contains(lowerSearchText)) {
-                matchesSearch = true;
-                break;
-              }
-            }
-
-            if (matchesSearch) {
-              add_module_to_category(
-                module,
-                4,
-                lowerSearchText,
-                module.category,
-                categories,
-                widget.onAddModule,
-              );
-            }
-          }
-        }
-
-        return Column(
-          children: [
             /* Search bar */
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
               child: Container(
                 height: 25,
                 child: TextField(
@@ -344,8 +239,11 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
               ),
             ),
 
-            /* Module List */
-            Expanded(
+            /* List */
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 300,
+              ),
               child: SingleChildScrollView(
                 controller: ScrollController(),
                 child: Column(
@@ -354,155 +252,11 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
               ),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  Widget _buildSamplesTab() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Icon(
-            Icons.audiotrack,
-            size: 48,
-            color: Colors.grey.shade600,
-          ),
-          SizedBox(height: 16),
-          Text(
-            "Samples",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Sample library coming soon",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVariablesTab() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Icon(
-            Icons.data_usage,
-            size: 48,
-            color: Colors.grey.shade600,
-          ),
-          SizedBox(height: 16),
-          Text(
-            "Variables",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Variable management coming soon",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _browseForPluginsDirectory() async {
-    try {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'Select Plugins Directory',
-      );
-      
-      if (selectedDirectory != null) {
-        await settings_service.SettingsService.setPluginsDirectory(selectedDirectory);
-        setState(() {
-          // Refresh the UI to show the updated state
-        });
-      }
-    } catch (e) {
-      // Handle error - could show a snackbar or dialog
-      print('Error selecting plugins directory: $e');
-    }
-  }
-
-  Widget _buildPluginsTab() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Icon(
-            Icons.extension,
-            size: 48,
-            color: Colors.grey.shade600,
-          ),
-          SizedBox(height: 16),
-          Text(
-            "Plugins",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          FutureBuilder<String?>(
-            future: settings_service.SettingsService.getPluginsDirectory(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data != null) {
-                return Text(
-                  "Plugin management coming soon",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                  textAlign: TextAlign.center,
-                );
-              } else {
-                return Column(
-                  children: [
-                    Text(
-                      "Plugins directory not set",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: _browseForPluginsDirectory,
-                      icon: Icon(Icons.folder, size: 16),
-                      label: Text("Browse for Plugins Directory"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      ),
-                    ),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
+        ),
+        decoration: BoxDecoration(
+          color: MyTheme.grey20,
+          border: Border.all(color: MyTheme.grey40),
+        ),
       ),
     );
   }
