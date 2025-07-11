@@ -288,25 +288,30 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Row(
         children: [
-          // Back button (show if we can go back)
-          if (canGoBack) ...[
-            _buildTitleBarButton(
-              icon: Icons.arrow_back,
-              isActive: false,
-              onTap: () {
-                if (navigator != null && navigator.canPop()) {
-                  navigator.pop();
-                }
-              },
-              tooltip: 'Back',
-            ),
-            const SizedBox(width: 8),
-          ],
+          // Left spacer to balance the layout
+          const Spacer(),
           
-          // Centered route text (always show)
-          Expanded(
-            child: Center(
-              child: Text(
+          // Centered group with back button and route text
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Back button (show if we can go back)
+              if (canGoBack) ...[
+                _buildTitleBarButton(
+                  icon: Icons.arrow_back,
+                  isActive: false,
+                  onTap: () {
+                    if (navigator != null && navigator.canPop()) {
+                      navigator.pop();
+                    }
+                  },
+                  tooltip: 'Back',
+                ),
+                const SizedBox(width: 8),
+              ],
+              
+              // Route text
+              Text(
                 _getRouteDisplayName(),
                 style: TextStyle(
                   color: AppColors.textPrimary,
@@ -314,8 +319,11 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-            ),
+            ],
           ),
+          
+          // Right spacer to balance the layout
+          const Spacer(),
           
           // Project controls (only show when in project)
           if (isInProject) ...[
