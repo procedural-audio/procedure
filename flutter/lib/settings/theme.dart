@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
+import 'dart:io';
 import '../style/colors.dart';
 import '../style/text.dart';
+import '../style/type_colors.dart';
 
 class ThemeSettingsWidget extends StatefulWidget {
   const ThemeSettingsWidget({super.key});
@@ -9,16 +13,98 @@ class ThemeSettingsWidget extends StatefulWidget {
   State<ThemeSettingsWidget> createState() => _ThemeSettingsWidgetState();
 }
 
+// CMajor type color configuration
+class CMajorTypeColors {
+  Color voidColor;
+  Color boolColor;
+  Color int32Color;
+  Color int64Color;
+  Color float32Color;
+  Color float64Color;
+  Color stringColor;
+  Color arrayColor;
+  Color objectColor;
+
+  CMajorTypeColors({
+    required this.voidColor,
+    required this.boolColor,
+    required this.int32Color,
+    required this.int64Color,
+    required this.float32Color,
+    required this.float64Color,
+    required this.stringColor,
+    required this.arrayColor,
+    required this.objectColor,
+  });
+
+  // Default colors for CMajor types
+  static CMajorTypeColors defaultColors() {
+    return CMajorTypeColors(
+      voidColor: const Color(0xFF757575),        // Gray
+      boolColor: const Color(0xFF4CAF50),        // Green
+      int32Color: const Color(0xFF2196F3),       // Blue
+      int64Color: const Color(0xFF3F51B5),       // Indigo
+      float32Color: const Color(0xFFFF9800),     // Orange
+      float64Color: const Color(0xFFFF5722),     // Deep Orange
+      stringColor: const Color(0xFF9C27B0),      // Purple
+      arrayColor: const Color(0xFF607D8B),       // Blue Grey
+      objectColor: const Color(0xFF795548),      // Brown
+    );
+  }
+
+  // Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'voidColor': voidColor.value,
+      'boolColor': boolColor.value,
+      'int32Color': int32Color.value,
+      'int64Color': int64Color.value,
+      'float32Color': float32Color.value,
+      'float64Color': float64Color.value,
+      'stringColor': stringColor.value,
+      'arrayColor': arrayColor.value,
+      'objectColor': objectColor.value,
+    };
+  }
+
+  // Create from JSON
+  static CMajorTypeColors fromJson(Map<String, dynamic> json) {
+    return CMajorTypeColors(
+      voidColor: Color(json['voidColor'] ?? 0xFF757575),
+      boolColor: Color(json['boolColor'] ?? 0xFF4CAF50),
+      int32Color: Color(json['int32Color'] ?? 0xFF2196F3),
+      int64Color: Color(json['int64Color'] ?? 0xFF3F51B5),
+      float32Color: Color(json['float32Color'] ?? 0xFFFF9800),
+      float64Color: Color(json['float64Color'] ?? 0xFFFF5722),
+      stringColor: Color(json['stringColor'] ?? 0xFF9C27B0),
+      arrayColor: Color(json['arrayColor'] ?? 0xFF607D8B),
+      objectColor: Color(json['objectColor'] ?? 0xFF795548),
+    );
+  }
+}
+
 class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
-  // Pin type colors
-  Color audioInputColor = const Color(0xFF4CAF50);
-  Color audioOutputColor = const Color(0xFF2196F3);
-  Color midiInputColor = const Color(0xFFFF9800);
-  Color midiOutputColor = const Color(0xFF9C27B0);
-  Color controlInputColor = const Color(0xFFF44336);
-  Color controlOutputColor = const Color(0xFFE91E63);
-  Color dataInputColor = const Color(0xFF607D8B);
-  Color dataOutputColor = const Color(0xFF795548);
+  CMajorTypeColors typeColors = CMajorTypeColors.defaultColors();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the TypeColorProvider with default colors
+    TypeColorProvider.setColors(typeColors);
+  }
+
+  void _updateTypeColors() {
+    // Update the global TypeColorProvider whenever colors change
+    TypeColorProvider.setColors(typeColors);
+  }
+
+  void _onColorChanged(void Function() colorUpdate) {
+    setState(() {
+      colorUpdate();
+    });
+    _updateTypeColors();
+    _autoSaveConfiguration();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,98 +117,59 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Pin Type Colors',
+                'CMajor Type Colors',
                 style: AppTextStyles.headingSmall,
               ),
               const SizedBox(height: 16),
               
-              // Audio Pins
+              // Primitive Types
               _buildColorSection(
-                'Audio Pins',
+                'Primitive Types',
                 [
-                  _buildColorPicker('Audio Input', audioInputColor, (color) {
-                    setState(() {
-                      audioInputColor = color;
-                    });
-                    _autoSaveConfiguration();
+                  _buildColorPicker('void', typeColors.voidColor, (color) {
+                    _onColorChanged(() => typeColors.voidColor = color);
                   }),
-                  _buildColorPicker('Audio Output', audioOutputColor, (color) {
-                    setState(() {
-                      audioOutputColor = color;
-                    });
-                    _autoSaveConfiguration();
+                  _buildColorPicker('bool', typeColors.boolColor, (color) {
+                    _onColorChanged(() => typeColors.boolColor = color);
+                  }),
+                  _buildColorPicker('int32', typeColors.int32Color, (color) {
+                    _onColorChanged(() => typeColors.int32Color = color);
+                  }),
+                  _buildColorPicker('int64', typeColors.int64Color, (color) {
+                    _onColorChanged(() => typeColors.int64Color = color);
+                  }),
+                  _buildColorPicker('float32', typeColors.float32Color, (color) {
+                    _onColorChanged(() => typeColors.float32Color = color);
+                  }),
+                  _buildColorPicker('float64', typeColors.float64Color, (color) {
+                    _onColorChanged(() => typeColors.float64Color = color);
                   }),
                 ],
               ),
               
               const SizedBox(height: 24),
               
-              // MIDI Pins
+              // Complex Types
               _buildColorSection(
-                'MIDI Pins',
+                'Complex Types',
                 [
-                  _buildColorPicker('MIDI Input', midiInputColor, (color) {
-                    setState(() {
-                      midiInputColor = color;
-                    });
-                    _autoSaveConfiguration();
+                  _buildColorPicker('string', typeColors.stringColor, (color) {
+                    _onColorChanged(() => typeColors.stringColor = color);
                   }),
-                  _buildColorPicker('MIDI Output', midiOutputColor, (color) {
-                    setState(() {
-                      midiOutputColor = color;
-                    });
-                    _autoSaveConfiguration();
+                  _buildColorPicker('array', typeColors.arrayColor, (color) {
+                    _onColorChanged(() => typeColors.arrayColor = color);
                   }),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Control Pins
-              _buildColorSection(
-                'Control Pins',
-                [
-                  _buildColorPicker('Control Input', controlInputColor, (color) {
-                    setState(() {
-                      controlInputColor = color;
-                    });
-                    _autoSaveConfiguration();
-                  }),
-                  _buildColorPicker('Control Output', controlOutputColor, (color) {
-                    setState(() {
-                      controlOutputColor = color;
-                    });
-                    _autoSaveConfiguration();
-                  }),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Data Pins
-              _buildColorSection(
-                'Data Pins',
-                [
-                  _buildColorPicker('Data Input', dataInputColor, (color) {
-                    setState(() {
-                      dataInputColor = color;
-                    });
-                    _autoSaveConfiguration();
-                  }),
-                  _buildColorPicker('Data Output', dataOutputColor, (color) {
-                    setState(() {
-                      dataOutputColor = color;
-                    });
-                    _autoSaveConfiguration();
+                  _buildColorPicker('object', typeColors.objectColor, (color) {
+                    _onColorChanged(() => typeColors.objectColor = color);
                   }),
                 ],
               ),
               
               const SizedBox(height: 30),
               
-              // Theme Presets
+              // Configuration Actions
               Text(
-                'Theme Presets',
+                'Configuration Management',
                 style: AppTextStyles.headingSmall,
               ),
               const SizedBox(height: 16),
@@ -131,13 +178,27 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _applyDefaultTheme,
+                      onPressed: _saveConfiguration,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'Save Configuration',
+                        style: AppTextStyles.body.copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _loadConfiguration,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.surface,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: Text(
-                        'Default',
+                        'Load Configuration',
                         style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
                       ),
                     ),
@@ -145,27 +206,13 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _applyDarkTheme,
+                      onPressed: _resetToDefaults,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.surface,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                       child: Text(
-                        'Dark',
-                        style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _applyHighContrastTheme,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.surface,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: Text(
-                        'High Contrast',
+                        'Reset to Defaults',
                         style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
                       ),
                     ),
@@ -301,46 +348,72 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
     );
   }
 
-  void _applyDefaultTheme() {
-    setState(() {
-      audioInputColor = const Color(0xFF4CAF50);
-      audioOutputColor = const Color(0xFF2196F3);
-      midiInputColor = const Color(0xFFFF9800);
-      midiOutputColor = const Color(0xFF9C27B0);
-      controlInputColor = const Color(0xFFF44336);
-      controlOutputColor = const Color(0xFFE91E63);
-      dataInputColor = const Color(0xFF607D8B);
-      dataOutputColor = const Color(0xFF795548);
-    });
-    _autoSaveConfiguration();
+  // Save configuration to JSON file
+  Future<void> _saveConfiguration() async {
+    try {
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Theme Configuration',
+        fileName: 'theme_config.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+      
+      if (outputFile != null) {
+        final config = {
+          'name': 'Custom Theme Configuration',
+          'version': '1.0',
+          'created': DateTime.now().toIso8601String(),
+          'typeColors': typeColors.toJson(),
+        };
+        
+        final file = File(outputFile);
+        await file.writeAsString(jsonEncode(config));
+        
+        _showSuccess('Theme configuration saved successfully');
+      }
+    } catch (e) {
+      _showError('Error saving configuration: $e');
+    }
   }
 
-  void _applyDarkTheme() {
-    setState(() {
-      audioInputColor = const Color(0xFF2E7D32);
-      audioOutputColor = const Color(0xFF1565C0);
-      midiInputColor = const Color(0xFFE65100);
-      midiOutputColor = const Color(0xFF6A1B9A);
-      controlInputColor = const Color(0xFFC62828);
-      controlOutputColor = const Color(0xFFAD1457);
-      dataInputColor = const Color(0xFF37474F);
-      dataOutputColor = const Color(0xFF4E342E);
-    });
-    _autoSaveConfiguration();
+  // Load configuration from JSON file
+  Future<void> _loadConfiguration() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        dialogTitle: 'Load Theme Configuration',
+      );
+      
+      if (result != null) {
+        final file = File(result.files.single.path!);
+        final contents = await file.readAsString();
+        final config = jsonDecode(contents) as Map<String, dynamic>;
+        
+        if (config.containsKey('typeColors')) {
+          setState(() {
+            typeColors = CMajorTypeColors.fromJson(config['typeColors']);
+          });
+          _updateTypeColors();
+          _autoSaveConfiguration();
+          _showSuccess('Theme configuration loaded successfully');
+        } else {
+          _showError('Invalid configuration file format');
+        }
+      }
+    } catch (e) {
+      _showError('Error loading configuration: $e');
+    }
   }
 
-  void _applyHighContrastTheme() {
+  // Reset to default colors
+  void _resetToDefaults() {
     setState(() {
-      audioInputColor = const Color(0xFF00FF00);
-      audioOutputColor = const Color(0xFF0080FF);
-      midiInputColor = const Color(0xFFFF8000);
-      midiOutputColor = const Color(0xFF8000FF);
-      controlInputColor = const Color(0xFFFF0000);
-      controlOutputColor = const Color(0xFFFF0080);
-      dataInputColor = const Color(0xFF808080);
-      dataOutputColor = const Color(0xFF804000);
+      typeColors = CMajorTypeColors.defaultColors();
     });
+    _updateTypeColors();
     _autoSaveConfiguration();
+    _showSuccess('Theme reset to defaults');
   }
 
   Future<void> _autoSaveConfiguration() async {
@@ -360,6 +433,15 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
       ),
     );
   }
