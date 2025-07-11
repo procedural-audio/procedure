@@ -76,6 +76,7 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
                         setState(() {
                           enableMidi = value;
                         });
+                        _autoSaveConfiguration();
                       },
                       activeColor: AppColors.primary,
                     ),
@@ -99,6 +100,7 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
                       setState(() {
                         selectedInputDevice = newValue;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   
@@ -113,6 +115,7 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
                       setState(() {
                         selectedOutputDevice = newValue;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   
@@ -149,26 +152,6 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
                     },
                   ),
                   
-                  const SizedBox(height: 30),
-                  
-                  // Save Configuration Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saveConfiguration,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: Text(
-                        'Save Configuration',
-                        style: AppTextStyles.body.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
                 ] else ...[
                   const SizedBox(height: 20),
                   Container(
@@ -201,7 +184,10 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
         children: [
           Checkbox(
             value: value,
-            onChanged: (newValue) => onChanged(newValue ?? false),
+            onChanged: (newValue) {
+              onChanged(newValue ?? false);
+              _autoSaveConfiguration();
+            },
             activeColor: AppColors.primary,
           ),
           const SizedBox(width: 8),
@@ -214,27 +200,13 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
     );
   }
 
-  Future<void> _saveConfiguration() async {
-    if (!enableMidi) {
-      _showSuccess('MIDI disabled');
-      return;
-    }
-    
-    if (selectedInputDevice == null) {
-      _showError('Please select a MIDI input device');
-      return;
-    }
-    
-    if (selectedOutputDevice == null) {
-      _showError('Please select a MIDI output device');
-      return;
-    }
-    
+  Future<void> _autoSaveConfiguration() async {
     try {
       // TODO: Implement backend integration
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate save
+      await Future.delayed(const Duration(milliseconds: 100)); // Simulate save
       
-      _showSuccess('MIDI configuration saved successfully');
+      // Optional: Show brief success indicator (comment out to reduce noise)
+      // _showSuccess('MIDI configuration saved');
     } catch (e) {
       _showError('Error saving MIDI configuration: $e');
     }
@@ -249,12 +221,4 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
     );
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
 }

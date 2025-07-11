@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
+import '../settings.dart';
 
 class DirectoriesSettingsWidget extends StatefulWidget {
   const DirectoriesSettingsWidget({super.key});
@@ -13,9 +13,9 @@ class DirectoriesSettingsWidget extends StatefulWidget {
 }
 
 class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
-  String projectsDirectory = '';
-  String pluginsDirectory = '';
-  String samplesDirectory = '';
+  String? projectsDirectory;
+  String? pluginsDirectory;
+  String? samplesDirectory;
   
   bool isLoading = true;
 
@@ -26,16 +26,21 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
   }
 
   Future<void> _loadDirectorySettings() async {
-    // TODO: Implement backend integration to load directory settings
-    await Future.delayed(const Duration(milliseconds: 300));
-    
-    setState(() {
-      // Mock settings for now
-      projectsDirectory = '/Users/chase/Music/Procedural Audio/Projects';
-      pluginsDirectory = '/Users/chase/Music/Procedural Audio/Plugins';
-      samplesDirectory = '/Users/chase/Music/Procedural Audio/Samples';
-      isLoading = false;
-    });
+    try {
+      final directories = await SettingsService.getAllDirectories();
+      
+      setState(() {
+        projectsDirectory = directories['projects'];
+        pluginsDirectory = directories['plugins'];
+        samplesDirectory = directories['samples'];
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showError('Error loading directory settings: $e');
+    }
   }
 
   @override
@@ -59,11 +64,12 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
                 _buildDirectorySection(
                   'Projects Directory',
                   'Location where your projects are stored',
-                  projectsDirectory,
-                  (path) {
+                  projectsDirectory ?? '',
+                  (path) async {
                     setState(() {
                       projectsDirectory = path;
                     });
+                    await SettingsService.setProjectsDirectory(path);
                   },
                 ),
                 
@@ -73,11 +79,12 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
                 _buildDirectorySection(
                   'Plugins Directory',
                   'Location where plugins are installed',
-                  pluginsDirectory,
-                  (path) {
+                  pluginsDirectory ?? '',
+                  (path) async {
                     setState(() {
                       pluginsDirectory = path;
                     });
+                    await SettingsService.setPluginsDirectory(path);
                   },
                 ),
                 
@@ -87,72 +94,28 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
                 _buildDirectorySection(
                   'Samples Directory',
                   'Location where sample files are stored',
-                  samplesDirectory,
-                  (path) {
+                  samplesDirectory ?? '',
+                  (path) async {
                     setState(() {
                       samplesDirectory = path;
                     });
+                    await SettingsService.setSamplesDirectory(path);
                   },
                 ),
                 
                 const SizedBox(height: 24),
                 
-                // Directory Actions
-                _buildSection(
-                  'Directory Actions',
-                  [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _createDirectories,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: Text(
-                              'Create Directories',
-                              style: AppTextStyles.body.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _resetToDefaults,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.surface,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: Text(
-                              'Reset to Defaults',
-                              style: AppTextStyles.body.copyWith(
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 30),
-                
-                // Save Configuration Button
+                // Reset All Settings
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _saveConfiguration,
+                    onPressed: _resetAllSettings,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      'Save Configuration',
+                      'Reset All Settings to Default',
                       style: AppTextStyles.body.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
@@ -273,58 +236,66 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
       );
       
       if (selectedDirectory != null) {
-        onChanged(selectedDirectory);
+        await onChanged(selectedDirectory);
       }
     } catch (e) {
       _showError('Error selecting directory: $e');
     }
   }
 
-  Future<void> _createDirectories() async {
-    try {
-      final directories = [
-        projectsDirectory,
-        pluginsDirectory,
-        samplesDirectory,
-      ];
-      
-      for (final dir in directories) {
-        if (dir.isNotEmpty) {
-          final directory = Directory(dir);
-          if (!await directory.exists()) {
-            await directory.create(recursive: true);
-          }
-        }
+  Future<void> _resetAllSettings() async {
+    // Show confirmation dialog
+    bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: Text(
+            'Reset All Settings',
+            style: AppTextStyles.headingSmall,
+          ),
+          content: Text(
+            'This will reset all application settings to their default values. This action cannot be undone.',
+            style: AppTextStyles.body,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: Text(
+                'Reset All Settings',
+                style: AppTextStyles.body.copyWith(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    
+    if (confirmed == true) {
+      try {
+        // Clear all directories
+        await SettingsService.clearDirectories();
+        
+        // TODO: Reset other settings (audio, MIDI, theme, debug)
+        // This would require adding reset methods to SettingsService
+        
+        // Reload the directory settings
+        await _loadDirectorySettings();
+        
+        _showSuccess('All settings have been reset to default');
+      } catch (e) {
+        _showError('Error resetting settings: $e');
       }
-      
-      _showSuccess('All directories created successfully');
-    } catch (e) {
-      _showError('Error creating directories: $e');
-    }
-  }
-
-  Future<void> _resetToDefaults() async {
-    try {
-      setState(() {
-        projectsDirectory = '/Users/chase/Music/Procedural Audio/Projects';
-        pluginsDirectory = '/Users/chase/Music/Procedural Audio/Plugins';
-        samplesDirectory = '/Users/chase/Music/Procedural Audio/Samples';
-      });
-      
-      _showSuccess('Directories reset to defaults');
-    } catch (e) {
-      _showError('Error resetting directories: $e');
-    }
-  }
-
-  Future<void> _saveConfiguration() async {
-    try {
-      // TODO: Implement backend integration to save directory settings
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate save
-      
-      _showSuccess('Directory configuration saved successfully');
-    } catch (e) {
-      _showError('Error saving directory configuration: $e');
     }
   }
 

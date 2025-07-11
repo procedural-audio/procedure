@@ -6,6 +6,8 @@ import 'package:metasampler/style/text.dart';
 
 import '../plugin/config.dart';
 import '../views/settings.dart';
+import '../settings.dart' as settings_service;
+import 'package:file_picker/file_picker.dart';
 import '../plugin/plugin.dart';
 import 'module.dart';
 
@@ -215,96 +217,145 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
   }
 
   Widget _buildModulesTab() {
-    // Build the module list
-    List<RightClickCategory> categories = [];
+    return FutureBuilder<String?>(
+      future: settings_service.SettingsService.getPluginsDirectory(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data == null) {
+          // Plugins directory not set
+          return Container(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.widgets,
+                  size: 48,
+                  color: Colors.grey.shade600,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Modules",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Plugins directory not set",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _browseForPluginsDirectory,
+                  icon: Icon(Icons.folder, size: 16),
+                  label: Text("Browse for Plugins Directory"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
-    String lowerSearchText = searchText.toLowerCase();
+        // Plugins directory is set, show modules
+        List<RightClickCategory> categories = [];
+        String lowerSearchText = searchText.toLowerCase();
 
-    for (var plugin in widget.plugins) {
-      for (var module in plugin.modules) {
-        bool matchesSearch =
-            module.name.toLowerCase().contains(lowerSearchText);
+        for (var plugin in widget.plugins) {
+          for (var module in plugin.modules) {
+            bool matchesSearch =
+                module.name.toLowerCase().contains(lowerSearchText);
 
-        for (var category in module.category) {
-          if (category.toLowerCase().contains(lowerSearchText)) {
-            matchesSearch = true;
-            break;
+            for (var category in module.category) {
+              if (category.toLowerCase().contains(lowerSearchText)) {
+                matchesSearch = true;
+                break;
+              }
+            }
+
+            if (matchesSearch) {
+              add_module_to_category(
+                module,
+                4,
+                lowerSearchText,
+                module.category,
+                categories,
+                widget.onAddModule,
+              );
+            }
           }
         }
 
-        if (matchesSearch) {
-          add_module_to_category(
-            module,
-            4,
-            lowerSearchText,
-            module.category,
-            categories,
-            widget.onAddModule,
-          );
-        }
-      }
-    }
-
-    return Column(
-      children: [
-        /* Search bar */
-        Padding(
-          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-          child: Container(
-            height: 25,
-            child: TextField(
-              maxLines: 1,
-              cursorHeight: 14,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-              ),
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
+        return Column(
+          children: [
+            /* Search bar */
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+              child: Container(
+                height: 25,
+                child: TextField(
+                  maxLines: 1,
+                  cursorHeight: 14,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                  ),
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
+                  ),
+                  onChanged: (data) {
+                    setState(() {
+                      searchText = data;
+                    });
+                  },
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white70,
                   borderRadius: BorderRadius.all(
                     Radius.circular(5.0),
                   ),
-                  borderSide: BorderSide(
-                    width: 2,
-                    color: Colors.blueGrey,
-                  ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(5.0),
-                  ),
-                  borderSide: BorderSide(
-                    width: 2,
-                    color: Colors.blueGrey,
-                  ),
-                ),
-                contentPadding: EdgeInsets.fromLTRB(10, 10, 0, 3),
-              ),
-              onChanged: (data) {
-                setState(() {
-                  searchText = data;
-                });
-              },
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.white70,
-              borderRadius: BorderRadius.all(
-                Radius.circular(5.0),
               ),
             ),
-          ),
-        ),
 
-        /* Module List */
-        Expanded(
-          child: SingleChildScrollView(
-            controller: ScrollController(),
-            child: Column(
-              children: categories,
+            /* Module List */
+            Expanded(
+              child: SingleChildScrollView(
+                controller: ScrollController(),
+                child: Column(
+                  children: categories,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -374,6 +425,24 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
     );
   }
 
+  Future<void> _browseForPluginsDirectory() async {
+    try {
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Select Plugins Directory',
+      );
+      
+      if (selectedDirectory != null) {
+        await settings_service.SettingsService.setPluginsDirectory(selectedDirectory);
+        setState(() {
+          // Refresh the UI to show the updated state
+        });
+      }
+    } catch (e) {
+      // Handle error - could show a snackbar or dialog
+      print('Error selecting plugins directory: $e');
+    }
+  }
+
   Widget _buildPluginsTab() {
     return Container(
       padding: EdgeInsets.all(20),
@@ -394,13 +463,44 @@ class _RightClickView extends State<RightClickView> with SingleTickerProviderSta
             ),
           ),
           SizedBox(height: 8),
-          Text(
-            "Plugin management coming soon",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
+          FutureBuilder<String?>(
+            future: settings_service.SettingsService.getPluginsDirectory(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data != null) {
+                return Text(
+                  "Plugin management coming soon",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                );
+              } else {
+                return Column(
+                  children: [
+                    Text(
+                      "Plugins directory not set",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _browseForPluginsDirectory,
+                      icon: Icon(Icons.folder, size: 16),
+                      label: Text("Browse for Plugins Directory"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),

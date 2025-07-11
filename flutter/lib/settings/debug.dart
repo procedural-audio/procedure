@@ -81,6 +81,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         enableDebugLogging = value;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   _buildSwitch(
@@ -90,6 +91,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         enableVerboseLogging = value;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   _buildSwitch(
@@ -99,6 +101,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         enablePerformanceLogging = value;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   _buildSwitch(
@@ -108,6 +111,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         enableErrorLogging = value;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                 ],
@@ -127,6 +131,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         logLevel = value ?? 'Info';
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                 ],
@@ -145,6 +150,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
                       setState(() {
                         logFilePath = path;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                 ],
@@ -235,24 +241,6 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
               
               const SizedBox(height: 30),
               
-              // Save Configuration Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveConfiguration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: Text(
-                    'Save Configuration',
-                    style: AppTextStyles.body.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -384,7 +372,7 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
       // TODO: Implement actual log export
       await Future.delayed(const Duration(milliseconds: 1000)); // Simulate export
       
-      _showSuccess('Logs exported successfully to $logFilePath');
+      // Success - logs exported
     } catch (e) {
       _showError('Error exporting logs: $e');
     }
@@ -399,18 +387,19 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
         logEntries.clear();
       });
       
-      _showSuccess('Logs cleared successfully');
+      // Success - logs cleared
     } catch (e) {
       _showError('Error clearing logs: $e');
     }
   }
 
-  Future<void> _saveConfiguration() async {
+  Future<void> _autoSaveConfiguration() async {
     try {
       // TODO: Implement backend integration to save debug settings
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate save
+      await Future.delayed(const Duration(milliseconds: 100)); // Simulate save
       
-      _showSuccess('Debug configuration saved successfully');
+      // Optional: Show brief success indicator (comment out to reduce noise)
+      // _showSuccess('Debug configuration saved');
     } catch (e) {
       _showError('Error saving debug configuration: $e');
     }
@@ -437,12 +426,4 @@ class _DebugSettingsWidgetState extends State<DebugSettingsWidget> {
     );
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
 }

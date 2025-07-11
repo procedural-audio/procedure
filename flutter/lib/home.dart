@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/style/colors.dart';
-import 'dart:io';
 import 'style/text.dart';
 import 'style/buttons.dart';
 import 'project/browser.dart';
 import 'project/audio_config.dart';
 import 'plugin/config.dart';
 import 'settings/settings.dart';
-import 'settings.dart' as old_settings;
 
 class TitleBar extends StatelessWidget {
   const TitleBar({
@@ -56,7 +54,6 @@ class HomeWidget extends StatefulWidget {
 
 class _HomeWidgetState extends State<HomeWidget> {
   int selectedIndex = 0;
-
   void showAudioConfigDialog() {
     showDialog(
       context: context,
@@ -203,7 +200,6 @@ class _HomeWidgetState extends State<HomeWidget> {
               ? SettingsWidget()
               : selectedIndex == 0 
                 ? ProjectsBrowser(
-                    old_settings.MainDirectory(Directory("/Users/chase/Music/Procedural Audio")),
                     audioManager: null,
                   )
                 : Center(

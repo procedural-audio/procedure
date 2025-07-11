@@ -45,11 +45,13 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                     setState(() {
                       audioInputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                   _buildColorPicker('Audio Output', audioOutputColor, (color) {
                     setState(() {
                       audioOutputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                 ],
               ),
@@ -64,11 +66,13 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                     setState(() {
                       midiInputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                   _buildColorPicker('MIDI Output', midiOutputColor, (color) {
                     setState(() {
                       midiOutputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                 ],
               ),
@@ -83,11 +87,13 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                     setState(() {
                       controlInputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                   _buildColorPicker('Control Output', controlOutputColor, (color) {
                     setState(() {
                       controlOutputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                 ],
               ),
@@ -102,11 +108,13 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
                     setState(() {
                       dataInputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                   _buildColorPicker('Data Output', dataOutputColor, (color) {
                     setState(() {
                       dataOutputColor = color;
                     });
+                    _autoSaveConfiguration();
                   }),
                 ],
               ),
@@ -168,24 +176,6 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
               
               const SizedBox(height: 30),
               
-              // Save Configuration Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveConfiguration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: Text(
-                    'Save Theme',
-                    style: AppTextStyles.body.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -323,6 +313,7 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
       dataInputColor = const Color(0xFF607D8B);
       dataOutputColor = const Color(0xFF795548);
     });
+    _autoSaveConfiguration();
   }
 
   void _applyDarkTheme() {
@@ -336,6 +327,7 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
       dataInputColor = const Color(0xFF37474F);
       dataOutputColor = const Color(0xFF4E342E);
     });
+    _autoSaveConfiguration();
   }
 
   void _applyHighContrastTheme() {
@@ -349,14 +341,16 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
       dataInputColor = const Color(0xFF808080);
       dataOutputColor = const Color(0xFF804000);
     });
+    _autoSaveConfiguration();
   }
 
-  Future<void> _saveConfiguration() async {
+  Future<void> _autoSaveConfiguration() async {
     try {
       // TODO: Implement backend integration to save theme colors
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate save
+      await Future.delayed(const Duration(milliseconds: 100)); // Simulate save
       
-      _showSuccess('Theme configuration saved successfully');
+      // Optional: Show brief success indicator (comment out to reduce noise)
+      // _showSuccess('Theme configuration saved');
     } catch (e) {
       _showError('Error saving theme configuration: $e');
     }
@@ -371,14 +365,6 @@ class _ThemeSettingsWidgetState extends State<ThemeSettingsWidget> {
     );
   }
 
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
 }
 
 // Simple color picker widget (you might want to use a proper color picker package)

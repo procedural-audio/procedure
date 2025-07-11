@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'package:metasampler/plugin/plugin.dart';
-import 'package:metasampler/settings.dart';
+import 'package:metasampler/settings.dart' as old_settings;
 import 'package:metasampler/bindings/api/io.dart';
 import 'package:metasampler/style/colors.dart';
 
@@ -20,12 +20,11 @@ import '../style/buttons.dart';
 import '../style/text.dart';
 
 class ProjectsBrowser extends StatefulWidget {
-  ProjectsBrowser(this.directory, {
+  ProjectsBrowser({
     super.key,
     this.audioManager,
   });
 
-  final MainDirectory directory;
   final AudioManager? audioManager;
 
   @override
@@ -40,13 +39,18 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   List<ProjectInfo> projectsInfos = [];
   List<Plugin> plugins = [];
   List<PluginInfo> pluginInfos = [];
+  
+  String? projectsDirectory;
+  String? pluginsDirectory;
 
   @override
   void initState() {
     super.initState();
-
-    loadPluginInfos();
-    scanProjects();
+    
+    _loadDirectories();
+    
+    // Listen for changes in projects directory
+    old_settings.SettingsService.projectsDirectoryNotifier.addListener(_onProjectsDirectoryChanged);
 
     for (var plugin in plugins) {
       plugin.directory.watch(recursive: true).listen((event) {
@@ -54,9 +58,45 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       });
     }
   }
+  
+  @override
+  void dispose() {
+    old_settings.SettingsService.projectsDirectoryNotifier.removeListener(_onProjectsDirectoryChanged);
+    super.dispose();
+  }
+
+  Future<void> _loadDirectories() async {
+    final projectsDir = await old_settings.SettingsService.getProjectsDirectory();
+    final pluginsDir = await old_settings.SettingsService.getPluginsDirectory();
+    
+    setState(() {
+      projectsDirectory = projectsDir;
+      pluginsDirectory = pluginsDir;
+    });
+    
+    // Load data after directories are set, but only if directories exist
+    if (pluginsDir != null) {
+      await loadPluginInfos();
+    }
+    if (projectsDir != null) {
+      await scanProjects();
+    }
+  }
+  
+  void _onProjectsDirectoryChanged() {
+    if (mounted) {
+      // Clear existing projects and reload
+      setState(() {
+        projectsInfos.clear();
+      });
+      _loadDirectories();
+    }
+  }
 
   Future<void> loadPluginInfos() async {
-    final file = File('${widget.directory.plugins.path}/plugins.json');
+    if (pluginsDirectory == null) return;
+    
+    final file = File('$pluginsDirectory/plugins.json');
     if (await file.exists()) {
       final contents = await file.readAsString();
       final List<dynamic> jsonList = jsonDecode(contents);
@@ -67,13 +107,17 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   Future<void> savePluginInfos() async {
-    final file = File('${widget.directory.plugins.path}/plugins.json');
+    if (pluginsDirectory == null) return;
+    
+    final file = File('$pluginsDirectory/plugins.json');
     final jsonList = pluginInfos.map((info) => info.toJson()).toList();
     await file.writeAsString(jsonEncode(jsonList));
   }
 
   Future<void> scanProjects() async {
-    var dir = widget.directory.projects;
+    if (projectsDirectory == null) return;
+    
+    var dir = Directory(projectsDirectory!);
     if (await dir.exists()) {
       var files = await dir.list();
 
@@ -90,7 +134,13 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   void loadProject(ProjectInfo info) async {
-    var project = await Project.load(info, widget.directory);
+    if (projectsDirectory == null) return;
+    
+    // Create a temporary MainDirectory for backward compatibility
+    final mainDir = Directory(projectsDirectory!).parent;
+    final tempMainDirectory = old_settings.MainDirectory(mainDir);
+    
+    var project = await Project.load(info, tempMainDirectory);
 
     if (project != null) {
       Navigator.push(
@@ -113,18 +163,23 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   void newProject() async {
+    if (projectsDirectory == null) return;
+    
     print("Calling new project");
     var newName = "New Project";
-    var newPath = widget.directory.projects.path + "/" + newName;
+    var newPath = projectsDirectory! + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = "New Project " + i.toString();
-      newPath = widget.directory.projects.path + "/" + newName;
+      newPath = projectsDirectory! + "/" + newName;
       i++;
     }
 
-    var newInfo = ProjectInfo.blank(widget.directory);
+    // Create a temporary MainDirectory for backward compatibility
+    final mainDir = Directory(projectsDirectory!).parent;
+    final tempMainDirectory = old_settings.MainDirectory(mainDir);
+    var newInfo = ProjectInfo.blank(tempMainDirectory);
 
     await newInfo.save();
 
@@ -134,13 +189,15 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   void duplicateProject(ProjectInfo info) async {
+    if (projectsDirectory == null) return;
+    
     var newName = info.name + " (copy)";
-    var newPath = widget.directory.projects.path + "/" + newName;
+    var newPath = projectsDirectory! + "/" + newName;
 
     int i = 2;
     while (await Directory(newPath).exists()) {
       newName = info.name + " (copy " + i.toString() + ")";
-      newPath = widget.directory.projects.path + "/" + newName;
+      newPath = projectsDirectory! + "/" + newName;
       i++;
     }
 
@@ -267,8 +324,10 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
                 icon: Icons.add,
                 label: 'New Project',
                 isSelected: false,
-                onTap: () {
+                onTap: projectsDirectory != null ? () {
                   newProject();
+                } : () {
+                  // Do nothing when directory not set
                 },
               ),
             ],
@@ -277,6 +336,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
         Expanded(
           child: Builder(
             builder: (context) {
+              // Show initialization prompt if projects directory is not set
+              if (projectsDirectory == null) {
+                return _buildInitializationPrompt();
+              }
+
               List<ProjectInfo> filteredProjects = getFilteredProjects();
 
               if (isGridView) {
@@ -311,6 +375,72 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
         ),
       ],
     );
+  }
+
+  Widget _buildInitializationPrompt() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.folder_open,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Projects Directory Not Set',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[300],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Please select a directory where your projects will be stored.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[400],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: _initializeProjectsDirectory,
+            icon: const Icon(Icons.folder),
+            label: const Text('Select Projects Directory'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _initializeProjectsDirectory() async {
+    try {
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Select Projects Directory',
+      );
+      
+      if (selectedDirectory != null) {
+        await old_settings.SettingsService.setProjectsDirectory(selectedDirectory);
+        // The listener will automatically reload the projects
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting directory: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void updatePlugins() {

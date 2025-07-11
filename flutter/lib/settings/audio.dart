@@ -142,6 +142,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                     if (newValue != null) {
                       await loadDevicesForType(newValue);
                     }
+                    _autoSaveConfiguration();
                   },
                 ),
                 
@@ -157,6 +158,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                       setState(() {
                         selectedInputDevice = newValue;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   const SizedBox(height: 20),
@@ -172,6 +174,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                       setState(() {
                         selectedOutputDevice = newValue;
                       });
+                      _autoSaveConfiguration();
                     },
                   ),
                   const SizedBox(height: 20),
@@ -187,6 +190,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                     setState(() {
                       sampleRate = newValue ?? 44100.0;
                     });
+                    _autoSaveConfiguration();
                   },
                 ),
                 
@@ -202,29 +206,10 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                     setState(() {
                       bufferSize = newValue ?? 512;
                     });
+                    _autoSaveConfiguration();
                   },
                 ),
                 
-                const SizedBox(height: 30),
-                
-                // Save Configuration Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveConfiguration,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(
-                      'Save Configuration',
-                      style: AppTextStyles.body.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
         ],
@@ -232,26 +217,15 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
     );
   }
 
-  Future<void> _saveConfiguration() async {
-    if (selectedDeviceType == null) {
-      _showError('Please select an audio device type');
-      return;
-    }
-    
-    if (selectedInputDevice == null) {
-      _showError('Please select an input device');
-      return;
-    }
-    
-    if (selectedOutputDevice == null) {
-      _showError('Please select an output device');
-      return;
+  Future<void> _autoSaveConfiguration() async {
+    // Only save if all required fields are set
+    if (selectedDeviceType == null || selectedInputDevice == null || selectedOutputDevice == null) {
+      return; // Don't show errors, just wait for user to complete configuration
     }
     
     try {
       if (widget.audioManager == null) {
-        _showError('AudioManager not initialized');
-        return;
+        return; // AudioManager not available
       }
       
       // Create configuration object
@@ -265,8 +239,8 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
       // Set the configuration
       await widget.audioManager!.setSetup(config: config);
       
-      // Show success message
-      _showSuccess('Audio configuration saved successfully');
+      // Optional: Show brief success indicator (comment out to reduce noise)
+      // _showSuccess('Audio configuration saved');
     } catch (e) {
       _showError('Error saving audio configuration: $e');
     }
