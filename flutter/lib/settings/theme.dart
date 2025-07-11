@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
 
 class ThemeSettingsWidget extends StatefulWidget {
   const ThemeSettingsWidget({super.key});

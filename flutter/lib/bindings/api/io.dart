@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `run_juce_message_loop`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AudioMessage`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`, `fmt`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AudioManager>>
 abstract class AudioManager implements RustOpaqueInterface {
@@ -18,6 +18,12 @@ abstract class AudioManager implements RustOpaqueInterface {
 
   Future<List<String>> getInputDevices({required String deviceType});
 
+  Future<List<String>> getMidiInputDevices();
+
+  Future<List<String>> getMidiOutputDevices();
+
+  Future<FlutterMidiConfiguration> getMidiSetup();
+
   Future<List<String>> getOutputDevices({required String deviceType});
 
   Future<AudioConfiguration> getSetup();
@@ -25,6 +31,8 @@ abstract class AudioManager implements RustOpaqueInterface {
   factory AudioManager() => RustLib.instance.api.crateApiIoAudioManagerNew();
 
   Future<void> setDeviceType({required String deviceType});
+
+  Future<void> setMidiSetup({required FlutterMidiConfiguration config});
 
   Future<void> setSetup({required AudioConfiguration config});
 
@@ -65,4 +73,46 @@ class AudioConfiguration {
           outputDevice == other.outputDevice &&
           sampleRate == other.sampleRate &&
           bufferSize == other.bufferSize;
+}
+
+class FlutterMidiConfiguration {
+  final String inputDevice;
+  final String outputDevice;
+  final bool enabled;
+  final bool clockEnabled;
+  final bool transportEnabled;
+  final bool programChangeEnabled;
+
+  const FlutterMidiConfiguration({
+    required this.inputDevice,
+    required this.outputDevice,
+    required this.enabled,
+    required this.clockEnabled,
+    required this.transportEnabled,
+    required this.programChangeEnabled,
+  });
+
+  static Future<FlutterMidiConfiguration> default_() =>
+      RustLib.instance.api.crateApiIoFlutterMidiConfigurationDefault();
+
+  @override
+  int get hashCode =>
+      inputDevice.hashCode ^
+      outputDevice.hashCode ^
+      enabled.hashCode ^
+      clockEnabled.hashCode ^
+      transportEnabled.hashCode ^
+      programChangeEnabled.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FlutterMidiConfiguration &&
+          runtimeType == other.runtimeType &&
+          inputDevice == other.inputDevice &&
+          outputDevice == other.outputDevice &&
+          enabled == other.enabled &&
+          clockEnabled == other.clockEnabled &&
+          transportEnabled == other.transportEnabled &&
+          programChangeEnabled == other.programChangeEnabled;
 }

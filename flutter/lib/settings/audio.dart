@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/bindings/api/io.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
 import '../style/dropdown.dart';
 
 class AudioSettingsWidget extends StatefulWidget {

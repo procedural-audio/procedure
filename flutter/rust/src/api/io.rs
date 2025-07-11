@@ -1,5 +1,5 @@
 use flutter_rust_bridge::frb;
-use cxx_juce::{juce_audio_devices::{AudioDeviceManager, AudioDeviceSetup, AudioIODevice, AudioIODeviceType, ChannelCount}, JUCE};
+use cxx_juce::{juce_audio_devices::{AudioDeviceManager, AudioDeviceSetup, AudioIODevice, AudioIODeviceType, ChannelCount, MidiDeviceManager}, JUCE};
 use std::sync::mpsc;
 use tokio::sync::oneshot;
 
@@ -23,6 +23,30 @@ impl Default for AudioConfiguration {
     }
 }
 
+#[derive(Clone, Debug)]
+#[frb]
+pub struct FlutterMidiConfiguration {
+    pub input_device: String,
+    pub output_device: String,
+    pub enabled: bool,
+    pub clock_enabled: bool,
+    pub transport_enabled: bool,
+    pub program_change_enabled: bool,
+}
+
+impl Default for FlutterMidiConfiguration {
+    fn default() -> Self {
+        Self {
+            input_device: "".to_string(),
+            output_device: "".to_string(),
+            enabled: false,
+            clock_enabled: false,
+            transport_enabled: false,
+            program_change_enabled: false,
+        }
+    }
+}
+
 // Messages that can be sent to the audio thread
 #[derive(Debug)]
 enum AudioMessage {
@@ -33,6 +57,13 @@ enum AudioMessage {
     SetSetup(AudioConfiguration),
     GetDeviceType(oneshot::Sender<Option<String>>),
     SetDeviceType(String, oneshot::Sender<Result<(), String>>),
+    
+    // MIDI Messages
+    GetMidiInputDevices(oneshot::Sender<Vec<String>>),
+    GetMidiOutputDevices(oneshot::Sender<Vec<String>>),
+    GetMidiSetup(oneshot::Sender<FlutterMidiConfiguration>),
+    SetMidiSetup(FlutterMidiConfiguration),
+    
     StopPlayback,
     Shutdown,
 }
@@ -40,6 +71,8 @@ enum AudioMessage {
 fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
     let juce = JUCE::initialise();
     let mut manager = AudioDeviceManager::new(&juce);
+    let midi_manager = MidiDeviceManager::new(&juce);
+    let mut midi_config = FlutterMidiConfiguration::default();
 
     manager.initialise(0, 2).unwrap();
 
@@ -112,6 +145,21 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
                     manager.set_current_audio_device_type(&device_type);
                     let _ = response.send(Ok(()));
                 }
+                
+                // MIDI Message Handling
+                AudioMessage::GetMidiInputDevices(response) => {
+                    let _ = response.send(midi_manager.input_devices());
+                }
+                AudioMessage::GetMidiOutputDevices(response) => {
+                    let _ = response.send(midi_manager.output_devices());
+                }
+                AudioMessage::GetMidiSetup(response) => {
+                    let _ = response.send(midi_config.clone());
+                }
+                AudioMessage::SetMidiSetup(config) => {
+                    midi_config = config;
+                }
+                
                 AudioMessage::StopPlayback => {},
                 AudioMessage::Shutdown => {
                     println!("Shutting down audio thread");
@@ -209,6 +257,46 @@ impl AudioManager {
             rx.await.unwrap_or(Err("Failed to receive response".to_string()))
         } else {
             Err("Failed to send device type".to_string())
+        }
+    }
+    
+    // MIDI Methods
+    #[frb]
+    pub async fn get_midi_input_devices(&self) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetMidiInputDevices(tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            vec![]
+        }
+    }
+    
+    #[frb]
+    pub async fn get_midi_output_devices(&self) -> Vec<String> {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetMidiOutputDevices(tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            vec![]
+        }
+    }
+    
+    #[frb]
+    pub async fn get_midi_setup(&self) -> FlutterMidiConfiguration {
+        let (tx, rx) = oneshot::channel();
+        if self.tx.send(AudioMessage::GetMidiSetup(tx)).is_ok() {
+            rx.await.unwrap_or_default()
+        } else {
+            FlutterMidiConfiguration::default()
+        }
+    }
+    
+    #[frb]
+    pub async fn set_midi_setup(&self, config: FlutterMidiConfiguration) -> Result<(), String> {
+        if self.tx.send(AudioMessage::SetMidiSetup(config)).is_ok() {
+            Ok(())
+        } else {
+            Err("Failed to send MIDI configuration".to_string())
         }
     }
     

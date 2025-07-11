@@ -61,6 +61,8 @@ target_sources(cxx-juce
         cxx_juce_audio_devices/cxx_juce_audio_io_device_type.cpp
         cxx_juce_audio_devices/cxx_juce_audio_io_device.h
         cxx_juce_audio_devices/cxx_juce_audio_io_device.cpp
+        cxx_juce_audio_devices/cxx_juce_midi_device_manager.h
+        cxx_juce_audio_devices/cxx_juce_midi_device_manager.cpp
 )
 
 target_link_libraries(cxx-juce

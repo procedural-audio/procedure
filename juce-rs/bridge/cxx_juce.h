@@ -7,6 +7,7 @@
 #include "cxx_juce_audio_devices/cxx_juce_audio_io_device.h"
 #include "cxx_juce_audio_devices/cxx_juce_audio_io_device_type.h"
 #include "cxx_juce_audio_devices/cxx_juce_system_audio_volume.h"
+#include "cxx_juce_audio_devices/cxx_juce_midi_device_manager.h"
 
 #include <juce_audio_devices/juce_audio_devices.h>
 #include <juce_core/juce_core.h>

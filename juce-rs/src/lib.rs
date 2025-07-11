@@ -439,6 +439,70 @@ pub(crate) mod juce {
         #[rust_name = "get_gain"]
         pub fn getGain() -> f32;
 
+        // MIDI Device Management
+        #[namespace = "cxx_juce"]
+        pub type MidiConfiguration;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_input_devices"]
+        pub fn getMidiInputDevices() -> Vec<String>;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_output_devices"]
+        pub fn getMidiOutputDevices() -> Vec<String>;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "create_midi_configuration"]
+        pub fn createMidiConfiguration() -> UniquePtr<MidiConfiguration>;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_enabled"]
+        pub fn setMidiEnabled(config: Pin<&mut MidiConfiguration>, enabled: bool);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_input_device"]
+        pub fn setMidiInputDevice(config: Pin<&mut MidiConfiguration>, device_name: &str);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_output_device"]
+        pub fn setMidiOutputDevice(config: Pin<&mut MidiConfiguration>, device_name: &str);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_clock_enabled"]
+        pub fn setMidiClockEnabled(config: Pin<&mut MidiConfiguration>, enabled: bool);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_transport_enabled"]
+        pub fn setMidiTransportEnabled(config: Pin<&mut MidiConfiguration>, enabled: bool);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "set_midi_program_change_enabled"]
+        pub fn setMidiProgramChangeEnabled(config: Pin<&mut MidiConfiguration>, enabled: bool);
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_enabled"]
+        pub fn getMidiEnabled(config: &MidiConfiguration) -> bool;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_input_device"]
+        pub fn getMidiInputDevice(config: &MidiConfiguration) -> String;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_output_device"]
+        pub fn getMidiOutputDevice(config: &MidiConfiguration) -> String;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_clock_enabled"]
+        pub fn getMidiClockEnabled(config: &MidiConfiguration) -> bool;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_transport_enabled"]
+        pub fn getMidiTransportEnabled(config: &MidiConfiguration) -> bool;
+
+        #[namespace = "cxx_juce"]
+        #[rust_name = "get_midi_program_change_enabled"]
+        pub fn getMidiProgramChangeEnabled(config: &MidiConfiguration) -> bool;
+
         #[namespace = "juce"]
         pub type SingleThreadedIIRFilter;
 

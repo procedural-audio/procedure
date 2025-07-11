@@ -549,6 +549,108 @@ impl AudioIODevice for cxx::UniquePtr<juce::AudioIODevice> {
     }
 }
 
+/// MIDI device configuration
+pub struct MidiConfiguration(cxx::UniquePtr<juce::MidiConfiguration>);
+
+unsafe impl Send for MidiConfiguration {}
+
+impl Default for MidiConfiguration {
+    fn default() -> Self {
+        Self(juce::create_midi_configuration())
+    }
+}
+
+impl MidiConfiguration {
+    /// Create a new MIDI configuration
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Check if MIDI is enabled
+    pub fn is_enabled(&self) -> bool {
+        juce::get_midi_enabled(&self.0)
+    }
+
+    /// Enable or disable MIDI
+    pub fn set_enabled(&mut self, enabled: bool) {
+        juce::set_midi_enabled(self.0.pin_mut(), enabled);
+    }
+
+    /// Get the input device name
+    pub fn input_device(&self) -> String {
+        juce::get_midi_input_device(&self.0)
+    }
+
+    /// Set the input device name
+    pub fn set_input_device(&mut self, device_name: &str) {
+        juce::set_midi_input_device(self.0.pin_mut(), device_name);
+    }
+
+    /// Get the output device name
+    pub fn output_device(&self) -> String {
+        juce::get_midi_output_device(&self.0)
+    }
+
+    /// Set the output device name
+    pub fn set_output_device(&mut self, device_name: &str) {
+        juce::set_midi_output_device(self.0.pin_mut(), device_name);
+    }
+
+    /// Check if MIDI clock is enabled
+    pub fn is_clock_enabled(&self) -> bool {
+        juce::get_midi_clock_enabled(&self.0)
+    }
+
+    /// Enable or disable MIDI clock
+    pub fn set_clock_enabled(&mut self, enabled: bool) {
+        juce::set_midi_clock_enabled(self.0.pin_mut(), enabled);
+    }
+
+    /// Check if MIDI transport is enabled
+    pub fn is_transport_enabled(&self) -> bool {
+        juce::get_midi_transport_enabled(&self.0)
+    }
+
+    /// Enable or disable MIDI transport
+    pub fn set_transport_enabled(&mut self, enabled: bool) {
+        juce::set_midi_transport_enabled(self.0.pin_mut(), enabled);
+    }
+
+    /// Check if MIDI program change is enabled
+    pub fn is_program_change_enabled(&self) -> bool {
+        juce::get_midi_program_change_enabled(&self.0)
+    }
+
+    /// Enable or disable MIDI program change
+    pub fn set_program_change_enabled(&mut self, enabled: bool) {
+        juce::set_midi_program_change_enabled(self.0.pin_mut(), enabled);
+    }
+}
+
+/// MIDI device manager
+pub struct MidiDeviceManager {
+    _juce: JUCE,
+}
+
+impl MidiDeviceManager {
+    /// Create a new MIDI device manager
+    pub fn new(juce: &JUCE) -> Self {
+        Self {
+            _juce: juce.clone(),
+        }
+    }
+
+    /// Get available MIDI input devices
+    pub fn input_devices(&self) -> Vec<String> {
+        juce::get_midi_input_devices()
+    }
+
+    /// Get available MIDI output devices
+    pub fn output_devices(&self) -> Vec<String> {
+        juce::get_midi_output_devices()
+    }
+}
+
 pub(crate) mod ffi {
     use super::*;
 

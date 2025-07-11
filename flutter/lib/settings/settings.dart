@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/bindings/api/io.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
 import 'audio.dart';
 import 'midi.dart';
 import 'theme.dart';
@@ -40,7 +39,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
             _buildSettingsSection(
               'MIDI Configuration',
               Icons.music_note,
-              const MidiSettingsWidget(),
+              MidiSettingsWidget(audioManager: widget.audioManager),
             ),
             
             // Theme Settings

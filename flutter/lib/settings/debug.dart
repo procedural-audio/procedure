@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
 import '../style/dropdown.dart';
 
 class DebugSettingsWidget extends StatefulWidget {

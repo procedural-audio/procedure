@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/io.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
-import '../style/buttons.dart';
 import '../style/dropdown.dart';
 
 class MidiSettingsWidget extends StatefulWidget {
-  const MidiSettingsWidget({super.key});
+  const MidiSettingsWidget({super.key, this.audioManager});
+
+  final AudioManager? audioManager;
 
   @override
   State<MidiSettingsWidget> createState() => _MidiSettingsWidgetState();
@@ -19,7 +21,6 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
   String? selectedOutputDevice;
   
   bool isLoading = true;
-  bool enableMidi = false;
 
   @override
   void initState() {
@@ -28,26 +29,36 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
   }
 
   Future<void> loadMidiConfig() async {
-    // TODO: Implement backend integration
-    // For now, just simulate loading
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    setState(() {
-      // Mock data for now
-      availableInputDevices = [
-        'MIDI Keyboard',
-        'USB MIDI Interface',
-        'Virtual MIDI Port',
-      ];
-      availableOutputDevices = [
-        'MIDI Out Port 1',
-        'USB MIDI Interface',
-        'Virtual MIDI Port',
-      ];
-      selectedInputDevice = availableInputDevices.isNotEmpty ? availableInputDevices.first : null;
-      selectedOutputDevice = availableOutputDevices.isNotEmpty ? availableOutputDevices.first : null;
-      isLoading = false;
-    });
+    try {
+      if (widget.audioManager == null) {
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      
+      // Get current MIDI configuration
+      final currentConfig = await widget.audioManager!.getMidiSetup();
+      
+      // Get available devices
+      final inputDevices = await widget.audioManager!.getMidiInputDevices();
+      final outputDevices = await widget.audioManager!.getMidiOutputDevices();
+      
+      setState(() {
+        // Add "None" option if no devices are available or as a default option
+        availableInputDevices = inputDevices.isEmpty ? ['None'] : ['None', ...inputDevices];
+        availableOutputDevices = outputDevices.isEmpty ? ['None'] : ['None', ...outputDevices];
+        
+        selectedInputDevice = currentConfig.inputDevice.isNotEmpty ? currentConfig.inputDevice : 'None';
+        selectedOutputDevice = currentConfig.outputDevice.isNotEmpty ? currentConfig.outputDevice : 'None';
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading MIDI config: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -63,113 +74,63 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
                 color: Colors.white,
               ),
             )
+          else if (widget.audioManager == null)
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.warning,
+                    size: 48,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Audio System Unavailable',
+                    style: AppTextStyles.headingSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'The audio system is not currently initialized. MIDI settings will be available once the audio system is running.',
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textMuted,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
           else
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Enable MIDI Toggle
-                Row(
-                  children: [
-                    Switch(
-                      value: enableMidi,
-                      onChanged: (value) {
-                        setState(() {
-                          enableMidi = value;
-                        });
-                        _autoSaveConfiguration();
-                      },
-                      activeColor: AppColors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Enable MIDI',
-                      style: AppTextStyles.headingSmall,
-                    ),
-                  ],
+                // Input Device Selection
+                AppDropdownWithLabel<String>(
+                  label: 'MIDI Input Device:',
+                  value: selectedInputDevice,
+                  items: availableInputDevices,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedInputDevice = newValue;
+                    });
+                    _autoSaveConfiguration();
+                  },
                 ),
                 
                 const SizedBox(height: 20),
                 
-                if (enableMidi) ...[
-                  // Input Device Selection
-                  AppDropdownWithLabel<String>(
-                    label: 'MIDI Input Device:',
-                    value: selectedInputDevice,
-                    items: availableInputDevices,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedInputDevice = newValue;
-                      });
-                      _autoSaveConfiguration();
-                    },
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Output Device Selection
-                  AppDropdownWithLabel<String>(
-                    label: 'MIDI Output Device:',
-                    value: selectedOutputDevice,
-                    items: availableOutputDevices,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedOutputDevice = newValue;
-                      });
-                      _autoSaveConfiguration();
-                    },
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // MIDI Settings
-                  Text(
-                    'MIDI Settings',
-                    style: AppTextStyles.headingSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  _buildCheckbox(
-                    'Enable MIDI Clock',
-                    true,
-                    (value) {
-                      // TODO: Handle MIDI clock setting
-                    },
-                  ),
-                  
-                  _buildCheckbox(
-                    'Enable MIDI Transport',
-                    false,
-                    (value) {
-                      // TODO: Handle MIDI transport setting
-                    },
-                  ),
-                  
-                  _buildCheckbox(
-                    'Enable MIDI Program Change',
-                    true,
-                    (value) {
-                      // TODO: Handle MIDI program change setting
-                    },
-                  ),
-                  
-                ] else ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppColors.backgroundBorder,
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      'MIDI is currently disabled. Enable MIDI to configure input and output devices.',
-                      style: AppTextStyles.body.copyWith(color: AppColors.textMuted),
-                    ),
-                  ),
-                ],
+                // Output Device Selection
+                AppDropdownWithLabel<String>(
+                  label: 'MIDI Output Device:',
+                  value: selectedOutputDevice,
+                  items: availableOutputDevices,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedOutputDevice = newValue;
+                    });
+                    _autoSaveConfiguration();
+                  },
+                ),
               ],
             ),
         ],
@@ -177,33 +138,25 @@ class _MidiSettingsWidgetState extends State<MidiSettingsWidget> {
     );
   }
 
-  Widget _buildCheckbox(String label, bool value, Function(bool) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Checkbox(
-            value: value,
-            onChanged: (newValue) {
-              onChanged(newValue ?? false);
-              _autoSaveConfiguration();
-            },
-            activeColor: AppColors.primary,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppTextStyles.body,
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _autoSaveConfiguration() async {
     try {
-      // TODO: Implement backend integration
-      await Future.delayed(const Duration(milliseconds: 100)); // Simulate save
+      if (widget.audioManager == null) {
+        return;
+      }
+      
+      // Create configuration object
+      final config = FlutterMidiConfiguration(
+        inputDevice: selectedInputDevice == 'None' ? '' : (selectedInputDevice ?? ''),
+        outputDevice: selectedOutputDevice == 'None' ? '' : (selectedOutputDevice ?? ''),
+        enabled: true, // MIDI is always enabled when devices are configured
+        clockEnabled: false, // Not configurable in UI
+        transportEnabled: false, // Not configurable in UI
+        programChangeEnabled: false, // Not configurable in UI
+      );
+      
+      // Set the configuration
+      await widget.audioManager!.setMidiSetup(config: config);
       
       // Optional: Show brief success indicator (comment out to reduce noise)
       // _showSuccess('MIDI configuration saved');
