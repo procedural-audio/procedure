@@ -37,17 +37,31 @@ class App extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         splashColor: Colors.transparent,
+        scaffoldBackgroundColor: AppColors.background,
+        canvasColor: AppColors.background,
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.linux: ZoomPageTransitionsBuilder(),
-            TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
+            TargetPlatform.linux: ZoomPageTransitionsBuilder(
+              backgroundColor: AppColors.background,
+            ),
+            TargetPlatform.macOS: ZoomPageTransitionsBuilder(
+              backgroundColor: AppColors.background,
+            ),
           },
         ),
       ),
-      home: Scaffold(
-        backgroundColor: const Color.fromRGBO(20, 20, 20, 1.0),
-        body: TitleBar(child: HomeWidget(audioManager: audioManager))
-      ),
+      builder: (context, child) {
+        // Wrap the entire app with TitleBar so it stays on top of all routes
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: TitleBar(
+            child: ClipRect(
+              child: child ?? Container()
+            )
+          ),
+        );
+      },
+      home: HomeWidget(audioManager: audioManager),
     );
   }
 }
