@@ -2,41 +2,146 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:metasampler/home.dart';
 import 'package:metasampler/settings.dart';
+import 'package:metasampler/settings/settings.dart';
 import 'package:metasampler/style/colors.dart';
+import 'package:metasampler/window.dart';
 
 import 'project/project.dart';
+import 'project/info.dart';
 import 'titleBar.dart';
 import 'project/browser.dart';
 
 import 'package:metasampler/bindings/frb_generated.dart';
 import 'package:metasampler/bindings/api/io.dart';
+import 'package:metasampler/settings.dart' as old_settings;
+
+late AudioManager _audioManager;
+
+final GoRouter _router = GoRouter(
+  initialLocation: '/projects',
+  observers: [TitleBar.navigatorObserver],
+  routes: [
+    ShellRoute(
+      builder: (context, state, child) => Window(child: child),
+      routes: [
+        ShellRoute(
+          builder: (context, state, child) => HomeWidget(
+            audioManager: _audioManager,
+            child: child,
+          ),
+          routes: [
+            GoRoute(
+              path: '/projects',
+              builder: (context, state) => ProjectsBrowser(audioManager: _audioManager),
+            ),
+            GoRoute(
+              path: '/modules',
+              builder: (context, state) => ModulesPage(),
+            ),
+            GoRoute(
+              path: '/samples',
+              builder: (context, state) => SamplesPage(),
+            ),
+            GoRoute(
+              path: '/community',
+              builder: (context, state) => CommunityPage(),
+            ),
+            GoRoute(
+              path: '/settings',
+              builder: (context, state) => SettingsWidget(audioManager: _audioManager),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/project/:projectName/preset/:presetName',
+          builder: (context, state) {
+            final projectName = Uri.decodeComponent(state.pathParameters['projectName']!);
+            final presetName = Uri.decodeComponent(state.pathParameters['presetName']!);
+            
+            // If no project data, show loading or redirect to projects
+            return FutureBuilder<Project?>(
+              future: _loadProject(projectName, presetName),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    color: const Color.fromRGBO(10, 10, 10, 1.0),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                } else if (snapshot.hasData && snapshot.data != null) {
+                  return Theme(
+                    data: ThemeData(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: Material(
+                      color: const Color.fromRGBO(10, 10, 10, 1.0),
+                      child: snapshot.data!,
+                    ),
+                  );
+                } else {
+                  // Project not found, redirect to projects
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.go('/projects');
+                  });
+                  return Container();
+                }
+              },
+            );
+          },
+        ),
+      ],
+    ),
+  ],
+);
+
+Future<Project?> _loadProject(String projectName, String presetName) async {
+  try {
+    // Get projects directory
+    final projectsDir = await old_settings.SettingsService.getProjectsDirectory();
+    if (projectsDir == null) return null;
+    
+    // Find project directory
+    final projectDirectory = Directory('$projectsDir/$projectName');
+    if (!await projectDirectory.exists()) return null;
+    
+    // Load project info
+    final projectInfo = await ProjectInfo.load(projectDirectory);
+    if (projectInfo == null) return null;
+    
+    // Load project with main directory
+    final mainDir = Directory(projectsDir).parent;
+    final tempMainDirectory = old_settings.MainDirectory(mainDir);
+    
+    final project = await Project.load(projectInfo, tempMainDirectory);
+    return project;
+  } catch (e) {
+    print('Error loading project $projectName: $e');
+    return null;
+  }
+}
 
 Future<void> main(List<String> args) async {
   await RustLib.init();
 
   WidgetsFlutterBinding.ensureInitialized();
-  AudioManager audioManager = AudioManager();
+  _audioManager = AudioManager();
 
-  runApp(
-    App(
-      project: ValueNotifier(null),
-      audioManager: audioManager,
-    ),
-  );
+  runApp(App());
 }
 
 class App extends StatelessWidget {
-  App({super.key, required this.project, required this.audioManager});
-
-  final ValueNotifier<Project?> project;
-  final AudioManager? audioManager;
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorObservers: [TitleBar.navigatorObserver],
+    return MaterialApp.router(
+      routerConfig: _router,
+      title: 'Procedure',
       theme: ThemeData(
         splashColor: Colors.transparent,
         scaffoldBackgroundColor: AppColors.backgroundDark,
@@ -52,35 +157,66 @@ class App extends StatelessWidget {
           },
         ),
       ),
-      builder: (context, child) {
-        // Create TitleBar with observer callback
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          body: Overlay(
-            initialEntries: [
-              OverlayEntry(
-                builder: (context) => TitleBarWrapper(
-                  child: ClipRect(
-                    child: child ?? Container()
-                  )
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-      home: HomeWidget(audioManager: audioManager),
     );
   }
 }
 
-class TitleBarWrapper extends StatelessWidget {
-  const TitleBarWrapper({super.key, required this.child});
-  
-  final Widget child;
-  
+// Placeholder pages
+class ModulesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return TitleBar(child: child);
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Center(
+        child: Text('Modules Page - Coming Soon'),
+      ),
+    );
+  }
+}
+
+class SamplesPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Center(
+        child: Text('Samples Page - Coming Soon'),
+      ),
+    );
+  }
+}
+
+class CommunityPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      child: Center(
+        child: Text('Community Page - Coming Soon'),
+      ),
+    );
+  }
+}
+
+// Custom page for no transitions
+class NoTransitionPage<T> extends Page<T> {
+  const NoTransitionPage({
+    required this.child,
+    super.key,
+    super.name,
+    super.arguments,
+    super.restorationId,
+  });
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder<T>(
+      settings: this,
+      pageBuilder: (context, animation, _) => child,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    );
   }
 }

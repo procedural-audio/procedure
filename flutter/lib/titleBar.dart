@@ -1,12 +1,12 @@
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:metasampler/style/colors.dart';
 import 'package:metasampler/preset/browser.dart';
 import 'dart:io';
 
 class TitleBarNavigatorObserver extends NavigatorObserver {
   static TitleBarNavigatorObserver? _instance;
-  void Function(String?, Map<String, dynamic>?)? _onRouteChanged;
   NavigatorState? _navigatorState;
   
   static TitleBarNavigatorObserver get instance {
@@ -16,43 +16,17 @@ class TitleBarNavigatorObserver extends NavigatorObserver {
   
   TitleBarNavigatorObserver._();
   
-  void setCallback(void Function(String?, Map<String, dynamic>?) callback) {
-    _onRouteChanged = callback;
-  }
-  
   NavigatorState? get navigatorState => _navigatorState;
   
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
     _navigatorState = navigator;
-    _updateRoute(route);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    if (previousRoute != null) {
-      _updateRoute(previousRoute);
-    } else {
-      _onRouteChanged?.call(null, null);
-    }
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (newRoute != null) {
-      _updateRoute(newRoute);
-    }
-  }
-
-  void _updateRoute(Route<dynamic> route) {
-    final routeName = route.settings.name;
-    final arguments = route.settings.arguments;
-    final argumentsMap = arguments is Map<String, dynamic> ? arguments : <String, dynamic>{};
-    
-    _onRouteChanged?.call(routeName, argumentsMap);
   }
 }
 
@@ -78,8 +52,6 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
   bool _isModuleBrowserOpen = false;
   bool _isSampleBrowserOpen = false;
   bool _isPresetBrowserOpen = false;
-  String? _currentRoute;
-  String? _projectName;
   OverlayEntry? _presetBrowserOverlay;
   
   late AnimationController _moduleBrowserController;
@@ -108,9 +80,6 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       parent: _sampleBrowserController,
       curve: Curves.easeInOut,
     );
-    
-    // Connect to the navigator observer
-    TitleBarNavigatorObserver.instance.setCallback(_onRouteChanged);
   }
 
   @override
@@ -130,7 +99,11 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
   }
   
   void _openPresetBrowser() {
-    if (_currentRoute != "/project" || _projectName == null) return;
+    final routerState = GoRouterState.of(context);
+    final currentRoute = routerState.uri.path;
+    final projectName = routerState.pathParameters['projectName'];
+    
+    if (!currentRoute.startsWith("/project/") || projectName == null) return;
     
     setState(() {
       _isPresetBrowserOpen = true;
@@ -186,17 +159,8 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
       ),
     );
     
-    // Insert overlay using the title bar's context (now has overlay access)
-    try {
-      Overlay.of(context).insert(_presetBrowserOverlay!);
-    } catch (e) {
-      // If overlay insertion fails, clean up and reset state
-      _presetBrowserOverlay = null;
-      setState(() {
-        _isPresetBrowserOpen = false;
-      });
-      print('Failed to insert overlay: $e');
-    }
+    // Insert overlay
+    Overlay.of(context).insert(_presetBrowserOverlay!);
   }
   
   void _closePresetBrowser() {
@@ -207,49 +171,45 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
     });
   }
   
-  void _onRouteChanged(String? routeName, Map<String, dynamic>? arguments) {
-    // Defer setState to avoid calling it during build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _currentRoute = routeName;
-          _projectName = arguments?['projectName'];
-        });
-        
-        // If we exit the project, close all browsers
-        if (routeName != "/project") {
-          _closePresetBrowser();
-          if (_isModuleBrowserOpen) {
-            setState(() {
-              _isModuleBrowserOpen = false;
-              _moduleBrowserController.reverse();
-            });
-          }
-          if (_isSampleBrowserOpen) {
-            setState(() {
-              _isSampleBrowserOpen = false;
-              _sampleBrowserController.reverse();
-            });
-          }
-        }
-      }
-    });
-  }
-
-
   String _getRouteDisplayName() {
-    if (_currentRoute == null) {
-      return "Home";
+    final routerState = GoRouterState.of(context);
+    final currentRoute = routerState.uri.path;
+    final pathParameters = routerState.pathParameters;
+    
+    // Handle RESTful routes
+    if (currentRoute.startsWith("/project/") && currentRoute.contains("/preset/")) {
+      final projectName = pathParameters['projectName'];
+      final presetName = pathParameters['presetName'];
+      
+      if (projectName != null && presetName != null) {
+        return "${Uri.decodeComponent(projectName)} / ${Uri.decodeComponent(presetName)}";
+      }
+      // Extract from route if parameters are missing
+      final parts = currentRoute.split('/');
+      if (parts.length >= 5) {
+        return "${Uri.decodeComponent(parts[2])} / ${Uri.decodeComponent(parts[4])}";
+      }
     }
     
-    switch (_currentRoute) {
-      case "/project":
-        return _projectName ?? "Project";
+    // Handle simple routes
+    switch (currentRoute) {
       case "/":
-      case null:
-        return "Home";
+      case "/projects":
+        return "Projects";
+      case "/modules":
+        return "Modules";
+      case "/samples":
+        return "Samples";
+      case "/community":
+        return "Community";
+      case "/settings":
+        return "Settings";
       default:
-        return _currentRoute!.startsWith("/") ? _currentRoute!.substring(1) : _currentRoute!;
+        // Clean up the route for display
+        if (currentRoute.startsWith("/")) {
+          return currentRoute.substring(1).replaceAll('/', ' / ');
+        }
+        return currentRoute;
     }
   }
 
@@ -287,6 +247,31 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final routerState = GoRouterState.of(context);
+    final currentRoute = routerState.uri.path;
+    final isInProject = currentRoute.startsWith("/project/");
+    
+    // Close browsers when not in project
+    if (!isInProject) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isPresetBrowserOpen) {
+          _closePresetBrowser();
+        }
+        if (_isModuleBrowserOpen) {
+          setState(() {
+            _isModuleBrowserOpen = false;
+            _moduleBrowserController.reverse();
+          });
+        }
+        if (_isSampleBrowserOpen) {
+          setState(() {
+            _isSampleBrowserOpen = false;
+            _sampleBrowserController.reverse();
+          });
+        }
+      });
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: widget.color,
@@ -372,9 +357,9 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
   }
 
   Widget _buildTitleBar() {
-    final navigator = TitleBarNavigatorObserver.instance.navigatorState;
-    final canGoBack = navigator?.canPop() ?? false;
-    final isInProject = _currentRoute == "/project";
+    final routerState = GoRouterState.of(context);
+    final currentRoute = routerState.uri.path;
+    final isInProject = currentRoute.startsWith("/project/");
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -387,15 +372,13 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Back button (show if we can go back)
-              if (canGoBack) ...[
+              // Back button (show if in project)
+              if (isInProject) ...[
                 _buildTitleBarButton(
                   icon: Icons.arrow_back,
                   isActive: false,
                   onTap: () {
-                    if (navigator != null && navigator.canPop()) {
-                      navigator.pop();
-                    }
+                    context.go('/projects');
                   },
                   tooltip: 'Back',
                 ),

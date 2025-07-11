@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/patch/newTopBar.dart';
@@ -102,6 +103,22 @@ class _Project extends State<Project> {
 
   void loadPreset(PresetInfo info) async {
     print("Loading preset: ${info.name}");
+    
+    var newPreset = await Preset.load(info, widget.plugins, uiVisible);
+    if (newPreset != null) {
+      setState(() {
+        widget.preset = newPreset;
+      });
+      
+      // Update route with go_router
+      if (mounted) {
+        final encodedProjectName = Uri.encodeComponent(widget.info.name);
+        final encodedPresetName = Uri.encodeComponent(info.name);
+        context.go('/project/$encodedProjectName/preset/$encodedPresetName',
+          extra: widget, // Pass the current widget
+        );
+      }
+    }
   }
 
   void renamePreset(PresetInfo info, String newName) async {
@@ -111,6 +128,15 @@ class _Project extends State<Project> {
       setState(() {
         info.directory = Directory(newPath);
       });
+      
+      // Update route if this is the current preset
+      if (widget.preset.info == info && mounted) {
+        final encodedProjectName = Uri.encodeComponent(widget.info.name);
+        final encodedPresetName = Uri.encodeComponent(newName);
+        context.go('/project/$encodedProjectName/preset/$encodedPresetName',
+          extra: widget, // Pass the current widget
+        );
+      }
     }
   }
 
@@ -125,7 +151,7 @@ class _Project extends State<Project> {
     await save();
 
     api.clearPatch();
-    Navigator.pop(context);
+    context.go('/projects');
   }
 
   void newPreset() async {
@@ -182,47 +208,61 @@ class _Project extends State<Project> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          child: widget.preset,
-        ),
-        Positioned(
-          left: 0,
-          top: 0,
-          child: NewTopBar(
-            loadedPreset: widget.preset,
-            projectInfo: widget.info,
-            onEdit: () {
-            },
-            onPresetsButtonTap: () {
-              setState(() {
-                presetsVisible = !presetsVisible;
-              });
-            },
-            onViewSwitch: () {
-              setState(() {
-                uiVisible = !uiVisible;
-              });
-            },
-            onUserInterfaceEdit: () {
-            },
-            onSave: () {
-            },
-            onUiSwitch: () {
-              print("switch");
-              setState(() {
-                uiVisible = !uiVisible;
-              });
-            },
-            onProjectClose: onProjectClose,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) {
+          return;
+        }
+        // Save project before going back
+        await save();
+        api.clearPatch();
+        if (context.mounted) {
+          context.go('/projects');
+        }
+      },
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: widget.preset,
           ),
-        ),
-      ],
+          Positioned(
+            left: 0,
+            top: 0,
+            child: NewTopBar(
+              loadedPreset: widget.preset,
+              projectInfo: widget.info,
+              onEdit: () {
+              },
+              onPresetsButtonTap: () {
+                setState(() {
+                  presetsVisible = !presetsVisible;
+                });
+              },
+              onViewSwitch: () {
+                setState(() {
+                  uiVisible = !uiVisible;
+                });
+              },
+              onUserInterfaceEdit: () {
+              },
+              onSave: () {
+              },
+              onUiSwitch: () {
+                print("switch");
+                setState(() {
+                  uiVisible = !uiVisible;
+                });
+              },
+              onProjectClose: onProjectClose,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

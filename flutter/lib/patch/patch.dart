@@ -64,35 +64,133 @@ class Patch extends StatefulWidget {
     var contents = await info.patchFile.readAsString();
     var json = jsonDecode(contents);
 
-    for (var element in json["nodes"]) {
-      print(element);
-      // Node.from(element);
-    }
-
-    return Patch(
+    var patch = Patch(
       info: info,
       plugins: plugins
     );
+
+    // Load nodes
+    Map<int, Node> nodeMap = {};
+    if (json["nodes"] != null) {
+      for (var nodeData in json["nodes"]) {
+        try {
+          var module = Module.fromState(nodeData["module"]);
+          if (module != null) {
+            var position = Offset(
+              nodeData["position"]["x"]?.toDouble() ?? 0.0,
+              nodeData["position"]["y"]?.toDouble() ?? 0.0,
+            );
+            
+            var node = Node(
+              module: module,
+              patch: patch,
+              onAddConnector: patch._addConnectorFromLoad,
+              onRemoveConnections: patch._removeConnectionsFromLoad,
+              position: position,
+            );
+            
+            // Store original ID for connector reconstruction
+            var originalId = nodeData["id"] ?? 0;
+            nodeMap[originalId] = node;
+            patch.nodes.value = [...patch.nodes.value, node];
+          }
+        } catch (e) {
+          print("Failed to load node: $e");
+        }
+      }
+    }
+
+    // Load connectors
+    if (json["connectors"] != null) {
+      for (var connectorData in json["connectors"]) {
+        try {
+          var startNodeId = connectorData["startNodeId"];
+          var endNodeId = connectorData["endNodeId"];
+          var startNode = nodeMap[startNodeId];
+          var endNode = nodeMap[endNodeId];
+          
+          if (startNode != null && endNode != null) {
+            // Find matching endpoints by type and annotation
+            Pin? startPin = _findPinByEndpoint(
+              startNode, 
+              connectorData["startEndpointType"], 
+              connectorData["startEndpointAnnotation"]
+            );
+            Pin? endPin = _findPinByEndpoint(
+              endNode, 
+              connectorData["endEndpointType"], 
+              connectorData["endEndpointAnnotation"]
+            );
+            
+            if (startPin != null && endPin != null) {
+              var connector = Connector(
+                start: startPin,
+                end: endPin,
+                patch: patch,
+              );
+              patch.connectors.value = [...patch.connectors.value, connector];
+            }
+          }
+        } catch (e) {
+          print("Failed to load connector: $e");
+        }
+      }
+    }
+
+    // Note: updatePlayback will be called when the patch widget is built
+
+    return patch;
+  }
+
+  static Pin? _findPinByEndpoint(Node node, String type, String annotation) {
+    for (var pin in node.pins) {
+      if (pin.endpoint.type == type && pin.endpoint.annotation == annotation) {
+        return pin;
+      }
+    }
+    return null;
+  }
+
+  void _addConnectorFromLoad(Pin start, Pin end) {
+    // Used during loading - don't add to list as it's already being managed
+  }
+
+  void _removeConnectionsFromLoad(Pin pin) {
+    // Used during loading - don't remove as connections are being reconstructed
   }
 
   Future<void> save() async {
     List<Map<String, dynamic>> nodeStates = [];
+    List<Map<String, dynamic>> connectorStates = [];
 
+    // Serialize nodes with ID and CMajor source
     for (var node in nodes.value) {
-      var state = node.getState();
-      print(state);
-      nodeStates.add(state);
+      nodeStates.add({
+        "id": node.rawNode?.id ?? 0,
+        "source": node.module.source,
+        "position": {
+          "x": node.position.value.dx,
+          "y": node.position.value.dy,
+        },
+        "module": node.module.getState(),
+      });
     }
 
-    /*List<Map<String, dynamic>> connectorStates = [];
+    // Serialize connectors
     for (var connector in connectors.value) {
-      var state = connector.getState();
-      connectorStates.add(state);
-    }*/
+      connectorStates.add({
+        "startNodeId": connector.start.node.rawNode?.id ?? 0,
+        "startEndpointType": connector.start.endpoint.type,
+        "startEndpointAnnotation": connector.start.endpoint.annotation,
+        "endNodeId": connector.end.node.rawNode?.id ?? 0,
+        "endEndpointType": connector.end.endpoint.type,
+        "endEndpointAnnotation": connector.end.endpoint.annotation,
+      });
+    }
 
     var contents = jsonEncode({
       "nodes": nodeStates,
-      "connectors": []
+      "connectors": connectorStates
     });
 
     // Write the patch file
@@ -100,9 +198,7 @@ class Patch extends StatefulWidget {
 
     print("Saved patch file:");
     print(info.patchFile.path);
-    for (var state in nodeStates) {
-      print(state);
-    }
+    print("Nodes: ${nodeStates.length}, Connectors: ${connectorStates.length}");
   }
 
   void addNewConnector() {

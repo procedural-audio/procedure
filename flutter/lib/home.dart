@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:metasampler/style/colors.dart';
 import 'package:metasampler/bindings/api/io.dart';
 import 'style/text.dart';
@@ -8,27 +9,26 @@ import 'project/audio_config.dart';
 import 'plugin/config.dart';
 import 'settings/settings.dart';
 
-class HomeWidget extends StatefulWidget {
-  const HomeWidget({super.key, this.audioManager});
+class HomeWidget extends StatelessWidget {
+  const HomeWidget({
+    super.key, 
+    required this.child,
+    this.audioManager, 
+  });
   
   final AudioManager? audioManager;
+  final Widget child;
 
-  @override
-  State<HomeWidget> createState() => _HomeWidgetState();
-}
-
-class _HomeWidgetState extends State<HomeWidget> {
-  int selectedIndex = 0;
-  void showAudioConfigDialog() {
+  void showAudioConfigDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AudioConfigDialog(audioManager: widget.audioManager);
+        return AudioConfigDialog(audioManager: audioManager);
       },
     );
   }
 
-  void showPluginConfigDialog() {
+  void showPluginConfigDialog(BuildContext context) {
     showPluginConfig(
       context,
       [], // Empty plugin list for now
@@ -40,6 +40,8 @@ class _HomeWidgetState extends State<HomeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final currentRoute = GoRouterState.of(context).uri.path;
+    
     return Row(
       children: [
         // Sidebar
@@ -71,51 +73,41 @@ class _HomeWidgetState extends State<HomeWidget> {
                     IconTextButtonLarge(
                       icon: Icons.folder,
                       label: 'Projects',
-                      isSelected: selectedIndex == 0,
+                      isSelected: currentRoute == '/projects',
                       onTap: () {
-                        setState(() {
-                          selectedIndex = 0;
-                        });
+                        context.go('/projects');
                       },
                     ),
                     IconTextButtonLarge(
                       icon: Icons.task,
                       label: 'Modules',
-                      isSelected: selectedIndex == 1,
+                      isSelected: currentRoute == '/modules',
                       onTap: () {
-                        setState(() {
-                          selectedIndex = 1;
-                        });
+                        context.go('/modules');
                       },
                     ),
                     IconTextButtonLarge(
                       icon: Icons.graphic_eq,
                       label: 'Samples',
-                      isSelected: selectedIndex == 2,
+                      isSelected: currentRoute == '/samples',
                       onTap: () {
-                        setState(() {
-                          selectedIndex = 2;
-                        });
+                        context.go('/samples');
                       },
                     ),
                     IconTextButtonLarge(
                       icon: Icons.web,
                       label: 'Community',
-                      isSelected: selectedIndex == 3,
+                      isSelected: currentRoute == '/community',
                       onTap: () {
-                        setState(() {
-                          selectedIndex = 3;
-                        });
+                        context.go('/community');
                       },
                     ),
                     IconTextButtonLarge(
                       icon: Icons.settings,
                       label: 'Settings',
-                      isSelected: selectedIndex == 4,
+                      isSelected: currentRoute == '/settings',
                       onTap: () {
-                        setState(() {
-                          selectedIndex = 4;
-                        });
+                        context.go('/settings');
                       },
                     ),
                   ],
@@ -133,7 +125,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                     label: 'Audio',
                     isSelected: false,
                     onTap: () {
-                      showAudioConfigDialog();
+                      showAudioConfigDialog(context);
                     },
                   ),
                   IconTextButtonLarge(
@@ -141,7 +133,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                     label: 'Plugins',
                     isSelected: false,
                     onTap: () {
-                      showPluginConfigDialog();
+                      showPluginConfigDialog(context);
                     },
                   ),
                   IconTextButtonLarge(
@@ -161,35 +153,24 @@ class _HomeWidgetState extends State<HomeWidget> {
         Expanded(
           child: Container(
             color: AppColors.background,
-            child: selectedIndex == 4 
-              ? SettingsWidget(audioManager: widget.audioManager)
-              : selectedIndex == 0 
-                ? ProjectsBrowser(
-                    audioManager: widget.audioManager,
-                  )
-                : Center(
-                    child: Text(
-                      'Selected: ${getSelectedLabel()}',
-                      style: AppTextStyles.headingLarge,
-                    ),
-                  ),
+            child: child,
           ),
         ),
       ],
     );
   }
 
-  String getSelectedLabel() {
-    switch (selectedIndex) {
-      case 0:
+  String _getRouteDisplayName(String route) {
+    switch (route) {
+      case '/projects':
         return 'Projects';
-      case 1:
+      case '/modules':
         return 'Modules';
-      case 2:
+      case '/samples':
         return 'Samples';
-      case 3:
+      case '/community':
         return 'Community';
-      case 4:
+      case '/settings':
         return 'Settings';
       default:
         return 'Unknown';

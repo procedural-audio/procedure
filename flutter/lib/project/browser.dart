@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart' as old_settings;
@@ -143,24 +144,12 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     var project = await Project.load(info, tempMainDirectory);
 
     if (project != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          settings: RouteSettings(
-            name: "/project",
-            arguments: {'projectName': info.name},
-          ),
-          builder: (context) => Theme(
-            data: ThemeData(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-            child: Material(
-              color: const Color.fromRGBO(10, 10, 10, 1.0),
-              child: project,
-            ),
-          ),
-        ),
+      // URL encode the names to handle special characters and spaces
+      final encodedProjectName = Uri.encodeComponent(info.name);
+      final encodedPresetName = Uri.encodeComponent(project.preset.info.name);
+      
+      context.push('/project/$encodedProjectName/preset/$encodedPresetName', 
+        extra: project, // Pass the project as extra data
       );
     }
   }

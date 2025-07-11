@@ -122,4 +122,12 @@ class Module {
       "source": source,
     };
   }
+
+  static Module? fromState(Map<String, dynamic> state) {
+    return parse(
+      state["name"] ?? "",
+      List<String>.from(state["category"] ?? []),
+      state["source"] ?? "",
+    );
+  }
 }
