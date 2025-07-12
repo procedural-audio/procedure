@@ -4,23 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/patch/module.dart';
-import 'package:metasampler/preset/preset.dart';
+import 'package:metasampler/patch/patch_canvas.dart';
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' as ui;
 
-import '../settings.dart';
 import '../preset/info.dart';
 import 'pin.dart';
 import '../plugin/plugin.dart';
 import 'connector.dart';
-import '../project/project.dart';
 import 'node.dart';
 import 'right_click.dart';
 
 import '../bindings/api/graph.dart' as api;
-import '../project/theme.dart';
 
 /* LIBRARY */
 
@@ -30,33 +26,34 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
-class Patch extends StatefulWidget {
-  Patch({
-    // required this.rawPatch,
-    required this.info,
-    required this.plugins,
-  }) : super(key: UniqueKey());
+// Callback types
+typedef NodeCallback = void Function(Module module, Offset position);
+typedef ConnectorCallback = void Function(Pin start, Pin end);
+typedef NodeRemoveCallback = void Function(Node node);
+typedef NodeMoveCallback = void Function(Node node, Offset oldPosition, Offset newPosition);
+typedef ConnectorRemoveCallback = void Function(Connector connector);
+typedef BatchNodeRemoveCallback = void Function(List<Node> nodes);
 
-  final ValueNotifier<List<Node>> nodes = ValueNotifier([]);
-  final ValueNotifier<List<Connector>> connectors = ValueNotifier([]);
-  final ValueNotifier<List<Node>> selectedNodes = ValueNotifier([]);
-
+// Patch data model
+class Patch {
   final PresetInfo info;
-  final List<Plugin> plugins;
-  final NewConnector newConnector = NewConnector();
-  final ValueNotifier<Offset> moveToValue = ValueNotifier(Offset.zero);
+  final List<Node> nodes;
+  final List<Connector> connectors;
 
-  final double sampleRate = 44100.0;
-  final int blockSize = 512;
+  Patch({
+    required this.info,
+    this.nodes = const [],
+    this.connectors = const [],
+  });
 
-  static Patch from(PresetInfo info, List<Plugin> plugins) {
-    return Patch(
-      info: info,
-      plugins: plugins,
-    );
-  }
-
-  static Future<Patch?> load(PresetInfo info, List<Plugin> plugins) async {
+  static Future<Patch?> load(PresetInfo info, List<Plugin> plugins, {
+    NewConnector? newConnector,
+    void Function(Offset)? onNewConnectorDrag,
+    void Function(Pin)? onNewConnectorSetStart,
+    void Function(Pin?)? onNewConnectorSetEnd,
+    VoidCallback? onNewConnectorReset,
+    VoidCallback? onAddNewConnector,
+  }) async {
     if (!await info.patchFile.exists()) {
       return null;
     }
@@ -64,13 +61,12 @@ class Patch extends StatefulWidget {
     var contents = await info.patchFile.readAsString();
     var json = jsonDecode(contents);
 
-    var patch = Patch(
-      info: info,
-      plugins: plugins
-    );
+    // Create a temporary patch instance for loading
+    var tempPatch = Patch(info: info);
 
     // Load nodes
     Map<int, Node> nodeMap = {};
+    List<Node> nodes = [];
     if (json["nodes"] != null) {
       for (var nodeData in json["nodes"]) {
         try {
@@ -83,16 +79,22 @@ class Patch extends StatefulWidget {
             
             var node = Node(
               module: module,
-              patch: patch,
-              onAddConnector: patch._addConnectorFromLoad,
-              onRemoveConnections: patch._removeConnectionsFromLoad,
+              patch: tempPatch,
+              onAddConnector: (start, end) {}, // Will be set by PatchEditor
+              onRemoveConnections: (pin) {}, // Will be set by PatchEditor
               position: position,
+              newConnector: newConnector ?? NewConnector(),
+              onNewConnectorDrag: onNewConnectorDrag ?? (offset) {},
+              onNewConnectorSetStart: onNewConnectorSetStart ?? (pin) {},
+              onNewConnectorSetEnd: onNewConnectorSetEnd ?? (pin) {},
+              onNewConnectorReset: onNewConnectorReset ?? () {},
+              onAddNewConnector: onAddNewConnector ?? () {},
             );
             
             // Store original ID for connector reconstruction
             var originalId = nodeData["id"] ?? 0;
             nodeMap[originalId] = node;
-            patch.nodes.value = [...patch.nodes.value, node];
+            nodes.add(node);
           }
         } catch (e) {
           print("Failed to load node: $e");
@@ -101,6 +103,7 @@ class Patch extends StatefulWidget {
     }
 
     // Load connectors
+    List<Connector> connectors = [];
     if (json["connectors"] != null) {
       for (var connectorData in json["connectors"]) {
         try {
@@ -126,9 +129,9 @@ class Patch extends StatefulWidget {
               var connector = Connector(
                 start: startPin,
                 end: endPin,
-                patch: patch,
+                patch: tempPatch,
               );
-              patch.connectors.value = [...patch.connectors.value, connector];
+              connectors.add(connector);
             }
           }
         } catch (e) {
@@ -137,9 +140,11 @@ class Patch extends StatefulWidget {
       }
     }
 
-    // Note: updatePlayback will be called when the patch widget is built
-
-    return patch;
+    return Patch(
+      info: info,
+      nodes: nodes,
+      connectors: connectors,
+    );
   }
 
   static Pin? _findPinByEndpoint(Node node, String type, String annotation) {
@@ -151,20 +156,12 @@ class Patch extends StatefulWidget {
     return null;
   }
 
-  void _addConnectorFromLoad(Pin start, Pin end) {
-    // Used during loading - don't add to list as it's already being managed
-  }
-
-  void _removeConnectionsFromLoad(Pin pin) {
-    // Used during loading - don't remove as connections are being reconstructed
-  }
-
   Future<void> save() async {
     List<Map<String, dynamic>> nodeStates = [];
     List<Map<String, dynamic>> connectorStates = [];
 
     // Serialize nodes with ID and CMajor source
-    for (var node in nodes.value) {
+    for (var node in nodes) {
       nodeStates.add({
         "id": node.rawNode?.id ?? 0,
         "source": node.module.source,
@@ -177,7 +174,7 @@ class Patch extends StatefulWidget {
     }
 
     // Serialize connectors
-    for (var connector in connectors.value) {
+    for (var connector in connectors) {
       connectorStates.add({
         "startNodeId": connector.start.node.rawNode?.id ?? 0,
         "startEndpointType": connector.start.endpoint.type,
@@ -200,31 +197,43 @@ class Patch extends StatefulWidget {
     print(info.patchFile.path);
     print("Nodes: ${nodeStates.length}, Connectors: ${connectorStates.length}");
   }
-
-  void addNewConnector() {
-    if (newConnector.start != null && newConnector.end != null) {
-      newConnector.start!
-          .onAddConnector(newConnector.start!, newConnector.end!);
-    }
-
-    newConnector.reset();
-  }
-
-  Map<String, dynamic> getState() {
-    return {
-      // "nodes": nodes.value.map((e) => {e.module.path, e.getState()}).toList(),
-      // "connectors": connectors.value.map((e) => e.toJson()).toList(),
-    };
-  }
-
-  @override
-  _Patch createState() => _Patch();
 }
 
-class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
+class PatchEditor extends StatefulWidget {
+  PatchEditor({
+    required this.patch,
+    required this.plugins,
+    required this.newConnector,
+    required this.onAddNode,
+    required this.onRemoveNode,
+    required this.onAddConnector,
+    required this.onRemoveConnector,
+    required this.onMoveNode,
+    required this.onBatchRemoveNodes,
+    required this.onUndo,
+    required this.onRedo,
+  }) : super(key: UniqueKey());
+
+  final Patch patch;
+  final List<Plugin> plugins;
+  final NewConnector newConnector;
+  
+  // Callbacks
+  final NodeCallback onAddNode;
+  final NodeRemoveCallback onRemoveNode;
+  final ConnectorCallback onAddConnector;
+  final ConnectorRemoveCallback onRemoveConnector;
+  final NodeMoveCallback onMoveNode;
+  final BatchNodeRemoveCallback onBatchRemoveNodes;
+  final VoidCallback onUndo;
+  final VoidCallback onRedo;
+
+  @override
+  _PatchEditor createState() => _PatchEditor();
+}
+
+class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixin {
   final TransformationController controller = TransformationController();
-  late AnimationController animationController;
-  Animation<Matrix4> animation = AlwaysStoppedAnimation(Matrix4.identity());
 
   Offset rightClickOffset = Offset.zero;
   Offset moduleAddPosition = Offset.zero;
@@ -232,12 +241,13 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
   final focusNode = FocusNode();
   late final Ticker _ticker;
+  
+  // Selected nodes managed in state
+  List<Node> selectedNodes = [];
 
   @override
   void initState() {
     super.initState();
-
-    // Plugins.modules.addListener(onModuleListChanged);
 
     _ticker = createTicker(tick);
     _ticker.start();
@@ -246,73 +256,21 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     controller.dispose();
-    // Plugins.modules.removeListener(onModuleListChanged);
-
     _ticker.dispose();
-
+    focusNode.dispose();
     super.dispose();
   }
 
   void removeNode(Node node) {
-    // Remove the node
-    widget.nodes.value = widget.nodes.value.where((n) => n != node).toList();
-
-    // Remove any connectors to the node
-    widget.connectors.value = widget.connectors.value.where((c) {
-      return c.start.node != node && c.end.node != node;
-    }).toList();
-
-    updatePlayback();
-  }
-
-  void onModuleListChanged() {
-    // Replace any nodes that have updated modules
-    /*for (var module in Plugins.modules.value) {
-      for (int j = 0; j < widget.nodes.value.length; j++) {
-        var node = widget.nodes.value[j];
-        if (node.module.name == module.name && node.module != module) {
-          print("Replacing a patch node");
-          Offset position = node.position.value;
-          removeNode(node);
-          addModule(module, position);
-          j--;
-        }
-      }
-    }*/
-
-    // Remove any nodes that are no longer in the module list
-    /*int i = 0;
-    while (i < widget.nodes.value.length) {
-      var node = widget.nodes.value[i];
-      if (!Plugins.modules.value.contains(node.module)) {
-        print("Removing node");
-        removeNode(node);
-      } else {
-        i++;
-      }
-    }*/
+    widget.onRemoveNode(node);
   }
 
   void tick(Duration elapsed) {
-    for (var node in widget.nodes.value) {
+    for (var node in widget.patch.nodes) {
       for (var widget in node.widgets) {
         widget.tick(elapsed);
       }
     }
-  }
-
-  void moveTo(Offset offset) {
-    print("LAST MOVING");
-    animation = Matrix4Tween(
-      begin: controller.value,
-      end: Matrix4.translationValues(
-        -offset.dx + MediaQuery.of(context).size.width / 2,
-        -offset.dy + MediaQuery.of(context).size.height / 2,
-        0,
-      ),
-    ).chain(CurveTween(curve: Curves.decelerate)).animate(animationController);
-
-    animationController.forward(from: 0);
   }
 
   void updatePlayback() {
@@ -323,7 +281,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     var graph = api.Graph.new();
 
     // Add all the cables to the graph
-    for (var connector in widget.connectors.value) {
+    for (var connector in widget.patch.connectors) {
       // Skip if either node is null
       if (connector.start.node.rawNode == null ||
           connector.end.node.rawNode == null) continue;
@@ -337,7 +295,7 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
     }
 
     // Add all the nodes to the graph
-    for (var node in widget.nodes.value) {
+    for (var node in widget.patch.nodes) {
       // Skip if node is null
       if (node.rawNode == null) continue;
 
@@ -350,47 +308,69 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
 
   void addModule(Module module, Offset p) {
     Offset position = Offset(roundToGrid(p.dx), roundToGrid(p.dy));
-    var node = Node(
-      module: module,
-      patch: widget,
-      onAddConnector: addConnector,
-      onRemoveConnections: removeConnectionsTo,
-      position: position,
-    );
-
-    widget.nodes.value = [...widget.nodes.value, node];
-
-    updatePlayback();
+    widget.onAddNode(module, position);
   }
 
   void addConnector(Pin start, Pin end) {
-    var connector = Connector(
-      start: start,
-      end: end,
-      patch: widget,
-    );
-
+    // Check if connection is supported
     if (api.isConnectionSupported(
       srcNode: start.node.rawNode!,
       srcEndpoint: start.endpoint,
       dstNode: end.node.rawNode!,
       dstEndpoint: end.endpoint,
     )) {
-      widget.connectors.value = [...widget.connectors.value, connector];
-      updatePlayback();
+      widget.onAddConnector(start, end);
     } else {
       print("Connection not supported");
     }
   }
 
   void removeConnectionsTo(Pin pin) {
-    var filtered = widget.connectors.value
-        .where((e) => e.start != pin && e.end != pin)
+    // This will be handled by the patch manager
+    // Find connectors to remove and call the callback
+    var connectorsToRemove = widget.patch.connectors
+        .where((e) => e.start == pin || e.end == pin)
         .toList();
-
-    if (filtered.length != widget.connectors.value.length) {
-      widget.connectors.value = filtered;
-      updatePlayback();
+    
+    for (var connector in connectorsToRemove) {
+      widget.onRemoveConnector(connector);
+    }
+  }
+  
+  // Keyboard event handlers
+  void _handleKeyEvent(KeyEvent e) {
+    if (e is KeyDownEvent) {
+      _handleUndoRedo(e);
+      _handleDeleteNodes(e);
+    }
+  }
+  
+  void _handleUndoRedo(KeyDownEvent e) {
+    if (HardwareKeyboard.instance.isControlPressed || 
+        HardwareKeyboard.instance.isMetaPressed) {
+      if (e.logicalKey == LogicalKeyboardKey.keyZ) {
+        if (HardwareKeyboard.instance.isShiftPressed) {
+          // Redo
+          widget.onRedo();
+        } else {
+          // Undo
+          widget.onUndo();
+        }
+      }
+    }
+  }
+  
+  void _handleDeleteNodes(KeyDownEvent e) {
+    if (e.logicalKey == LogicalKeyboardKey.delete ||
+        e.logicalKey == LogicalKeyboardKey.backspace) {
+      if (selectedNodes.isNotEmpty) {
+        widget.onBatchRemoveNodes(selectedNodes.toList());
+        
+        // Clear selection after removal
+        setState(() {
+          selectedNodes = [];
+        });
+      }
     }
   }
 
@@ -423,73 +403,34 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
                 });
               }
 
-              if (widget.selectedNodes.value.isNotEmpty) {
-                widget.selectedNodes.value = [];
+              if (selectedNodes.isNotEmpty) {
+                setState(() {
+                  selectedNodes = [];
+                });
               }
             },
-            child: Listener(
+            child: PatchViewer(
+              nodes: widget.patch.nodes,
+              connectors: widget.patch.connectors,
+              newConnector: widget.newConnector,
+              focusNode: focusNode,
               onPointerDown: (e) {
                 moduleAddPosition = e.localPosition;
               },
-              child: GestureDetector(
-                onTap: () {
-                  if (showRightClickMenu) {
-                    setState(() {
-                      showRightClickMenu = false;
-                    });
-                  }
+              onTap: () {
+                if (showRightClickMenu) {
+                  setState(() {
+                    showRightClickMenu = false;
+                  });
+                }
 
-                  if (widget.selectedNodes.value.isNotEmpty) {
-                    widget.selectedNodes.value = [];
-                  }
-                },
-                child: KeyboardListener(
-                  focusNode: focusNode,
-                  autofocus: true,
-                  onKeyEvent: (e) {
-                    if (e.logicalKey == LogicalKeyboardKey.delete ||
-                        e.logicalKey == LogicalKeyboardKey.backspace) {
-                      print("Get key delete");
-                      /*for (var node in widget.selectedNodes.value) {
-                        // widget.rawPatch.removeNode(node.id);
-                        widget.nodes.removeWhere((n) => n.id == node.id);
-                        widget.connectors.removeWhere((c) =>
-                            c.start.nodeId == node.id ||
-                            c.end.nodeId == node.id);
-                      }*/
-
-                      // widget.selectedNodes.value = [];
-                      setState(() {});
-                    }
-                  },
-                  child: SizedBox(
-                    width: 10000,
-                    height: 10000,
-                    child: CustomPaint(
-                      painter: Grid(),
-                      child: Listener(
-                        // Listen for new nodes
-                        child: ValueListenableBuilder<List<Node>>(
-                          valueListenable: widget.nodes,
-                          builder: (context, nodes, child) {
-                            // Listen for new connectors
-                            return ValueListenableBuilder<List<Connector>>(
-                              valueListenable: widget.connectors,
-                              builder: (context, connectors, child) {
-                                return Stack(
-                                  children: <Widget>[widget.newConnector] +
-                                      nodes +
-                                      connectors,
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+                if (selectedNodes.isNotEmpty) {
+                  setState(() {
+                    selectedNodes = [];
+                  });
+                }
+              },
+              onKeyEvent: _handleKeyEvent,
             ),
           ),
           Visibility(
@@ -514,34 +455,3 @@ class _Patch extends State<Patch> with SingleTickerProviderStateMixin {
   }
 }
 
-class Grid extends CustomPainter {
-  Grid();
-
-  @override
-  void paint(Canvas canvas, ui.Size size) {
-    final paint = Paint()
-      ..color = const Color.fromRGBO(25, 25, 25, 1.0)
-      ..strokeWidth = 1;
-
-    for (double i = 0;
-        i < size.width;
-        i += GlobalSettings.gridSize.toDouble()) {
-      var p1 = Offset(i, 0);
-      var p2 = Offset(i, size.height);
-      canvas.drawLine(p1, p2, paint);
-    }
-
-    for (double i = 0;
-        i < size.height;
-        i += GlobalSettings.gridSize.toDouble()) {
-      var p1 = Offset(0, i);
-      var p2 = Offset(size.width, i);
-      canvas.drawLine(p1, p2, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}

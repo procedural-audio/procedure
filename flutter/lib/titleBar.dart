@@ -429,6 +429,27 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
           if (isInProject) ...[
             const SizedBox(width: 8),
             
+            // Undo button
+            _buildTitleBarButton(
+              icon: Icons.undo,
+              isActive: false,
+              onTap: () {
+                // TODO: Access patch state for undo
+              },
+              tooltip: 'Undo',
+            ),
+            const SizedBox(width: 4),
+            // Redo button
+            _buildTitleBarButton(
+              icon: Icons.redo,
+              isActive: false,
+              onTap: () {
+                // TODO: Access patch state for redo
+              },
+              tooltip: 'Redo',
+            ),
+            const SizedBox(width: 8),
+            
             // Module browser toggle
             _buildTitleBarButton(
               icon: Icons.widgets,

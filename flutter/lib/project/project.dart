@@ -10,11 +10,7 @@ import 'package:metasampler/preset/preset.dart';
 
 import '../bindings/api/graph.dart' as api;
 
-import '../patch/patch.dart';
-import '../preset/browser.dart';
-import 'theme.dart';
 import '../preset/info.dart';
-import '../interface/ui.dart';
 import 'info.dart';
 
 /* Project */

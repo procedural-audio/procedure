@@ -15,6 +15,7 @@ import 'widgets/knob.dart';
 import 'patch.dart';
 import 'widgets/led.dart';
 import 'widgets/scope.dart';
+import 'connector.dart';
 
 int NODE_ID = 1;
 
@@ -119,6 +120,12 @@ class Node extends StatelessWidget {
     required this.onAddConnector,
     required this.onRemoveConnections,
     required Offset position,
+    required this.newConnector,
+    required this.onNewConnectorDrag,
+    required this.onNewConnectorSetStart,
+    required this.onNewConnectorSetEnd,
+    required this.onNewConnectorReset,
+    required this.onAddNewConnector,
   }) : super(key: UniqueKey()) {
     // Set the initial node position
     this.position.value = position;
@@ -155,6 +162,12 @@ class Node extends StatelessWidget {
             patch: patch,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
+            newConnector: newConnector,
+            onNewConnectorDrag: onNewConnectorDrag,
+            onNewConnectorSetStart: onNewConnectorSetStart,
+            onNewConnectorSetEnd: onNewConnectorSetEnd,
+            onNewConnectorReset: onNewConnectorReset,
+            onAddNewConnector: onAddNewConnector,
           ),
         );
       }
@@ -192,6 +205,12 @@ class Node extends StatelessWidget {
             patch: patch,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
+            newConnector: newConnector,
+            onNewConnectorDrag: onNewConnectorDrag,
+            onNewConnectorSetStart: onNewConnectorSetStart,
+            onNewConnectorSetEnd: onNewConnectorSetEnd,
+            onNewConnectorReset: onNewConnectorReset,
+            onAddNewConnector: onAddNewConnector,
           ),
         );
       }
@@ -202,6 +221,12 @@ class Node extends StatelessWidget {
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
+  final NewConnector newConnector;
+  final void Function(Offset) onNewConnectorDrag;
+  final void Function(Pin) onNewConnectorSetStart;
+  final void Function(Pin?) onNewConnectorSetEnd;
+  final VoidCallback onNewConnectorReset;
+  final VoidCallback onAddNewConnector;
   api.Node? rawNode;
 
   List<Pin> pins = [];
@@ -262,16 +287,16 @@ class Node extends StatelessWidget {
           top: roundToGrid(p.dy),
           child: GestureDetector(
             onTap: () {
-              if (patch.selectedNodes.value.contains(this)) {
+              /*if (patch.selectedNodes.value.contains(this)) {
                 patch.selectedNodes.value = [];
               } else {
                 patch.selectedNodes.value = [this];
-              }
+              }*/
             },
             onPanStart: (details) {
-              if (!patch.selectedNodes.value.contains(this)) {
+              /*if (!patch.selectedNodes.value.contains(this)) {
                 patch.selectedNodes.value = [this];
-              }
+              }*/
             },
             onPanUpdate: (details) {
               var x = position.value.dx + details.delta.dx;
@@ -283,59 +308,51 @@ class Node extends StatelessWidget {
               var y = roundToGrid(position.value.dy);
               position.value = Offset(x, y);
             },
-            child: ValueListenableBuilder<List<Node>>(
-              valueListenable: patch.selectedNodes,
-              builder: (context, selectedNodes, child) {
-                bool selected = selectedNodes.contains(this);
-                return Container(
-                  width: module.size.width * GlobalSettings.gridSize - 1.0,
-                  height: module.size.height * GlobalSettings.gridSize - 1.0,
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(40, 40, 40, 1.0),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    border: Border.all(
-                      width: 2,
-                      color: selected
-                          ? const Color.fromRGBO(140, 140, 140, 1.0)
-                          : const Color.fromRGBO(40, 40, 40, 1.0),
+            child: Container(
+              width: module.size.width * GlobalSettings.gridSize - 1.0,
+              height: module.size.height * GlobalSettings.gridSize - 1.0,
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(40, 40, 40, 1.0),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                border: Border.all(
+                  width: 2,
+                  color: const Color.fromRGBO(40, 40, 40, 1.0),
+                ),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        module.title ?? "",
+                        style: TextStyle(
+                          color: module.titleColor ?? Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.all(5),
-                          child: Text(
-                            module.title ?? "",
-                            style: TextStyle(
-                              color: module.titleColor ?? Colors.grey,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
+                  Visibility(
+                    visible: module.icon != null,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: SvgPicture.string(
+                        module.icon ?? "",
+                        width: (module.iconSize ?? 24).toDouble(),
+                        height: (module.iconSize ?? 24).toDouble(),
+                        color: module.iconColor ?? Colors.grey,
                       ),
-                      Visibility(
-                        visible: module.icon != null,
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: SvgPicture.string(
-                            module.icon ?? "",
-                            width: (module.iconSize ?? 24).toDouble(),
-                            height: (module.iconSize ?? 24).toDouble(),
-                            color: module.iconColor ?? Colors.grey,
-                          ),
-                        ),
-                      ),
-                      Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[] + widgets + pins,
-                      )
-                    ],
+                    ),
                   ),
-                );
-              },
+                  Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[] + widgets + pins,
+                  )
+                ],
+              ),
             ),
           ),
         );

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../interface/ui.dart';
 import '../patch/patch.dart';
-import '../project/theme.dart';
+import '../patch/patch_manager_widget.dart';
 import '../plugin/plugin.dart';
 import 'info.dart';
 
@@ -13,20 +13,23 @@ class Preset extends StatelessWidget {
   final Patch patch;
   final ValueNotifier<UserInterface?> interface;
   final bool uiVisible;
+  final List<Plugin> plugins;
 
   Preset({
     required this.info,
     required this.patch,
     required this.interface,
     required this.uiVisible,
+    required this.plugins,
   });
 
   static Preset from(PresetInfo info, List<Plugin> plugins, bool uiVisible) {
     return Preset(
       info: info,
-      patch: Patch.from(info, plugins),
+      patch: Patch(info: info),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
+      plugins: plugins,
     );
   }
 
@@ -39,6 +42,7 @@ class Preset extends StatelessWidget {
         patch: patch,
         interface: ValueNotifier(interface),
         uiVisible: uiVisible,
+        plugins: plugins,
       );
     }
 
@@ -52,9 +56,10 @@ class Preset extends StatelessWidget {
     );
     return Preset(
       info: info,
-      patch: Patch.from(info, plugins),
+      patch: Patch(info: info),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
+      plugins: plugins,
     );
   }
 
@@ -75,7 +80,10 @@ class Preset extends StatelessWidget {
       child: Builder(
         builder: (context) {
           if (!uiVisible) {
-            return patch;
+            return PatchManagerWidget(
+              info: info,
+              plugins: plugins,
+            );
           } else {
             return ValueListenableBuilder<UserInterface?>(
               valueListenable: interface,

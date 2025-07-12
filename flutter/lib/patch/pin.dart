@@ -23,6 +23,12 @@ class Pin extends StatefulWidget {
     required this.patch,
     required this.onAddConnector,
     required this.onRemoveConnections,
+    required this.newConnector,
+    required this.onNewConnectorDrag,
+    required this.onNewConnectorSetStart,
+    required this.onNewConnectorSetEnd,
+    required this.onNewConnectorReset,
+    required this.onAddNewConnector,
   }) : super(key: UniqueKey()) {
     var annotation = jsonDecode(endpoint.annotation);
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
@@ -43,6 +49,12 @@ class Pin extends StatefulWidget {
   final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
+  final NewConnector newConnector;
+  final void Function(Offset) onNewConnectorDrag;
+  final void Function(Pin) onNewConnectorSetStart;
+  final void Function(Pin?) onNewConnectorSetEnd;
+  final VoidCallback onNewConnectorReset;
+  final VoidCallback onAddNewConnector;
 
   Offset offset = Offset(0, 0);
 
@@ -62,13 +74,13 @@ class _PinState extends State<Pin> {
       child: MouseRegion(
         onEnter: (e) {
           // print("Setting new connector end");
-          widget.node.patch.newConnector.setEnd(widget);
+          widget.onNewConnectorSetEnd(widget);
           setState(() {
             hovering = true;
           });
         },
         onExit: (e) {
-          widget.node.patch.newConnector.setEnd(null);
+          widget.onNewConnectorSetEnd(null);
           setState(() {
             hovering = false;
           });
@@ -77,22 +89,22 @@ class _PinState extends State<Pin> {
           onPanStart: (details) {
             dragging = true;
             if (widget.endpoint.isInput()) {
-              widget.node.patch.newConnector.onDrag(details.localPosition);
+              widget.onNewConnectorDrag(details.localPosition);
             } else {
-              widget.node.patch.newConnector.setStart(widget);
+              widget.onNewConnectorSetStart(widget);
             }
           },
           onPanUpdate: (details) {
-            widget.node.patch.newConnector.onDrag(details.localPosition);
+            widget.onNewConnectorDrag(details.localPosition);
           },
           onPanEnd: (details) {
-            widget.node.patch.addNewConnector();
+            widget.onAddNewConnector();
             setState(() {
               dragging = false;
             });
           },
           onPanCancel: () {
-            widget.node.patch.newConnector.reset();
+            widget.onNewConnectorReset();
             setState(() {
               dragging = false;
             });
@@ -100,21 +112,17 @@ class _PinState extends State<Pin> {
           onDoubleTap: () {
             widget.onRemoveConnections(widget);
           },
-          child: ValueListenableBuilder<List<Connector>>(
-            valueListenable: widget.patch.connectors,
-            builder: (context, connectors, child) {
+          child: Builder(
+            builder: (context) {
               bool connected = false;
-              for (var connector in connectors) {
+              for (var connector in widget.patch.connectors) {
                 if (connector.start == widget || connector.end == widget) {
                   connected = true;
                   break;
                 }
               }
-
-              return ValueListenableBuilder<List<Node>>(
-                valueListenable: widget.patch.selectedNodes,
-                builder: (context, selectedNodes, child) {
-                  bool is_selected = selectedNodes.contains(widget.node);
+              
+              bool is_selected = false; // Simplified for now
                   var kind = widget.endpoint.kind;
                   var type = widget.endpoint.type;
                   return Container(
@@ -131,8 +139,6 @@ class _PinState extends State<Pin> {
                       ),
                     ),
                   );
-                },
-              );
             },
           ),
         ),

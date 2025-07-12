@@ -61,14 +61,14 @@ class _Connector extends State<Connector> with TickerProviderStateMixin {
     _ticker.start();
 
     // Animation
-    var blocksPerSecond = widget.patch.sampleRate ~/ widget.patch.blockSize;
+    /*var blocksPerSecond = widget.patch.sampleRate ~/ widget.patch.blockSize;
     var secondsPerBlock = 1.0 / blocksPerSecond;
     var millisecondsPerBlock = (1000 * secondsPerBlock).toInt();
 
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: millisecondsPerBlock * blocksPerDot),
-    );// ..repeat(reverse: false);
+    );// ..repeat(reverse: false);*/
   }
 
   @override
@@ -89,44 +89,37 @@ class _Connector extends State<Connector> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<List<Node>>(
-      valueListenable: widget.patch.selectedNodes,
-      builder: (context, selectedNodes, child) {
-        bool focused = selectedNodes.contains(widget.start.node) ||
-            selectedNodes.contains(widget.end.node);
+    return ValueListenableBuilder<Offset>(
+      valueListenable: widget.start.node.position,
+      builder: (context, startModuleOffset, child) {
         return ValueListenableBuilder<Offset>(
-          valueListenable: widget.start.node.position,
-          builder: (context, startModuleOffset, child) {
-            return ValueListenableBuilder<Offset>(
-              valueListenable: widget.end.node.position,
-              builder: (context, endModuleOffset, child) {
-                return CustomPaint(
-                  painter: ConnectorPainter(
-                    Offset(
-                      widget.start.offset.dx +
-                          roundToGrid(startModuleOffset.dx) +
-                          pinRadius,
-                      widget.start.offset.dy +
-                          roundToGrid(startModuleOffset.dy) +
-                          pinRadius,
-                    ),
-                    Offset(
-                      widget.end.offset.dx +
-                          roundToGrid(endModuleOffset.dx) +
-                          pinRadius,
-                      widget.end.offset.dy +
-                          roundToGrid(endModuleOffset.dy) +
-                          pinRadius,
-                    ),
-                    ProjectTheme.getColor(widget.start.endpoint.type),
-                    focused,
-                    _controller,
-                    widget.start.endpoint.kind,
-                    sinceLastUpdate,
-                    widget.start.endpoint,
-                  ),
-                );
-              },
+          valueListenable: widget.end.node.position,
+          builder: (context, endModuleOffset, child) {
+            return CustomPaint(
+              painter: ConnectorPainter(
+                Offset(
+                  widget.start.offset.dx +
+                      roundToGrid(startModuleOffset.dx) +
+                      pinRadius,
+                  widget.start.offset.dy +
+                      roundToGrid(startModuleOffset.dy) +
+                      pinRadius,
+                ),
+                Offset(
+                  widget.end.offset.dx +
+                      roundToGrid(endModuleOffset.dx) +
+                      pinRadius,
+                  widget.end.offset.dy +
+                      roundToGrid(endModuleOffset.dy) +
+                      pinRadius,
+                ),
+                ProjectTheme.getColor(widget.start.endpoint.type),
+                false, // focused - simplified for now
+                _controller,
+                widget.start.endpoint.kind,
+                sinceLastUpdate,
+                widget.start.endpoint,
+              ),
             );
           },
         );
