@@ -55,11 +55,8 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   final focusNode = FocusNode();
   late final Ticker _ticker;
   
-  // Selected nodes managed in state
-  List<NodeEditor> selectedNodes = [];
-  
-  // Current nodes (derived from Rust patch)
-  List<NodeEditor> nodes = [];
+  // Selected node IDs managed in state
+  List<int> selectedNodeIds = [];
   
   // New cable being drawn
   Pin? newCableStart;
@@ -86,18 +83,31 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     _ticker.dispose();
     _cableRepaintNotifier.dispose();
     _transformationController.dispose();
-    _saveDebounceTimer?.cancel();
     focusNode.dispose();
     super.dispose();
   }
 
-  void _loadFromRustPatch() {
-    // Get nodes from Rust patch and create Flutter NodeEditor wrappers
+  // Cache for NodeEditor widgets to prevent recreation
+  Map<int, NodeEditor> _nodeEditorCache = {};
+  int _cacheVersion = 0;
+  
+  // Build NodeEditor widgets from rust patch nodes
+  List<NodeEditor> _buildNodeEditors() {
+    if (_rustPatch == null) return [];
+    
     var rustNodes = _rustPatch!.getNodes();
-    List<NodeEditor> newNodes = [];
-    Map<int, NodeEditor> nodeMap = {};
+    List<NodeEditor> nodeEditors = [];
+    Set<int> currentNodeIds = {};
     
     for (var rustNode in rustNodes) {
+      currentNodeIds.add(rustNode.id);
+      
+      // Check if we already have this node in cache
+      if (_nodeEditorCache.containsKey(rustNode.id)) {
+        nodeEditors.add(_nodeEditorCache[rustNode.id]!);
+        continue;
+      }
+      
       try {
         // Convert Rust module to Flutter module
         var rustModule = rustNode.module;
@@ -106,6 +116,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
         var position = Offset(rustNode.position.$1, rustNode.position.$2);
         
         var nodeEditor = NodeEditor(
+          key: ValueKey('node_${rustNode.id}'), // Add key for widget identity
           module: module,
           rustNode: rustNode,
           onAddConnector: addCable,
@@ -119,16 +130,23 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
           onPositionChanged: _onNodePositionChanged,
         );
         
-        nodeMap[rustNode.id] = nodeEditor;
-        newNodes.add(nodeEditor);
+        _nodeEditorCache[rustNode.id] = nodeEditor;
+        nodeEditors.add(nodeEditor);
       } catch (e) {
-        print("Failed to load node: $e");
+        print("Failed to create node editor: $e");
       }
     }
+    
+    // Remove cached nodes that no longer exist
+    _nodeEditorCache.removeWhere((id, editor) => !currentNodeIds.contains(id));
 
-    setState(() {
-      nodes = newNodes;
-    });
+    return nodeEditors;
+  }
+  
+  // Clear cache when nodes change
+  void _invalidateNodeCache() {
+    _nodeEditorCache.clear();
+    _cacheVersion++;
   }
 
 
@@ -190,8 +208,6 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       }
     }
     
-    _loadFromRustPatch();
-    
     // Update node ID counter to avoid conflicts with loaded nodes
     if (_rustPatch != null) {
       var maxId = 0;
@@ -202,6 +218,9 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       }
       _nextNodeId = maxId + 1;
     }
+    
+    // Trigger rebuild to show loaded nodes
+    setState(() {});
   }
 
   // Node ID counter to avoid conflicts
@@ -222,20 +241,19 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       _rustPatch!.addNode(node: rustNode);
       _savePatch();
       
-      // Reload to avoid disposal issues
-      _loadFromRustPatch();
+      _invalidateNodeCache();
+      // Trigger rebuild to show new node
+      setState(() {});
     }
   }
   
   void _onRemoveNode(NodeEditor node) {
     if (node.rustNode != null) {
       _rustPatch!.removeNode(node: node.rustNode!);
-      
-      setState(() {
-        nodes.remove(node);
-      });
-      
       _savePatch();
+      
+      _invalidateNodeCache();
+      setState(() {});
     }
   }
   
@@ -300,18 +318,18 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     }
   }
   
-  void _onBatchRemoveNodes(List<NodeEditor> nodesToRemove) {
-    for (var node in nodesToRemove) {
-      if (node.rustNode != null) {
-        _rustPatch!.removeNode(node: node.rustNode!);
+  void _onBatchRemoveNodes(List<int> nodeIdsToRemove) {
+    var rustNodes = _rustPatch!.getNodes();
+    for (var nodeId in nodeIdsToRemove) {
+      var nodeToRemove = rustNodes.where((n) => n.id == nodeId).firstOrNull;
+      if (nodeToRemove != null) {
+        _rustPatch!.removeNode(node: nodeToRemove);
       }
     }
     
-    setState(() {
-      nodes.removeWhere((n) => nodesToRemove.contains(n));
-    });
-    
     _savePatch();
+    _invalidateNodeCache();
+    setState(() {});
   }
   
   Future<void> _savePatch() async {
@@ -325,26 +343,17 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   }
   
   void _onNodePositionChanged(NodeEditor node, Offset newPosition) {
-    // Update the position in the Rust node
+    // Update the position in the Rust patch directly by node ID
     if (node.rustNode != null) {
-      // Update the rust node's position
-      node.rustNode!.position = (newPosition.dx, newPosition.dy);
+      // Update the node's position in the patch (not the clone)
+      _rustPatch!.updateNodePosition(
+        nodeId: node.rustNode!.id, 
+        position: (newPosition.dx, newPosition.dy)
+      );
       
-      // Save after a delay to avoid excessive saves during dragging
-      _savePatchDebounced();
-    }
-  }
-  
-  Timer? _saveDebounceTimer;
-  
-  void _savePatchDebounced() {
-    // Cancel any existing timer
-    _saveDebounceTimer?.cancel();
-    
-    // Start a new timer that will save after 500ms of no position changes
-    _saveDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      // Save immediately since this is only called on drag end
       _savePatch();
-    });
+    }
   }
 
   void removeNode(NodeEditor node) {
@@ -352,7 +361,8 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   }
 
   void tick(Duration elapsed) {
-    for (var node in nodes) {
+    var nodeEditors = _buildNodeEditors();
+    for (var node in nodeEditors) {
       for (var widget in node.widgets) {
         widget.tick(elapsed);
       }
@@ -381,11 +391,9 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     }
 
     // Add all the nodes to the graph
-    for (var node in nodes) {
-      // Skip if node is null
-      if (node.rustNode == null) continue;
-
-      graph.addNode(node: node.rustNode!);
+    var rustNodes = _rustPatch!.getNodes();
+    for (var node in rustNodes) {
+      graph.addNode(node: node);
     }
 
     // Update the playback graph
@@ -429,13 +437,15 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       Pin? otherPin;
       if (_pinMatchesConnection(pin, cable.source)) {
         // Find the destination pin
-        var destNode = nodes.firstWhere((n) => n.rustNode?.id == cable.destination.node.id);
+        var nodeEditors = _buildNodeEditors();
+        var destNode = nodeEditors.firstWhere((n) => n.rustNode?.id == cable.destination.node.id);
         otherPin = destNode.pins.firstWhere((p) => 
           p.endpoint.type == cable.destination.endpoint.type &&
           p.endpoint.annotation == cable.destination.endpoint.annotation);
       } else {
         // Find the source pin
-        var srcNode = nodes.firstWhere((n) => n.rustNode?.id == cable.source.node.id);
+        var nodeEditors = _buildNodeEditors();
+        var srcNode = nodeEditors.firstWhere((n) => n.rustNode?.id == cable.source.node.id);
         otherPin = srcNode.pins.firstWhere((p) => 
           p.endpoint.type == cable.source.endpoint.type &&
           p.endpoint.annotation == cable.source.endpoint.annotation);
@@ -469,12 +479,12 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   void _handleDeleteNodes(KeyDownEvent e) {
     if (e.logicalKey == LogicalKeyboardKey.delete ||
         e.logicalKey == LogicalKeyboardKey.backspace) {
-      if (selectedNodes.isNotEmpty) {
-        _onBatchRemoveNodes(selectedNodes.toList());
+      if (selectedNodeIds.isNotEmpty) {
+        _onBatchRemoveNodes(selectedNodeIds.toList());
         
         // Clear selection after removal
         setState(() {
-          selectedNodes = [];
+          selectedNodeIds = [];
         });
       }
     }
@@ -506,14 +516,14 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
                 });
               }
 
-              if (selectedNodes.isNotEmpty) {
+              if (selectedNodeIds.isNotEmpty) {
                 setState(() {
-                  selectedNodes = [];
+                  selectedNodeIds = [];
                 });
               }
             },
             child: PatchViewer(
-              nodes: nodes,
+              nodes: _buildNodeEditors(),
               cables: _rustPatch!.getCables(),
               newCableStart: newCableStart,
               newCableEnd: newCableEnd,
@@ -529,9 +539,9 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
                   });
                 }
 
-                if (selectedNodes.isNotEmpty) {
+                if (selectedNodeIds.isNotEmpty) {
                   setState(() {
-                    selectedNodes = [];
+                    selectedNodeIds = [];
                   });
                 }
               },

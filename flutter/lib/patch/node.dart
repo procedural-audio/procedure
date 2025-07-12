@@ -112,6 +112,7 @@ abstract class NodeWidget extends StatelessWidget {
 
 class NodeEditor extends StatelessWidget {
   NodeEditor({
+    Key? key,
     required this.module,
     this.rustNode,
     required this.onAddConnector,
@@ -123,7 +124,7 @@ class NodeEditor extends StatelessWidget {
     required this.onNewCableReset,
     required this.onAddNewCable,
     this.onPositionChanged,
-  }) : super(key: UniqueKey()) {
+  }) : super(key: key ?? UniqueKey()) {
     // Set the initial node position
     this.position.value = position;
 

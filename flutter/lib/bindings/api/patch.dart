@@ -29,4 +29,7 @@ abstract class Patch implements RustOpaqueInterface {
   void removeNode({required Node node});
 
   Future<String> save();
+
+  void updateNodePosition(
+      {required int nodeId, required (double, double) position});
 }

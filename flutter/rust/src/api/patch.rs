@@ -87,6 +87,13 @@ impl Patch {
         self.cables.clone()
     }
 
+    #[frb(sync)]
+    pub fn update_node_position(&mut self, node_id: u32, position: (f64, f64)) {
+        if let Some(node) = self.nodes.iter_mut().find(|n| n.id == node_id) {
+            node.position = position;
+        }
+    }
+
     pub async fn load(&mut self, json_str: &str) -> Result<(), String> {
         let serializable: SerializablePatch = serde_json::from_str(json_str)
             .map_err(|e| format!("Failed to parse JSON: {}", e))?;

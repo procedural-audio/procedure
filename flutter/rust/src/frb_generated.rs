@@ -43,7 +43,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1224510008;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1481146132;
 
 // Section: executor
 
@@ -3059,6 +3059,60 @@ fn wire__crate__api__patch__Patch_save_impl(
         },
     )
 }
+fn wire__crate__api__patch__Patch_update_node_position_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_update_node_position",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            let api_node_id = <u32>::sse_decode(&mut deserializer);
+            let api_position = <(f64, f64)>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    crate::api::patch::Patch::update_node_position(
+                        &mut *api_that_guard,
+                        api_node_id,
+                        api_position,
+                    );
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__io__audio_configuration_default_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3881,19 +3935,19 @@ fn pde_ffi_dispatcher_primary_impl(
         }
         56 => wire__crate__api__patch__Patch_load_impl(port, ptr, rust_vec_len, data_len),
         60 => wire__crate__api__patch__Patch_save_impl(port, ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__io__audio_configuration_default_impl(
+        62 => wire__crate__api__io__audio_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        63 => wire__crate__api__io__flutter_midi_configuration_default_impl(
+        64 => wire__crate__api__io__flutter_midi_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        65 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4023,11 +4077,12 @@ fn pde_ffi_dispatcher_sync_impl(
         57 => wire__crate__api__patch__Patch_new_impl(ptr, rust_vec_len, data_len),
         58 => wire__crate__api__patch__Patch_remove_cable_impl(ptr, rust_vec_len, data_len),
         59 => wire__crate__api__patch__Patch_remove_node_impl(ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__patch__Patch_update_node_position_impl(ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

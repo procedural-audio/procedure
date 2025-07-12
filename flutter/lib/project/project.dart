@@ -62,10 +62,16 @@ class Project extends StatefulWidget {
     // Sort presets alphabetically by name
     availablePresets.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-    Directory newPresetDir = Directory(info.presetsDirectory.path + "/New Preset");
-    Preset preset = Preset.blank(newPresetDir, plugins, false);
+    // Load the first preset found in the directory, or create a blank one
+    Preset preset;
     if (availablePresets.isNotEmpty) {
-      preset = await Preset.load(availablePresets.first, plugins, false) ?? preset;
+      preset = await Preset.load(availablePresets.first, plugins, false) ?? Preset.blank(availablePresets.first.directory, plugins, false);
+    } else {
+      // Create a "New Preset" directory if no presets exist
+      Directory newPresetDir = Directory(info.presetsDirectory.path + "/New Preset");
+      preset = Preset.blank(newPresetDir, plugins, false);
+      // Save the blank preset immediately so it will be found on next load
+      await preset.save();
     }
 
     return Project(
@@ -99,6 +105,9 @@ class _Project extends State<Project> {
 
   void loadPreset(PresetInfo info) async {
     print("Loading preset: ${info.name}");
+    
+    // Save current preset before switching
+    await widget.preset.save();
     
     var newPreset = await Preset.load(info, widget.plugins, uiVisible);
     if (newPreset != null) {
