@@ -32,7 +32,7 @@ abstract class Node implements RustOpaqueInterface {
       RustLib.instance.api
           .crateApiNodeNodeFrom(id: id, module: module, position: position);
 
-  List<Endpoint> get inputs;
+  List<NodeEndpoint> getInputs();
 
-  List<Endpoint> get outputs;
+  List<NodeEndpoint> getOutputs();
 }

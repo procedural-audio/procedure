@@ -8,15 +8,11 @@ import 'package:metasampler/patch/widgets/fader.dart';
 import 'package:metasampler/patch/widgets/textbox.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../bindings/api/node.dart' as api;
-import '../bindings/api/patch.dart' as rust_patch;
-import '../plugin/plugin.dart';
+import '../bindings/api/node.dart' as rust_node;
 import '../settings.dart';
 import 'widgets/knob.dart';
-import 'patch.dart';
 import 'widgets/led.dart';
 import 'widgets/scope.dart';
-import 'connector.dart';
 
 int NODE_ID = 1;
 
@@ -117,51 +113,32 @@ abstract class NodeWidget extends StatelessWidget {
 class NodeEditor extends StatelessWidget {
   NodeEditor({
     required this.module,
+    this.rustNode,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required Offset position,
-    required this.newConnector,
-    required this.onNewConnectorDrag,
-    required this.onNewConnectorSetStart,
-    required this.onNewConnectorSetEnd,
-    required this.onNewConnectorReset,
-    required this.onAddNewConnector,
+    required this.onNewCableDrag,
+    required this.onNewCableSetStart,
+    required this.onNewCableSetEnd,
+    required this.onNewCableReset,
+    required this.onAddNewCable,
   }) : super(key: UniqueKey()) {
     // Set the initial node position
     this.position.value = position;
 
-    List<String> source = []; // Plugins.lib();
-    source.add(module.source);
-    
-    // Create Rust Module
-    var rustModule = rust_patch.Module(
-      source: module.source,
-      title: module.title,
-      titleColor: module.titleColor != null ? '#${module.titleColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
-      icon: module.icon,
-      iconSize: module.iconSize,
-      iconColor: module.iconColor != null ? '#${module.iconColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
-      size: rust_patch.ModuleSize(
-        width: module.size.width,
-        height: module.size.height,
-      ),
-    );
-    
-    // Create Rust Position
-    var rustPosition = rust_patch.Position(
-      x: position.dx,
-      y: position.dy,
-    );
-    
-    rawNode = api.Node.from(
-      source: source,
-      id: NODE_ID++,
-      module: rustModule,
-      position: rustPosition,
-    );
-    if (rawNode != null) {
+    // If no rustNode provided, create one
+    if (rustNode == null) {
+      var rustModule = module.toRustModule();
+      
+      rustNode = rust_node.Node.from(
+        id: NODE_ID++,
+        module: rustModule,
+        position: (position.dx, position.dy),
+      );
+    }
+    if (rustNode != null) {
       // Add input pins and widgets to list
-      for (var endpoint in rawNode!.inputs) {
+      for (var endpoint in rustNode!.getInputs()) {
         Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
         print("Endpoint: ${endpoint.type}");
@@ -187,18 +164,17 @@ class NodeEditor extends StatelessWidget {
             node: this,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
-            newConnector: newConnector,
-            onNewConnectorDrag: onNewConnectorDrag,
-            onNewConnectorSetStart: onNewConnectorSetStart,
-            onNewConnectorSetEnd: onNewConnectorSetEnd,
-            onNewConnectorReset: onNewConnectorReset,
-            onAddNewConnector: onAddNewConnector,
+            onNewCableDrag: onNewCableDrag,
+            onNewCableSetStart: onNewCableSetStart,
+            onNewCableSetEnd: onNewCableSetEnd,
+            onNewCableReset: onNewCableReset,
+            onAddNewCable: onAddNewCable,
           ),
         );
       }
 
       // Add output pins to list
-      for (var endpoint in rawNode!.outputs) {
+      for (var endpoint in rustNode!.getOutputs()) {
         Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
         print("Endpoint: ${endpoint.type}");
@@ -229,12 +205,11 @@ class NodeEditor extends StatelessWidget {
             node: this,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
-            newConnector: newConnector,
-            onNewConnectorDrag: onNewConnectorDrag,
-            onNewConnectorSetStart: onNewConnectorSetStart,
-            onNewConnectorSetEnd: onNewConnectorSetEnd,
-            onNewConnectorReset: onNewConnectorReset,
-            onAddNewConnector: onAddNewConnector,
+            onNewCableDrag: onNewCableDrag,
+            onNewCableSetStart: onNewCableSetStart,
+            onNewCableSetEnd: onNewCableSetEnd,
+            onNewCableReset: onNewCableReset,
+            onAddNewCable: onAddNewCable,
           ),
         );
       }
@@ -242,15 +217,14 @@ class NodeEditor extends StatelessWidget {
   }
 
   final Module module;
+  rust_node.Node? rustNode;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
-  final NewConnector newConnector;
-  final void Function(Offset) onNewConnectorDrag;
-  final void Function(Pin) onNewConnectorSetStart;
-  final void Function(Pin?) onNewConnectorSetEnd;
-  final VoidCallback onNewConnectorReset;
-  final VoidCallback onAddNewConnector;
-  api.Node? rawNode;
+  final void Function(Offset) onNewCableDrag;
+  final void Function(Pin) onNewCableSetStart;
+  final void Function(Pin?) onNewCableSetEnd;
+  final VoidCallback onNewCableReset;
+  final VoidCallback onAddNewCable;
 
   List<Pin> pins = [];
   List<NodeWidget> widgets = [];
@@ -282,6 +256,7 @@ class NodeEditor extends StatelessWidget {
   void refreshSize() {}
 
   NodeEditor? fromState(Map<String, dynamic> state) {
+    return null; // TODO: Implement if needed
     /*var module = Module.fromState(state["module"]);
     var position = Offset(state["x"], state["y"]);
 
@@ -294,7 +269,7 @@ class NodeEditor extends StatelessWidget {
   Map<String, dynamic> getState() {
     return {
       "module": module.getState(),
-      // "id": rawNode!.id,
+      "id": rustNode?.id ?? 0,
       "x": position.value.dx,
       "y": position.value.dy,
     };

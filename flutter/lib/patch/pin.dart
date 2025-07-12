@@ -8,7 +8,6 @@ import '../settings.dart';
 import 'node.dart';
 
 import 'patch.dart';
-import 'connector.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../project/theme.dart';
@@ -22,12 +21,11 @@ class Pin extends StatefulWidget {
     required this.endpoint,
     required this.onAddConnector,
     required this.onRemoveConnections,
-    required this.newConnector,
-    required this.onNewConnectorDrag,
-    required this.onNewConnectorSetStart,
-    required this.onNewConnectorSetEnd,
-    required this.onNewConnectorReset,
-    required this.onAddNewConnector,
+    required this.onNewCableDrag,
+    required this.onNewCableSetStart,
+    required this.onNewCableSetEnd,
+    required this.onNewCableReset,
+    required this.onAddNewCable,
   }) : super(key: UniqueKey()) {
     var annotation = jsonDecode(endpoint.annotation);
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
@@ -47,12 +45,11 @@ class Pin extends StatefulWidget {
   final NodeEditor node;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
-  final NewConnector newConnector;
-  final void Function(Offset) onNewConnectorDrag;
-  final void Function(Pin) onNewConnectorSetStart;
-  final void Function(Pin?) onNewConnectorSetEnd;
-  final VoidCallback onNewConnectorReset;
-  final VoidCallback onAddNewConnector;
+  final void Function(Offset) onNewCableDrag;
+  final void Function(Pin) onNewCableSetStart;
+  final void Function(Pin?) onNewCableSetEnd;
+  final VoidCallback onNewCableReset;
+  final VoidCallback onAddNewCable;
 
   Offset offset = Offset(0, 0);
 
@@ -72,13 +69,13 @@ class _PinState extends State<Pin> {
       child: MouseRegion(
         onEnter: (e) {
           // print("Setting new connector end");
-          widget.onNewConnectorSetEnd(widget);
+          widget.onNewCableSetEnd(widget);
           setState(() {
             hovering = true;
           });
         },
         onExit: (e) {
-          widget.onNewConnectorSetEnd(null);
+          widget.onNewCableSetEnd(null);
           setState(() {
             hovering = false;
           });
@@ -87,22 +84,27 @@ class _PinState extends State<Pin> {
           onPanStart: (details) {
             dragging = true;
             if (widget.endpoint.isInput()) {
-              widget.onNewConnectorDrag(details.localPosition);
+              widget.onNewCableDrag(details.localPosition);
             } else {
-              widget.onNewConnectorSetStart(widget);
+              widget.onNewCableSetStart(widget);
             }
           },
           onPanUpdate: (details) {
-            widget.onNewConnectorDrag(details.localPosition);
+            // Convert local position to global position relative to the node
+            final globalPosition = Offset(
+              details.localPosition.dx + widget.node.position.value.dx + widget.offset.dx,
+              details.localPosition.dy + widget.node.position.value.dy + widget.offset.dy,
+            );
+            widget.onNewCableDrag(globalPosition);
           },
           onPanEnd: (details) {
-            widget.onAddNewConnector();
+            widget.onAddNewCable();
             setState(() {
               dragging = false;
             });
           },
           onPanCancel: () {
-            widget.onNewConnectorReset();
+            widget.onNewCableReset();
             setState(() {
               dragging = false;
             });

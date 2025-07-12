@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'dart:math';
 import '../settings.dart';
 import 'node.dart';
-import 'connector.dart';
+import 'pin.dart';
+import '../bindings/api/cable.dart';
+import '../bindings/api/endpoint.dart';
+import '../project/theme.dart';
 
 class PatchViewer extends StatelessWidget {
   final List<NodeEditor> nodes;
-  final List<Connector> connectors;
-  final NewConnector newConnector;
+  final List<Cable> cables;
+  final Pin? newCableStart;
+  final Offset? newCableEnd;
+  final Listenable repaintNotifier;
   final FocusNode focusNode;
   final VoidCallback? onTap;
   final void Function(PointerDownEvent) onPointerDown;
@@ -16,8 +22,10 @@ class PatchViewer extends StatelessWidget {
   const PatchViewer({
     Key? key,
     required this.nodes,
-    required this.connectors,
-    required this.newConnector,
+    required this.cables,
+    this.newCableStart,
+    this.newCableEnd,
+    required this.repaintNotifier,
     required this.focusNode,
     this.onTap,
     required this.onPointerDown,
@@ -40,9 +48,29 @@ class PatchViewer extends StatelessWidget {
             child: CustomPaint(
               painter: GridPainter(),
               child: Stack(
-                children: <Widget>[newConnector] +
-                    nodes +
-                    connectors,
+                children: <Widget>[
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      painter: CablePainter(
+                        cables: cables, 
+                        nodes: nodes,
+                        repaint: repaintNotifier,
+                      ),
+                      size: const Size(10000, 10000),
+                    ),
+                  ),
+                  if (newCableStart != null && newCableEnd != null)
+                    RepaintBoundary(
+                      child: CustomPaint(
+                        painter: NewCablePainter(
+                          startPin: newCableStart!,
+                          endOffset: newCableEnd!,
+                        ),
+                        size: const Size(10000, 10000),
+                      ),
+                    ),
+                  ...nodes,
+                ],
               ),
             ),
           ),
@@ -81,5 +109,164 @@ class GridPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
+  }
+}
+
+class CablePainter extends CustomPainter {
+  final List<Cable> cables;
+  final List<NodeEditor> nodes;
+  final Map<int, NodeEditor> _nodeMap = {};
+  
+  CablePainter({
+    required this.cables, 
+    required this.nodes,
+    Listenable? repaint,
+  }) : super(repaint: repaint) {
+    // Build node lookup map
+    for (var node in nodes) {
+      if (node.rustNode != null) {
+        _nodeMap[node.rustNode!.id] = node;
+      }
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, ui.Size size) {
+    for (var cable in cables) {
+      _paintCable(canvas, cable);
+    }
+  }
+  
+  void _paintCable(Canvas canvas, Cable cable) {
+    // Get the source and destination nodes
+    var sourceNode = _nodeMap[cable.source.node.id];
+    var destNode = _nodeMap[cable.destination.node.id];
+    
+    if (sourceNode == null || destNode == null) return;
+    
+    // Find the pins for this cable
+    var sourcePin = _findPinByEndpoint(sourceNode, cable.source.endpoint);
+    var destPin = _findPinByEndpoint(destNode, cable.destination.endpoint);
+    
+    if (sourcePin == null || destPin == null) return;
+    
+    // Calculate start and end positions
+    Offset startPos = Offset(
+      sourcePin.offset.dx + sourceNode.position.value.dx + 15 / 2,
+      sourcePin.offset.dy + sourceNode.position.value.dy + 15 / 2,
+    );
+    
+    Offset endPos = Offset(
+      destPin.offset.dx + destNode.position.value.dx + 15 / 2,
+      destPin.offset.dy + destNode.position.value.dy + 15 / 2,
+    );
+    
+    // Get color for this endpoint type
+    Color color = ProjectTheme.getColor(cable.source.endpoint.type);
+    
+    // Paint the cable using the same style as the original ConnectorPainter
+    _paintCablePath(canvas, startPos, endPos, color, cable.source.endpoint.kind);
+  }
+  
+  void _paintCablePath(Canvas canvas, Offset start, Offset end, Color color, EndpointKind kind) {
+    final paint = Paint()
+      ..color = const Color.fromRGBO(255, 255, 255, 1.0)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    
+    double activeOpacity = 1.0;
+    double inactiveOpacity = 0.3;
+    
+    paint.color = color.withValues(alpha: inactiveOpacity); // Default to inactive for now
+    
+    // Adjust offsets similar to original ConnectorPainter
+    Offset adjustedStart = Offset(start.dx + 9, start.dy + 2);
+    Offset adjustedEnd = Offset(end.dx - 3, end.dy + 2);
+    
+    double distance = (adjustedEnd - adjustedStart).distance;
+    double firstOffset = min(distance, 40);
+    
+    Offset start1 = Offset(adjustedStart.dx + firstOffset, adjustedStart.dy);
+    Offset end1 = Offset(adjustedEnd.dx - firstOffset, adjustedEnd.dy);
+    Offset center = Offset((adjustedStart.dx + adjustedEnd.dx) / 2, (adjustedStart.dy + adjustedEnd.dy) / 2);
+    
+    // Draw the main cable path
+    Path path = Path();
+    path.moveTo(adjustedStart.dx, adjustedStart.dy);
+    path.quadraticBezierTo(start1.dx + 10, start1.dy, center.dx, center.dy);
+    path.quadraticBezierTo(end1.dx - 10, end1.dy, adjustedEnd.dx, adjustedEnd.dy);
+    canvas.drawPath(path, paint);
+    
+    // Note: Animation effects are simplified for now since we don't have animation controllers here
+    // This could be enhanced later with a ticker or animation system
+  }
+  
+  Pin? _findPinByEndpoint(NodeEditor node, NodeEndpoint endpoint) {
+    for (var pin in node.pins) {
+      if (pin.endpoint.type == endpoint.type && 
+          pin.endpoint.annotation == endpoint.annotation) {
+        return pin;
+      }
+    }
+    return null;
+  }
+  
+  @override
+  bool shouldRepaint(CablePainter oldDelegate) {
+    // Repaint if cables or nodes have changed
+    // The Listenable passed to super() handles position changes
+    return cables != oldDelegate.cables || nodes != oldDelegate.nodes;
+  }
+}
+
+class NewCablePainter extends CustomPainter {
+  final Pin startPin;
+  final Offset endOffset;
+  
+  NewCablePainter({required this.startPin, required this.endOffset});
+
+  @override
+  void paint(Canvas canvas, ui.Size size) {
+    // Calculate start position from pin
+    Offset startPos = Offset(
+      startPin.offset.dx + startPin.node.position.value.dx + 15 / 2,
+      startPin.offset.dy + startPin.node.position.value.dy + 15 / 2,
+    );
+    
+    // Get color for this endpoint type
+    Color color = ProjectTheme.getColor(startPin.endpoint.type);
+    
+    // Paint the cable using the same style as the original ConnectorPainter
+    _paintCablePath(canvas, startPos, endOffset, color);
+  }
+  
+  void _paintCablePath(Canvas canvas, Offset start, Offset end, Color color) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    
+    // Adjust offsets similar to original ConnectorPainter
+    Offset adjustedStart = Offset(start.dx + 9, start.dy + 2);
+    Offset adjustedEnd = Offset(end.dx - 3, end.dy + 2);
+    
+    double distance = (adjustedEnd - adjustedStart).distance;
+    double firstOffset = min(distance, 40);
+    
+    Offset start1 = Offset(adjustedStart.dx + firstOffset, adjustedStart.dy);
+    Offset end1 = Offset(adjustedEnd.dx - firstOffset, adjustedEnd.dy);
+    Offset center = Offset((adjustedStart.dx + adjustedEnd.dx) / 2, (adjustedStart.dy + adjustedEnd.dy) / 2);
+    
+    // Draw the main cable path
+    Path path = Path();
+    path.moveTo(adjustedStart.dx, adjustedStart.dy);
+    path.quadraticBezierTo(start1.dx + 10, start1.dy, center.dx, center.dy);
+    path.quadraticBezierTo(end1.dx - 10, end1.dy, adjustedEnd.dx, adjustedEnd.dy);
+    canvas.drawPath(path, paint);
+  }
+  
+  @override
+  bool shouldRepaint(NewCablePainter oldDelegate) {
+    return startPin != oldDelegate.startPin || endOffset != oldDelegate.endOffset;
   }
 }

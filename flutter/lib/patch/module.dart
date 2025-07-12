@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:metasampler/patch/patch.dart';
+import 'package:metasampler/bindings/api/module.dart' as rust_module;
 
 import '../project/theme.dart';
 
@@ -110,7 +108,7 @@ class Module {
     File file,
     List<String> category
   ) async {
-    String name = file.name.replaceAll(".module", "");
+    String name = file.path.split('/').last.replaceAll(".module", "");
     String source = await file.readAsString();
     return parse(name, category, source);
   }
@@ -128,6 +126,34 @@ class Module {
       state["name"] ?? "",
       List<String>.from(state["category"] ?? []),
       state["source"] ?? "",
+    );
+  }
+
+  // Convert from Rust Module to Flutter Module
+  static Module fromRustModule(rust_module.Module rustModule) {
+    return Module(
+      name: "", // Not available in Rust module
+      category: [], // Not available in Rust module  
+      size: Size(rustModule.size.$1.toDouble(), rustModule.size.$2.toDouble()),
+      source: rustModule.source,
+      title: rustModule.title,
+      titleColor: rustModule.titleColor != null ? colorFromString(rustModule.titleColor!) : null,
+      icon: rustModule.icon,
+      iconColor: rustModule.iconColor != null ? colorFromString(rustModule.iconColor!) : null,
+      iconSize: rustModule.iconSize,
+    );
+  }
+
+  // Convert from Flutter Module to Rust Module
+  rust_module.Module toRustModule() {
+    return rust_module.Module(
+      source: source,
+      title: title,
+      titleColor: titleColor != null ? '#${titleColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
+      icon: icon,
+      iconSize: iconSize,
+      iconColor: iconColor != null ? '#${iconColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
+      size: (size.width.toInt(), size.height.toInt()),
     );
   }
 }

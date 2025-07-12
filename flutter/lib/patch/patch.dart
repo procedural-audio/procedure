@@ -1,24 +1,19 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/bindings/api/node.dart' as rust_node;
 import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
-import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/patch/patch_canvas.dart';
 
-import 'dart:async';
 import 'dart:io';
 
-import '../preset/info.dart';
 import 'pin.dart';
 import '../plugin/plugin.dart';
-import 'connector.dart';
 import 'node.dart';
+import 'module.dart';
 import 'right_click.dart';
 
 import '../bindings/api/graph.dart' as api;
+import '../bindings/api/cable.dart';
 
 /* LIBRARY */
 
@@ -28,248 +23,41 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
-// Callback types
+// Callback types - simplified without undo/redo
 typedef NodeCallback = void Function(Module module, Offset position);
-typedef ConnectorCallback = void Function(Pin start, Pin end);
+typedef CableCallback = void Function(Pin start, Pin end);
 typedef NodeRemoveCallback = void Function(NodeEditor node);
-typedef NodeMoveCallback = void Function(NodeEditor node, Offset oldPosition, Offset newPosition);
-typedef ConnectorRemoveCallback = void Function(Connector connector);
+typedef CableRemoveCallback = void Function(Pin start, Pin end);
 typedef BatchNodeRemoveCallback = void Function(List<NodeEditor> nodes);
-
-// Patch data model wrapper around Rust Patch
-class Patch {
-  final rust_patch.Patch rustPatch;
-  final PresetInfo info;
-  final List<NodeEditor> nodes;
-  final List<Connector> connectors;
-
-  Patch({
-    required this.rustPatch,
-    required this.info,
-    this.nodes = const [],
-    this.connectors = const [],
-  });
-
-  static Future<Patch?> load(PresetInfo info, List<Plugin> plugins, {
-    NewConnector? newConnector,
-    void Function(Offset)? onNewConnectorDrag,
-    void Function(Pin)? onNewConnectorSetStart,
-    void Function(Pin?)? onNewConnectorSetEnd,
-    VoidCallback? onNewConnectorReset,
-    VoidCallback? onAddNewConnector,
-  }) async {
-    if (!await info.patchFile.exists()) {
-      return null;
-    }
-
-    var contents = await info.patchFile.readAsString();
-    var json = jsonDecode(contents);
-
-    // Create Rust patch instance
-    var rustInfo = rust_patch.PresetInfo(
-      name: info.name,
-      patchFilePath: info.patchFile.path,
-    );
-    var rustPatch = await rust_patch.Patch.newInstance(info: rustInfo);
-    
-    // Load JSON into rust patch
-    await rustPatch.loadFromJson(jsonStr: contents);
-    
-    // Create a temporary patch instance for loading
-    var tempPatch = Patch(
-      rustPatch: rustPatch,
-      info: info,
-    );
-
-    // Load nodes
-    Map<int, NodeEditor> nodeMap = {};
-    List<NodeEditor> nodes = [];
-    if (json["nodes"] != null) {
-      for (var nodeData in json["nodes"]) {
-        try {
-          var module = Module.fromState(nodeData["module"]);
-          if (module != null) {
-            var position = Offset(
-              nodeData["position"]["x"]?.toDouble() ?? 0.0,
-              nodeData["position"]["y"]?.toDouble() ?? 0.0,
-            );
-            
-            var node = NodeEditor(
-              module: module,
-              onAddConnector: (start, end) {}, // Will be set by PatchEditor
-              onRemoveConnections: (pin) {}, // Will be set by PatchEditor
-              position: position,
-              newConnector: newConnector ?? NewConnector(),
-              onNewConnectorDrag: onNewConnectorDrag ?? (offset) {},
-              onNewConnectorSetStart: onNewConnectorSetStart ?? (pin) {},
-              onNewConnectorSetEnd: onNewConnectorSetEnd ?? (pin) {},
-              onNewConnectorReset: onNewConnectorReset ?? () {},
-              onAddNewConnector: onAddNewConnector ?? () {},
-            );
-            
-            // Store original ID for connector reconstruction
-            var originalId = nodeData["id"] ?? 0;
-            nodeMap[originalId] = node;
-            nodes.add(node);
-          }
-        } catch (e) {
-          print("Failed to load node: $e");
-        }
-      }
-    }
-
-    // Load connectors
-    List<Connector> connectors = [];
-    if (json["connectors"] != null) {
-      for (var connectorData in json["connectors"]) {
-        try {
-          var startNodeId = connectorData["startNodeId"];
-          var endNodeId = connectorData["endNodeId"];
-          var startNode = nodeMap[startNodeId];
-          var endNode = nodeMap[endNodeId];
-          
-          if (startNode != null && endNode != null) {
-            // Find matching endpoints by type and annotation
-            Pin? startPin = _findPinByEndpoint(
-              startNode, 
-              connectorData["startEndpointType"], 
-              connectorData["startEndpointAnnotation"]
-            );
-            Pin? endPin = _findPinByEndpoint(
-              endNode, 
-              connectorData["endEndpointType"], 
-              connectorData["endEndpointAnnotation"]
-            );
-            
-            if (startPin != null && endPin != null) {
-              var connector = Connector(
-                start: startPin,
-                end: endPin,
-                patch: tempPatch,
-              );
-              connectors.add(connector);
-            }
-          }
-        } catch (e) {
-          print("Failed to load connector: $e");
-        }
-      }
-    }
-
-    return Patch(
-      rustPatch: rustPatch,
-      info: info,
-      nodes: nodes,
-      connectors: connectors,
-    );
-  }
-
-  static Pin? _findPinByEndpoint(NodeEditor node, String type, String annotation) {
-    for (var pin in node.pins) {
-      if (pin.endpoint.type == type && pin.endpoint.annotation == annotation) {
-        return pin;
-      }
-    }
-    return null;
-  }
-
-  // Sync Flutter nodes/connectors to Rust before saving
-  Future<void> _syncToRust() async {
-    // Clear existing Rust nodes
-    // Since nodes are stored in Flutter side with their IDs, we can clear by ID
-    for (var node in nodes) {
-      if (node.rawNode != null) {
-        await rustPatch.removeNode(nodeId: node.rawNode!.id);
-      }
-    }
-    
-    // Add current nodes to Rust
-    for (var node in nodes) {
-      if (node.rawNode != null) {
-        // rawNode is of type rust_node.Node, but addNode expects ArcNode from patch.dart
-        await rustPatch.addNode(node: node.rawNode! as rust_patch.ArcNode);
-      }
-    }
-    
-    // Clear existing Rust connectors
-    var rustConnectors = await rustPatch.getConnectors();
-    for (var connector in rustConnectors) {
-      await rustPatch.removeConnector(
-        startNodeId: connector.start.nodeId,
-        startType: connector.start.endpointType,
-        endNodeId: connector.end.nodeId,
-        endType: connector.end.endpointType,
-      );
-    }
-    
-    // Add current connectors to Rust
-    for (var connector in connectors) {
-      var rustConnector = rust_patch.Connector(
-        start: rust_patch.Pin(
-          nodeId: connector.start.node.rawNode?.id ?? 0,
-          endpointType: connector.start.endpoint.type,
-          endpointAnnotation: connector.start.endpoint.annotation,
-        ),
-        end: rust_patch.Pin(
-          nodeId: connector.end.node.rawNode?.id ?? 0,
-          endpointType: connector.end.endpoint.type,
-          endpointAnnotation: connector.end.endpoint.annotation,
-        ),
-      );
-      await rustPatch.addConnector(connector: rustConnector);
-    }
-  }
-
-  Future<void> save() async {
-    // Sync Flutter state to Rust
-    await _syncToRust();
-    
-    // Save using the Rust patch
-    var jsonStr = await rustPatch.saveToJson();
-    
-    // Write the patch file
-    await info.patchFile.writeAsString(jsonStr);
-
-    print("Saved patch file:");
-    print(info.patchFile.path);
-  }
-}
 
 class PatchEditor extends StatefulWidget {
   PatchEditor({
-    required this.patch,
+    required this.rustPatch,
     required this.plugins,
-    required this.newConnector,
+    required this.transformationController,
     required this.onAddNode,
     required this.onRemoveNode,
-    required this.onAddConnector,
-    required this.onRemoveConnector,
-    required this.onMoveNode,
+    required this.onAddCable,
+    required this.onRemoveCable,
     required this.onBatchRemoveNodes,
-    required this.onUndo,
-    required this.onRedo,
   }) : super(key: UniqueKey());
 
-  final Patch patch;
+  final rust_patch.Patch rustPatch;
   final List<Plugin> plugins;
-  final NewConnector newConnector;
+  final TransformationController transformationController;
   
   // Callbacks
   final NodeCallback onAddNode;
   final NodeRemoveCallback onRemoveNode;
-  final ConnectorCallback onAddConnector;
-  final ConnectorRemoveCallback onRemoveConnector;
-  final NodeMoveCallback onMoveNode;
+  final CableCallback onAddCable;
+  final CableRemoveCallback onRemoveCable;
   final BatchNodeRemoveCallback onBatchRemoveNodes;
-  final VoidCallback onUndo;
-  final VoidCallback onRedo;
 
   @override
   _PatchEditor createState() => _PatchEditor();
 }
 
 class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixin {
-  final TransformationController controller = TransformationController();
 
   Offset rightClickOffset = Offset.zero;
   Offset moduleAddPosition = Offset.zero;
@@ -280,21 +68,117 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   
   // Selected nodes managed in state
   List<NodeEditor> selectedNodes = [];
+  
+  // Current nodes (derived from Rust patch)
+  List<NodeEditor> nodes = [];
+  
+  // New cable being drawn
+  Pin? newCableStart;
+  Pin? newCableEndPin;
+  Offset? newCableEnd;
+  
+  // Notifier to trigger cable repaints when nodes move
+  final ChangeNotifier _cableRepaintNotifier = ChangeNotifier();
 
   @override
   void initState() {
     super.initState();
-
     _ticker = createTicker(tick);
     _ticker.start();
+    _loadFromRustPatch();
   }
 
   @override
   void dispose() {
-    controller.dispose();
     _ticker.dispose();
+    _cableRepaintNotifier.dispose();
     focusNode.dispose();
     super.dispose();
+  }
+
+  void _loadFromRustPatch() {
+    // Get nodes from Rust patch and create Flutter NodeEditor wrappers
+    var rustNodes = widget.rustPatch.getNodes();
+    List<NodeEditor> newNodes = [];
+    Map<int, NodeEditor> nodeMap = {};
+    
+    for (var rustNode in rustNodes) {
+      try {
+        // Convert Rust module to Flutter module
+        var rustModule = rustNode.module;
+        var module = Module.fromRustModule(rustModule);
+        
+        var position = Offset(rustNode.position.$1, rustNode.position.$2);
+        
+        var nodeEditor = NodeEditor(
+          module: module,
+          rustNode: rustNode,
+          onAddConnector: addCable,
+          onRemoveConnections: removeConnectionsTo,
+          position: position,
+          onNewCableDrag: _onNewCableDrag,
+          onNewCableSetStart: _onNewCableSetStart,
+          onNewCableSetEnd: _onNewCableSetEnd,
+          onNewCableReset: _onNewCableReset,
+          onAddNewCable: _onAddNewCable,
+        );
+        
+        nodeMap[rustNode.id] = nodeEditor;
+        newNodes.add(nodeEditor);
+      } catch (e) {
+        print("Failed to load node: $e");
+      }
+    }
+
+    setState(() {
+      nodes = newNodes;
+    });
+  }
+
+
+  // New cable callback methods
+  void _onNewCableDrag(Offset globalOffset) {
+    setState(() {
+      // Convert global coordinates to patch coordinates
+      // The globalOffset is relative to the screen, we need to convert to patch space
+      newCableEnd = globalOffset;
+    });
+  }
+  
+  void _onNewCableSetStart(Pin pin) {
+    setState(() {
+      newCableStart = pin;
+      newCableEndPin = null;
+      newCableEnd = null;
+    });
+  }
+  
+  void _onNewCableSetEnd(Pin? pin) {
+    setState(() {
+      newCableEndPin = pin;
+    });
+  }
+  
+  void _onNewCableReset() {
+    setState(() {
+      newCableStart = null;
+      newCableEndPin = null;
+      newCableEnd = null;
+    });
+  }
+  
+  void _onAddNewCable() {
+    if (newCableStart != null && newCableEndPin != null) {
+      // Complete the cable connection
+      addCable(newCableStart!, newCableEndPin!);
+    }
+    
+    // Reset the new cable state
+    setState(() {
+      newCableStart = null;
+      newCableEndPin = null;
+      newCableEnd = null;
+    });
   }
 
   void removeNode(NodeEditor node) {
@@ -302,11 +186,14 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   }
 
   void tick(Duration elapsed) {
-    for (var node in widget.patch.nodes) {
+    for (var node in nodes) {
       for (var widget in node.widgets) {
         widget.tick(elapsed);
       }
     }
+    
+    // Notify cable painter to repaint
+    _cableRepaintNotifier.notifyListeners();
   }
 
   void updatePlayback() {
@@ -316,26 +203,23 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     // Create a new graph
     var graph = api.Graph.new();
 
-    // Add all the cables to the graph
-    for (var connector in widget.patch.connectors) {
-      // Skip if either node is null
-      if (connector.start.node.rawNode == null ||
-          connector.end.node.rawNode == null) continue;
-
+    // Add all the cables from the Rust patch to the graph
+    var rustCables = widget.rustPatch.getCables();
+    for (var cable in rustCables) {
       graph.addCable(
-        srcNode: connector.start.node.rawNode!,
-        srcEndpoint: connector.start.endpoint,
-        dstNode: connector.end.node.rawNode!,
-        dstEndpoint: connector.end.endpoint,
+        srcNode: cable.source.node,
+        srcEndpoint: cable.source.endpoint,
+        dstNode: cable.destination.node,
+        dstEndpoint: cable.destination.endpoint,
       );
     }
 
     // Add all the nodes to the graph
-    for (var node in widget.patch.nodes) {
+    for (var node in nodes) {
       // Skip if node is null
-      if (node.rawNode == null) continue;
+      if (node.rustNode == null) continue;
 
-      graph.addNode(node: node.rawNode!);
+      graph.addNode(node: node.rustNode!);
     }
 
     // Update the playback graph
@@ -347,30 +231,55 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     widget.onAddNode(module, position);
   }
 
-  void addConnector(Pin start, Pin end) {
+  void addCable(Pin start, Pin end) {
     // Check if connection is supported
     if (api.isConnectionSupported(
-      srcNode: start.node.rawNode!,
+      srcNode: start.node.rustNode!,
       srcEndpoint: start.endpoint,
-      dstNode: end.node.rawNode!,
+      dstNode: end.node.rustNode!,
       dstEndpoint: end.endpoint,
     )) {
-      widget.onAddConnector(start, end);
+      widget.onAddCable(start, end);
     } else {
       print("Connection not supported");
     }
   }
 
   void removeConnectionsTo(Pin pin) {
-    // This will be handled by the patch manager
-    // Find connectors to remove and call the callback
-    var connectorsToRemove = widget.patch.connectors
-        .where((e) => e.start == pin || e.end == pin)
+    // Find cables to remove from the Rust patch
+    var cablesToRemove = widget.rustPatch.getCables()
+        .where((cable) => 
+          _pinMatchesConnection(pin, cable.source) || 
+          _pinMatchesConnection(pin, cable.destination))
         .toList();
     
-    for (var connector in connectorsToRemove) {
-      widget.onRemoveConnector(connector);
+    for (var cable in cablesToRemove) {
+      // Find the other pin for the callback
+      Pin? otherPin;
+      if (_pinMatchesConnection(pin, cable.source)) {
+        // Find the destination pin
+        var destNode = nodes.firstWhere((n) => n.rustNode?.id == cable.destination.node.id);
+        otherPin = destNode.pins.firstWhere((p) => 
+          p.endpoint.type == cable.destination.endpoint.type &&
+          p.endpoint.annotation == cable.destination.endpoint.annotation);
+      } else {
+        // Find the source pin
+        var srcNode = nodes.firstWhere((n) => n.rustNode?.id == cable.source.node.id);
+        otherPin = srcNode.pins.firstWhere((p) => 
+          p.endpoint.type == cable.source.endpoint.type &&
+          p.endpoint.annotation == cable.source.endpoint.annotation);
+      }
+      
+      if (otherPin != null) {
+        widget.onRemoveCable(pin, otherPin);
+      }
     }
+  }
+  
+  bool _pinMatchesConnection(Pin pin, Connection connection) {
+    if (pin.node.rustNode?.id != connection.node.id) return false;
+    return pin.endpoint.type == connection.endpoint.type && 
+           pin.endpoint.annotation == connection.endpoint.annotation;
   }
   
   // Keyboard event handlers
@@ -382,18 +291,8 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   }
   
   void _handleUndoRedo(KeyDownEvent e) {
-    if (HardwareKeyboard.instance.isControlPressed || 
-        HardwareKeyboard.instance.isMetaPressed) {
-      if (e.logicalKey == LogicalKeyboardKey.keyZ) {
-        if (HardwareKeyboard.instance.isShiftPressed) {
-          // Redo
-          widget.onRedo();
-        } else {
-          // Undo
-          widget.onUndo();
-        }
-      }
-    }
+    // Undo/redo functionality removed for now
+    // Can be re-implemented later if needed
   }
   
   void _handleDeleteNodes(KeyDownEvent e) {
@@ -414,9 +313,6 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     return GestureDetector(
       onSecondaryTapDown: (details) {
-        // Offset offset = controller.toScene(details.localPosition);
-        // moveTo(offset);
-
         setState(() {
           rightClickOffset = details.localPosition;
           showRightClickMenu = true;
@@ -431,7 +327,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
             scaleEnabled: true,
             clipBehavior: Clip.hardEdge,
             constrained: false,
-            transformationController: controller,
+            transformationController: widget.transformationController,
             onInteractionUpdate: (details) {
               if (showRightClickMenu) {
                 setState(() {
@@ -446,9 +342,11 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
               }
             },
             child: PatchViewer(
-              nodes: widget.patch.nodes,
-              connectors: widget.patch.connectors,
-              newConnector: widget.newConnector,
+              nodes: nodes,
+              cables: widget.rustPatch.getCables(),
+              newCableStart: newCableStart,
+              newCableEnd: newCableEnd,
+              repaintNotifier: _cableRepaintNotifier,
               focusNode: focusNode,
               onPointerDown: (e) {
                 moduleAddPosition = e.localPosition;
@@ -490,4 +388,3 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     );
   }
 }
-

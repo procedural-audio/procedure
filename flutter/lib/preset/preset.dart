@@ -3,30 +3,32 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../interface/ui.dart';
-import '../patch/patch.dart';
-import '../patch/patch_manager_widget.dart';
+import '../patch/simple_patch_widget.dart';
 import '../plugin/plugin.dart';
+import '../bindings/api/patch.dart' as rust_patch;
 import 'info.dart';
 
 class Preset extends StatelessWidget {
   final PresetInfo info;
-  final Patch patch;
+  final rust_patch.Patch rustPatch;
   final ValueNotifier<UserInterface?> interface;
   final bool uiVisible;
   final List<Plugin> plugins;
 
   Preset({
     required this.info,
-    required this.patch,
+    required this.rustPatch,
     required this.interface,
     required this.uiVisible,
     required this.plugins,
   });
 
   static Preset from(PresetInfo info, List<Plugin> plugins, bool uiVisible) {
+    // Create a new Rust patch for the preset
+    var rustPatch = rust_patch.Patch();
     return Preset(
       info: info,
-      patch: Patch(info: info),
+      rustPatch: rustPatch,
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -34,19 +36,26 @@ class Preset extends StatelessWidget {
   }
 
   static Future<Preset?> load(PresetInfo info, List<Plugin> plugins, bool uiVisible) async {
-    var patch = await Patch.load(info, plugins);
-    if (patch != null) {
-      var interface = await UserInterface.load(info);
-      return Preset(
-        info: info,
-        patch: patch,
-        interface: ValueNotifier(interface),
-        uiVisible: uiVisible,
-        plugins: plugins,
-      );
+    var rustPatch = rust_patch.Patch();
+    
+    // Try to load existing patch file
+    if (await info.patchFile.exists()) {
+      try {
+        var contents = await info.patchFile.readAsString();
+        await rustPatch.loadFromJson(jsonStr: contents);
+      } catch (e) {
+        print("Failed to load patch: $e");
+      }
     }
-
-    return null;
+    
+    var interface = await UserInterface.load(info);
+    return Preset(
+      info: info,
+      rustPatch: rustPatch,
+      interface: ValueNotifier(interface),
+      uiVisible: uiVisible,
+      plugins: plugins,
+    );
   }
 
   static Preset blank(Directory presetDirectory, List<Plugin> plugins, bool uiVisible) {
@@ -54,9 +63,10 @@ class Preset extends StatelessWidget {
       directory: presetDirectory,
       hasInterface: false,
     );
+    var rustPatch = rust_patch.Patch();
     return Preset(
       info: info,
-      patch: Patch(info: info),
+      rustPatch: rustPatch,
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -69,7 +79,16 @@ class Preset extends StatelessWidget {
     await info.directory.create(recursive: true);
     
     await info.save();
-    await patch.save();
+    
+    // Save the Rust patch
+    try {
+      var jsonStr = await rustPatch.saveToJson();
+      await info.patchFile.writeAsString(jsonStr);
+      print("Saved patch file: ${info.patchFile.path}");
+    } catch (e) {
+      print("Failed to save patch: $e");
+    }
+    
     await interface.value?.save();
   }
 
@@ -80,7 +99,7 @@ class Preset extends StatelessWidget {
       child: Builder(
         builder: (context) {
           if (!uiVisible) {
-            return PatchManagerWidget(
+            return SimplePatchWidget(
               info: info,
               plugins: plugins,
             );

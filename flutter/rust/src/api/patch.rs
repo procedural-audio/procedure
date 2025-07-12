@@ -1,10 +1,7 @@
 use flutter_rust_bridge::*;
-use std::sync::{Arc, Mutex};
-use serde::{Serialize, Deserialize};
 use crate::api::cable::Cable;
 
 use super::node::Node;
-use super::endpoint::NodeEndpoint;
 
 pub type NodeId = u32;
 pub type WidgetId = u32;
@@ -16,7 +13,7 @@ pub struct Patch {
 }
 
 impl Patch {
-    #[frb(constructor)]
+    #[frb(sync)]
     pub fn new() -> Self {
         Self {
             nodes: Vec::new(),
@@ -24,12 +21,12 @@ impl Patch {
         }
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn add_node(&mut self, node: Node) {
         self.nodes.push(node);
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn remove_node(&mut self, node: Node) {
         self.nodes.retain(|n| n.id != node.id);
 
@@ -37,12 +34,12 @@ impl Patch {
         self.cables.retain(|c| c.source.node.id != node.id && c.destination.node.id != node.id);
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn add_cable(&mut self, cable: Cable) {
         self.cables.push(cable);
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn remove_cable(&mut self, cable: Cable) {
         self.cables.retain(|c| !(
             c.source.node.id == cable.source.node.id && 
@@ -50,17 +47,17 @@ impl Patch {
         ));
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn get_nodes(&self) -> Vec<Node> {
         self.nodes.clone()
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn get_cables(&self) -> Vec<Cable> {
         self.cables.clone()
     }
 
-    pub fn load_from_json(&self, json_str: &str) -> Result<(), String> {
+    pub fn load_from_json(&self, _json_str: &str) -> Result<(), String> {
         // todo: serialize with serde
         todo!()
     }

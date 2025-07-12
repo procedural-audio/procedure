@@ -8,28 +8,23 @@ import 'cable.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `apply`, `apply`, `new`, `redo`, `undo`, `undo`, `update`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `Event`, `History`
-
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>>
 abstract class Patch implements RustOpaqueInterface {
-  Future<void> addCable({required Cable cable});
+  void addCable({required Cable cable});
 
-  Future<void> addNode({required Node node});
+  void addNode({required Node node});
 
-  Future<List<Cable>> getCables();
+  List<Cable> getCables();
 
-  Future<List<Node>> getNodes();
+  List<Node> getNodes();
 
   Future<void> loadFromJson({required String jsonStr});
 
-  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<Patch> newInstance() =>
-      RustLib.instance.api.crateApiPatchPatchNew();
+  factory Patch() => RustLib.instance.api.crateApiPatchPatchNew();
 
-  Future<void> removeCable({required Cable cable});
+  void removeCable({required Cable cable});
 
-  Future<void> removeNode({required Node node});
+  void removeNode({required Node node});
 
   Future<String> saveToJson();
 }

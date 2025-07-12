@@ -1,7 +1,7 @@
 use super::endpoint::*;
 use super::module::*;
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 
 use flutter_rust_bridge::*;
 
@@ -95,12 +95,12 @@ impl Node {
         })
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn get_inputs(&self) -> Vec<NodeEndpoint> {
         self.inputs.clone()
     }
 
-    #[frb(sync, getter)]
+    #[frb(sync)]
     pub fn get_outputs(&self) -> Vec<NodeEndpoint> {
         self.outputs.clone()
     }
