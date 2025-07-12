@@ -9,6 +9,7 @@ import 'package:metasampler/patch/widgets/textbox.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as api;
+import '../bindings/api/patch.dart' as rust_patch;
 import '../plugin/plugin.dart';
 import '../settings.dart';
 import 'widgets/knob.dart';
@@ -131,7 +132,33 @@ class NodeEditor extends StatelessWidget {
 
     List<String> source = []; // Plugins.lib();
     source.add(module.source);
-    rawNode = api.Node.from(source: source, id: NODE_ID++);
+    
+    // Create Rust Module
+    var rustModule = rust_patch.Module(
+      source: module.source,
+      title: module.title,
+      titleColor: module.titleColor != null ? '#${module.titleColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
+      icon: module.icon,
+      iconSize: module.iconSize,
+      iconColor: module.iconColor != null ? '#${module.iconColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
+      size: rust_patch.ModuleSize(
+        width: module.size.width,
+        height: module.size.height,
+      ),
+    );
+    
+    // Create Rust Position
+    var rustPosition = rust_patch.Position(
+      x: position.dx,
+      y: position.dy,
+    );
+    
+    rawNode = api.Node.from(
+      source: source,
+      id: NODE_ID++,
+      module: rustModule,
+      position: rustPosition,
+    );
     if (rawNode != null) {
       // Add input pins and widgets to list
       for (var endpoint in rawNode!.inputs) {

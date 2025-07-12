@@ -1,29 +1,19 @@
-use cmajor::endpoint::*;
-use cmajor::engine::{Engine, Error, Linked, Loaded};
-use cmajor::performer::*;
-use cmajor::*;
-use endpoints::stream::StreamType;
-use value::ValueRef;
-
 use super::endpoint::*;
+use super::module::*;
 
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
-
-use std::f32::consts::E;
 use std::sync::{Arc, Mutex, RwLock};
 
-use crate::other::voices::*;
 use flutter_rust_bridge::*;
 
-/// This is a single processor unit in the graph
 #[frb(opaque)]
 #[derive(Clone)]
 pub struct Node {
     pub id: u32,
-    source: Vec<String>,
+    pub module: Module,
+    pub position: (f64, f64),
     inputs: Vec<NodeEndpoint>,
     outputs: Vec<NodeEndpoint>,
-    performer: Arc<Mutex<Performer>>,
+    performer: Arc<Mutex<cmajor::performer::Performer>>,
 }
 
 impl PartialEq for Node {
@@ -34,17 +24,15 @@ impl PartialEq for Node {
 
 impl Node {
     #[frb(sync)]
-    pub fn from(source: Vec<String>, id: u32) -> Option<Self> {
-        let cmajor = Cmajor::new_from_path(
+    pub fn from(id: u32, module: Module, position: (f64, f64)) -> Option<Self> {
+        let cmajor = cmajor::Cmajor::new_from_path(
             "/Users/chase/Code/nodus/flutter/build/libCmajPerformer.dylib",
         )
         .unwrap();
 
         let mut program = cmajor.create_program();
-        for source in &source {
-            if let Err(e) = program.parse(source) {
-                println!("{}", e);
-            }
+        if let Err(e) = program.parse(&module.source) {
+            println!("{}", e);
         }
 
         let mut engine = match cmajor
@@ -56,7 +44,7 @@ impl Node {
             Ok(engine) => engine,
             Err(e) => {
                 match e {
-                    Error::FailedToLoad(_engine, message) => {
+                    cmajor::engine::Error::FailedToLoad(_engine, message) => {
                         println!("{}", message);
                     }
                     _ => println!("{}", e),
@@ -66,13 +54,13 @@ impl Node {
             }
         };
 
-        let infos: Vec<EndpointInfo> = engine.program_details().endpoints().collect();
+        let infos = engine.program_details().endpoints().collect::<Vec<_>>();
 
         let mut inputs = Vec::new();
         let mut outputs = Vec::new();
 
         for info in infos {
-            let is_input = info.direction() == EndpointDirection::Input;
+            let is_input = info.direction() == cmajor::endpoint::EndpointDirection::Input;
             let endpoint = NodeEndpoint::from(&mut engine, info, id);
             if is_input {
                 inputs.push(endpoint);
@@ -85,7 +73,7 @@ impl Node {
             Ok(engine) => engine,
             Err(e) => {
                 match e {
-                    Error::FailedToLink(_engine, message) => {
+                    cmajor::engine::Error::FailedToLink(_engine, message) => {
                         println!("{}", message);
                     }
                     _ => println!("{}", e),
@@ -99,7 +87,8 @@ impl Node {
 
         Some(Self {
             id,
-            source,
+            module,
+            position,
             inputs,
             outputs,
             performer,
@@ -117,7 +106,7 @@ impl Node {
     }
 
     #[frb(ignore)]
-    pub fn get_performer(&self) -> Arc<Mutex<Performer>> {
+    pub fn clone_performer(&self) -> Arc<Mutex<cmajor::performer::Performer>> {
         self.performer.clone()
     }
 }

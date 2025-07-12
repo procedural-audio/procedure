@@ -4,6 +4,7 @@ pub mod graph;
 pub mod node;
 pub mod io;
 pub mod patch;
+pub mod module;
 
 pub use std::sync::{Arc, Mutex};
 pub use cmajor::performer::Performer;

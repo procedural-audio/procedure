@@ -885,6 +885,7 @@ dependencies = [
  "flutter_rust_bridge",
  "lazy_static",
  "num-traits",
+ "serde",
  "serde_json",
  "serde_yaml",
  "tokio",

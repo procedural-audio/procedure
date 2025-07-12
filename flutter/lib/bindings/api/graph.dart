@@ -20,9 +20,9 @@ void clearPatch() => RustLib.instance.api.crateApiGraphClearPatch();
 
 bool isConnectionSupported(
         {required Node srcNode,
-        required NodeEndpoint srcEndpoint,
+        required Endpoint srcEndpoint,
         required Node dstNode,
-        required NodeEndpoint dstEndpoint}) =>
+        required Endpoint dstEndpoint}) =>
     RustLib.instance.api.crateApiGraphIsConnectionSupported(
         srcNode: srcNode,
         srcEndpoint: srcEndpoint,
@@ -33,9 +33,9 @@ bool isConnectionSupported(
 abstract class Graph implements RustOpaqueInterface {
   void addCable(
       {required Node srcNode,
-      required NodeEndpoint srcEndpoint,
+      required Endpoint srcEndpoint,
       required Node dstNode,
-      required NodeEndpoint dstEndpoint});
+      required Endpoint dstEndpoint});
 
   void addNode({required Node node});
 

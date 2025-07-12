@@ -1,47 +1,72 @@
-type NodeId = u32;
-type WidgetId = u32;
+use flutter_rust_bridge::*;
+use std::sync::{Arc, Mutex};
+use serde::{Serialize, Deserialize};
+use crate::api::cable::Cable;
 
-enum Event {
-    AddNode(NodeId, String),
-    RemoveNode(NodeId, String),
-    AddCable(NodeId, NodeId),
-    RemoveCable(NodeId, NodeId),
-    UpdateWidget(NodeId, WidgetId, String),
-    UpdateWidgetSilent(NodeId, WidgetId, String),
+use super::node::Node;
+use super::endpoint::NodeEndpoint;
+
+pub type NodeId = u32;
+pub type WidgetId = u32;
+
+#[frb(opaque)]
+pub struct Patch {
+    nodes: Vec<Node>,
+    cables: Vec<Cable>
 }
 
-impl Event {
-    fn apply(&self) {
+impl Patch {
+    #[frb(constructor)]
+    pub fn new() -> Self {
+        Self {
+            nodes: Vec::new(),
+            cables: Vec::new(),
+        }
+    }
+
+    #[frb(sync, getter)]
+    pub fn add_node(&mut self, node: Node) {
+        self.nodes.push(node);
+    }
+
+    #[frb(sync, getter)]
+    pub fn remove_node(&mut self, node: Node) {
+        self.nodes.retain(|n| n.id != node.id);
+
+        // Also remove any connectors connected to this node
+        self.cables.retain(|c| c.source.node.id != node.id && c.destination.node.id != node.id);
+    }
+
+    #[frb(sync, getter)]
+    pub fn add_cable(&mut self, cable: Cable) {
+        self.cables.push(cable);
+    }
+
+    #[frb(sync, getter)]
+    pub fn remove_cable(&mut self, cable: Cable) {
+        self.cables.retain(|c| !(
+            c.source.node.id == cable.source.node.id && 
+            c.destination.node.id == cable.destination.node.id
+        ));
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_nodes(&self) -> Vec<Node> {
+        self.nodes.clone()
+    }
+
+    #[frb(sync, getter)]
+    pub fn get_cables(&self) -> Vec<Cable> {
+        self.cables.clone()
+    }
+
+    pub fn load_from_json(&self, json_str: &str) -> Result<(), String> {
+        // todo: serialize with serde
         todo!()
     }
 
-    fn undo(&self) {
-        todo!()
-    }
-}
-
-struct History {
-    events: Vec<Event>,
-}
-
-impl History {
-    fn new() -> Self {
-        Self { events: Vec::new() }
-    }
-
-    fn apply(&mut self, event: Event) {
-        self.events.push(event);
-    }
-
-    fn update(&mut self) {
-        self.events.pop();
-    }
-
-    fn redo(&mut self) {
-        todo!()
-    }
-
-    fn undo(&mut self) {
+    pub fn save_to_json(&self) -> Result<String, String> {
+        // todo: serialize with serde
         todo!()
     }
 }

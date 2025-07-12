@@ -118,7 +118,7 @@ impl Actions {
     
         // Generate actions for each node advance
         println!(" - Advance node {}", dst_node.id);
-        self.push(Advance(dst_node.get_performer()));
+        self.push(Advance(dst_node.clone_performer()));
     
         // Generate output endpoint actions
         for endpoint in dst_node.get_outputs().iter() {
@@ -170,9 +170,9 @@ impl Actions {
                     EndpointHandle::Input(InputEndpoint::Endpoint(dst_handle))) => {
                     if dst_node == node && dst_handle == handle {
                         let _ = self.process_cable(
-                            src_node.get_performer(),
+                            src_node.clone_performer(),
                             src_handle.clone(),
-                            dst_node.get_performer(),
+                            dst_node.clone_performer(),
                             dst_handle.clone()
                         );
 
@@ -185,7 +185,7 @@ impl Actions {
 
         // Generate actions to fill missing input streams
         if !filled {
-            self.process_input_endpoint_clear(node.get_performer(), handle.clone());
+            self.process_input_endpoint_clear(node.clone_performer(), handle.clone());
         }
     }
 
@@ -195,7 +195,7 @@ impl Actions {
             InputHandle::Event( InputEventHandle { handle, types }) => {
                 self.push(
                     ExternalInputEvent {
-                        voices: node.get_performer(),
+                        voices: node.clone_performer(),
                         handle: handle.clone(),
                     }
                 );
@@ -212,7 +212,7 @@ impl Actions {
             OutputHandle::Event { handle, feedback } => {
                 self.push(
                     ExternalOutputEvent {
-                        voices: node.get_performer(),
+                        voices: node.clone_performer(),
                         handle: handle.handle.clone(),
                     }
                 );
@@ -229,7 +229,7 @@ impl Actions {
             InputHandle::Event(InputEventHandle { handle, types }) => {
                 self.push(
                     ReceiveEvents {
-                        voices: node.get_performer(),
+                        voices: node.clone_performer(),
                         handle: handle.clone(),
                         queue: queue.clone(),
                     }
@@ -266,7 +266,7 @@ impl Actions {
 
         self.push(
             ReceiveValue {
-                voices: node.get_performer(),
+                voices: node.clone_performer(),
                 handle: handle.clone(),
                 queue: queue.clone(),
             }
@@ -282,7 +282,7 @@ impl Actions {
                 println!(" - Send events to widget");
                 self.push(
                     SendEvents {
-                        voices: node.get_performer(),
+                        voices: node.clone_performer(),
                         handle: handle.handle.clone(),
                         queue: queue.clone(),
                     }
@@ -493,9 +493,9 @@ impl Actions {
 
 pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> Result<(), &'static str> {
     let mut actions = Actions::new();
-    let src_voices = src_node.get_performer();
+    let src_voices = src_node.clone_performer();
     let src_handle = src_endpoint.handle();
-    let dst_voices = dst_node.get_performer();
+    let dst_voices = dst_node.clone_performer();
     let dst_handle = dst_endpoint.handle();
 
     if let (EndpointHandle::Output(src_handle), EndpointHandle::Input(dst_handle)) = (src_handle, dst_handle) {

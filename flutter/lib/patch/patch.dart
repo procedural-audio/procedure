@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/bindings/api/node.dart';
+import 'package:metasampler/bindings/api/node.dart' as rust_node;
+import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
 import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/patch/patch_canvas.dart';
 
@@ -35,13 +36,15 @@ typedef NodeMoveCallback = void Function(NodeEditor node, Offset oldPosition, Of
 typedef ConnectorRemoveCallback = void Function(Connector connector);
 typedef BatchNodeRemoveCallback = void Function(List<NodeEditor> nodes);
 
-// Patch data model
+// Patch data model wrapper around Rust Patch
 class Patch {
+  final rust_patch.Patch rustPatch;
   final PresetInfo info;
-  final List<Node> nodes;
+  final List<NodeEditor> nodes;
   final List<Connector> connectors;
 
   Patch({
+    required this.rustPatch,
     required this.info,
     this.nodes = const [],
     this.connectors = const [],
@@ -62,8 +65,21 @@ class Patch {
     var contents = await info.patchFile.readAsString();
     var json = jsonDecode(contents);
 
+    // Create Rust patch instance
+    var rustInfo = rust_patch.PresetInfo(
+      name: info.name,
+      patchFilePath: info.patchFile.path,
+    );
+    var rustPatch = await rust_patch.Patch.newInstance(info: rustInfo);
+    
+    // Load JSON into rust patch
+    await rustPatch.loadFromJson(jsonStr: contents);
+    
     // Create a temporary patch instance for loading
-    var tempPatch = Patch(info: info);
+    var tempPatch = Patch(
+      rustPatch: rustPatch,
+      info: info,
+    );
 
     // Load nodes
     Map<int, NodeEditor> nodeMap = {};
@@ -141,6 +157,7 @@ class Patch {
     }
 
     return Patch(
+      rustPatch: rustPatch,
       info: info,
       nodes: nodes,
       connectors: connectors,
@@ -156,46 +173,65 @@ class Patch {
     return null;
   }
 
-  Future<void> save() async {
-    List<Map<String, dynamic>> nodeStates = [];
-    List<Map<String, dynamic>> connectorStates = [];
-
-    // Serialize nodes with ID and CMajor source
+  // Sync Flutter nodes/connectors to Rust before saving
+  Future<void> _syncToRust() async {
+    // Clear existing Rust nodes
+    // Since nodes are stored in Flutter side with their IDs, we can clear by ID
     for (var node in nodes) {
-      nodeStates.add({
-        "id": node.rawNode?.id ?? 0,
-        "source": node.module.source,
-        "position": {
-          "x": node.position.value.dx,
-          "y": node.position.value.dy,
-        },
-        "module": node.module.getState(),
-      });
+      if (node.rawNode != null) {
+        await rustPatch.removeNode(nodeId: node.rawNode!.id);
+      }
     }
-
-    // Serialize connectors
+    
+    // Add current nodes to Rust
+    for (var node in nodes) {
+      if (node.rawNode != null) {
+        // rawNode is of type rust_node.Node, but addNode expects ArcNode from patch.dart
+        await rustPatch.addNode(node: node.rawNode! as rust_patch.ArcNode);
+      }
+    }
+    
+    // Clear existing Rust connectors
+    var rustConnectors = await rustPatch.getConnectors();
+    for (var connector in rustConnectors) {
+      await rustPatch.removeConnector(
+        startNodeId: connector.start.nodeId,
+        startType: connector.start.endpointType,
+        endNodeId: connector.end.nodeId,
+        endType: connector.end.endpointType,
+      );
+    }
+    
+    // Add current connectors to Rust
     for (var connector in connectors) {
-      connectorStates.add({
-        "startNodeId": connector.start.node.rawNode?.id ?? 0,
-        "startEndpointType": connector.start.endpoint.type,
-        "startEndpointAnnotation": connector.start.endpoint.annotation,
-        "endNodeId": connector.end.node.rawNode?.id ?? 0,
-        "endEndpointType": connector.end.endpoint.type,
-        "endEndpointAnnotation": connector.end.endpoint.annotation,
-      });
+      var rustConnector = rust_patch.Connector(
+        start: rust_patch.Pin(
+          nodeId: connector.start.node.rawNode?.id ?? 0,
+          endpointType: connector.start.endpoint.type,
+          endpointAnnotation: connector.start.endpoint.annotation,
+        ),
+        end: rust_patch.Pin(
+          nodeId: connector.end.node.rawNode?.id ?? 0,
+          endpointType: connector.end.endpoint.type,
+          endpointAnnotation: connector.end.endpoint.annotation,
+        ),
+      );
+      await rustPatch.addConnector(connector: rustConnector);
     }
+  }
 
-    var contents = jsonEncode({
-      "nodes": nodeStates,
-      "connectors": connectorStates
-    });
-
+  Future<void> save() async {
+    // Sync Flutter state to Rust
+    await _syncToRust();
+    
+    // Save using the Rust patch
+    var jsonStr = await rustPatch.saveToJson();
+    
     // Write the patch file
-    await info.patchFile.writeAsString(contents);
+    await info.patchFile.writeAsString(jsonStr);
 
     print("Saved patch file:");
     print(info.patchFile.path);
-    print("Nodes: ${nodeStates.length}, Connectors: ${connectorStates.length}");
   }
 }
 

@@ -23,11 +23,11 @@ abstract class Cable implements RustOpaqueInterface {
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>
 abstract class Connection implements RustOpaqueInterface {
-  NodeEndpoint get endpoint;
+  Endpoint get endpoint;
 
   Node get node;
 
-  set endpoint(NodeEndpoint endpoint);
+  set endpoint(Endpoint endpoint);
 
   set node(Node node);
 }
