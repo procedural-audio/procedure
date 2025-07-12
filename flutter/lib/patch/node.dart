@@ -27,7 +27,7 @@ double roundToGrid(double x) {
 abstract class NodeWidget extends StatelessWidget {
   const NodeWidget(this.node, this.endpoint, {super.key});
 
-  final Node node;
+  final NodeEditor node;
   final NodeEndpoint endpoint;
 
   void tick(Duration elapsed) {}
@@ -87,7 +87,7 @@ abstract class NodeWidget extends StatelessWidget {
   }
 
   static NodeWidget? from(
-      Node node, NodeEndpoint endpoint, Map<String, dynamic> map) {
+      NodeEditor node, NodeEndpoint endpoint, Map<String, dynamic> map) {
     if (map['widget'] != null) {
       String type = map['widget'];
       switch (type) {
@@ -113,10 +113,9 @@ abstract class NodeWidget extends StatelessWidget {
   void setState(Map<String, dynamic> state);
 }
 
-class Node extends StatelessWidget {
-  Node({
+class NodeEditor extends StatelessWidget {
+  NodeEditor({
     required this.module,
-    required this.patch,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required Offset position,
@@ -159,7 +158,6 @@ class Node extends StatelessWidget {
           Pin(
             endpoint: endpoint,
             node: this,
-            patch: patch,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
             newConnector: newConnector,
@@ -202,7 +200,6 @@ class Node extends StatelessWidget {
           Pin(
             endpoint: endpoint,
             node: this,
-            patch: patch,
             onAddConnector: onAddConnector,
             onRemoveConnections: onRemoveConnections,
             newConnector: newConnector,
@@ -218,7 +215,6 @@ class Node extends StatelessWidget {
   }
 
   final Module module;
-  final Patch patch;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final NewConnector newConnector;
@@ -258,7 +254,7 @@ class Node extends StatelessWidget {
 
   void refreshSize() {}
 
-  Node? fromState(Map<String, dynamic> state) {
+  NodeEditor? fromState(Map<String, dynamic> state) {
     /*var module = Module.fromState(state["module"]);
     var position = Offset(state["x"], state["y"]);
 

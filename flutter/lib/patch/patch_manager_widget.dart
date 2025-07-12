@@ -17,7 +17,7 @@ abstract class PatchCommand {
 class AddNodeCommand extends PatchCommand {
   final Module module;
   final Offset position;
-  Node? _addedNode;
+  NodeEditor? _addedNode;
   
   AddNodeCommand(this.module, this.position);
   
@@ -26,9 +26,8 @@ class AddNodeCommand extends PatchCommand {
   
   @override
   void execute(_PatchManagerWidgetState state) {
-    _addedNode = Node(
+    _addedNode = NodeEditor(
       module: module,
-      patch: state._patch,
       onAddConnector: state._onAddConnector,
       onRemoveConnections: state._onRemoveConnections,
       position: position,
@@ -55,7 +54,7 @@ class AddNodeCommand extends PatchCommand {
 }
 
 class RemoveNodeCommand extends PatchCommand {
-  final Node node;
+  final NodeEditor node;
   final List<Connector> removedConnectors = [];
   
   RemoveNodeCommand(this.node);
@@ -143,7 +142,7 @@ class RemoveConnectorCommand extends PatchCommand {
 }
 
 class MoveNodeCommand extends PatchCommand {
-  final Node node;
+  final NodeEditor node;
   final Offset oldPosition;
   final Offset newPosition;
   
@@ -191,8 +190,8 @@ class BatchCommand extends PatchCommand {
 // Callback types for patch operations
 typedef NodeCallback = void Function(Module module, Offset position);
 typedef ConnectorCallback = void Function(Pin start, Pin end);
-typedef NodeRemoveCallback = void Function(Node node);
-typedef NodeMoveCallback = void Function(Node node, Offset oldPosition, Offset newPosition);
+typedef NodeRemoveCallback = void Function(NodeEditor node);
+typedef NodeMoveCallback = void Function(NodeEditor node, Offset oldPosition, Offset newPosition);
 typedef ConnectorRemoveCallback = void Function(Connector connector);
 
 class PatchManagerWidget extends StatefulWidget {
@@ -214,7 +213,7 @@ class _PatchManagerWidgetState extends State<PatchManagerWidget> {
   late Patch _patch;
   
   // Nodes and connectors as plain lists
-  List<Node> get _nodes => _patch.nodes;
+  List<NodeEditor> get _nodes => _patch.nodes;
   List<Connector> get _connectors => _patch.connectors;
   
   // NewConnector for handling new connections
@@ -255,7 +254,7 @@ class _PatchManagerWidgetState extends State<PatchManagerWidget> {
   }
   
   // Helper method to update patch with new nodes/connectors
-  void _updatePatch({List<Node>? nodes, List<Connector>? connectors}) {
+  void _updatePatch({List<NodeEditor>? nodes, List<Connector>? connectors}) {
     setState(() {
       _patch = Patch(
         info: _patch.info,
@@ -301,7 +300,7 @@ class _PatchManagerWidgetState extends State<PatchManagerWidget> {
     _executeCommand(command);
   }
   
-  void _onRemoveNode(Node node) {
+  void _onRemoveNode(NodeEditor node) {
     final command = RemoveNodeCommand(node);
     _executeCommand(command);
   }
@@ -316,12 +315,12 @@ class _PatchManagerWidgetState extends State<PatchManagerWidget> {
     _executeCommand(command);
   }
   
-  void _onMoveNode(Node node, Offset oldPosition, Offset newPosition) {
+  void _onMoveNode(NodeEditor node, Offset oldPosition, Offset newPosition) {
     final command = MoveNodeCommand(node, oldPosition, newPosition);
     _executeCommand(command);
   }
   
-  void _onBatchRemoveNodes(List<Node> nodesToRemove) {
+  void _onBatchRemoveNodes(List<NodeEditor> nodesToRemove) {
     if (nodesToRemove.isEmpty) return;
     
     if (nodesToRemove.length == 1) {

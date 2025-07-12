@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:metasampler/bindings/api/node.dart';
 import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/patch/patch_canvas.dart';
 
@@ -29,10 +30,10 @@ extension FileExtention on FileSystemEntity {
 // Callback types
 typedef NodeCallback = void Function(Module module, Offset position);
 typedef ConnectorCallback = void Function(Pin start, Pin end);
-typedef NodeRemoveCallback = void Function(Node node);
-typedef NodeMoveCallback = void Function(Node node, Offset oldPosition, Offset newPosition);
+typedef NodeRemoveCallback = void Function(NodeEditor node);
+typedef NodeMoveCallback = void Function(NodeEditor node, Offset oldPosition, Offset newPosition);
 typedef ConnectorRemoveCallback = void Function(Connector connector);
-typedef BatchNodeRemoveCallback = void Function(List<Node> nodes);
+typedef BatchNodeRemoveCallback = void Function(List<NodeEditor> nodes);
 
 // Patch data model
 class Patch {
@@ -65,8 +66,8 @@ class Patch {
     var tempPatch = Patch(info: info);
 
     // Load nodes
-    Map<int, Node> nodeMap = {};
-    List<Node> nodes = [];
+    Map<int, NodeEditor> nodeMap = {};
+    List<NodeEditor> nodes = [];
     if (json["nodes"] != null) {
       for (var nodeData in json["nodes"]) {
         try {
@@ -77,9 +78,8 @@ class Patch {
               nodeData["position"]["y"]?.toDouble() ?? 0.0,
             );
             
-            var node = Node(
+            var node = NodeEditor(
               module: module,
-              patch: tempPatch,
               onAddConnector: (start, end) {}, // Will be set by PatchEditor
               onRemoveConnections: (pin) {}, // Will be set by PatchEditor
               position: position,
@@ -147,7 +147,7 @@ class Patch {
     );
   }
 
-  static Pin? _findPinByEndpoint(Node node, String type, String annotation) {
+  static Pin? _findPinByEndpoint(NodeEditor node, String type, String annotation) {
     for (var pin in node.pins) {
       if (pin.endpoint.type == type && pin.endpoint.annotation == annotation) {
         return pin;
@@ -243,7 +243,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   late final Ticker _ticker;
   
   // Selected nodes managed in state
-  List<Node> selectedNodes = [];
+  List<NodeEditor> selectedNodes = [];
 
   @override
   void initState() {
@@ -261,7 +261,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     super.dispose();
   }
 
-  void removeNode(Node node) {
+  void removeNode(NodeEditor node) {
     widget.onRemoveNode(node);
   }
 

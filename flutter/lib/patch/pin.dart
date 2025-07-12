@@ -20,7 +20,6 @@ class Pin extends StatefulWidget {
   Pin({
     required this.node,
     required this.endpoint,
-    required this.patch,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.newConnector,
@@ -45,8 +44,7 @@ class Pin extends StatefulWidget {
   }
 
   final NodeEndpoint endpoint;
-  final Node node;
-  final Patch patch;
+  final NodeEditor node;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final NewConnector newConnector;
@@ -115,12 +113,13 @@ class _PinState extends State<Pin> {
           child: Builder(
             builder: (context) {
               bool connected = false;
-              for (var connector in widget.patch.connectors) {
+              print("TODO fix conectors");
+              /*for (var connector in widget.patch.connectors) {
                 if (connector.start == widget || connector.end == widget) {
                   connected = true;
                   break;
                 }
-              }
+              }*/
               
               bool is_selected = false; // Simplified for now
                   var kind = widget.endpoint.kind;

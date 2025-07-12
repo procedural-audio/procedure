@@ -9,7 +9,7 @@ import '../../project/theme.dart';
 
 class FaderWidget extends NodeWidget {
   FaderWidget(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint,
     double value, {
     required this.left,
@@ -52,7 +52,7 @@ class FaderWidget extends NodeWidget {
   }
 
   static FaderWidget from(
-      Node node, NodeEndpoint endpoint, Map<String, dynamic> map) {
+      NodeEditor node, NodeEndpoint endpoint, Map<String, dynamic> map) {
     return FaderWidget(
       node,
       endpoint,

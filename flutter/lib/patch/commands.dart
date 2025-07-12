@@ -14,8 +14,8 @@ abstract class PatchCommand {
 /// Interface for patch operations that commands can use
 abstract class PatchState {
   // Node operations
-  Node addNodeDirect(Module module, Offset position);
-  void removeNodeDirect(Node node);
+  NodeEditor addNodeDirect(Module module, Offset position);
+  void removeNodeDirect(NodeEditor node);
   
   // Connector operations
   Connector? addConnectorDirect(Pin start, Pin end);
@@ -23,11 +23,11 @@ abstract class PatchState {
   void addConnectorBackDirect(Connector connector);
   
   // Selection operations
-  void setSelectionDirect(List<Node> nodes);
-  List<Node> get currentSelection;
+  void setSelectionDirect(List<NodeEditor> nodes);
+  List<NodeEditor> get currentSelection;
   
   // Access to collections
-  List<Node> get nodes;
+  List<NodeEditor> get nodes;
   List<Connector> get connectors;
 }
 
@@ -117,7 +117,7 @@ class PatchHistoryManager {
 class AddNodeCommand extends PatchCommand {
   final Module module;
   final Offset position;
-  Node? _addedNode; // Store reference for undo
+  NodeEditor? _addedNode; // Store reference for undo
 
   AddNodeCommand(this.module, this.position);
 
@@ -139,7 +139,7 @@ class AddNodeCommand extends PatchCommand {
 
 /// Command to remove a node from the patch
 class RemoveNodeCommand extends PatchCommand {
-  final Node node;
+  final NodeEditor node;
   final Module module;
   final Offset position;
   final List<Connector> _removedConnectors = [];
@@ -176,7 +176,7 @@ class RemoveNodeCommand extends PatchCommand {
 
 /// Command to move a node to a new position
 class MoveNodeCommand extends MergeableCommand {
-  final Node node;
+  final NodeEditor node;
   final Offset oldPosition;
   final Offset newPosition;
 
@@ -253,8 +253,8 @@ class RemoveConnectorCommand extends PatchCommand {
 
 /// Command to select/deselect nodes
 class SelectionCommand extends MergeableCommand {
-  final List<Node> oldSelection;
-  final List<Node> newSelection;
+  final List<NodeEditor> oldSelection;
+  final List<NodeEditor> newSelection;
 
   SelectionCommand(this.oldSelection, this.newSelection);
 
@@ -291,7 +291,7 @@ class SelectionCommand extends MergeableCommand {
 
 /// Command to delete multiple selected nodes
 class DeleteSelectionCommand extends PatchCommand {
-  final List<Node> deletedNodes;
+  final List<NodeEditor> deletedNodes;
   final List<(Module, Offset)> nodeData;
   final List<Connector> _removedConnectors = [];
 

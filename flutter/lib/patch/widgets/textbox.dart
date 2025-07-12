@@ -8,7 +8,7 @@ import '../../project/theme.dart';
 
 class TextboxWidget extends NodeWidget {
   TextboxWidget(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint, {
     required this.left,
     required this.top,
@@ -58,7 +58,7 @@ class TextboxWidget extends NodeWidget {
   }
 
   static TextboxWidget from(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint,
     Map<String, dynamic> map,
   ) {

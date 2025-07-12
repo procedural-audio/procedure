@@ -9,7 +9,7 @@ import '../../project/theme.dart';
 
 class ScopeWidget extends NodeWidget {
   ScopeWidget(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint, {
     required this.left,
     required this.top,
@@ -44,7 +44,7 @@ class ScopeWidget extends NodeWidget {
   }
 
   static ScopeWidget from(
-      Node node, NodeEndpoint endpoint, Map<String, dynamic> map) {
+      NodeEditor node, NodeEndpoint endpoint, Map<String, dynamic> map) {
     return ScopeWidget(
       node,
       endpoint,

@@ -5,7 +5,7 @@ import 'node.dart';
 import 'connector.dart';
 
 class PatchViewer extends StatelessWidget {
-  final List<Node> nodes;
+  final List<NodeEditor> nodes;
   final List<Connector> connectors;
   final NewConnector newConnector;
   final FocusNode focusNode;

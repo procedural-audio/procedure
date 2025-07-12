@@ -10,7 +10,7 @@ import '../../project/theme.dart';
 
 class KnobWidget extends NodeWidget {
   KnobWidget(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint, {
     required this.left,
     required this.top,
@@ -52,7 +52,7 @@ class KnobWidget extends NodeWidget {
   }
 
   static KnobWidget from(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint,
     Map<String, dynamic> map,
   ) {

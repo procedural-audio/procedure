@@ -10,7 +10,7 @@ import '../../project/theme.dart';
 
 class LedWidget extends NodeWidget {
   LedWidget(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint, {
     required this.left,
     required this.top,
@@ -49,7 +49,7 @@ class LedWidget extends NodeWidget {
   }
 
   static LedWidget from(
-    Node node,
+    NodeEditor node,
     NodeEndpoint endpoint,
     Map<String, dynamic> map,
   ) {
