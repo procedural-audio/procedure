@@ -5,15 +5,18 @@ import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
 import 'package:metasampler/patch/patch_canvas.dart';
 
 import 'dart:io';
+import 'dart:async';
 
 import 'pin.dart';
 import '../plugin/plugin.dart';
 import 'node.dart';
 import 'module.dart';
 import 'right_click.dart';
+import '../preset/info.dart';
 
 import '../bindings/api/graph.dart' as api;
 import '../bindings/api/cable.dart';
+import '../bindings/api/node.dart' as rust_node;
 
 /* LIBRARY */
 
@@ -32,26 +35,12 @@ typedef BatchNodeRemoveCallback = void Function(List<NodeEditor> nodes);
 
 class PatchEditor extends StatefulWidget {
   PatchEditor({
-    required this.rustPatch,
+    required this.presetInfo,
     required this.plugins,
-    required this.transformationController,
-    required this.onAddNode,
-    required this.onRemoveNode,
-    required this.onAddCable,
-    required this.onRemoveCable,
-    required this.onBatchRemoveNodes,
   }) : super(key: UniqueKey());
 
-  final rust_patch.Patch rustPatch;
+  final PresetInfo presetInfo;
   final List<Plugin> plugins;
-  final TransformationController transformationController;
-  
-  // Callbacks
-  final NodeCallback onAddNode;
-  final NodeRemoveCallback onRemoveNode;
-  final CableCallback onAddCable;
-  final CableRemoveCallback onRemoveCable;
-  final BatchNodeRemoveCallback onBatchRemoveNodes;
 
   @override
   _PatchEditor createState() => _PatchEditor();
@@ -79,26 +68,32 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
   
   // Notifier to trigger cable repaints when nodes move
   final ChangeNotifier _cableRepaintNotifier = ChangeNotifier();
+  
+  // Rust patch and transformation controller (moved from SimplePatchWidget)
+  rust_patch.Patch? _rustPatch;
+  final TransformationController _transformationController = TransformationController();
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(tick);
     _ticker.start();
-    _loadFromRustPatch();
+    _loadPatch();
   }
 
   @override
   void dispose() {
     _ticker.dispose();
     _cableRepaintNotifier.dispose();
+    _transformationController.dispose();
+    _saveDebounceTimer?.cancel();
     focusNode.dispose();
     super.dispose();
   }
 
   void _loadFromRustPatch() {
     // Get nodes from Rust patch and create Flutter NodeEditor wrappers
-    var rustNodes = widget.rustPatch.getNodes();
+    var rustNodes = _rustPatch!.getNodes();
     List<NodeEditor> newNodes = [];
     Map<int, NodeEditor> nodeMap = {};
     
@@ -121,6 +116,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
           onNewCableSetEnd: _onNewCableSetEnd,
           onNewCableReset: _onNewCableReset,
           onAddNewCable: _onAddNewCable,
+          onPositionChanged: _onNodePositionChanged,
         );
         
         nodeMap[rustNode.id] = nodeEditor;
@@ -181,8 +177,178 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     });
   }
 
+  Future<void> _loadPatch() async {
+    _rustPatch = rust_patch.Patch();
+    
+    // Try to load existing patch file
+    if (await widget.presetInfo.patchFile.exists()) {
+      try {
+        var contents = await widget.presetInfo.patchFile.readAsString();
+        await _rustPatch!.load(jsonStr: contents);
+      } catch (e) {
+        print("Failed to load patch: $e");
+      }
+    }
+    
+    _loadFromRustPatch();
+    
+    // Update node ID counter to avoid conflicts with loaded nodes
+    if (_rustPatch != null) {
+      var maxId = 0;
+      for (var node in _rustPatch!.getNodes()) {
+        if (node.id > maxId) {
+          maxId = node.id;
+        }
+      }
+      _nextNodeId = maxId + 1;
+    }
+  }
+
+  // Node ID counter to avoid conflicts
+  static int _nextNodeId = 1;
+  
+  // Callback implementations (moved from SimplePatchWidget)
+  void _onAddNode(Module module, Offset position) {
+    // Create Rust node and add to patch
+    var rustModule = module.toRustModule();
+    var nodeId = _nextNodeId++;
+    var rustNode = rust_node.Node.from(
+      id: nodeId,
+      module: rustModule,
+      position: (position.dx, position.dy),
+    );
+    
+    if (rustNode != null) {
+      _rustPatch!.addNode(node: rustNode);
+      _savePatch();
+      
+      // Reload to avoid disposal issues
+      _loadFromRustPatch();
+    }
+  }
+  
+  void _onRemoveNode(NodeEditor node) {
+    if (node.rustNode != null) {
+      _rustPatch!.removeNode(node: node.rustNode!);
+      
+      setState(() {
+        nodes.remove(node);
+      });
+      
+      _savePatch();
+    }
+  }
+  
+  void _onAddCable(Pin start, Pin end) {
+    try {
+      // Create a temporary graph to generate the cable
+      var tempGraph = api.Graph();
+      tempGraph.addCable(
+        srcNode: start.node.rustNode!,
+        srcEndpoint: start.endpoint,
+        dstNode: end.node.rustNode!,
+        dstEndpoint: end.endpoint,
+      );
+      
+      // Get the created cable from the graph
+      var cables = tempGraph.cables;
+      if (cables.isNotEmpty) {
+        var cable = cables.first;
+        _rustPatch!.addCable(cable: cable);
+        print("Added cable: ${start.node.module.name} -> ${end.node.module.name}");
+        _savePatch();
+        setState(() {}); // Trigger rebuild to show new cable
+      }
+    } catch (e) {
+      print("Failed to add cable: $e");
+    }
+  }
+  
+  void _onRemoveCable(Pin start, Pin end) {
+    try {
+      // Find the cable to remove by matching endpoints
+      var cables = _rustPatch!.getCables();
+      for (var cable in cables) {
+        bool isMatch = false;
+        
+        // Check if this cable matches the pins (either direction)
+        if ((cable.source.node.id == start.node.rustNode!.id &&
+             cable.source.endpoint.type == start.endpoint.type &&
+             cable.source.endpoint.annotation == start.endpoint.annotation &&
+             cable.destination.node.id == end.node.rustNode!.id &&
+             cable.destination.endpoint.type == end.endpoint.type &&
+             cable.destination.endpoint.annotation == end.endpoint.annotation) ||
+            (cable.source.node.id == end.node.rustNode!.id &&
+             cable.source.endpoint.type == end.endpoint.type &&
+             cable.source.endpoint.annotation == end.endpoint.annotation &&
+             cable.destination.node.id == start.node.rustNode!.id &&
+             cable.destination.endpoint.type == start.endpoint.type &&
+             cable.destination.endpoint.annotation == start.endpoint.annotation)) {
+          isMatch = true;
+        }
+        
+        if (isMatch) {
+          _rustPatch!.removeCable(cable: cable);
+          print("Removed cable");
+          _savePatch();
+          setState(() {}); // Trigger rebuild to hide removed cable
+          break;
+        }
+      }
+    } catch (e) {
+      print("Failed to remove cable: $e");
+    }
+  }
+  
+  void _onBatchRemoveNodes(List<NodeEditor> nodesToRemove) {
+    for (var node in nodesToRemove) {
+      if (node.rustNode != null) {
+        _rustPatch!.removeNode(node: node.rustNode!);
+      }
+    }
+    
+    setState(() {
+      nodes.removeWhere((n) => nodesToRemove.contains(n));
+    });
+    
+    _savePatch();
+  }
+  
+  Future<void> _savePatch() async {
+    try {
+      var jsonStr = await _rustPatch!.save();
+      await widget.presetInfo.patchFile.writeAsString(jsonStr);
+      print("Saved patch file: ${widget.presetInfo.patchFile.path}");
+    } catch (e) {
+      print("Failed to save patch: $e");
+    }
+  }
+  
+  void _onNodePositionChanged(NodeEditor node, Offset newPosition) {
+    // Update the position in the Rust node
+    if (node.rustNode != null) {
+      // Update the rust node's position
+      node.rustNode!.position = (newPosition.dx, newPosition.dy);
+      
+      // Save after a delay to avoid excessive saves during dragging
+      _savePatchDebounced();
+    }
+  }
+  
+  Timer? _saveDebounceTimer;
+  
+  void _savePatchDebounced() {
+    // Cancel any existing timer
+    _saveDebounceTimer?.cancel();
+    
+    // Start a new timer that will save after 500ms of no position changes
+    _saveDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _savePatch();
+    });
+  }
+
   void removeNode(NodeEditor node) {
-    widget.onRemoveNode(node);
+    _onRemoveNode(node);
   }
 
   void tick(Duration elapsed) {
@@ -204,7 +370,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     var graph = api.Graph.new();
 
     // Add all the cables from the Rust patch to the graph
-    var rustCables = widget.rustPatch.getCables();
+    var rustCables = _rustPatch!.getCables();
     for (var cable in rustCables) {
       graph.addCable(
         srcNode: cable.source.node,
@@ -226,9 +392,14 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     api.setPatch(graph: graph);
   }
 
+  double roundToGrid(double value) {
+    const gridSize = 20.0;
+    return (value / gridSize).round() * gridSize;
+  }
+  
   void addModule(Module module, Offset p) {
     Offset position = Offset(roundToGrid(p.dx), roundToGrid(p.dy));
-    widget.onAddNode(module, position);
+    _onAddNode(module, position);
   }
 
   void addCable(Pin start, Pin end) {
@@ -239,7 +410,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       dstNode: end.node.rustNode!,
       dstEndpoint: end.endpoint,
     )) {
-      widget.onAddCable(start, end);
+      _onAddCable(start, end);
     } else {
       print("Connection not supported");
     }
@@ -247,7 +418,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
 
   void removeConnectionsTo(Pin pin) {
     // Find cables to remove from the Rust patch
-    var cablesToRemove = widget.rustPatch.getCables()
+    var cablesToRemove = _rustPatch!.getCables()
         .where((cable) => 
           _pinMatchesConnection(pin, cable.source) || 
           _pinMatchesConnection(pin, cable.destination))
@@ -271,7 +442,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
       }
       
       if (otherPin != null) {
-        widget.onRemoveCable(pin, otherPin);
+        _onRemoveCable(pin, otherPin);
       }
     }
   }
@@ -299,7 +470,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
     if (e.logicalKey == LogicalKeyboardKey.delete ||
         e.logicalKey == LogicalKeyboardKey.backspace) {
       if (selectedNodes.isNotEmpty) {
-        widget.onBatchRemoveNodes(selectedNodes.toList());
+        _onBatchRemoveNodes(selectedNodes.toList());
         
         // Clear selection after removal
         setState(() {
@@ -327,7 +498,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
             scaleEnabled: true,
             clipBehavior: Clip.hardEdge,
             constrained: false,
-            transformationController: widget.transformationController,
+            transformationController: _transformationController,
             onInteractionUpdate: (details) {
               if (showRightClickMenu) {
                 setState(() {
@@ -343,7 +514,7 @@ class _PatchEditor extends State<PatchEditor> with SingleTickerProviderStateMixi
             },
             child: PatchViewer(
               nodes: nodes,
-              cables: widget.rustPatch.getCables(),
+              cables: _rustPatch!.getCables(),
               newCableStart: newCableStart,
               newCableEnd: newCableEnd,
               repaintNotifier: _cableRepaintNotifier,

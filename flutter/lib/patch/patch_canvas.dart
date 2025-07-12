@@ -150,15 +150,15 @@ class CablePainter extends CustomPainter {
     
     if (sourcePin == null || destPin == null) return;
     
-    // Calculate start and end positions
+    // Calculate start and end positions using quantized positions for existing cables
     Offset startPos = Offset(
-      sourcePin.offset.dx + sourceNode.position.value.dx + 15 / 2,
-      sourcePin.offset.dy + sourceNode.position.value.dy + 15 / 2,
+      sourcePin.offset.dx + _getQuantizedX(sourceNode.position.value.dx) + 15 / 2,
+      sourcePin.offset.dy + _getQuantizedY(sourceNode.position.value.dy) + 15 / 2,
     );
     
     Offset endPos = Offset(
-      destPin.offset.dx + destNode.position.value.dx + 15 / 2,
-      destPin.offset.dy + destNode.position.value.dy + 15 / 2,
+      destPin.offset.dx + _getQuantizedX(destNode.position.value.dx) + 15 / 2,
+      destPin.offset.dy + _getQuantizedY(destNode.position.value.dy) + 15 / 2,
     );
     
     // Get color for this endpoint type
@@ -209,6 +209,15 @@ class CablePainter extends CustomPainter {
       }
     }
     return null;
+  }
+  
+  // Helper methods to get quantized positions (same as used in NodeEditor)
+  double _getQuantizedX(double x) {
+    return (x / GlobalSettings.gridSize).roundToDouble() * GlobalSettings.gridSize;
+  }
+  
+  double _getQuantizedY(double y) {
+    return (y / GlobalSettings.gridSize).roundToDouble() * GlobalSettings.gridSize;
   }
   
   @override

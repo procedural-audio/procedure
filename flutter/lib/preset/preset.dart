@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../interface/ui.dart';
-import '../patch/simple_patch_widget.dart';
+import '../patch/patch.dart';
 import '../plugin/plugin.dart';
 import '../bindings/api/patch.dart' as rust_patch;
 import 'info.dart';
@@ -42,7 +42,7 @@ class Preset extends StatelessWidget {
     if (await info.patchFile.exists()) {
       try {
         var contents = await info.patchFile.readAsString();
-        await rustPatch.loadFromJson(jsonStr: contents);
+        await rustPatch.load(jsonStr: contents);
       } catch (e) {
         print("Failed to load patch: $e");
       }
@@ -82,7 +82,7 @@ class Preset extends StatelessWidget {
     
     // Save the Rust patch
     try {
-      var jsonStr = await rustPatch.saveToJson();
+      var jsonStr = await rustPatch.save();
       await info.patchFile.writeAsString(jsonStr);
       print("Saved patch file: ${info.patchFile.path}");
     } catch (e) {
@@ -99,8 +99,8 @@ class Preset extends StatelessWidget {
       child: Builder(
         builder: (context) {
           if (!uiVisible) {
-            return SimplePatchWidget(
-              info: info,
+            return PatchEditor(
+              presetInfo: info,
               plugins: plugins,
             );
           } else {

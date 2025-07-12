@@ -77,7 +77,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -419284496;
+  int get rustContentHash => -1224510008;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -235,7 +235,7 @@ abstract class RustLibApi extends BaseApi {
 
   List<Node> crateApiPatchPatchGetNodes({required Patch that});
 
-  Future<void> crateApiPatchPatchLoadFromJson(
+  Future<void> crateApiPatchPatchLoad(
       {required Patch that, required String jsonStr});
 
   Patch crateApiPatchPatchNew();
@@ -245,7 +245,7 @@ abstract class RustLibApi extends BaseApi {
 
   void crateApiPatchPatchRemoveNode({required Patch that, required Node node});
 
-  Future<String> crateApiPatchPatchSaveToJson({required Patch that});
+  Future<String> crateApiPatchPatchSave({required Patch that});
 
   Future<AudioConfiguration> crateApiIoAudioConfigurationDefault();
 
@@ -1794,12 +1794,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiPatchPatchLoadFromJson(
+  Future<void> crateApiPatchPatchLoad(
       {required Patch that, required String jsonStr}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPatch(
+        sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPatch(
             that, serializer);
         sse_encode_String(jsonStr, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
@@ -1809,15 +1809,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeSuccessData: sse_decode_unit,
         decodeErrorData: sse_decode_String,
       ),
-      constMeta: kCrateApiPatchPatchLoadFromJsonConstMeta,
+      constMeta: kCrateApiPatchPatchLoadConstMeta,
       argValues: [that, jsonStr],
       apiImpl: this,
     ));
   }
 
-  TaskConstMeta get kCrateApiPatchPatchLoadFromJsonConstMeta =>
-      const TaskConstMeta(
-        debugName: "Patch_load_from_json",
+  TaskConstMeta get kCrateApiPatchPatchLoadConstMeta => const TaskConstMeta(
+        debugName: "Patch_load",
         argNames: ["that", "jsonStr"],
       );
 
@@ -1900,7 +1899,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String> crateApiPatchPatchSaveToJson({required Patch that}) {
+  Future<String> crateApiPatchPatchSave({required Patch that}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
@@ -1913,15 +1912,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeSuccessData: sse_decode_String,
         decodeErrorData: sse_decode_String,
       ),
-      constMeta: kCrateApiPatchPatchSaveToJsonConstMeta,
+      constMeta: kCrateApiPatchPatchSaveConstMeta,
       argValues: [that],
       apiImpl: this,
     ));
   }
 
-  TaskConstMeta get kCrateApiPatchPatchSaveToJsonConstMeta =>
-      const TaskConstMeta(
-        debugName: "Patch_save_to_json",
+  TaskConstMeta get kCrateApiPatchPatchSaveConstMeta => const TaskConstMeta(
+        debugName: "Patch_save",
         argNames: ["that"],
       );
 
@@ -4137,8 +4135,8 @@ class PatchImpl extends RustOpaque implements Patch {
         that: this,
       );
 
-  Future<void> loadFromJson({required String jsonStr}) => RustLib.instance.api
-      .crateApiPatchPatchLoadFromJson(that: this, jsonStr: jsonStr);
+  Future<void> load({required String jsonStr}) =>
+      RustLib.instance.api.crateApiPatchPatchLoad(that: this, jsonStr: jsonStr);
 
   void removeCable({required Cable cable}) => RustLib.instance.api
       .crateApiPatchPatchRemoveCable(that: this, cable: cable);
@@ -4146,8 +4144,7 @@ class PatchImpl extends RustOpaque implements Patch {
   void removeNode({required Node node}) =>
       RustLib.instance.api.crateApiPatchPatchRemoveNode(that: this, node: node);
 
-  Future<String> saveToJson() =>
-      RustLib.instance.api.crateApiPatchPatchSaveToJson(
+  Future<String> save() => RustLib.instance.api.crateApiPatchPatchSave(
         that: this,
       );
 }

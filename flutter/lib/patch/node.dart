@@ -122,6 +122,7 @@ class NodeEditor extends StatelessWidget {
     required this.onNewCableSetEnd,
     required this.onNewCableReset,
     required this.onAddNewCable,
+    this.onPositionChanged,
   }) : super(key: UniqueKey()) {
     // Set the initial node position
     this.position.value = position;
@@ -225,6 +226,7 @@ class NodeEditor extends StatelessWidget {
   final void Function(Pin?) onNewCableSetEnd;
   final VoidCallback onNewCableReset;
   final VoidCallback onAddNewCable;
+  final void Function(NodeEditor, Offset)? onPositionChanged;
 
   List<Pin> pins = [];
   List<NodeWidget> widgets = [];
@@ -305,6 +307,11 @@ class NodeEditor extends StatelessWidget {
               var x = roundToGrid(position.value.dx);
               var y = roundToGrid(position.value.dy);
               position.value = Offset(x, y);
+              
+              // Notify position change
+              if (onPositionChanged != null) {
+                onPositionChanged!(this, Offset(x, y));
+              }
             },
             child: Container(
               width: module.size.width * GlobalSettings.gridSize - 1.0,

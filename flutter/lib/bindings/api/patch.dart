@@ -8,6 +8,8 @@ import 'cable.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `SerializableCable`, `SerializableConnection`, `SerializableNode`, `SerializablePatch`
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>>
 abstract class Patch implements RustOpaqueInterface {
   void addCable({required Cable cable});
@@ -18,7 +20,7 @@ abstract class Patch implements RustOpaqueInterface {
 
   List<Node> getNodes();
 
-  Future<void> loadFromJson({required String jsonStr});
+  Future<void> load({required String jsonStr});
 
   factory Patch() => RustLib.instance.api.crateApiPatchPatchNew();
 
@@ -26,5 +28,5 @@ abstract class Patch implements RustOpaqueInterface {
 
   void removeNode({required Node node});
 
-  Future<String> saveToJson();
+  Future<String> save();
 }
