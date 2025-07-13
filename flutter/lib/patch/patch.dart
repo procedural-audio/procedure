@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
 import 'package:metasampler/patch/painters.dart';
@@ -84,10 +83,11 @@ class _PatchEditor extends State<PatchEditor> {
 
   // Build NodeEditor widgets
   List<Widget> _buildNodeEditors() {
-    return widget.patch.getNodes().map((rustNode) {
+    return widget.patch.getNodeIds().map((nodeId) {
       return NodeEditor(
-        key: ValueKey(rustNode.id), // Use node ID as stable key
-        node: rustNode,
+        // No key - let widgets be recreated fresh
+        nodeId: nodeId,
+        patch: widget.patch,
         onSave: _savePatch,
         onAddConnector: addCable,
         onRemoveConnections: removeConnectionsTo,
@@ -161,7 +161,11 @@ class _PatchEditor extends State<PatchEditor> {
     );
     
     if (rustNode != null) {
-      widget.patch.addNode(node: rustNode);
+      widget.patch.addNode(
+        module: rustModule,
+        position: (position.dx, position.dy),
+      );
+      // addNode returns the generated node ID or throws an exception if failed
       _savePatch();
       
       // Trigger rebuild to show new node
@@ -169,24 +173,55 @@ class _PatchEditor extends State<PatchEditor> {
     }
   }
   
-  void _onAddCable(Pin start, Pin end) {
-    var cable = Cable.new(
-      srcNode: start.node,
-      srcEndpoint: start.endpoint,
-      dstNode: end.node,
-      dstEndpoint: end.endpoint,
-    );
+  int? _getEndpointId(Pin pin) {
+    // Get the endpoint index by finding it in the node's input/output lists
+    if (pin.endpoint.isInput) {
+      var inputs = widget.patch.getNodeInputs(nodeId: pin.nodeId);
+      for (int i = 0; i < inputs.length; i++) {
+        if (inputs[i].type == pin.endpoint.type && 
+            inputs[i].annotation == pin.endpoint.annotation) {
+          return i;
+        }
+      }
+    } else {
+      var outputs = widget.patch.getNodeOutputs(nodeId: pin.nodeId);
+      for (int i = 0; i < outputs.length; i++) {
+        if (outputs[i].type == pin.endpoint.type && 
+            outputs[i].annotation == pin.endpoint.annotation) {
+          return i;
+        }
+      }
+    }
+    return null;
+  }
 
-    widget.patch.addCable(cable: cable);
+  void _onAddCable(Pin start, Pin end) {
+    var srcEndpointId = _getEndpointId(start);
+    var dstEndpointId = _getEndpointId(end);
+    
+    if (srcEndpointId == null || dstEndpointId == null) {
+      print("Could not find endpoint IDs for cable connection");
+      return;
+    }
+    
+    bool success = widget.patch.addCableByIds(
+      srcNodeId: start.nodeId,
+      srcEndpointId: srcEndpointId,
+      dstNodeId: end.nodeId,
+      dstEndpointId: dstEndpointId,
+    );
+    
+    if (success) {
+      _savePatch();
+      setState(() {}); // Trigger rebuild to show new cable
+    } else {
+      print("Failed to create cable");
+    }
   }
   
   void _onBatchRemoveNodes(List<int> nodeIdsToRemove) {
-    var rustNodes = widget.patch.getNodes();
     for (var nodeId in nodeIdsToRemove) {
-      var nodeToRemove = rustNodes.where((n) => n.id == nodeId).firstOrNull;
-      if (nodeToRemove != null) {
-        widget.patch.removeNode(node: nodeToRemove);
-      }
+      widget.patch.removeNodeById(nodeId: nodeId);
     }
     
     _savePatch();
@@ -204,8 +239,8 @@ class _PatchEditor extends State<PatchEditor> {
   }
   
 
-  void removeNode(rust_node.Node node) {
-    widget.patch.removeNode(node: node);
+  void removeNode(int nodeId) {
+    widget.patch.removeNodeById(nodeId: nodeId);
     _savePatch();
     setState(() {});
   }
@@ -235,17 +270,9 @@ class _PatchEditor extends State<PatchEditor> {
   }
 
   void addCable(Pin start, Pin end) {
-    // Check if connection is supported
-    if (api.isConnectionSupported(
-      srcNode: start.node,
-      srcEndpoint: start.endpoint,
-      dstNode: end.node,
-      dstEndpoint: end.endpoint,
-    )) {
-      _onAddCable(start, end);
-    } else {
-      print("Connection not supported");
-    }
+    // TODO: Update connection validation to use node IDs
+    // For now, skip validation and try to add cable
+    _onAddCable(start, end);
   }
 
   void removeConnectionsTo(Pin pin) {
@@ -265,7 +292,7 @@ class _PatchEditor extends State<PatchEditor> {
   }
   
   bool _pinMatchesConnection(Pin pin, Connection connection) {
-    if (pin.node.id != connection.node.id) return false;
+    if (pin.nodeId != connection.node.id) return false;
     return pin.endpoint.type == connection.endpoint.type && 
            pin.endpoint.annotation == connection.endpoint.annotation;
   }

@@ -89,7 +89,6 @@ class CablePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
     
-    double activeOpacity = 1.0;
     double inactiveOpacity = 0.3;
     
     paint.color = color.withValues(alpha: inactiveOpacity); // Default to inactive for now
@@ -143,9 +142,10 @@ class NewCablePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, ui.Size size) {
     // Calculate start position from pin
+    var nodePosition = startPin.patch.getNodePosition(nodeId: startPin.nodeId) ?? (0.0, 0.0);
     Offset startPos = Offset(
-      startPin.offset.dx + startPin.node.position.$1 + 15 / 2,
-      startPin.offset.dy + startPin.node.position.$2 + 15 / 2,
+      startPin.offset.dx + nodePosition.$1 + 15 / 2,
+      startPin.offset.dy + nodePosition.$2 + 15 / 2,
     );
     
     // Get color for this endpoint type

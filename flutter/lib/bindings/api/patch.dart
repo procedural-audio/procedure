@@ -5,6 +5,8 @@
 
 import '../frb_generated.dart';
 import 'cable.dart';
+import 'endpoint.dart';
+import 'module.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
@@ -14,7 +16,13 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 abstract class Patch implements RustOpaqueInterface {
   void addCable({required Cable cable});
 
-  void addNode({required Node node});
+  bool addCableByIds(
+      {required int srcNodeId,
+      required int srcEndpointId,
+      required int dstNodeId,
+      required int dstEndpointId});
+
+  int addNode({required Module module, required (double, double) position});
 
   List<Cable> get cables;
 
@@ -26,6 +34,16 @@ abstract class Patch implements RustOpaqueInterface {
 
   List<Cable> getCables();
 
+  Uint32List getNodeIds();
+
+  List<NodeEndpoint> getNodeInputs({required int nodeId});
+
+  Module? getNodeModule({required int nodeId});
+
+  List<NodeEndpoint> getNodeOutputs({required int nodeId});
+
+  (double, double)? getNodePosition({required int nodeId});
+
   List<Node> getNodes();
 
   Future<void> load({required String jsonStr});
@@ -34,7 +52,9 @@ abstract class Patch implements RustOpaqueInterface {
 
   void removeCable({required Cable cable});
 
-  void removeNode({required Node node});
+  void removeNode({required int nodeId});
+
+  void removeNodeById({required int nodeId});
 
   Future<String> save();
 

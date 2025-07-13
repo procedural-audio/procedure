@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/node.dart';
+import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
 import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
@@ -18,7 +18,8 @@ const double pinRadius = 6;
 
 class Pin extends StatefulWidget {
   Pin({
-    required this.node,
+    required this.nodeId,
+    required this.patch,
     required this.endpoint,
     required this.onAddConnector,
     required this.onRemoveConnections,
@@ -31,19 +32,26 @@ class Pin extends StatefulWidget {
     var annotation = jsonDecode(endpoint.annotation);
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
-    // Initialize the pin offset
-    if (endpoint.isInput) {
-      offset = Offset(5, top);
+    // Get module to calculate offset
+    var module = patch.getNodeModule(nodeId: nodeId);
+    if (module != null) {
+      // Initialize the pin offset
+      if (endpoint.isInput) {
+        offset = Offset(5, top);
+      } else {
+        offset = Offset(
+            module.size.$1 * GlobalSettings.gridSize -
+                (pinRadius * 2 + 10),
+            top);
+      }
     } else {
-      offset = Offset(
-          node.module.size.$1 * GlobalSettings.gridSize -
-              (pinRadius * 2 + 10),
-          top);
+      offset = Offset(5, top);
     }
   }
 
+  final int nodeId;
+  final rust_patch.Patch patch;
   final NodeEndpoint endpoint;
-  final Node node;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;

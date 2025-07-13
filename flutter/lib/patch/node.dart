@@ -6,15 +6,14 @@ import 'package:metasampler/patch/pin.dart';
 import 'package:metasampler/patch/widgets/fader.dart';
 import 'package:metasampler/patch/widgets/textbox.dart';
 import 'package:metasampler/project/theme.dart';
+import 'package:metasampler/style/colors.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../bindings/api/node.dart' as rust_node;
+import '../bindings/api/patch.dart' as rust_patch;
 import '../settings.dart';
 import 'widgets/knob.dart';
 import 'widgets/led.dart';
 import 'widgets/scope.dart';
-
-int NODE_ID = 1;
 
 double roundToGrid(double x) {
   return (x / GlobalSettings.gridSize).roundToDouble() *
@@ -113,7 +112,8 @@ abstract class NodeWidget extends StatelessWidget {
 class NodeEditor extends StatefulWidget {
   NodeEditor({
     Key? key,
-    required this.node,
+    required this.nodeId,
+    required this.patch,
     required this.onSave,
     required this.onAddConnector,
     required this.onRemoveConnections,
@@ -124,7 +124,8 @@ class NodeEditor extends StatefulWidget {
     required this.onAddNewCable,
   }) : super(key: key);
 
-  final rust_node.Node node;
+  final int nodeId;
+  final rust_patch.Patch patch;
   final VoidCallback onSave;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
@@ -135,20 +136,73 @@ class NodeEditor extends StatefulWidget {
   final VoidCallback onAddNewCable;
 
   @override
-  NodeEditorState createState() => NodeEditorState();
+  _NodeEditorState createState() => _NodeEditorState();
 }
 
-class NodeEditorState extends State<NodeEditor> {
+class _NodeEditorState extends State<NodeEditor> {
   bool _isDragging = false;
+
+  Widget _buildNodeContainer() {
+    // Get module from patch
+    var module = widget.patch.getNodeModule(nodeId: widget.nodeId);
+    if (module == null) {
+      return Container(); // Node not found
+    }
+    
+    return Container(
+      width: module.size.$1 * GlobalSettings.gridSize - 1.0,
+      height: module.size.$2 * GlobalSettings.gridSize - 1.0,
+      decoration: BoxDecoration(
+        color: AppColors.element,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        border: Border.all(
+          width: 2,
+          color: const Color.fromRGBO(40, 40, 40, 1.0),
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text(
+                module.title ?? "",
+                style: TextStyle(
+                  color: colorFromString(module.titleColor ?? "") ?? Colors.grey,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: module.icon != null,
+            child: Align(
+              alignment: Alignment.center,
+              child: SvgPicture.string(
+                module.icon ?? "",
+                width: (module.iconSize ?? 24).toDouble(),
+                height: (module.iconSize ?? 24).toDouble(),
+                color: colorFromString(module.iconColor ?? "") ?? Colors.grey,
+              ),
+            ),
+          ),
+          Stack(
+            fit: StackFit.expand,
+            children: _buildPinsAndWidgets(),
+          )
+        ],
+      ),
+    );
+  }
 
   List<Widget> _buildPinsAndWidgets() {
     List<Widget> children = [];
 
     // Add input pins and widgets to list
-    for (var endpoint in widget.node.getInputs()) {
+    for (var endpoint in widget.patch.getNodeInputs(nodeId: widget.nodeId)) {
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
-
-      print("Endpoint: ${endpoint.type}");
 
       // Skip pin if it's an external endpoint
       if (annotations.containsKey("external")) {
@@ -161,14 +215,14 @@ class NodeEditorState extends State<NodeEditor> {
         if (nodeWidget != null) {
           children.add(nodeWidget);
         }
-
         continue;
       }
 
       children.add(
         Pin(
           endpoint: endpoint,
-          node: widget.node,
+          nodeId: widget.nodeId,
+          patch: widget.patch,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -181,10 +235,8 @@ class NodeEditorState extends State<NodeEditor> {
     }
 
     // Add output pins to list
-    for (var endpoint in widget.node.getOutputs()) {
+    for (var endpoint in widget.patch.getNodeOutputs(nodeId: widget.nodeId)) {
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
-
-      print("Endpoint: ${endpoint.type}");
 
       // Skip pin if it's a string endpoint
       if (endpoint.type.contains("string")) {
@@ -202,14 +254,14 @@ class NodeEditorState extends State<NodeEditor> {
         if (nodeWidget != null) {
           children.add(nodeWidget);
         }
-
         continue;
       }
 
       children.add(
         Pin(
           endpoint: endpoint,
-          node: widget.node,
+          nodeId: widget.nodeId,
+          patch: widget.patch,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -224,104 +276,49 @@ class NodeEditorState extends State<NodeEditor> {
     return children;
   }
 
-  void tick() {
-    // for (var widget in widgets) {
-    // widget.tick();
-    // }
-  }
-
-  void refreshUserInterface() {
-    List<NodeWidget> newWidgets = [];
-
-    print("Refreshing node widgets");
-
-    /*for (var plugin in Plugins.list().value) {
-      for (var moduleInfo in plugin.modules().value) {
-        if (moduleInfo.path == info.path) {
-          for (var widgetInfo in moduleInfo.widgetInfos) {
-            newWidgets.add(widgetInfo.createWidget());
-          }
-        }
-      }
-    }*/
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Always use current Rust node position
-    var currentPosition = Offset(widget.node.position.$1, widget.node.position.$2);
+    // Get current position from patch
+    var position = widget.patch.getNodePosition(nodeId: widget.nodeId);
+    if (position == null) {
+      return Container(); // Node not found
+    }
     
     return Positioned(
-      left: roundToGrid(currentPosition.dx),
-      top: roundToGrid(currentPosition.dy),
+      left: roundToGrid(position.$1),
+      top: roundToGrid(position.$2),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanStart: (details) {
-          // Start dragging - no state needed since we update position directly
+          setState(() {
+            _isDragging = true;
+          });
         },
         onPanUpdate: (details) {
-          // Update Rust node position immediately
-          var newPosition = Offset(
-            widget.node.position.$1 + details.delta.dx,
-            widget.node.position.$2 + details.delta.dy,
-          );
-          widget.node.setPosition(position: (newPosition.dx, newPosition.dy));
+          var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
+          if (currentPos != null) {
+            var x = currentPos.$1 + details.delta.dx;
+            var y = currentPos.$2 + details.delta.dy;
+            widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
+            setState(() {});
+          }
         },
         onPanEnd: (details) {
-          // Quantize to grid
-          var x = roundToGrid(widget.node.position.$1);
-          var y = roundToGrid(widget.node.position.$2);
-          
-          widget.node.setPosition(position: (x, y));
-          widget.onSave();
+          var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
+          if (currentPos != null) {
+            var x = roundToGrid(currentPos.$1);
+            var y = roundToGrid(currentPos.$2);
+            
+            widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
+            widget.onSave();
+
+            setState(() {
+              _isDragging = false;
+            });
+          }
         },
-        child: Container(
-              width: widget.node.module.size.$1 * GlobalSettings.gridSize - 1.0,
-              height: widget.node.module.size.$2 * GlobalSettings.gridSize - 1.0,
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(40, 40, 40, 1.0),
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                border: Border.all(
-                  width: 2,
-                  color: const Color.fromRGBO(40, 40, 40, 1.0),
-                ),
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        widget.node.module.title ?? "",
-                        style: TextStyle(
-                          color: colorFromString(widget.node.module.titleColor ?? "") ?? Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Visibility(
-                    visible: widget.node.module.icon != null,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: SvgPicture.string(
-                        widget.node.module.icon ?? "",
-                        width: (widget.node.module.iconSize ?? 24).toDouble(),
-                        height: (widget.node.module.iconSize ?? 24).toDouble(),
-                        color: colorFromString(widget.node.module.iconColor ?? "") ?? Colors.grey,
-                      ),
-                    ),
-                  ),
-                  Stack(
-                    fit: StackFit.expand,
-                    children: _buildPinsAndWidgets(),
-                  )
-                ],
-              ),
-            ),
-        ),
-      );
+        child: _buildNodeContainer(),
+      ),
+    );
   }
 }

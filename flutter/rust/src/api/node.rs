@@ -114,4 +114,5 @@ impl Node {
     pub fn clone_performer(&self) -> Arc<Mutex<cmajor::performer::Performer>> {
         self.performer.clone()
     }
+
 }

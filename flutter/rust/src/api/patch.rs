@@ -1,5 +1,6 @@
 use flutter_rust_bridge::*;
 use crate::api::cable::Cable;
+use crate::api::endpoint::NodeEndpoint;
 use serde::{Serialize, Deserialize};
 use serde_json;
 
@@ -39,7 +40,8 @@ struct SerializablePatch {
 #[frb(opaque)]
 pub struct Patch {
     pub nodes: Vec<Node>,
-    pub cables: Vec<Cable>
+    pub cables: Vec<Cable>,
+    next_node_id: u32,
 }
 
 impl Patch {
@@ -48,20 +50,30 @@ impl Patch {
         Self {
             nodes: Vec::new(),
             cables: Vec::new(),
+            next_node_id: 1,
         }
     }
 
     #[frb(sync)]
-    pub fn add_node(&mut self, node: Node) {
-        self.nodes.push(node);
+    pub fn add_node(&mut self, module: Module, position: (f64, f64)) -> Result<u32, String> {
+        let node_id = self.next_node_id;
+        self.next_node_id += 1;
+        
+        match Node::from(node_id, module, position) {
+            Some(node) => {
+                self.nodes.push(node);
+                Ok(node_id)
+            },
+            None => Err("Failed to create node".to_string())
+        }
     }
 
     #[frb(sync)]
-    pub fn remove_node(&mut self, node: Node) {
-        self.nodes.retain(|n| n.id != node.id);
+    pub fn remove_node(&mut self, node_id: u32) {
+        self.nodes.retain(|n| n.id != node_id);
 
         // Also remove any connectors connected to this node
-        self.cables.retain(|c| c.source.node.id != node.id && c.destination.node.id != node.id);
+        self.cables.retain(|c| c.source.node.id != node_id && c.destination.node.id != node_id);
     }
 
     #[frb(sync)]
@@ -101,6 +113,10 @@ impl Patch {
         // Clear existing data
         self.nodes.clear();
         self.cables.clear();
+        
+        // Find the maximum node ID to set next_node_id correctly
+        let max_id = serializable.nodes.iter().map(|n| n.id).max().unwrap_or(0);
+        self.next_node_id = max_id + 1;
         
         // Recreate nodes
         for s_node in serializable.nodes {
@@ -187,4 +203,85 @@ impl Patch {
         serde_json::to_string_pretty(&serializable)
             .map_err(|e| format!("Failed to serialize patch: {}", e))
     }
+
+    #[frb(sync)]
+    pub fn get_node_ids(&self) -> Vec<u32> {
+        self.nodes.iter().map(|n| n.id).collect()
+    }
+
+    #[frb(sync)]
+    pub fn get_node_inputs(&self, node_id: u32) -> Vec<NodeEndpoint> {
+        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
+            node.get_inputs()
+        } else {
+            Vec::new()
+        }
+    }
+
+    #[frb(sync)]
+    pub fn get_node_outputs(&self, node_id: u32) -> Vec<NodeEndpoint> {
+        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
+            node.get_outputs()
+        } else {
+            Vec::new()
+        }
+    }
+
+    #[frb(sync)]
+    pub fn get_node_module(&self, node_id: u32) -> Option<Module> {
+        self.nodes.iter().find(|n| n.id == node_id).map(|n| n.module.clone())
+    }
+
+    #[frb(sync)]
+    pub fn get_node_position(&self, node_id: u32) -> Option<(f64, f64)> {
+        self.nodes.iter().find(|n| n.id == node_id).map(|n| n.position)
+    }
+
+    #[frb(sync)]
+    pub fn remove_node_by_id(&mut self, node_id: u32) {
+        self.remove_node(node_id);
+    }
+
+    #[frb(sync)]
+    pub fn add_cable_by_ids(&mut self, src_node_id: u32, src_endpoint_id: u32, dst_node_id: u32, dst_endpoint_id: u32) -> bool {
+        // Find source node and endpoint
+        let source_node = match self.nodes.iter().find(|n| n.id == src_node_id) {
+            Some(node) => node.clone(),
+            None => return false,
+        };
+        
+        let source_endpoints = source_node.get_outputs();
+        let source_endpoint = match source_endpoints.get(src_endpoint_id as usize) {
+            Some(endpoint) => endpoint.clone(),
+            None => return false,
+        };
+
+        // Find destination node and endpoint  
+        let dest_node = match self.nodes.iter().find(|n| n.id == dst_node_id) {
+            Some(node) => node.clone(),
+            None => return false,
+        };
+        
+        let dest_endpoints = dest_node.get_inputs();
+        let dest_endpoint = match dest_endpoints.get(dst_endpoint_id as usize) {
+            Some(endpoint) => endpoint.clone(),
+            None => return false,
+        };
+
+        // Create cable
+        let cable = Cable {
+            source: super::cable::Connection {
+                node: source_node,
+                endpoint: source_endpoint,
+            },
+            destination: super::cable::Connection {
+                node: dest_node,
+                endpoint: dest_endpoint,
+            },
+        };
+        
+        self.cables.push(cable);
+        true
+    }
+
 }
