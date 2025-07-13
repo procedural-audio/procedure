@@ -1,84 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/patch.dart' as api;
 import 'dart:ui' as ui;
 import 'dart:math';
 import '../settings.dart';
-import 'node.dart';
 import 'pin.dart';
 import '../bindings/api/cable.dart';
 import '../bindings/api/endpoint.dart';
 import '../project/theme.dart';
 
-class PatchViewer extends StatelessWidget {
-  final List<NodeEditor> nodes;
-  final List<Cable> cables;
-  final Pin? newCableStart;
-  final Offset? newCableEnd;
-  final Listenable repaintNotifier;
-  final FocusNode focusNode;
-  final VoidCallback? onTap;
-  final void Function(PointerDownEvent) onPointerDown;
-  final void Function(KeyEvent) onKeyEvent;
-  
-  const PatchViewer({
-    Key? key,
-    required this.nodes,
-    required this.cables,
-    this.newCableStart,
-    this.newCableEnd,
-    required this.repaintNotifier,
-    required this.focusNode,
-    this.onTap,
-    required this.onPointerDown,
-    required this.onKeyEvent,
-  }) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: onPointerDown,
-      child: GestureDetector(
-        onTap: onTap,
-        child: KeyboardListener(
-          focusNode: focusNode,
-          autofocus: true,
-          onKeyEvent: onKeyEvent,
-          child: SizedBox(
-            width: 10000,
-            height: 10000,
-            child: CustomPaint(
-              painter: GridPainter(),
-              child: Stack(
-                children: <Widget>[
-                  RepaintBoundary(
-                    child: CustomPaint(
-                      painter: CablePainter(
-                        cables: cables, 
-                        nodes: nodes,
-                        repaint: repaintNotifier,
-                      ),
-                      size: const Size(10000, 10000),
-                    ),
-                  ),
-                  if (newCableStart != null && newCableEnd != null)
-                    RepaintBoundary(
-                      child: CustomPaint(
-                        painter: NewCablePainter(
-                          startPin: newCableStart!,
-                          endOffset: newCableEnd!,
-                        ),
-                        size: const Size(10000, 10000),
-                      ),
-                    ),
-                  ...nodes,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class GridPainter extends CustomPainter {
   GridPainter();
@@ -113,52 +42,38 @@ class GridPainter extends CustomPainter {
 }
 
 class CablePainter extends CustomPainter {
-  final List<Cable> cables;
-  final List<NodeEditor> nodes;
-  final Map<int, NodeEditor> _nodeMap = {};
+  final api.Patch patch;
   
   CablePainter({
-    required this.cables, 
-    required this.nodes,
+    required this.patch, 
     Listenable? repaint,
-  }) : super(repaint: repaint) {
-    // Build node lookup map
-    for (var node in nodes) {
-      if (node.rustNode != null) {
-        _nodeMap[node.rustNode!.id] = node;
-      }
-    }
-  }
+  }) : super(repaint: repaint);
 
   @override
   void paint(Canvas canvas, ui.Size size) {
-    for (var cable in cables) {
+    for (var cable in patch.cables) {
       _paintCable(canvas, cable);
     }
   }
   
   void _paintCable(Canvas canvas, Cable cable) {
     // Get the source and destination nodes
-    var sourceNode = _nodeMap[cable.source.node.id];
-    var destNode = _nodeMap[cable.destination.node.id];
-    
-    if (sourceNode == null || destNode == null) return;
+    var sourceNode = cable.source.node;
+    var destNode = cable.destination.node;
     
     // Find the pins for this cable
-    var sourcePin = _findPinByEndpoint(sourceNode, cable.source.endpoint);
-    var destPin = _findPinByEndpoint(destNode, cable.destination.endpoint);
-    
-    if (sourcePin == null || destPin == null) return;
-    
+    var sourcePin = cable.source.endpoint;
+    var destPin = cable.destination.endpoint;
+
     // Calculate start and end positions using quantized positions for existing cables
     Offset startPos = Offset(
-      sourcePin.offset.dx + _getQuantizedX(sourceNode.position.value.dx) + 15 / 2,
-      sourcePin.offset.dy + _getQuantizedY(sourceNode.position.value.dy) + 15 / 2,
+      sourcePin.position.$1 + _getQuantizedX(sourceNode.position.$1) + 15 / 2,
+      sourcePin.position.$2 + _getQuantizedY(sourceNode.position.$2) + 15 / 2,
     );
     
     Offset endPos = Offset(
-      destPin.offset.dx + _getQuantizedX(destNode.position.value.dx) + 15 / 2,
-      destPin.offset.dy + _getQuantizedY(destNode.position.value.dy) + 15 / 2,
+      destPin.position.$1 + _getQuantizedX(destNode.position.$1) + 15 / 2,
+      destPin.position.$2 + _getQuantizedY(destNode.position.$2) + 15 / 2,
     );
     
     // Get color for this endpoint type
@@ -201,15 +116,6 @@ class CablePainter extends CustomPainter {
     // This could be enhanced later with a ticker or animation system
   }
   
-  Pin? _findPinByEndpoint(NodeEditor node, NodeEndpoint endpoint) {
-    for (var pin in node.pins) {
-      if (pin.endpoint.type == endpoint.type && 
-          pin.endpoint.annotation == endpoint.annotation) {
-        return pin;
-      }
-    }
-    return null;
-  }
   
   // Helper methods to get quantized positions (same as used in NodeEditor)
   double _getQuantizedX(double x) {
@@ -224,7 +130,7 @@ class CablePainter extends CustomPainter {
   bool shouldRepaint(CablePainter oldDelegate) {
     // Repaint if cables or nodes have changed
     // The Listenable passed to super() handles position changes
-    return cables != oldDelegate.cables || nodes != oldDelegate.nodes;
+    return patch.cables != oldDelegate.patch.cables || patch.nodes != oldDelegate.patch.nodes;
   }
 }
 
@@ -238,8 +144,8 @@ class NewCablePainter extends CustomPainter {
   void paint(Canvas canvas, ui.Size size) {
     // Calculate start position from pin
     Offset startPos = Offset(
-      startPin.offset.dx + startPin.node.position.value.dx + 15 / 2,
-      startPin.offset.dy + startPin.node.position.value.dy + 15 / 2,
+      startPin.offset.dx + startPin.node.position.$1 + 15 / 2,
+      startPin.offset.dy + startPin.node.position.$2 + 15 / 2,
     );
     
     // Get color for this endpoint type

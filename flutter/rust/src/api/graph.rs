@@ -4,6 +4,7 @@ use crate::api::cable::*;
 use crate::api::endpoint::*;
 use crate::api::node::*;
 
+use crate::api::patch::Patch;
 use crate::other::action::*;
 use flutter_rust_bridge::*;
 
@@ -13,7 +14,7 @@ lazy_static::lazy_static! {
 }
 
 #[frb(sync)]
-pub fn set_patch(graph: Graph) {
+pub fn set_patch(graph: Patch) {
     println!(
         "Updating patch ({} nodes, {} cables)",
         graph.nodes.len(),
@@ -118,47 +119,5 @@ pub unsafe extern "C" fn process_patch(
         if i < midi.len() {
             midi[i] = *msg;
         }
-    }
-}
-
-#[frb(opaque)]
-#[derive(Clone)]
-pub struct Graph {
-    pub nodes: Vec<Node>,
-    pub cables: Vec<Cable>,
-}
-
-impl Graph {
-    #[frb(sync)]
-    pub fn new() -> Self {
-        Self {
-            nodes: Vec::new(),
-            cables: Vec::new(),
-        }
-    }
-
-    #[frb(sync)]
-    pub fn add_cable(
-        &mut self,
-        src_node: &Node,
-        src_endpoint: &NodeEndpoint,
-        dst_node: &Node,
-        dst_endpoint: &NodeEndpoint,
-    ) {
-        self.cables.push(Cable {
-            source: Connection {
-                node: src_node.clone(),
-                endpoint: src_endpoint.clone(),
-            },
-            destination: Connection {
-                node: dst_node.clone(),
-                endpoint: dst_endpoint.clone(),
-            },
-        });
-    }
-
-    #[frb(sync)]
-    pub fn add_node(&mut self, node: &Node) {
-        self.nodes.push(node.clone());
     }
 }

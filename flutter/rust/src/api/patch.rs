@@ -38,8 +38,8 @@ struct SerializablePatch {
 
 #[frb(opaque)]
 pub struct Patch {
-    nodes: Vec<Node>,
-    cables: Vec<Cable>
+    pub nodes: Vec<Node>,
+    pub cables: Vec<Cable>
 }
 
 impl Patch {

@@ -35,4 +35,6 @@ abstract class Node implements RustOpaqueInterface {
   List<NodeEndpoint> getInputs();
 
   List<NodeEndpoint> getOutputs();
+
+  void setPosition({required (double, double) position});
 }

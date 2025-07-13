@@ -105,6 +105,11 @@ impl Node {
         self.outputs.clone()
     }
 
+    #[frb(sync)]
+    pub fn set_position(&mut self, position: (f64, f64)) {
+        self.position = position;
+    }
+
     #[frb(ignore)]
     pub fn clone_performer(&self) -> Arc<Mutex<cmajor::performer::Performer>> {
         self.performer.clone()

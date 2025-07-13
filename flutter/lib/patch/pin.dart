@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/node.dart';
 import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
@@ -31,18 +32,18 @@ class Pin extends StatefulWidget {
     var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
     // Initialize the pin offset
-    if (endpoint.isInput()) {
+    if (endpoint.isInput) {
       offset = Offset(5, top);
     } else {
       offset = Offset(
-          node.module.size.width * GlobalSettings.gridSize -
+          node.module.size.$1 * GlobalSettings.gridSize -
               (pinRadius * 2 + 10),
           top);
     }
   }
 
   final NodeEndpoint endpoint;
-  final NodeEditor node;
+  final Node node;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -81,21 +82,15 @@ class _PinState extends State<Pin> {
           });
         },
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onPanStart: (details) {
-            dragging = true;
-            if (widget.endpoint.isInput()) {
-              widget.onNewCableDrag(details.localPosition);
-            } else {
-              widget.onNewCableSetStart(widget);
-            }
+            setState(() {
+              dragging = true;
+            });
+            widget.onNewCableSetStart(widget);
           },
           onPanUpdate: (details) {
-            // Convert local position to global position relative to the node
-            final globalPosition = Offset(
-              details.localPosition.dx + widget.node.position.value.dx + widget.offset.dx,
-              details.localPosition.dy + widget.node.position.value.dy + widget.offset.dy,
-            );
-            widget.onNewCableDrag(globalPosition);
+            widget.onNewCableDrag(details.globalPosition);
           },
           onPanEnd: (details) {
             widget.onAddNewCable();
@@ -115,7 +110,7 @@ class _PinState extends State<Pin> {
           child: Builder(
             builder: (context) {
               bool connected = false;
-              print("TODO fix conectors");
+              // print("TODO fix conectors");
               /*for (var connector in widget.patch.connectors) {
                 if (connector.start == widget || connector.end == widget) {
                   connected = true;
@@ -260,7 +255,7 @@ class PinPainter extends CustomPainter {
       canvas.drawPath(path, paint);
     } else if (connected) {
       canvas.drawPath(path, paint);
-      paint.color = color.withOpacity(0.5);
+      paint.color = color.withValues(alpha: 0.5);
       paint.style = PaintingStyle.fill;
       canvas.drawPath(path, paint);
     } else {

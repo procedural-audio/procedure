@@ -102,6 +102,7 @@ class Preset extends StatelessWidget {
             return PatchEditor(
               presetInfo: info,
               plugins: plugins,
+              patch: rustPatch,
             );
           } else {
             return ValueListenableBuilder<UserInterface?>(

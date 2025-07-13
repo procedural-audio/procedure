@@ -4,6 +4,7 @@ use std::sync::Mutex;
 
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
+use crate::api::patch::Patch;
 
 use cmajor::performer::Performer;
 use cmajor::*;
@@ -86,7 +87,7 @@ impl Actions {
         }
     }
 
-    pub fn from(graph: Graph) -> Self {
+    pub fn from(graph: Patch) -> Self {
         let mut actions = Self::new();
 
         actions.process_graph(graph);
@@ -98,7 +99,7 @@ impl Actions {
         self.actions.push(Box::new(action));
     }
 
-    pub fn process_graph(&mut self, mut graph: Graph) {
+    pub fn process_graph(&mut self, mut graph: Patch) {
         // Sort nodes topologically
         sort_nodes_topologically(&mut graph).unwrap();
 
@@ -108,7 +109,7 @@ impl Actions {
         }
     }
 
-    fn process_node(&mut self, dst_node: &Node, graph: &Graph) {
+    fn process_node(&mut self, dst_node: &Node, graph: &Patch) {
         // Generate input endpoint actions
         for endpoint in dst_node.get_inputs().iter() {
             if let EndpointHandle::Input(endpoint) = &endpoint.handle() {
@@ -128,7 +129,7 @@ impl Actions {
         }
     }
 
-    fn process_input(&mut self, node: &Node, endpoint: &InputEndpoint, graph: &Graph) {
+    fn process_input(&mut self, node: &Node, endpoint: &InputEndpoint, graph: &Patch) {
         match endpoint {
             InputEndpoint::Endpoint(handle) => {
                 self.process_input_endpoint(node, handle, graph);
@@ -156,7 +157,7 @@ impl Actions {
         }
     }
 
-    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, graph: &Graph) {
+    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, graph: &Patch) {
         let mut filled = false;
 
         for cable in &graph.cables {
@@ -509,7 +510,7 @@ pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst
     }
 }
 
-fn sort_nodes_topologically(graph: &mut Graph) -> Result<(), String> {
+fn sort_nodes_topologically(graph: &mut Patch) -> Result<(), String> {
     let node_count = graph.nodes.len();
 
     // Map from node_id to its current index in self.nodes

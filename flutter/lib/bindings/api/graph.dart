@@ -4,16 +4,16 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
-import 'cable.dart';
 import 'endpoint.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'patch.dart';
 
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `ACTIONS`, `MIDI_OUTPUT`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `deref`, `deref`, `initialize`, `initialize`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `initialize`, `initialize`
 // These functions are ignored (category: IgnoreBecauseExplicitAttribute): `prepare_patch`, `process_patch`
 
-void setPatch({required Graph graph}) =>
+void setPatch({required Patch graph}) =>
     RustLib.instance.api.crateApiGraphSetPatch(graph: graph);
 
 void clearPatch() => RustLib.instance.api.crateApiGraphClearPatch();
@@ -28,24 +28,3 @@ bool isConnectionSupported(
         srcEndpoint: srcEndpoint,
         dstNode: dstNode,
         dstEndpoint: dstEndpoint);
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>
-abstract class Graph implements RustOpaqueInterface {
-  void addCable(
-      {required Node srcNode,
-      required NodeEndpoint srcEndpoint,
-      required Node dstNode,
-      required NodeEndpoint dstEndpoint});
-
-  void addNode({required Node node});
-
-  List<Cable> get cables;
-
-  List<Node> get nodes;
-
-  set cables(List<Cable> cables);
-
-  set nodes(List<Node> nodes);
-
-  factory Graph() => RustLib.instance.api.crateApiGraphGraphNew();
-}

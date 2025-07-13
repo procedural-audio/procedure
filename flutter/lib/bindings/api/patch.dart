@@ -16,6 +16,14 @@ abstract class Patch implements RustOpaqueInterface {
 
   void addNode({required Node node});
 
+  List<Cable> get cables;
+
+  List<Node> get nodes;
+
+  set cables(List<Cable> cables);
+
+  set nodes(List<Node> nodes);
+
   List<Cable> getCables();
 
   List<Node> getNodes();

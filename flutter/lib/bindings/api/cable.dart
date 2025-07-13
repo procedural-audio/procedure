@@ -19,6 +19,17 @@ abstract class Cable implements RustOpaqueInterface {
   set destination(Connection destination);
 
   set source(Connection source);
+
+  factory Cable(
+          {required Node srcNode,
+          required NodeEndpoint srcEndpoint,
+          required Node dstNode,
+          required NodeEndpoint dstEndpoint}) =>
+      RustLib.instance.api.crateApiCableCableNew(
+          srcNode: srcNode,
+          srcEndpoint: srcEndpoint,
+          dstNode: dstNode,
+          dstEndpoint: dstEndpoint);
 }
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>

@@ -15,6 +15,7 @@ use crate::other::handle::*;
 #[frb(opaque)]
 pub struct NodeEndpoint {
     endpoint: EndpointHandle,
+    pub position: (f64, f64),
     pub annotation: String,
 }
 
@@ -24,8 +25,11 @@ impl NodeEndpoint {
         let endpoint = EndpointHandle::from_info(engine, &info);
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 
+        println!("Annotation: {}", annotation);
+
         Self {
             endpoint,
+            position: (0.0, 0.0),
             annotation,
         }
     }
@@ -125,12 +129,12 @@ impl NodeEndpoint {
         false
     }
 
-    #[frb(sync)]
+    #[frb(sync, getter)]
     pub fn is_input(&self) -> bool {
         self.endpoint.is_input()
     }
 
-    #[frb(sync)]
+    #[frb(sync, getter)]
     pub fn is_external(&self) -> bool {
         self.endpoint.is_external()
     }

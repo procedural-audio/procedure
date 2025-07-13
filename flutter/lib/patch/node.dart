@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:metasampler/patch/module.dart';
 import 'package:metasampler/patch/pin.dart';
 import 'package:metasampler/patch/widgets/fader.dart';
 import 'package:metasampler/patch/widgets/textbox.dart';
+import 'package:metasampler/project/theme.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as rust_node;
@@ -110,116 +110,22 @@ abstract class NodeWidget extends StatelessWidget {
   void setState(Map<String, dynamic> state);
 }
 
-class NodeEditor extends StatelessWidget {
+class NodeEditor extends StatefulWidget {
   NodeEditor({
     Key? key,
-    required this.module,
-    this.rustNode,
+    required this.node,
+    required this.onSave,
     required this.onAddConnector,
     required this.onRemoveConnections,
-    required Offset position,
     required this.onNewCableDrag,
     required this.onNewCableSetStart,
     required this.onNewCableSetEnd,
     required this.onNewCableReset,
     required this.onAddNewCable,
-    this.onPositionChanged,
-  }) : super(key: key ?? UniqueKey()) {
-    // Set the initial node position
-    this.position.value = position;
+  }) : super(key: key);
 
-    // If no rustNode provided, create one
-    if (rustNode == null) {
-      var rustModule = module.toRustModule();
-      
-      rustNode = rust_node.Node.from(
-        id: NODE_ID++,
-        module: rustModule,
-        position: (position.dx, position.dy),
-      );
-    }
-    if (rustNode != null) {
-      // Add input pins and widgets to list
-      for (var endpoint in rustNode!.getInputs()) {
-        Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
-
-        print("Endpoint: ${endpoint.type}");
-
-        // Skip pin if it's an external endpoint
-        if (annotations.containsKey("external")) {
-          continue;
-        }
-
-        // Skip pin creation if a widget was created
-        if (annotations.containsKey("widget")) {
-          var widget = NodeWidget.from(this, endpoint, annotations);
-          if (widget != null) {
-            widgets.add(widget);
-          }
-
-          continue;
-        }
-
-        pins.add(
-          Pin(
-            endpoint: endpoint,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnections: onRemoveConnections,
-            onNewCableDrag: onNewCableDrag,
-            onNewCableSetStart: onNewCableSetStart,
-            onNewCableSetEnd: onNewCableSetEnd,
-            onNewCableReset: onNewCableReset,
-            onAddNewCable: onAddNewCable,
-          ),
-        );
-      }
-
-      // Add output pins to list
-      for (var endpoint in rustNode!.getOutputs()) {
-        Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
-
-        print("Endpoint: ${endpoint.type}");
-
-        // Skip pin if it's a string endpoint
-        if (endpoint.type.contains("string")) {
-          continue;
-        }
-
-        // Skip pin if it's an external endpoint
-        if (annotations.containsKey("external")) {
-          continue;
-        }
-
-        // Skip pin creation if a widget was created
-        if (annotations.containsKey("widget")) {
-          var widget = NodeWidget.from(this, endpoint, annotations);
-          if (widget != null) {
-            widgets.add(widget);
-          }
-
-          continue;
-        }
-
-        pins.add(
-          Pin(
-            endpoint: endpoint,
-            node: this,
-            onAddConnector: onAddConnector,
-            onRemoveConnections: onRemoveConnections,
-            onNewCableDrag: onNewCableDrag,
-            onNewCableSetStart: onNewCableSetStart,
-            onNewCableSetEnd: onNewCableSetEnd,
-            onNewCableReset: onNewCableReset,
-            onAddNewCable: onAddNewCable,
-          ),
-        );
-      }
-    }
-  }
-
-  final Module module;
-  rust_node.Node? rustNode;
+  final rust_node.Node node;
+  final VoidCallback onSave;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -227,12 +133,96 @@ class NodeEditor extends StatelessWidget {
   final void Function(Pin?) onNewCableSetEnd;
   final VoidCallback onNewCableReset;
   final VoidCallback onAddNewCable;
-  final void Function(NodeEditor, Offset)? onPositionChanged;
 
-  List<Pin> pins = [];
-  List<NodeWidget> widgets = [];
+  @override
+  NodeEditorState createState() => NodeEditorState();
+}
 
-  final ValueNotifier<Offset> position = ValueNotifier(const Offset(100, 100));
+class NodeEditorState extends State<NodeEditor> {
+  bool _isDragging = false;
+
+  List<Widget> _buildPinsAndWidgets() {
+    List<Widget> children = [];
+
+    // Add input pins and widgets to list
+    for (var endpoint in widget.node.getInputs()) {
+      Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
+
+      print("Endpoint: ${endpoint.type}");
+
+      // Skip pin if it's an external endpoint
+      if (annotations.containsKey("external")) {
+        continue;
+      }
+
+      // Skip pin creation if a widget was created
+      if (annotations.containsKey("widget")) {
+        var nodeWidget = NodeWidget.from(widget, endpoint, annotations);
+        if (nodeWidget != null) {
+          children.add(nodeWidget);
+        }
+
+        continue;
+      }
+
+      children.add(
+        Pin(
+          endpoint: endpoint,
+          node: widget.node,
+          onAddConnector: widget.onAddConnector,
+          onRemoveConnections: widget.onRemoveConnections,
+          onNewCableDrag: widget.onNewCableDrag,
+          onNewCableSetStart: widget.onNewCableSetStart,
+          onNewCableSetEnd: widget.onNewCableSetEnd,
+          onNewCableReset: widget.onNewCableReset,
+          onAddNewCable: widget.onAddNewCable,
+        ),
+      );
+    }
+
+    // Add output pins to list
+    for (var endpoint in widget.node.getOutputs()) {
+      Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
+
+      print("Endpoint: ${endpoint.type}");
+
+      // Skip pin if it's a string endpoint
+      if (endpoint.type.contains("string")) {
+        continue;
+      }
+
+      // Skip pin if it's an external endpoint
+      if (annotations.containsKey("external")) {
+        continue;
+      }
+
+      // Skip pin creation if a widget was created
+      if (annotations.containsKey("widget")) {
+        var nodeWidget = NodeWidget.from(widget, endpoint, annotations);
+        if (nodeWidget != null) {
+          children.add(nodeWidget);
+        }
+
+        continue;
+      }
+
+      children.add(
+        Pin(
+          endpoint: endpoint,
+          node: widget.node,
+          onAddConnector: widget.onAddConnector,
+          onRemoveConnections: widget.onRemoveConnections,
+          onNewCableDrag: widget.onNewCableDrag,
+          onNewCableSetStart: widget.onNewCableSetStart,
+          onNewCableSetEnd: widget.onNewCableSetEnd,
+          onNewCableReset: widget.onNewCableReset,
+          onAddNewCable: widget.onAddNewCable,
+        ),
+      );
+    }
+
+    return children;
+  }
 
   void tick() {
     // for (var widget in widgets) {
@@ -256,67 +246,38 @@ class NodeEditor extends StatelessWidget {
     }*/
   }
 
-  void refreshSize() {}
-
-  NodeEditor? fromState(Map<String, dynamic> state) {
-    return null; // TODO: Implement if needed
-    /*var module = Module.fromState(state["module"]);
-    var position = Offset(state["x"], state["y"]);
-
-    return Node(
-      module: module,
-      patch: patch,
-    );*/
-  }
-
-  Map<String, dynamic> getState() {
-    return {
-      "module": module.getState(),
-      "id": rustNode?.id ?? 0,
-      "x": position.value.dx,
-      "y": position.value.dy,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Offset>(
-      valueListenable: position,
-      builder: (context, p, child) {
-        return Positioned(
-          left: roundToGrid(p.dx),
-          top: roundToGrid(p.dy),
-          child: GestureDetector(
-            onTap: () {
-              /*if (patch.selectedNodes.value.contains(this)) {
-                patch.selectedNodes.value = [];
-              } else {
-                patch.selectedNodes.value = [this];
-              }*/
-            },
-            onPanStart: (details) {
-              /*if (!patch.selectedNodes.value.contains(this)) {
-                patch.selectedNodes.value = [this];
-              }*/
-            },
-            onPanUpdate: (details) {
-              var x = position.value.dx + details.delta.dx;
-              var y = position.value.dy + details.delta.dy;
-              position.value = Offset(x, y);
-            },
-            onPanEnd: (details) {
-              var x = roundToGrid(position.value.dx);
-              var y = roundToGrid(position.value.dy);
-              position.value = Offset(x, y);
-              
-              // Notify position change
-              if (onPositionChanged != null) {
-                onPositionChanged!(this, Offset(x, y));
-              }
-            },
-            child: Container(
-              width: module.size.width * GlobalSettings.gridSize - 1.0,
-              height: module.size.height * GlobalSettings.gridSize - 1.0,
+    // Always use current Rust node position
+    var currentPosition = Offset(widget.node.position.$1, widget.node.position.$2);
+    
+    return Positioned(
+      left: roundToGrid(currentPosition.dx),
+      top: roundToGrid(currentPosition.dy),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (details) {
+          // Start dragging - no state needed since we update position directly
+        },
+        onPanUpdate: (details) {
+          // Update Rust node position immediately
+          var newPosition = Offset(
+            widget.node.position.$1 + details.delta.dx,
+            widget.node.position.$2 + details.delta.dy,
+          );
+          widget.node.setPosition(position: (newPosition.dx, newPosition.dy));
+        },
+        onPanEnd: (details) {
+          // Quantize to grid
+          var x = roundToGrid(widget.node.position.$1);
+          var y = roundToGrid(widget.node.position.$2);
+          
+          widget.node.setPosition(position: (x, y));
+          widget.onSave();
+        },
+        child: Container(
+              width: widget.node.module.size.$1 * GlobalSettings.gridSize - 1.0,
+              height: widget.node.module.size.$2 * GlobalSettings.gridSize - 1.0,
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(40, 40, 40, 1.0),
                 borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -333,36 +294,34 @@ class NodeEditor extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
-                        module.title ?? "",
+                        widget.node.module.title ?? "",
                         style: TextStyle(
-                          color: module.titleColor ?? Colors.grey,
+                          color: colorFromString(widget.node.module.titleColor ?? "") ?? Colors.grey,
                           fontSize: 16,
                         ),
                       ),
                     ),
                   ),
                   Visibility(
-                    visible: module.icon != null,
+                    visible: widget.node.module.icon != null,
                     child: Align(
                       alignment: Alignment.center,
                       child: SvgPicture.string(
-                        module.icon ?? "",
-                        width: (module.iconSize ?? 24).toDouble(),
-                        height: (module.iconSize ?? 24).toDouble(),
-                        color: module.iconColor ?? Colors.grey,
+                        widget.node.module.icon ?? "",
+                        width: (widget.node.module.iconSize ?? 24).toDouble(),
+                        height: (widget.node.module.iconSize ?? 24).toDouble(),
+                        color: colorFromString(widget.node.module.iconColor ?? "") ?? Colors.grey,
                       ),
                     ),
                   ),
                   Stack(
                     fit: StackFit.expand,
-                    children: <Widget>[] + widgets + pins,
+                    children: _buildPinsAndWidgets(),
                   )
                 ],
               ),
             ),
-          ),
-        );
-      },
-    );
+        ),
+      );
   }
 }

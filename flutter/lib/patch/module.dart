@@ -146,14 +146,7 @@ class Module {
 
   // Convert from Flutter Module to Rust Module
   rust_module.Module toRustModule() {
-    return rust_module.Module(
-      source: source,
-      title: title,
-      titleColor: titleColor != null ? '#${titleColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
-      icon: icon,
-      iconSize: iconSize,
-      iconColor: iconColor != null ? '#${iconColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
-      size: (size.width.toInt(), size.height.toInt()),
-    );
+    // Use Module.from() to parse annotations from source
+    return rust_module.Module.from(source: source);
   }
 }

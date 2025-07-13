@@ -27,7 +27,6 @@
 
 use crate::api::cable::*;
 use crate::api::endpoint::*;
-use crate::api::graph::*;
 use crate::api::io::*;
 use crate::api::node::*;
 use crate::api::patch::*;
@@ -43,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1481146132;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1876379687;
 
 // Section: executor
 
@@ -1003,6 +1002,44 @@ fn wire__crate__api__cable__Cable_auto_accessor_set_source_impl(
         },
     )
 }
+fn wire__crate__api__cable__Cable_new_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Cable_new",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_src_node = <Node>::sse_decode(&mut deserializer);
+            let api_src_endpoint = <NodeEndpoint>::sse_decode(&mut deserializer);
+            let api_dst_node = <Node>::sse_decode(&mut deserializer);
+            let api_dst_endpoint = <NodeEndpoint>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::api::cable::Cable::new(
+                    api_src_node,
+                    api_src_endpoint,
+                    api_dst_node,
+                    api_dst_endpoint,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__cable__Connection_auto_accessor_get_endpoint_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -1197,390 +1234,6 @@ fn wire__crate__api__cable__Connection_auto_accessor_set_node_impl(
         },
     )
 }
-fn wire__crate__api__graph__Graph_add_cable_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_add_cable",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            let api_src_node = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
-            >>::sse_decode(&mut deserializer);
-            let api_src_endpoint = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
-            >>::sse_decode(&mut deserializer);
-            let api_dst_node = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
-            >>::sse_decode(&mut deserializer);
-            let api_dst_endpoint = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
-            >>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let mut api_src_node_guard = None;
-                let mut api_src_endpoint_guard = None;
-                let mut api_dst_node_guard = None;
-                let mut api_dst_endpoint_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, true,
-                        ),
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_src_node,
-                            1,
-                            false,
-                        ),
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_src_endpoint,
-                            2,
-                            false,
-                        ),
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_dst_node,
-                            3,
-                            false,
-                        ),
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_dst_endpoint,
-                            4,
-                            false,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
-                        1 => api_src_node_guard = Some(api_src_node.lockable_decode_sync_ref()),
-                        2 => {
-                            api_src_endpoint_guard =
-                                Some(api_src_endpoint.lockable_decode_sync_ref())
-                        }
-                        3 => api_dst_node_guard = Some(api_dst_node.lockable_decode_sync_ref()),
-                        4 => {
-                            api_dst_endpoint_guard =
-                                Some(api_dst_endpoint.lockable_decode_sync_ref())
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-                let mut api_that_guard = api_that_guard.unwrap();
-                let api_src_node_guard = api_src_node_guard.unwrap();
-                let api_src_endpoint_guard = api_src_endpoint_guard.unwrap();
-                let api_dst_node_guard = api_dst_node_guard.unwrap();
-                let api_dst_endpoint_guard = api_dst_endpoint_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok({
-                    crate::api::graph::Graph::add_cable(
-                        &mut *api_that_guard,
-                        &*api_src_node_guard,
-                        &*api_src_endpoint_guard,
-                        &*api_dst_node_guard,
-                        &*api_dst_endpoint_guard,
-                    );
-                })?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_add_node_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_add_node",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            let api_node = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
-            >>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let mut api_node_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, true,
-                        ),
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_node, 1, false,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
-                        1 => api_node_guard = Some(api_node.lockable_decode_sync_ref()),
-                        _ => unreachable!(),
-                    }
-                }
-                let mut api_that_guard = api_that_guard.unwrap();
-                let api_node_guard = api_node_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok({
-                    crate::api::graph::Graph::add_node(&mut *api_that_guard, &*api_node_guard);
-                })?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_auto_accessor_get_cables_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_auto_accessor_get_cables",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, false,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
-                        _ => unreachable!(),
-                    }
-                }
-                let api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok(api_that_guard.cables.clone())?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_auto_accessor_get_nodes_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_auto_accessor_get_nodes",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, false,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
-                        _ => unreachable!(),
-                    }
-                }
-                let api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok(api_that_guard.nodes.clone())?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_auto_accessor_set_cables_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_auto_accessor_set_cables",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            let api_cables = <Vec<Cable>>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, true,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
-                        _ => unreachable!(),
-                    }
-                }
-                let mut api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok({
-                    {
-                        api_that_guard.cables = api_cables;
-                    };
-                })?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_auto_accessor_set_nodes_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_auto_accessor_set_nodes",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
-            >>::sse_decode(&mut deserializer);
-            let api_nodes = <Vec<Node>>::sse_decode(&mut deserializer);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let mut api_that_guard = None;
-                let decode_indices_ =
-                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                            &api_that, 0, true,
-                        ),
-                    ]);
-                for i in decode_indices_ {
-                    match i {
-                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
-                        _ => unreachable!(),
-                    }
-                }
-                let mut api_that_guard = api_that_guard.unwrap();
-                let output_ok = Result::<_, ()>::Ok({
-                    {
-                        api_that_guard.nodes = api_nodes;
-                    };
-                })?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
-fn wire__crate__api__graph__Graph_new_impl(
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "Graph_new",
-            port: None,
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            transform_result_sse::<_, ()>((move || {
-                let output_ok = Result::<_, ()>::Ok(crate::api::graph::Graph::new())?;
-                Ok(output_ok)
-            })())
-        },
-    )
-}
 fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -1622,6 +1275,52 @@ fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
                 }
                 let api_that_guard = api_that_guard.unwrap();
                 let output_ok = Result::<_, ()>::Ok(api_that_guard.annotation.clone())?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_position_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "NodeEndpoint_auto_accessor_get_position",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(api_that_guard.position.clone())?;
                 Ok(output_ok)
             })())
         },
@@ -1671,6 +1370,57 @@ fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
                 let output_ok = Result::<_, ()>::Ok({
                     {
                         api_that_guard.annotation = api_annotation;
+                    };
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_position_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "NodeEndpoint_auto_accessor_set_position",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<NodeEndpoint>,
+            >>::sse_decode(&mut deserializer);
+            let api_position = <(f64, f64)>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    {
+                        api_that_guard.position = api_position;
                     };
                 })?;
                 Ok(output_ok)
@@ -2627,6 +2377,55 @@ fn wire__crate__api__node__Node_get_outputs_impl(
         },
     )
 }
+fn wire__crate__api__node__Node_set_position_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Node_set_position",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>,
+            >>::sse_decode(&mut deserializer);
+            let api_position = <(f64, f64)>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    crate::api::node::Node::set_position(&mut *api_that_guard, api_position);
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__patch__Patch_add_cable_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -2719,6 +2518,200 @@ fn wire__crate__api__patch__Patch_add_node_impl(
                 let mut api_that_guard = api_that_guard.unwrap();
                 let output_ok = Result::<_, ()>::Ok({
                     crate::api::patch::Patch::add_node(&mut *api_that_guard, api_node);
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__patch__Patch_auto_accessor_get_cables_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_auto_accessor_get_cables",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(api_that_guard.cables.clone())?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__patch__Patch_auto_accessor_get_nodes_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_auto_accessor_get_nodes",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(api_that_guard.nodes.clone())?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__patch__Patch_auto_accessor_set_cables_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_auto_accessor_set_cables",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            let api_cables = <Vec<Cable>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    {
+                        api_that_guard.cables = api_cables;
+                    };
+                })?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__patch__Patch_auto_accessor_set_nodes_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_auto_accessor_set_nodes",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            let api_nodes = <Vec<Node>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, true,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref_mut()),
+                        _ => unreachable!(),
+                    }
+                }
+                let mut api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    {
+                        api_that_guard.nodes = api_nodes;
+                    };
                 })?;
                 Ok(output_ok)
             })())
@@ -3417,7 +3410,7 @@ fn wire__crate__api__graph__set_patch_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_graph = <Graph>::sse_decode(&mut deserializer);
+            let api_graph = <Patch>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, ()>((move || {
                 let output_ok = Result::<_, ()>::Ok({
@@ -3439,9 +3432,6 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>
-);
-flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
-    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Node>
@@ -3480,16 +3470,6 @@ impl SseDecode for Connection {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <RustOpaqueMoi<
             flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>,
-        >>::sse_decode(deserializer);
-        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
-    }
-}
-
-impl SseDecode for Graph {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <RustOpaqueMoi<
-            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>,
         >>::sse_decode(deserializer);
         return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
@@ -3546,14 +3526,6 @@ impl SseDecode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpa
 impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>
 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <usize>::sse_decode(deserializer);
-        return decode_rust_opaque_moi(inner);
-    }
-}
-
-impl SseDecode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <usize>::sse_decode(deserializer);
@@ -3933,21 +3905,21 @@ fn pde_ffi_dispatcher_primary_impl(
         14 => {
             wire__crate__api__io__AudioManager_stop_playback_impl(port, ptr, rust_vec_len, data_len)
         }
-        56 => wire__crate__api__patch__Patch_load_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__patch__Patch_save_impl(port, ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__io__audio_configuration_default_impl(
+        57 => wire__crate__api__patch__Patch_load_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__patch__Patch_save_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__io__audio_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        64 => wire__crate__api__io__flutter_midi_configuration_default_impl(
+        65 => wire__crate__api__io__flutter_midi_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        66 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3981,108 +3953,117 @@ fn pde_ffi_dispatcher_sync_impl(
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__cable__Connection_auto_accessor_get_endpoint_impl(
+        19 => wire__crate__api__cable__Cable_new_impl(ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__cable__Connection_auto_accessor_get_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__cable__Connection_auto_accessor_get_node_impl(
+        21 => wire__crate__api__cable__Connection_auto_accessor_get_node_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__cable__Connection_auto_accessor_set_endpoint_impl(
+        22 => wire__crate__api__cable__Connection_auto_accessor_set_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__cable__Connection_auto_accessor_set_node_impl(
+        23 => wire__crate__api__cable__Connection_auto_accessor_set_node_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__graph__Graph_add_cable_impl(ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__graph__Graph_add_node_impl(ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__graph__Graph_auto_accessor_get_cables_impl(
+        24 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => {
-            wire__crate__api__graph__Graph_auto_accessor_get_nodes_impl(ptr, rust_vec_len, data_len)
-        }
-        27 => wire__crate__api__graph__Graph_auto_accessor_set_cables_impl(
+        25 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => {
-            wire__crate__api__graph__Graph_auto_accessor_set_nodes_impl(ptr, rust_vec_len, data_len)
-        }
-        29 => wire__crate__api__graph__Graph_new_impl(ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
+        26 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
+        27 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__crate__api__endpoint__NodeEndpoint_feedback_value_impl(
+        28 => wire__crate__api__endpoint__NodeEndpoint_feedback_value_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__crate__api__endpoint__NodeEndpoint_get_kind_impl(ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__endpoint__NodeEndpoint_get_type_impl(ptr, rust_vec_len, data_len),
-        35 => {
+        29 => wire__crate__api__endpoint__NodeEndpoint_get_kind_impl(ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__endpoint__NodeEndpoint_get_type_impl(ptr, rust_vec_len, data_len),
+        31 => {
             wire__crate__api__endpoint__NodeEndpoint_is_external_impl(ptr, rust_vec_len, data_len)
         }
-        36 => wire__crate__api__endpoint__NodeEndpoint_is_input_impl(ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__endpoint__NodeEndpoint_read_bool_impl(ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__endpoint__NodeEndpoint_read_float_impl(ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__endpoint__NodeEndpoint_read_int_impl(ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__endpoint__NodeEndpoint_write_bool_impl(ptr, rust_vec_len, data_len),
-        41 => {
+        32 => wire__crate__api__endpoint__NodeEndpoint_is_input_impl(ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__endpoint__NodeEndpoint_read_bool_impl(ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__endpoint__NodeEndpoint_read_float_impl(ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__endpoint__NodeEndpoint_read_int_impl(ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__endpoint__NodeEndpoint_write_bool_impl(ptr, rust_vec_len, data_len),
+        37 => {
             wire__crate__api__endpoint__NodeEndpoint_write_float_impl(ptr, rust_vec_len, data_len)
         }
-        42 => wire__crate__api__endpoint__NodeEndpoint_write_int_impl(ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
-        44 => {
+        38 => wire__crate__api__endpoint__NodeEndpoint_write_int_impl(ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
+        40 => {
             wire__crate__api__node__Node_auto_accessor_get_module_impl(ptr, rust_vec_len, data_len)
         }
-        45 => wire__crate__api__node__Node_auto_accessor_get_position_impl(
+        41 => wire__crate__api__node__Node_auto_accessor_get_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        46 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
-        47 => {
+        42 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
+        43 => {
             wire__crate__api__node__Node_auto_accessor_set_module_impl(ptr, rust_vec_len, data_len)
         }
-        48 => wire__crate__api__node__Node_auto_accessor_set_position_impl(
+        44 => wire__crate__api__node__Node_auto_accessor_set_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        49 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__patch__Patch_add_cable_impl(ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__patch__Patch_add_node_impl(ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__patch__Patch_get_cables_impl(ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__patch__Patch_get_nodes_impl(ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__patch__Patch_new_impl(ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__patch__Patch_remove_cable_impl(ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__patch__Patch_remove_node_impl(ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__patch__Patch_update_node_position_impl(ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
-        69 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
+        48 => wire__crate__api__node__Node_set_position_impl(ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__patch__Patch_add_cable_impl(ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__patch__Patch_add_node_impl(ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__patch__Patch_auto_accessor_get_cables_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        52 => {
+            wire__crate__api__patch__Patch_auto_accessor_get_nodes_impl(ptr, rust_vec_len, data_len)
+        }
+        53 => wire__crate__api__patch__Patch_auto_accessor_set_cables_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        54 => {
+            wire__crate__api__patch__Patch_auto_accessor_set_nodes_impl(ptr, rust_vec_len, data_len)
+        }
+        55 => wire__crate__api__patch__Patch_get_cables_impl(ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__patch__Patch_get_nodes_impl(ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__patch__Patch_new_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__patch__Patch_remove_cable_impl(ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__patch__Patch_remove_node_impl(ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__patch__Patch_update_node_position_impl(ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4130,21 +4111,6 @@ impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<
 
 impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Connection>> for Connection {
     fn into_into_dart(self) -> FrbWrapper<Connection> {
-        self.into()
-    }
-}
-
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for FrbWrapper<Graph> {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
-            .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<Graph> {}
-
-impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Graph>> for Graph {
-    fn into_into_dart(self) -> FrbWrapper<Graph> {
         self.into()
     }
 }
@@ -4310,16 +4276,6 @@ impl SseEncode for Connection {
     }
 }
 
-impl SseEncode for Graph {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>>::sse_encode(
-            flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self),
-            serializer,
-        );
-    }
-}
-
 impl SseEncode for Node {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4370,15 +4326,6 @@ impl SseEncode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpa
 impl SseEncode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>
 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        let (ptr, size) = self.sse_encode_raw();
-        <usize>::sse_encode(ptr, serializer);
-        <i32>::sse_encode(size, serializer);
-    }
-}
-
-impl SseEncode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         let (ptr, size) = self.sse_encode_raw();
@@ -4668,7 +4615,6 @@ mod io {
     use super::*;
     use crate::api::cable::*;
     use crate::api::endpoint::*;
-    use crate::api::graph::*;
     use crate::api::io::*;
     use crate::api::node::*;
     use crate::api::patch::*;
@@ -4722,20 +4668,6 @@ mod io {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>::decrement_strong_count(ptr as _);
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_metasampler_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>::increment_strong_count(ptr as _);
-    }
-
-    #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_metasampler_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>::decrement_strong_count(ptr as _);
     }
 
     #[unsafe(no_mangle)]
@@ -4794,7 +4726,6 @@ mod web {
     use super::*;
     use crate::api::cable::*;
     use crate::api::endpoint::*;
-    use crate::api::graph::*;
     use crate::api::io::*;
     use crate::api::node::*;
     use crate::api::patch::*;
@@ -4850,20 +4781,6 @@ mod web {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Connection>>::decrement_strong_count(ptr as _);
-    }
-
-    #[wasm_bindgen]
-    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>::increment_strong_count(ptr as _);
-    }
-
-    #[wasm_bindgen]
-    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGraph(
-        ptr: *const std::ffi::c_void,
-    ) {
-        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Graph>>::decrement_strong_count(ptr as _);
     }
 
     #[wasm_bindgen]
