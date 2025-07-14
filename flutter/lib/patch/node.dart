@@ -122,6 +122,9 @@ class NodeEditor extends StatefulWidget {
     required this.onNewCableSetEnd,
     required this.onNewCableReset,
     required this.onAddNewCable,
+    required this.isSelected,
+    required this.onToggleSelection,
+    this.onCableRepaintNeeded,
   }) : super(key: key);
 
   final int nodeId;
@@ -134,6 +137,9 @@ class NodeEditor extends StatefulWidget {
   final void Function(Pin?) onNewCableSetEnd;
   final VoidCallback onNewCableReset;
   final VoidCallback onAddNewCable;
+  final bool isSelected;
+  final void Function(int) onToggleSelection;
+  final VoidCallback? onCableRepaintNeeded;
 
   @override
   _NodeEditorState createState() => _NodeEditorState();
@@ -156,8 +162,10 @@ class _NodeEditorState extends State<NodeEditor> {
         color: AppColors.element,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
         border: Border.all(
-          width: 2,
-          color: const Color.fromRGBO(40, 40, 40, 1.0),
+          width: widget.isSelected ? 3 : 2,
+          color: widget.isSelected 
+              ? const Color.fromRGBO(150, 150, 150, 1.0) // Grey border for selected
+              : const Color.fromRGBO(40, 40, 40, 1.0),
         ),
       ),
       child: Stack(
@@ -188,10 +196,6 @@ class _NodeEditorState extends State<NodeEditor> {
               ),
             ),
           ),
-          Stack(
-            fit: StackFit.expand,
-            children: _buildPinsAndWidgets(),
-          )
         ],
       ),
     );
@@ -201,7 +205,9 @@ class _NodeEditorState extends State<NodeEditor> {
     List<Widget> children = [];
 
     // Add input pins and widgets to list
-    for (var endpoint in widget.patch.getNodeInputs(nodeId: widget.nodeId)) {
+    var inputs = widget.patch.getNodeInputs(nodeId: widget.nodeId);
+    for (int i = 0; i < inputs.length; i++) {
+      var endpoint = inputs[i];
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
       // Skip pin if it's an external endpoint
@@ -220,8 +226,9 @@ class _NodeEditorState extends State<NodeEditor> {
 
       children.add(
         Pin(
-          endpoint: endpoint,
           nodeId: widget.nodeId,
+          endpointId: i,
+          isInput: true,
           patch: widget.patch,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
@@ -235,7 +242,9 @@ class _NodeEditorState extends State<NodeEditor> {
     }
 
     // Add output pins to list
-    for (var endpoint in widget.patch.getNodeOutputs(nodeId: widget.nodeId)) {
+    var outputs = widget.patch.getNodeOutputs(nodeId: widget.nodeId);
+    for (int i = 0; i < outputs.length; i++) {
+      var endpoint = outputs[i];
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
       // Skip pin if it's a string endpoint
@@ -259,8 +268,9 @@ class _NodeEditorState extends State<NodeEditor> {
 
       children.add(
         Pin(
-          endpoint: endpoint,
           nodeId: widget.nodeId,
+          endpointId: i,
+          isInput: false,
           patch: widget.patch,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
@@ -284,40 +294,74 @@ class _NodeEditorState extends State<NodeEditor> {
       return Container(); // Node not found
     }
     
+    // Get module for size
+    var module = widget.patch.getNodeModule(nodeId: widget.nodeId);
+    if (module == null) {
+      return Container(); // Module not found
+    }
+    
+    var nodeSize = Size(
+      module.size.$1 * GlobalSettings.gridSize - 1.0,
+      module.size.$2 * GlobalSettings.gridSize - 1.0
+    );
+    
     return Positioned(
       left: roundToGrid(position.$1),
       top: roundToGrid(position.$2),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onPanStart: (details) {
-          setState(() {
-            _isDragging = true;
-          });
-        },
-        onPanUpdate: (details) {
-          var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
-          if (currentPos != null) {
-            var x = currentPos.$1 + details.delta.dx;
-            var y = currentPos.$2 + details.delta.dy;
-            widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
-            setState(() {});
-          }
-        },
-        onPanEnd: (details) {
-          var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
-          if (currentPos != null) {
-            var x = roundToGrid(currentPos.$1);
-            var y = roundToGrid(currentPos.$2);
-            
-            widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
-            widget.onSave();
+      child: SizedBox(
+        width: nodeSize.width,
+        height: nodeSize.height,
+        child: Stack(
+          children: [
+            // Draggable background layer
+            GestureDetector(
+              onTap: () {
+                // Toggle selection
+                setState(() {
+                  widget.onToggleSelection(widget.nodeId);
+                });
+              },
+              onDoubleTap: () {
+                // Prevent double tap from propagating
+              },
+              onPanStart: (details) {
+                setState(() {
+                  _isDragging = true;
+                });
+              },
+              onPanUpdate: (details) {
+                var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
+                if (currentPos != null) {
+                  var x = currentPos.$1 + details.delta.dx;
+                  var y = currentPos.$2 + details.delta.dy;
+                  widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
+                  setState(() {});
+                  // Notify parent to repaint cables
+                  widget.onCableRepaintNeeded?.call();
+                }
+              },
+              onPanEnd: (details) {
+                var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
+                if (currentPos != null) {
+                  var x = roundToGrid(currentPos.$1);
+                  var y = roundToGrid(currentPos.$2);
+                  
+                  widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
+                  widget.onSave();
 
-            setState(() {
-              _isDragging = false;
-            });
-          }
-        },
-        child: _buildNodeContainer(),
+                  setState(() {
+                    _isDragging = false;
+                  });
+                }
+              },
+              child: _buildNodeContainer(),
+            ),
+            // Pins layer on top - not affected by node dragging
+            Stack(
+              children: _buildPinsAndWidgets(),
+            ),
+          ],
+        ),
       ),
     );
   }

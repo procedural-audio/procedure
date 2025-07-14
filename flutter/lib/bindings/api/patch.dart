@@ -36,9 +36,13 @@ abstract class Patch implements RustOpaqueInterface {
 
   Uint32List getNodeIds();
 
+  NodeEndpoint? getNodeInput({required int nodeId, required int endpointId});
+
   List<NodeEndpoint> getNodeInputs({required int nodeId});
 
   Module? getNodeModule({required int nodeId});
+
+  NodeEndpoint? getNodeOutput({required int nodeId, required int endpointId});
 
   List<NodeEndpoint> getNodeOutputs({required int nodeId});
 

@@ -175,6 +175,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           dynamic raw);
 
   @protected
+  NodeEndpoint
+      dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+          dynamic raw);
+
+  @protected
   AudioConfiguration dco_decode_box_autoadd_audio_configuration(dynamic raw);
 
   @protected
@@ -247,6 +252,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   Node?
       dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          dynamic raw);
+
+  @protected
+  NodeEndpoint?
+      dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
           dynamic raw);
 
   @protected
@@ -416,6 +426,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           SseDeserializer deserializer);
 
   @protected
+  NodeEndpoint
+      sse_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+          SseDeserializer deserializer);
+
+  @protected
   AudioConfiguration sse_decode_box_autoadd_audio_configuration(
       SseDeserializer deserializer);
 
@@ -491,6 +506,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   Node?
       sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
+          SseDeserializer deserializer);
+
+  @protected
+  NodeEndpoint?
+      sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
           SseDeserializer deserializer);
 
   @protected
@@ -661,6 +681,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
           Node self, SseSerializer serializer);
 
   @protected
+  void
+      sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+          NodeEndpoint self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_audio_configuration(
       AudioConfiguration self, SseSerializer serializer);
 
@@ -740,6 +765,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
       sse_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNode(
           Node? self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerNodeEndpoint(
+          NodeEndpoint? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_bool(bool? self, SseSerializer serializer);

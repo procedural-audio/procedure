@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
-import 'package:metasampler/utils.dart';
 
 import 'dart:convert';
 
-import '../plugin/plugin.dart';
 import '../settings.dart';
-import 'node.dart';
-
-import 'patch.dart';
-
-import '../bindings/api/endpoint.dart';
 import '../project/theme.dart';
 
 // Radius of a pin
@@ -19,8 +12,9 @@ const double pinRadius = 6;
 class Pin extends StatefulWidget {
   Pin({
     required this.nodeId,
+    required this.endpointId,
+    required this.isInput,
     required this.patch,
-    required this.endpoint,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.onNewCableDrag,
@@ -28,30 +22,43 @@ class Pin extends StatefulWidget {
     required this.onNewCableSetEnd,
     required this.onNewCableReset,
     required this.onAddNewCable,
-  }) : super(key: UniqueKey()) {
-    var annotation = jsonDecode(endpoint.annotation);
-    var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
+  }) : offset = _calculateOffset(nodeId, endpointId, isInput, patch),
+       super(key: ValueKey('pin_${nodeId}_${endpointId}_${isInput}'));
+  
+  static Offset _calculateOffset(int nodeId, int endpointId, bool isInput, rust_patch.Patch patch) {
+    // Get the endpoint to initialize offset
+    var endpoint = isInput 
+        ? patch.getNodeInput(nodeId: nodeId, endpointId: endpointId)
+        : patch.getNodeOutput(nodeId: nodeId, endpointId: endpointId);
+    
+    if (endpoint != null) {
+      var annotation = jsonDecode(endpoint.annotation);
+      var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
-    // Get module to calculate offset
-    var module = patch.getNodeModule(nodeId: nodeId);
-    if (module != null) {
-      // Initialize the pin offset
-      if (endpoint.isInput) {
-        offset = Offset(5, top);
+      // Get module to calculate offset
+      var module = patch.getNodeModule(nodeId: nodeId);
+      if (module != null) {
+        // Initialize the pin offset
+        if (isInput) {
+          return Offset(5, top);
+        } else {
+          return Offset(
+              module.size.$1 * GlobalSettings.gridSize -
+                  (pinRadius * 2 + 10),
+              top);
+        }
       } else {
-        offset = Offset(
-            module.size.$1 * GlobalSettings.gridSize -
-                (pinRadius * 2 + 10),
-            top);
+        return Offset(5, top);
       }
     } else {
-      offset = Offset(5, top);
+      return Offset(5, 0);
     }
   }
 
   final int nodeId;
+  final int endpointId;
+  final bool isInput;
   final rust_patch.Patch patch;
-  final NodeEndpoint endpoint;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -60,7 +67,7 @@ class Pin extends StatefulWidget {
   final VoidCallback onNewCableReset;
   final VoidCallback onAddNewCable;
 
-  Offset offset = Offset(0, 0);
+  final Offset offset;
 
   @override
   _PinState createState() => _PinState();
@@ -70,79 +77,120 @@ class _PinState extends State<Pin> {
   bool hovering = false;
   bool dragging = false;
 
+  bool _isPinConnected() {
+    // Check all cables to see if this pin is connected
+    var cables = widget.patch.getCables();
+    for (var cable in cables) {
+      // Check source connection
+      if (cable.source.node.id == widget.nodeId) {
+        // Get the source endpoint index
+        var outputs = widget.patch.getNodeOutputs(nodeId: widget.nodeId);
+        for (int i = 0; i < outputs.length; i++) {
+          if (i == widget.endpointId && !widget.isInput) {
+            if (outputs[i].type == cable.source.endpoint.type &&
+                outputs[i].annotation == cable.source.endpoint.annotation) {
+              return true;
+            }
+          }
+        }
+      }
+      
+      // Check destination connection
+      if (cable.destination.node.id == widget.nodeId) {
+        // Get the destination endpoint index
+        var inputs = widget.patch.getNodeInputs(nodeId: widget.nodeId);
+        for (int i = 0; i < inputs.length; i++) {
+          if (i == widget.endpointId && widget.isInput) {
+            if (inputs[i].type == cable.destination.endpoint.type &&
+                inputs[i].annotation == cable.destination.endpoint.annotation) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Get the endpoint to access its properties
+    var endpoint = widget.isInput 
+        ? widget.patch.getNodeInput(nodeId: widget.nodeId, endpointId: widget.endpointId)
+        : widget.patch.getNodeOutput(nodeId: widget.nodeId, endpointId: widget.endpointId);
+    
+    if (endpoint == null) {
+      return Container(); // Return empty if endpoint not found
+    }
+
     return Positioned(
       left: widget.offset.dx,
       top: widget.offset.dy,
-      child: MouseRegion(
-        onEnter: (e) {
-          // print("Setting new connector end");
-          widget.onNewCableSetEnd(widget);
-          setState(() {
-            hovering = true;
-          });
-        },
-        onExit: (e) {
-          widget.onNewCableSetEnd(null);
-          setState(() {
-            hovering = false;
-          });
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) {
+        child: MouseRegion(
+          onEnter: (e) {
+            print("Pin enter");
+            widget.onNewCableSetEnd(widget);
             setState(() {
-              dragging = true;
-            });
-            widget.onNewCableSetStart(widget);
-          },
-          onPanUpdate: (details) {
-            widget.onNewCableDrag(details.globalPosition);
-          },
-          onPanEnd: (details) {
-            widget.onAddNewCable();
-            setState(() {
-              dragging = false;
+              hovering = true;
             });
           },
-          onPanCancel: () {
-            widget.onNewCableReset();
+          onExit: (e) {
+            print("Pin exit");
+            widget.onNewCableSetEnd(null);
             setState(() {
-              dragging = false;
+              hovering = false;
             });
           },
-          onDoubleTap: () {
-            widget.onRemoveConnections(widget);
-          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque, // Be more assertive in claiming gestures
+            onPanStart: (details) {
+              print("Pin pan start");
+              setState(() {
+                dragging = true;
+              });
+              widget.onNewCableSetStart(widget);
+            },
+            onPanUpdate: (details) {
+              widget.onNewCableDrag(details.globalPosition);
+            },
+            onPanEnd: (details) {
+              print("Pin pan end");
+              setState(() {
+                dragging = false; // ✅ Fixed: Now using setState
+              });
+              widget.onAddNewCable();
+            },
+            onPanCancel: () {
+              setState(() {
+                dragging = false; // ✅ Fixed: Now using setState
+              });
+              widget.onNewCableReset();
+            },
+            onDoubleTap: () {
+              widget.onRemoveConnections(widget);
+            },
           child: Builder(
             builder: (context) {
-              bool connected = false;
-              // print("TODO fix conectors");
-              /*for (var connector in widget.patch.connectors) {
-                if (connector.start == widget || connector.end == widget) {
-                  connected = true;
-                  break;
-                }
-              }*/
+              // Check if this pin has any connected cables
+              bool connected = _isPinConnected();
               
               bool is_selected = false; // Simplified for now
-                  var kind = widget.endpoint.kind;
-                  var type = widget.endpoint.type;
-                  return Container(
-                    width: pinRadius * 2,
-                    height: pinRadius * 2,
-                    child: CustomPaint(
-                      painter: PinPainter(
-                        color: ProjectTheme.getColor(type),
-                        shape: ProjectTheme.getShape(kind),
-                        selected: is_selected,
-                        hovering: hovering,
-                        dragging: dragging,
-                        connected: connected,
-                      ),
-                    ),
-                  );
+              var kind = endpoint.kind;
+              var type = endpoint.type;
+              return Container(
+                width: pinRadius * 2,
+                height: pinRadius * 2,
+                child: CustomPaint(
+                  painter: PinPainter(
+                    color: ProjectTheme.getColor(type),
+                    shape: ProjectTheme.getShape(kind),
+                    selected: is_selected,
+                    hovering: hovering,
+                    dragging: dragging,
+                    connected: connected,
+                  ),
+                ),
+              );
             },
           ),
         ),

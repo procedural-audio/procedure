@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -810896825;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -902780638;
 
 // Section: executor
 
@@ -50,6 +50,62 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
+fn wire__crate__api__io__AudioManager_clear_patch_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "AudioManager_clear_patch",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AudioManager>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::io::AudioManager::clear_patch(&*api_that_guard).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__io__AudioManager_get_device_type_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -660,6 +716,64 @@ fn wire__crate__api__io__AudioManager_set_midi_setup_impl(
                             api_config,
                         )
                         .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__io__AudioManager_set_patch_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "AudioManager_set_patch",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AudioManager>,
+            >>::sse_decode(&mut deserializer);
+            let api_patch = <Patch>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::io::AudioManager::set_patch(&*api_that_guard, api_patch)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -2871,6 +2985,58 @@ fn wire__crate__api__patch__Patch_get_node_ids_impl(
         },
     )
 }
+fn wire__crate__api__patch__Patch_get_node_input_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_get_node_input",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            let api_node_id = <u32>::sse_decode(&mut deserializer);
+            let api_endpoint_id = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::api::patch::Patch::get_node_input(
+                    &*api_that_guard,
+                    api_node_id,
+                    api_endpoint_id,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__api__patch__Patch_get_node_inputs_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -2965,6 +3131,58 @@ fn wire__crate__api__patch__Patch_get_node_module_impl(
                 let output_ok = Result::<_, ()>::Ok(crate::api::patch::Patch::get_node_module(
                     &*api_that_guard,
                     api_node_id,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__patch__Patch_get_node_output_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "Patch_get_node_output",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>,
+            >>::sse_decode(&mut deserializer);
+            let api_node_id = <u32>::sse_decode(&mut deserializer);
+            let api_endpoint_id = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::api::patch::Patch::get_node_output(
+                    &*api_that_guard,
+                    api_node_id,
+                    api_endpoint_id,
                 ))?;
                 Ok(output_ok)
             })())
@@ -4115,6 +4333,17 @@ impl SseDecode for Option<Node> {
     }
 }
 
+impl SseDecode for Option<NodeEndpoint> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<NodeEndpoint>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<bool> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4234,81 +4463,83 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__io__AudioManager_get_device_type_impl(
+        1 => wire__crate__api__io__AudioManager_clear_patch_impl(port, ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__io__AudioManager_get_device_type_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        2 => wire__crate__api__io__AudioManager_get_device_types_impl(
+        3 => wire__crate__api__io__AudioManager_get_device_types_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        3 => wire__crate__api__io__AudioManager_get_input_devices_impl(
+        4 => wire__crate__api__io__AudioManager_get_input_devices_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        4 => wire__crate__api__io__AudioManager_get_midi_input_devices_impl(
+        5 => wire__crate__api__io__AudioManager_get_midi_input_devices_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        5 => wire__crate__api__io__AudioManager_get_midi_output_devices_impl(
+        6 => wire__crate__api__io__AudioManager_get_midi_output_devices_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__io__AudioManager_get_midi_setup_impl(
+        7 => wire__crate__api__io__AudioManager_get_midi_setup_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__io__AudioManager_get_output_devices_impl(
+        8 => wire__crate__api__io__AudioManager_get_output_devices_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        8 => wire__crate__api__io__AudioManager_get_setup_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__io__AudioManager_set_device_type_impl(
+        9 => wire__crate__api__io__AudioManager_get_setup_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__io__AudioManager_set_device_type_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => wire__crate__api__io__AudioManager_set_midi_setup_impl(
+        12 => wire__crate__api__io__AudioManager_set_midi_setup_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__io__AudioManager_set_setup_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__io__AudioManager_shutdown_impl(port, ptr, rust_vec_len, data_len),
-        14 => {
+        13 => wire__crate__api__io__AudioManager_set_patch_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__io__AudioManager_set_setup_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__io__AudioManager_shutdown_impl(port, ptr, rust_vec_len, data_len),
+        16 => {
             wire__crate__api__io__AudioManager_stop_playback_impl(port, ptr, rust_vec_len, data_len)
         }
-        63 => wire__crate__api__patch__Patch_load_impl(port, ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__patch__Patch_save_impl(port, ptr, rust_vec_len, data_len),
-        70 => wire__crate__api__io__audio_configuration_default_impl(
+        67 => wire__crate__api__patch__Patch_load_impl(port, ptr, rust_vec_len, data_len),
+        72 => wire__crate__api__patch__Patch_save_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__crate__api__io__audio_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        72 => wire__crate__api__io__flutter_midi_configuration_default_impl(
+        76 => wire__crate__api__io__flutter_midi_configuration_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        74 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        78 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4321,145 +4552,147 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        9 => wire__crate__api__io__AudioManager_new_impl(ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__cable__Cable_auto_accessor_get_destination_impl(
+        10 => wire__crate__api__io__AudioManager_new_impl(ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__cable__Cable_auto_accessor_get_destination_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__cable__Cable_auto_accessor_get_source_impl(
+        18 => wire__crate__api__cable__Cable_auto_accessor_get_source_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__cable__Cable_auto_accessor_set_destination_impl(
+        19 => wire__crate__api__cable__Cable_auto_accessor_set_destination_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__cable__Cable_auto_accessor_set_source_impl(
+        20 => wire__crate__api__cable__Cable_auto_accessor_set_source_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        19 => wire__crate__api__cable__Cable_new_impl(ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__cable__Connection_auto_accessor_get_endpoint_impl(
+        21 => wire__crate__api__cable__Cable_new_impl(ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__cable__Connection_auto_accessor_get_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__cable__Connection_auto_accessor_get_node_impl(
+        23 => wire__crate__api__cable__Connection_auto_accessor_get_node_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__cable__Connection_auto_accessor_set_endpoint_impl(
+        24 => wire__crate__api__cable__Connection_auto_accessor_set_endpoint_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__cable__Connection_auto_accessor_set_node_impl(
+        25 => wire__crate__api__cable__Connection_auto_accessor_set_node_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
+        26 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_position_impl(
+        27 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_get_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
+        28 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_annotation_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        27 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_position_impl(
+        29 => wire__crate__api__endpoint__NodeEndpoint_auto_accessor_set_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__api__endpoint__NodeEndpoint_feedback_value_impl(
+        30 => wire__crate__api__endpoint__NodeEndpoint_feedback_value_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__endpoint__NodeEndpoint_get_kind_impl(ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__endpoint__NodeEndpoint_get_type_impl(ptr, rust_vec_len, data_len),
-        31 => {
+        31 => wire__crate__api__endpoint__NodeEndpoint_get_kind_impl(ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__endpoint__NodeEndpoint_get_type_impl(ptr, rust_vec_len, data_len),
+        33 => {
             wire__crate__api__endpoint__NodeEndpoint_is_external_impl(ptr, rust_vec_len, data_len)
         }
-        32 => wire__crate__api__endpoint__NodeEndpoint_is_input_impl(ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__endpoint__NodeEndpoint_read_bool_impl(ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__endpoint__NodeEndpoint_read_float_impl(ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__endpoint__NodeEndpoint_read_int_impl(ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__endpoint__NodeEndpoint_write_bool_impl(ptr, rust_vec_len, data_len),
-        37 => {
+        34 => wire__crate__api__endpoint__NodeEndpoint_is_input_impl(ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__endpoint__NodeEndpoint_read_bool_impl(ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__endpoint__NodeEndpoint_read_float_impl(ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__endpoint__NodeEndpoint_read_int_impl(ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__endpoint__NodeEndpoint_write_bool_impl(ptr, rust_vec_len, data_len),
+        39 => {
             wire__crate__api__endpoint__NodeEndpoint_write_float_impl(ptr, rust_vec_len, data_len)
         }
-        38 => wire__crate__api__endpoint__NodeEndpoint_write_int_impl(ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
-        40 => {
+        40 => wire__crate__api__endpoint__NodeEndpoint_write_int_impl(ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__node__Node_auto_accessor_get_id_impl(ptr, rust_vec_len, data_len),
+        42 => {
             wire__crate__api__node__Node_auto_accessor_get_module_impl(ptr, rust_vec_len, data_len)
         }
-        41 => wire__crate__api__node__Node_auto_accessor_get_position_impl(
+        43 => wire__crate__api__node__Node_auto_accessor_get_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
-        43 => {
+        44 => wire__crate__api__node__Node_auto_accessor_set_id_impl(ptr, rust_vec_len, data_len),
+        45 => {
             wire__crate__api__node__Node_auto_accessor_set_module_impl(ptr, rust_vec_len, data_len)
         }
-        44 => wire__crate__api__node__Node_auto_accessor_set_position_impl(
+        46 => wire__crate__api__node__Node_auto_accessor_set_position_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__node__Node_set_position_impl(ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__patch__Patch_add_cable_impl(ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__patch__Patch_add_cable_by_ids_impl(ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__patch__Patch_add_node_impl(ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__patch__Patch_auto_accessor_get_cables_impl(
-            ptr,
-            rust_vec_len,
-            data_len,
-        ),
-        53 => {
-            wire__crate__api__patch__Patch_auto_accessor_get_nodes_impl(ptr, rust_vec_len, data_len)
-        }
-        54 => wire__crate__api__patch__Patch_auto_accessor_set_cables_impl(
+        47 => wire__crate__api__node__Node_from_impl(ptr, rust_vec_len, data_len),
+        48 => wire__crate__api__node__Node_get_inputs_impl(ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__node__Node_get_outputs_impl(ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__node__Node_set_position_impl(ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__patch__Patch_add_cable_impl(ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__patch__Patch_add_cable_by_ids_impl(ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__patch__Patch_add_node_impl(ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__patch__Patch_auto_accessor_get_cables_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
         55 => {
+            wire__crate__api__patch__Patch_auto_accessor_get_nodes_impl(ptr, rust_vec_len, data_len)
+        }
+        56 => wire__crate__api__patch__Patch_auto_accessor_set_cables_impl(
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        57 => {
             wire__crate__api__patch__Patch_auto_accessor_set_nodes_impl(ptr, rust_vec_len, data_len)
         }
-        56 => wire__crate__api__patch__Patch_get_cables_impl(ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__patch__Patch_get_node_ids_impl(ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__patch__Patch_get_node_inputs_impl(ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__patch__Patch_get_node_module_impl(ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__patch__Patch_get_node_outputs_impl(ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__patch__Patch_get_node_position_impl(ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__patch__Patch_get_nodes_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__patch__Patch_new_impl(ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__patch__Patch_remove_cable_impl(ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__patch__Patch_remove_node_impl(ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__patch__Patch_remove_node_by_id_impl(ptr, rust_vec_len, data_len),
-        69 => wire__crate__api__patch__Patch_update_node_position_impl(ptr, rust_vec_len, data_len),
-        71 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
-        73 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
-        75 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
-        76 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
-        77 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__patch__Patch_get_cables_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__patch__Patch_get_node_ids_impl(ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__patch__Patch_get_node_input_impl(ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__patch__Patch_get_node_inputs_impl(ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__patch__Patch_get_node_module_impl(ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__patch__Patch_get_node_output_impl(ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__patch__Patch_get_node_outputs_impl(ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__patch__Patch_get_node_position_impl(ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__patch__Patch_get_nodes_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__patch__Patch_new_impl(ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__patch__Patch_remove_cable_impl(ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__patch__Patch_remove_node_impl(ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__patch__Patch_remove_node_by_id_impl(ptr, rust_vec_len, data_len),
+        73 => wire__crate__api__patch__Patch_update_node_position_impl(ptr, rust_vec_len, data_len),
+        75 => wire__crate__api__graph__clear_patch_impl(ptr, rust_vec_len, data_len),
+        77 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
+        79 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
+        80 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
+        81 => wire__crate__api__graph__set_patch_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4922,6 +5155,16 @@ impl SseEncode for Option<Node> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <Node>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<NodeEndpoint> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <NodeEndpoint>::sse_encode(value, serializer);
         }
     }
 }

@@ -96,6 +96,9 @@ class _PatchEditor extends State<PatchEditor> {
         onNewCableSetEnd: _onNewCableSetEnd,
         onNewCableReset: _onNewCableReset,
         onAddNewCable: _onAddNewCable,
+        isSelected: selectedNodeIds.contains(nodeId),
+        onToggleSelection: _toggleNodeSelection,
+        onCableRepaintNeeded: () => _cableRepaintNotifier.notifyListeners(),
       );
     }).toList();
   }
@@ -104,7 +107,7 @@ class _PatchEditor extends State<PatchEditor> {
   // New cable callback methods
   void _onNewCableDrag(Offset globalOffset) {
     setState(() {
-      // For now, use the global offset directly - may need coordinate conversion later
+      // Keep global coordinates for cursor following - don't transform to scene
       newCableEnd = globalOffset;
     });
   }
@@ -173,42 +176,12 @@ class _PatchEditor extends State<PatchEditor> {
     }
   }
   
-  int? _getEndpointId(Pin pin) {
-    // Get the endpoint index by finding it in the node's input/output lists
-    if (pin.endpoint.isInput) {
-      var inputs = widget.patch.getNodeInputs(nodeId: pin.nodeId);
-      for (int i = 0; i < inputs.length; i++) {
-        if (inputs[i].type == pin.endpoint.type && 
-            inputs[i].annotation == pin.endpoint.annotation) {
-          return i;
-        }
-      }
-    } else {
-      var outputs = widget.patch.getNodeOutputs(nodeId: pin.nodeId);
-      for (int i = 0; i < outputs.length; i++) {
-        if (outputs[i].type == pin.endpoint.type && 
-            outputs[i].annotation == pin.endpoint.annotation) {
-          return i;
-        }
-      }
-    }
-    return null;
-  }
-
   void _onAddCable(Pin start, Pin end) {
-    var srcEndpointId = _getEndpointId(start);
-    var dstEndpointId = _getEndpointId(end);
-    
-    if (srcEndpointId == null || dstEndpointId == null) {
-      print("Could not find endpoint IDs for cable connection");
-      return;
-    }
-    
     bool success = widget.patch.addCableByIds(
       srcNodeId: start.nodeId,
-      srcEndpointId: srcEndpointId,
+      srcEndpointId: start.endpointId,
       dstNodeId: end.nodeId,
-      dstEndpointId: dstEndpointId,
+      dstEndpointId: end.endpointId,
     );
     
     if (success) {
@@ -293,8 +266,16 @@ class _PatchEditor extends State<PatchEditor> {
   
   bool _pinMatchesConnection(Pin pin, Connection connection) {
     if (pin.nodeId != connection.node.id) return false;
-    return pin.endpoint.type == connection.endpoint.type && 
-           pin.endpoint.annotation == connection.endpoint.annotation;
+    
+    // Get the endpoint from the pin's IDs
+    var endpoint = pin.isInput 
+        ? widget.patch.getNodeInput(nodeId: pin.nodeId, endpointId: pin.endpointId)
+        : widget.patch.getNodeOutput(nodeId: pin.nodeId, endpointId: pin.endpointId);
+    
+    if (endpoint == null) return false;
+    
+    return endpoint.type == connection.endpoint.type && 
+           endpoint.annotation == connection.endpoint.annotation;
   }
   
   // Keyboard event handlers
@@ -323,10 +304,21 @@ class _PatchEditor extends State<PatchEditor> {
       }
     }
   }
+  
+  void _toggleNodeSelection(int nodeId) {
+    setState(() {
+      if (selectedNodeIds.contains(nodeId)) {
+        selectedNodeIds.remove(nodeId);
+      } else {
+        selectedNodeIds.add(nodeId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onSecondaryTapDown: (details) {
         setState(() {
           rightClickOffset = details.localPosition;
@@ -358,7 +350,8 @@ class _PatchEditor extends State<PatchEditor> {
             },
             child: Listener(
               onPointerDown: (e) {
-                moduleAddPosition = e.localPosition;
+                // Convert to scene coordinates for node placement in the transformed space
+                moduleAddPosition = _transformationController.toScene(e.localPosition);
               },
               child: GestureDetector(
                 onTap: () {
@@ -400,6 +393,7 @@ class _PatchEditor extends State<PatchEditor> {
                                 painter: NewCablePainter(
                                   startPin: newCableStart!,
                                   endOffset: newCableEnd!,
+                                  transformationController: _transformationController,
                                 ),
                                 size: const Size(10000, 10000),
                               ),

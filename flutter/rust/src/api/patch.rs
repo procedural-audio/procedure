@@ -284,4 +284,24 @@ impl Patch {
         true
     }
 
+    #[frb(sync)]
+    pub fn get_node_input(&self, node_id: u32, endpoint_id: u32) -> Option<NodeEndpoint> {
+        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
+            let inputs = node.get_inputs();
+            inputs.get(endpoint_id as usize).cloned()
+        } else {
+            None
+        }
+    }
+
+    #[frb(sync)]
+    pub fn get_node_output(&self, node_id: u32, endpoint_id: u32) -> Option<NodeEndpoint> {
+        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
+            let outputs = node.get_outputs();
+            outputs.get(endpoint_id as usize).cloned()
+        } else {
+            None
+        }
+    }
+
 }

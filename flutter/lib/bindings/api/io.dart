@@ -5,13 +5,16 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'patch.dart';
 
-// These functions are ignored because they are not marked as `pub`: `run_juce_message_loop`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AudioMessage`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `new`, `run_juce_message_loop`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AudioMessage`, `PatchAudioCallback`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `about_to_start`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `process_block`, `stopped`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AudioManager>>
 abstract class AudioManager implements RustOpaqueInterface {
+  Future<void> clearPatch();
+
   Future<String?> getDeviceType();
 
   Future<List<String>> getDeviceTypes();
@@ -33,6 +36,8 @@ abstract class AudioManager implements RustOpaqueInterface {
   Future<void> setDeviceType({required String deviceType});
 
   Future<void> setMidiSetup({required FlutterMidiConfiguration config});
+
+  Future<void> setPatch({required Patch patch});
 
   Future<void> setSetup({required AudioConfiguration config});
 

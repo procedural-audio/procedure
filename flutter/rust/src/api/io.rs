@@ -1,7 +1,17 @@
 use flutter_rust_bridge::frb;
-use cxx_juce::{juce_audio_devices::{AudioDeviceManager, AudioDeviceSetup, AudioIODevice, AudioIODeviceType, ChannelCount, MidiDeviceManager}, JUCE};
-use std::sync::mpsc;
+use cxx_juce::{
+    juce_audio_devices::{
+        AudioDeviceManager, AudioDeviceSetup, AudioIODevice, AudioIODeviceCallback,
+        AudioIODeviceType, ChannelCount, MidiDeviceManager, 
+        InputAudioSampleBuffer, OutputAudioSampleBuffer, AudioCallbackHandle
+    }, 
+    JUCE
+};
+use std::sync::{mpsc, Arc, RwLock};
 use tokio::sync::oneshot;
+use crate::api::patch::Patch;
+use crate::api::graph::{set_patch, clear_patch};
+use crate::other::action::{Actions, ExecuteAction, IO};
 
 #[derive(Clone, Debug)]
 #[frb]
@@ -66,6 +76,78 @@ enum AudioMessage {
     
     StopPlayback,
     Shutdown,
+    SetPatch(Patch),
+    ClearPatch,
+}
+
+// Patch audio callback that processes the patch graph
+struct PatchAudioCallback {
+    actions: Option<Actions>,
+    midi_output: Vec<u32>,
+}
+
+impl PatchAudioCallback {
+    fn new() -> Self {
+        Self {
+            actions: None,
+            midi_output: Vec::new(),
+        }
+    }
+}
+
+impl AudioIODeviceCallback for PatchAudioCallback {
+    fn about_to_start(&mut self, device: &mut dyn AudioIODevice) {
+        println!("Patch audio callback starting - Sample rate: {}, Channels: {}", 
+                 device.sample_rate(), device.output_channels());
+    }
+
+    fn process_block(
+        &mut self,
+        input: &InputAudioSampleBuffer<'_>,
+        output: &mut OutputAudioSampleBuffer<'_>,
+    ) {
+        // Clear output buffer first
+        for channel in 0..output.channels() {
+            output[channel].fill(0.0);
+        }
+        
+        // Process patch if available
+        if let Some(actions) = &mut self.actions {
+            // Create audio buffers for the IO struct
+            let mut audio_buffers: Vec<Vec<f32>> = (0..output.channels())
+                .map(|ch| output[ch].to_vec())
+                .collect();
+            
+            let mut audio_refs: Vec<&mut [f32]> = audio_buffers
+                .iter_mut()
+                .map(|buf| buf.as_mut_slice())
+                .collect();
+            
+            let midi_input = &[]; // TODO: Get MIDI input from JUCE
+            self.midi_output.clear();
+            
+            let mut io = IO {
+                audio: &mut audio_refs,
+                midi_input,
+                midi_output: &mut self.midi_output,
+            };
+            
+            actions.execute(&mut io);
+            
+            // Copy processed audio back to output
+            for (ch, buffer) in audio_buffers.into_iter().enumerate() {
+                if ch < output.channels() {
+                    output[ch].copy_from_slice(&buffer);
+                }
+            }
+            
+            // TODO: Send MIDI output to JUCE
+        }
+    }
+
+    fn stopped(&mut self) {
+        println!("Patch audio callback stopped");
+    }
 }
 
 fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
@@ -73,8 +155,13 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
     let mut manager = AudioDeviceManager::new(&juce);
     let midi_manager = MidiDeviceManager::new(&juce);
     let mut midi_config = FlutterMidiConfiguration::default();
+    let patch_callback = Arc::new(std::sync::Mutex::new(PatchAudioCallback::new()));
+    let mut callback_handle: Option<AudioCallbackHandle> = None;
 
     manager.initialise(0, 2).unwrap();
+    
+    // Add the patch audio callback
+    callback_handle = Some(manager.add_audio_callback(patch_callback.clone()));
 
     manager
         .device_types()
@@ -160,9 +247,27 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
                     midi_config = config;
                 }
                 
+                AudioMessage::SetPatch(patch) => {
+                    if let Ok(mut callback) = patch_callback.lock() {
+                        println!("Setting patch in audio manager with {} nodes, {} cables", 
+                                 patch.nodes.len(), patch.cables.len());
+                        callback.actions = Some(Actions::from(patch));
+                    }
+                }
+                AudioMessage::ClearPatch => {
+                    if let Ok(mut callback) = patch_callback.lock() {
+                        println!("Clearing patch in audio manager");
+                        callback.actions = None;
+                    }
+                }
+                
                 AudioMessage::StopPlayback => {},
                 AudioMessage::Shutdown => {
                     println!("Shutting down audio thread");
+                    // Remove audio callback before shutting down
+                    if let Some(handle) = callback_handle {
+                        manager.remove_audio_callback(handle);
+                    }
                     return;
                 }
             }
@@ -311,6 +416,24 @@ impl AudioManager {
         match self.thread.join() {
             Ok(_) => Ok(()),
             Err(_) => Ok(()), // Thread already finished
+        }
+    }
+    
+    #[frb]
+    pub async fn set_patch(&self, patch: Patch) -> Result<(), String> {
+        if self.tx.send(AudioMessage::SetPatch(patch)).is_ok() {
+            Ok(())
+        } else {
+            Err("Failed to send patch".to_string())
+        }
+    }
+    
+    #[frb]
+    pub async fn clear_patch(&self) -> Result<(), String> {
+        if self.tx.send(AudioMessage::ClearPatch).is_ok() {
+            Ok(())
+        } else {
+            Err("Failed to clear patch".to_string())
         }
     }
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:metasampler/bindings/api/io.dart';
 import 'package:metasampler/plugin/plugin.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/patch/newTopBar.dart';
@@ -23,6 +24,7 @@ class Project extends StatefulWidget {
     required this.preset,
     required this.plugins,
     required this.presetInfos,
+    this.audioManager,
   });
 
   final MainDirectory directory;
@@ -30,6 +32,7 @@ class Project extends StatefulWidget {
   Preset preset;
   List<Plugin> plugins;
   final List<PresetInfo> presetInfos;
+  final AudioManager? audioManager;
 
   Future<bool> loadInterface(PresetInfo info) async {
     return false;
@@ -155,7 +158,10 @@ class _Project extends State<Project> {
 
     await save();
 
-    api.clearPatch();
+    // Clear patch from audio manager
+    if (widget.audioManager != null) {
+      await widget.audioManager!.clearPatch();
+    }
     context.go('/projects');
   }
 

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:metasampler/bindings/api/patch.dart' as api;
 import 'dart:ui' as ui;
 import 'dart:math';
+import 'dart:convert';
 import '../settings.dart';
 import 'pin.dart';
 import '../bindings/api/cable.dart';
 import '../bindings/api/endpoint.dart';
+import '../bindings/api/module.dart';
 import '../project/theme.dart';
 
 
@@ -57,23 +59,43 @@ class CablePainter extends CustomPainter {
   }
   
   void _paintCable(Canvas canvas, Cable cable) {
-    // Get the source and destination nodes
-    var sourceNode = cable.source.node;
-    var destNode = cable.destination.node;
+    // Get the current positions from the patch (not the cable's snapshot)
+    var sourceNodePos = patch.getNodePosition(nodeId: cable.source.node.id);
+    var destNodePos = patch.getNodePosition(nodeId: cable.destination.node.id);
     
-    // Find the pins for this cable
-    var sourcePin = cable.source.endpoint;
-    var destPin = cable.destination.endpoint;
+    if (sourceNodePos == null || destNodePos == null) {
+      return; // Skip if nodes not found
+    }
+    
+    // Get modules to calculate pin offsets
+    var sourceModule = patch.getNodeModule(nodeId: cable.source.node.id);
+    var destModule = patch.getNodeModule(nodeId: cable.destination.node.id);
+    
+    if (sourceModule == null || destModule == null) {
+      return; // Skip if modules not found
+    }
+    
+    // Find the endpoint indices to match the pins
+    var sourceEndpointIndex = _findEndpointIndex(cable.source.node.id, cable.source.endpoint, false);
+    var destEndpointIndex = _findEndpointIndex(cable.destination.node.id, cable.destination.endpoint, true);
+    
+    if (sourceEndpointIndex == null || destEndpointIndex == null) {
+      return; // Skip if endpoints not found
+    }
+    
+    // Calculate pin offsets based on endpoint annotations
+    var sourceOffset = _calculatePinOffset(cable.source.endpoint, sourceModule, false);
+    var destOffset = _calculatePinOffset(cable.destination.endpoint, destModule, true);
 
-    // Calculate start and end positions using quantized positions for existing cables
+    // Calculate start and end positions using current node positions
     Offset startPos = Offset(
-      sourcePin.position.$1 + _getQuantizedX(sourceNode.position.$1) + 15 / 2,
-      sourcePin.position.$2 + _getQuantizedY(sourceNode.position.$2) + 15 / 2,
+      sourceOffset.dx + sourceNodePos.$1 + pinRadius,
+      sourceOffset.dy + sourceNodePos.$2 + pinRadius,
     );
     
     Offset endPos = Offset(
-      destPin.position.$1 + _getQuantizedX(destNode.position.$1) + 15 / 2,
-      destPin.position.$2 + _getQuantizedY(destNode.position.$2) + 15 / 2,
+      destOffset.dx + destNodePos.$1 + pinRadius,
+      destOffset.dy + destNodePos.$2 + pinRadius,
     );
     
     // Get color for this endpoint type
@@ -81,6 +103,34 @@ class CablePainter extends CustomPainter {
     
     // Paint the cable using the same style as the original ConnectorPainter
     _paintCablePath(canvas, startPos, endPos, color, cable.source.endpoint.kind);
+  }
+  
+  int? _findEndpointIndex(int nodeId, NodeEndpoint endpoint, bool isInput) {
+    var endpoints = isInput 
+        ? patch.getNodeInputs(nodeId: nodeId)
+        : patch.getNodeOutputs(nodeId: nodeId);
+        
+    for (int i = 0; i < endpoints.length; i++) {
+      if (endpoints[i].type == endpoint.type && 
+          endpoints[i].annotation == endpoint.annotation) {
+        return i;
+      }
+    }
+    return null;
+  }
+  
+  Offset _calculatePinOffset(NodeEndpoint endpoint, Module module, bool isInput) {
+    var annotation = jsonDecode(endpoint.annotation);
+    var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
+    
+    if (isInput) {
+      return Offset(5, top);
+    } else {
+      return Offset(
+        module.size.$1 * GlobalSettings.gridSize - (pinRadius * 2 + 10),
+        top
+      );
+    }
   }
   
   void _paintCablePath(Canvas canvas, Offset start, Offset end, Color color, EndpointKind kind) {
@@ -116,15 +166,6 @@ class CablePainter extends CustomPainter {
   }
   
   
-  // Helper methods to get quantized positions (same as used in NodeEditor)
-  double _getQuantizedX(double x) {
-    return (x / GlobalSettings.gridSize).roundToDouble() * GlobalSettings.gridSize;
-  }
-  
-  double _getQuantizedY(double y) {
-    return (y / GlobalSettings.gridSize).roundToDouble() * GlobalSettings.gridSize;
-  }
-  
   @override
   bool shouldRepaint(CablePainter oldDelegate) {
     // Repaint if cables or nodes have changed
@@ -136,23 +177,38 @@ class CablePainter extends CustomPainter {
 class NewCablePainter extends CustomPainter {
   final Pin startPin;
   final Offset endOffset;
+  final TransformationController transformationController;
   
-  NewCablePainter({required this.startPin, required this.endOffset});
+  NewCablePainter({
+    required this.startPin, 
+    required this.endOffset,
+    required this.transformationController,
+  });
 
   @override
   void paint(Canvas canvas, ui.Size size) {
-    // Calculate start position from pin
+    // Calculate start position from pin (in scene coordinates)
     var nodePosition = startPin.patch.getNodePosition(nodeId: startPin.nodeId) ?? (0.0, 0.0);
     Offset startPos = Offset(
       startPin.offset.dx + nodePosition.$1 + 15 / 2,
       startPin.offset.dy + nodePosition.$2 + 15 / 2,
     );
     
+    // Convert global end offset to scene coordinates
+    Offset sceneEndOffset = transformationController.toScene(endOffset);
+    
+    // Get the endpoint to determine color
+    var endpoint = startPin.isInput 
+        ? startPin.patch.getNodeInput(nodeId: startPin.nodeId, endpointId: startPin.endpointId)
+        : startPin.patch.getNodeOutput(nodeId: startPin.nodeId, endpointId: startPin.endpointId);
+    
     // Get color for this endpoint type
-    Color color = ProjectTheme.getColor(startPin.endpoint.type);
+    Color color = endpoint != null 
+        ? ProjectTheme.getColor(endpoint.type)
+        : Colors.white;
     
     // Paint the cable using the same style as the original ConnectorPainter
-    _paintCablePath(canvas, startPos, endOffset, color);
+    _paintCablePath(canvas, startPos, sceneEndOffset, color);
   }
   
   void _paintCablePath(Canvas canvas, Offset start, Offset end, Color color) {
