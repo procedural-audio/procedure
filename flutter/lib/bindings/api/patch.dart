@@ -5,63 +5,53 @@
 
 import '../frb_generated.dart';
 import 'cable.dart';
-import 'endpoint.dart';
-import 'module.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `SerializableCable`, `SerializableConnection`, `SerializableNode`, `SerializablePatch`
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>>
-abstract class Patch implements RustOpaqueInterface {
-  void addCable({required Cable cable});
+/// Load a patch from JSON string and return nodes and cables
+Future<(List<Node>, List<Cable>)> loadPatch({required String jsonStr}) =>
+    RustLib.instance.api.crateApiPatchLoadPatch(jsonStr: jsonStr);
 
-  bool addCableByIds(
-      {required int srcNodeId,
-      required int srcEndpointId,
-      required int dstNodeId,
-      required int dstEndpointId});
+/// Save nodes and cables to JSON string
+Future<String> savePatch(
+        {required List<Node> nodes, required List<Cable> cables}) =>
+    RustLib.instance.api.crateApiPatchSavePatch(nodes: nodes, cables: cables);
 
-  int addNode({required Module module, required (double, double) position});
+/// Update the playing patch using the audio manager
+/// Note: This function requires an AudioManager instance to be passed to it
+/// The actual integration will be handled at the Flutter level
+Future<void> playPatch(
+        {required List<Node> nodes, required List<Cable> cables}) =>
+    RustLib.instance.api.crateApiPatchPlayPatch(nodes: nodes, cables: cables);
 
-  List<Cable> get cables;
+class Patch {
+  final List<Node> nodes;
+  final List<Cable> cables;
 
-  List<Node> get nodes;
+  const Patch({
+    required this.nodes,
+    required this.cables,
+  });
 
-  set cables(List<Cable> cables);
+  static Patch from({required List<Node> nodes, required List<Cable> cables}) =>
+      RustLib.instance.api.crateApiPatchPatchFrom(nodes: nodes, cables: cables);
 
-  set nodes(List<Node> nodes);
+  static Future<void> load({required String path}) =>
+      RustLib.instance.api.crateApiPatchPatchLoad(path: path);
 
-  List<Cable> getCables();
+  Future<String> save({required String path}) =>
+      RustLib.instance.api.crateApiPatchPatchSave(that: this, path: path);
 
-  Uint32List getNodeIds();
+  @override
+  int get hashCode => nodes.hashCode ^ cables.hashCode;
 
-  NodeEndpoint? getNodeInput({required int nodeId, required int endpointId});
-
-  List<NodeEndpoint> getNodeInputs({required int nodeId});
-
-  Module? getNodeModule({required int nodeId});
-
-  NodeEndpoint? getNodeOutput({required int nodeId, required int endpointId});
-
-  List<NodeEndpoint> getNodeOutputs({required int nodeId});
-
-  (double, double)? getNodePosition({required int nodeId});
-
-  List<Node> getNodes();
-
-  Future<void> load({required String jsonStr});
-
-  factory Patch() => RustLib.instance.api.crateApiPatchPatchNew();
-
-  void removeCable({required Cable cable});
-
-  void removeNode({required int nodeId});
-
-  void removeNodeById({required int nodeId});
-
-  Future<String> save();
-
-  void updateNodePosition(
-      {required int nodeId, required (double, double) position});
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Patch &&
+          runtimeType == other.runtimeType &&
+          nodes == other.nodes &&
+          cables == other.cables;
 }

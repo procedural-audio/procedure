@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
+import 'package:metasampler/bindings/api/node.dart' as rust_node;
+import 'package:metasampler/bindings/api/endpoint.dart';
 
 import 'dart:convert';
 
@@ -11,10 +12,8 @@ const double pinRadius = 6;
 
 class Pin extends StatefulWidget {
   Pin({
-    required this.nodeId,
-    required this.endpointId,
-    required this.isInput,
-    required this.patch,
+    required this.node,
+    required this.endpoint,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.onNewCableDrag,
@@ -22,43 +21,26 @@ class Pin extends StatefulWidget {
     required this.onNewCableSetEnd,
     required this.onNewCableReset,
     required this.onAddNewCable,
-  }) : offset = _calculateOffset(nodeId, endpointId, isInput, patch),
-       super(key: ValueKey('pin_${nodeId}_${endpointId}_${isInput}'));
+  }) : offset = _calculateOffset(node, endpoint),
+       super(key: ValueKey('pin_${node.module.title}_${endpoint.annotation}_${endpoint.isInput}'));
   
-  static Offset _calculateOffset(int nodeId, int endpointId, bool isInput, rust_patch.Patch patch) {
-    // Get the endpoint to initialize offset
-    var endpoint = isInput 
-        ? patch.getNodeInput(nodeId: nodeId, endpointId: endpointId)
-        : patch.getNodeOutput(nodeId: nodeId, endpointId: endpointId);
-    
-    if (endpoint != null) {
-      var annotation = jsonDecode(endpoint.annotation);
-      var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
+  static Offset _calculateOffset(rust_node.Node node, NodeEndpoint endpoint) {
+    var annotation = jsonDecode(endpoint.annotation);
+    var top = double.tryParse(annotation['pinTop'].toString()) ?? 0.0;
 
-      // Get module to calculate offset
-      var module = patch.getNodeModule(nodeId: nodeId);
-      if (module != null) {
-        // Initialize the pin offset
-        if (isInput) {
-          return Offset(5, top);
-        } else {
-          return Offset(
-              module.size.$1 * GlobalSettings.gridSize -
-                  (pinRadius * 2 + 10),
-              top);
-        }
-      } else {
-        return Offset(5, top);
-      }
+    // Initialize the pin offset
+    if (endpoint.isInput) {
+      return Offset(5, top);
     } else {
-      return Offset(5, 0);
+      return Offset(
+          node.module.size.$1 * GlobalSettings.gridSize -
+              (pinRadius * 2 + 10),
+          top);
     }
   }
 
-  final int nodeId;
-  final int endpointId;
-  final bool isInput;
-  final rust_patch.Patch patch;
+  final rust_node.Node node;
+  final NodeEndpoint endpoint;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -77,51 +59,17 @@ class _PinState extends State<Pin> {
   bool hovering = false;
   bool dragging = false;
 
+  // This will be passed from parent widget that manages the cables list
   bool _isPinConnected() {
-    // Check all cables to see if this pin is connected
-    var cables = widget.patch.getCables();
-    for (var cable in cables) {
-      // Check source connection
-      if (cable.source.node.id == widget.nodeId) {
-        // Get the source endpoint index
-        var outputs = widget.patch.getNodeOutputs(nodeId: widget.nodeId);
-        for (int i = 0; i < outputs.length; i++) {
-          if (i == widget.endpointId && !widget.isInput) {
-            if (outputs[i].type == cable.source.endpoint.type &&
-                outputs[i].annotation == cable.source.endpoint.annotation) {
-              return true;
-            }
-          }
-        }
-      }
-      
-      // Check destination connection
-      if (cable.destination.node.id == widget.nodeId) {
-        // Get the destination endpoint index
-        var inputs = widget.patch.getNodeInputs(nodeId: widget.nodeId);
-        for (int i = 0; i < inputs.length; i++) {
-          if (i == widget.endpointId && widget.isInput) {
-            if (inputs[i].type == cable.destination.endpoint.type &&
-                inputs[i].annotation == cable.destination.endpoint.annotation) {
-              return true;
-            }
-          }
-        }
-      }
-    }
+    // For now, return false. The parent PatchEditor will need to pass this information
+    // or we'll need to access the cables list differently
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the endpoint to access its properties
-    var endpoint = widget.isInput 
-        ? widget.patch.getNodeInput(nodeId: widget.nodeId, endpointId: widget.endpointId)
-        : widget.patch.getNodeOutput(nodeId: widget.nodeId, endpointId: widget.endpointId);
-    
-    if (endpoint == null) {
-      return Container(); // Return empty if endpoint not found
-    }
+    // Endpoint is now directly available
+    var endpoint = widget.endpoint;
 
     return Positioned(
       left: widget.offset.dx,

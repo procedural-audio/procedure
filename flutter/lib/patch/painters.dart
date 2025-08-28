@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/patch.dart' as api;
+import 'package:metasampler/bindings/api/node.dart' as rust_node;
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:convert';
@@ -44,36 +44,33 @@ class GridPainter extends CustomPainter {
 }
 
 class CablePainter extends CustomPainter {
-  final api.Patch patch;
+  final List<rust_node.Node> nodes;
+  final List<Cable> cables;
   
   CablePainter({
-    required this.patch, 
+    required this.nodes,
+    required this.cables, 
     Listenable? repaint,
   }) : super(repaint: repaint);
 
   @override
   void paint(Canvas canvas, ui.Size size) {
-    for (var cable in patch.cables) {
+    for (var cable in cables) {
       _paintCable(canvas, cable);
     }
   }
   
   void _paintCable(Canvas canvas, Cable cable) {
-    // Get the current positions from the patch (not the cable's snapshot)
-    var sourceNodePos = patch.getNodePosition(nodeId: cable.source.node.id);
-    var destNodePos = patch.getNodePosition(nodeId: cable.destination.node.id);
+    // Get the current positions from the nodes list
+    var sourceNode = nodes.firstWhere((n) => n.id == cable.source.node.id, orElse: () => cable.source.node);
+    var destNode = nodes.firstWhere((n) => n.id == cable.destination.node.id, orElse: () => cable.destination.node);
     
-    if (sourceNodePos == null || destNodePos == null) {
-      return; // Skip if nodes not found
-    }
+    var sourceNodePos = sourceNode.position;
+    var destNodePos = destNode.position;
     
     // Get modules to calculate pin offsets
-    var sourceModule = patch.getNodeModule(nodeId: cable.source.node.id);
-    var destModule = patch.getNodeModule(nodeId: cable.destination.node.id);
-    
-    if (sourceModule == null || destModule == null) {
-      return; // Skip if modules not found
-    }
+    var sourceModule = sourceNode.module;
+    var destModule = destNode.module;
     
     // Find the endpoint indices to match the pins
     var sourceEndpointIndex = _findEndpointIndex(cable.source.node.id, cable.source.endpoint, false);
@@ -106,9 +103,10 @@ class CablePainter extends CustomPainter {
   }
   
   int? _findEndpointIndex(int nodeId, NodeEndpoint endpoint, bool isInput) {
+    var node = nodes.firstWhere((n) => n.id == nodeId, orElse: () => throw Exception('Node not found'));
     var endpoints = isInput 
-        ? patch.getNodeInputs(nodeId: nodeId)
-        : patch.getNodeOutputs(nodeId: nodeId);
+        ? node.getInputs()
+        : node.getOutputs();
         
     for (int i = 0; i < endpoints.length; i++) {
       if (endpoints[i].type == endpoint.type && 
@@ -170,7 +168,7 @@ class CablePainter extends CustomPainter {
   bool shouldRepaint(CablePainter oldDelegate) {
     // Repaint if cables or nodes have changed
     // The Listenable passed to super() handles position changes
-    return patch.cables != oldDelegate.patch.cables || patch.nodes != oldDelegate.patch.nodes;
+    return cables != oldDelegate.cables || nodes != oldDelegate.nodes;
   }
 }
 
@@ -188,7 +186,7 @@ class NewCablePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, ui.Size size) {
     // Calculate start position from pin (in scene coordinates)
-    var nodePosition = startPin.patch.getNodePosition(nodeId: startPin.nodeId) ?? (0.0, 0.0);
+    var nodePosition = startPin.node.position;
     Offset startPos = Offset(
       startPin.offset.dx + nodePosition.$1 + 15 / 2,
       startPin.offset.dy + nodePosition.$2 + 15 / 2,
@@ -198,14 +196,10 @@ class NewCablePainter extends CustomPainter {
     Offset sceneEndOffset = transformationController.toScene(endOffset);
     
     // Get the endpoint to determine color
-    var endpoint = startPin.isInput 
-        ? startPin.patch.getNodeInput(nodeId: startPin.nodeId, endpointId: startPin.endpointId)
-        : startPin.patch.getNodeOutput(nodeId: startPin.nodeId, endpointId: startPin.endpointId);
+    var endpoint = startPin.endpoint;
     
     // Get color for this endpoint type
-    Color color = endpoint != null 
-        ? ProjectTheme.getColor(endpoint.type)
-        : Colors.white;
+    Color color = ProjectTheme.getColor(endpoint.type);
     
     // Paint the cable using the same style as the original ConnectorPainter
     _paintCablePath(canvas, startPos, sceneEndOffset, color);

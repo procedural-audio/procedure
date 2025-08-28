@@ -23,8 +23,9 @@ impl PartialEq for Node {
 }
 
 impl Node {
+    // Remove the id parameter since we're eliminating ID-based approach
     #[frb(sync)]
-    pub fn from(id: u32, module: Module, position: (f64, f64)) -> Option<Self> {
+    pub fn from_module(module: Module, position: (f64, f64)) -> Option<Self> {
         let cmajor = cmajor::Cmajor::new_from_path(
             "/Users/chase/Code/nodus/flutter/build/libCmajPerformer.dylib",
         )
@@ -61,7 +62,7 @@ impl Node {
 
         for info in infos {
             let is_input = info.direction() == cmajor::endpoint::EndpointDirection::Input;
-            let endpoint = NodeEndpoint::from(&mut engine, info, id);
+            let endpoint = NodeEndpoint::from(&mut engine, info, 0); // Temporary ID, will be removed
             if is_input {
                 inputs.push(endpoint);
             } else {
@@ -86,7 +87,7 @@ impl Node {
         let performer = Arc::new(Mutex::new(engine.performer()));
 
         Some(Self {
-            id,
+            id: 0, // Temporary, will be removed completely
             module,
             position,
             inputs,
@@ -113,6 +114,38 @@ impl Node {
     #[frb(ignore)]
     pub fn clone_performer(&self) -> Arc<Mutex<cmajor::performer::Performer>> {
         self.performer.clone()
+    }
+
+    // Check if this node has a specific endpoint (by comparing annotations)
+    #[frb(sync)]
+    pub fn has_endpoint(&self, endpoint: &NodeEndpoint) -> bool {
+        self.inputs.iter().any(|ep| ep.annotation == endpoint.annotation) ||
+        self.outputs.iter().any(|ep| ep.annotation == endpoint.annotation)
+    }
+
+    // Get an endpoint by its annotation
+    #[frb(sync)]
+    pub fn get_endpoint_by_annotation(&self, annotation: String) -> Option<NodeEndpoint> {
+        self.inputs.iter()
+            .chain(self.outputs.iter())
+            .find(|ep| ep.annotation == annotation)
+            .cloned()
+    }
+
+    // Get an input endpoint by its annotation
+    #[frb(sync)]
+    pub fn get_input_by_annotation(&self, annotation: String) -> Option<NodeEndpoint> {
+        self.inputs.iter()
+            .find(|ep| ep.annotation == annotation)
+            .cloned()
+    }
+
+    // Get an output endpoint by its annotation
+    #[frb(sync)]
+    pub fn get_output_by_annotation(&self, annotation: String) -> Option<NodeEndpoint> {
+        self.outputs.iter()
+            .find(|ep| ep.annotation == annotation)
+            .cloned()
     }
 
 }

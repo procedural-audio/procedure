@@ -4,7 +4,7 @@ use std::sync::Mutex;
 
 use crate::api::endpoint::NodeEndpoint;
 use crate::api::node::*;
-use crate::api::patch::Patch;
+use crate::api::cable::Cable;
 
 use cmajor::performer::Performer;
 use cmajor::*;
@@ -87,10 +87,10 @@ impl Actions {
         }
     }
 
-    pub fn from(graph: Patch) -> Self {
+    pub fn from_nodes_and_cables(nodes: Vec<Node>, cables: Vec<Cable>) -> Self {
         let mut actions = Self::new();
 
-        actions.process_graph(graph);
+        actions.process_nodes_and_cables(nodes, cables);
 
         return actions;
     }
@@ -99,21 +99,21 @@ impl Actions {
         self.actions.push(Box::new(action));
     }
 
-    pub fn process_graph(&mut self, mut graph: Patch) {
+    pub fn process_nodes_and_cables(&mut self, mut nodes: Vec<Node>, cables: Vec<Cable>) {
         // Sort nodes topologically
-        sort_nodes_topologically(&mut graph).unwrap();
+        sort_nodes_topologically(&mut nodes, &cables).unwrap();
 
         // Generate actions for each node
-        for node in &graph.nodes {
-            self.process_node(node, &graph);
+        for node in &nodes {
+            self.process_node(node, &nodes, &cables);
         }
     }
 
-    fn process_node(&mut self, dst_node: &Node, graph: &Patch) {
+    fn process_node(&mut self, dst_node: &Node, nodes: &[Node], cables: &[Cable]) {
         // Generate input endpoint actions
         for endpoint in dst_node.get_inputs().iter() {
             if let EndpointHandle::Input(endpoint) = &endpoint.handle() {
-                self.process_input(dst_node, endpoint, graph);
+                self.process_input(dst_node, endpoint, nodes, cables);
             }
         }
     
@@ -129,10 +129,10 @@ impl Actions {
         }
     }
 
-    fn process_input(&mut self, node: &Node, endpoint: &InputEndpoint, graph: &Patch) {
+    fn process_input(&mut self, node: &Node, endpoint: &InputEndpoint, nodes: &[Node], cables: &[Cable]) {
         match endpoint {
             InputEndpoint::Endpoint(handle) => {
-                self.process_input_endpoint(node, handle, graph);
+                self.process_input_endpoint(node, handle, nodes, cables);
             },
             InputEndpoint::External { handle, channel } => {
                 self.process_input_external(node, handle, *channel);
@@ -157,10 +157,10 @@ impl Actions {
         }
     }
 
-    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, graph: &Patch) {
+    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, nodes: &[Node], cables: &[Cable]) {
         let mut filled = false;
 
-        for cable in &graph.cables {
+        for cable in cables {
             let src_node = &cable.source.node;
             let src_handle = cable.source.endpoint.handle();
             let dst_node = &cable.destination.node;
@@ -510,11 +510,11 @@ pub fn is_connection_supported(src_node: &Node, src_endpoint: &NodeEndpoint, dst
     }
 }
 
-fn sort_nodes_topologically(graph: &mut Patch) -> Result<(), String> {
-    let node_count = graph.nodes.len();
+fn sort_nodes_topologically(nodes: &mut Vec<Node>, cables: &[Cable]) -> Result<(), String> {
+    let node_count = nodes.len();
 
     // Map from node_id to its current index in self.nodes
-    let node_id_to_index: HashMap<u32, usize> = graph.nodes
+    let node_id_to_index: HashMap<u32, usize> = nodes
         .iter()
         .enumerate()
         .map(|(index, node)| (node.id, index))
@@ -525,7 +525,7 @@ fn sort_nodes_topologically(graph: &mut Patch) -> Result<(), String> {
     let mut adj = vec![Vec::new(); node_count];
 
     // Build the graph representation
-    for cable in &graph.cables {
+    for cable in cables {
         let &source_index = node_id_to_index.get(&cable.source.node.id)
             .ok_or_else(|| format!("Source node_id {} not found in nodes", cable.source.node.id))?;
         let &dest_index = node_id_to_index.get(&cable.destination.node.id)
@@ -571,7 +571,7 @@ fn sort_nodes_topologically(graph: &mut Patch) -> Result<(), String> {
     for i in 0..node_count {
         while index_map[i] != i {
             let target = index_map[i];
-            graph.nodes.swap(i, target);
+            nodes.swap(i, target);
             index_map[i] = index_map[target];
             index_map[target] = target;
         }

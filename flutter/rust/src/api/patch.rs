@@ -1,14 +1,12 @@
 use flutter_rust_bridge::*;
 use crate::api::cable::Cable;
-use crate::api::endpoint::NodeEndpoint;
+use crate::api::node::Node;
 use serde::{Serialize, Deserialize};
 use serde_json;
+use std::path::Path;
+use tokio::fs;
 
-use super::node::Node;
 use super::module::Module;
-
-pub type NodeId = u32;
-pub type WidgetId = u32;
 
 // Serializable representations
 #[derive(Serialize, Deserialize)]
@@ -37,271 +35,143 @@ struct SerializablePatch {
     cables: Vec<SerializableCable>,
 }
 
-#[frb(opaque)]
+// Simplified patch API with just three functions
+
+/// Load a patch from JSON string and return nodes and cables
+#[frb]
+pub async fn load_patch(json_str: &str) -> Result<(Vec<Node>, Vec<Cable>), String> {
+    let serializable: SerializablePatch = serde_json::from_str(json_str)
+        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    
+    let mut nodes = Vec::new();
+    let mut next_node_id = 1u32;
+    
+    // Find the maximum node ID to set next_node_id correctly
+    let max_id = serializable.nodes.iter().map(|n| n.id).max().unwrap_or(0);
+    next_node_id = max_id + 1;
+    
+    // Recreate nodes
+    for s_node in serializable.nodes {
+        if let Some(mut node) = Node::from_module(s_node.module, s_node.position) {
+            node.id = s_node.id;
+            nodes.push(node);
+        } else {
+            return Err(format!("Failed to recreate node with id {}", s_node.id));
+        }
+    }
+    
+    let mut cables = Vec::new();
+    
+    // Recreate cables
+    for s_cable in serializable.cables {
+        // Find source node and endpoint
+        let source_node = nodes.iter()
+            .find(|n| n.id == s_cable.source.node_id)
+            .ok_or_else(|| format!("Source node {} not found", s_cable.source.node_id))?;
+        
+        let source_endpoint = source_node.get_outputs().into_iter()
+            .chain(source_node.get_inputs().into_iter())
+            .find(|e| e.get_type() == s_cable.source.endpoint_type && 
+                     e.annotation == s_cable.source.endpoint_annotation)
+            .ok_or_else(|| format!("Source endpoint not found"))?;
+        
+        // Find destination node and endpoint  
+        let dest_node = nodes.iter()
+            .find(|n| n.id == s_cable.destination.node_id)
+            .ok_or_else(|| format!("Destination node {} not found", s_cable.destination.node_id))?;
+        
+        let dest_endpoint = dest_node.get_inputs().into_iter()
+            .chain(dest_node.get_outputs().into_iter())
+            .find(|e| e.get_type() == s_cable.destination.endpoint_type && 
+                     e.annotation == s_cable.destination.endpoint_annotation)
+            .ok_or_else(|| format!("Destination endpoint not found"))?;
+        
+        // Create cable using the factory constructor
+        let cable = Cable::new(
+            source_node.clone(),
+            source_endpoint,
+            dest_node.clone(),
+            dest_endpoint,
+        );
+        
+        cables.push(cable);
+    }
+    
+    Ok((nodes, cables))
+}
+
+/// Save nodes and cables to JSON string
+#[frb]
+pub async fn save_patch(nodes: Vec<Node>, cables: Vec<Cable>) -> Result<String, String> {
+    // Convert nodes to serializable format
+    let s_nodes: Vec<SerializableNode> = nodes.iter()
+        .map(|node| SerializableNode {
+            id: node.id,
+            module: node.module.clone(),
+            position: node.position,
+        })
+        .collect();
+    
+    // Convert cables to serializable format
+    let s_cables: Vec<SerializableCable> = cables.iter()
+        .map(|cable| SerializableCable {
+            source: SerializableConnection {
+                node_id: cable.source.node.id,
+                endpoint_type: cable.source.endpoint.get_type(),
+                endpoint_annotation: cable.source.endpoint.annotation.clone(),
+            },
+            destination: SerializableConnection {
+                node_id: cable.destination.node.id,
+                endpoint_type: cable.destination.endpoint.get_type(),
+                endpoint_annotation: cable.destination.endpoint.annotation.clone(),
+            },
+        })
+        .collect();
+    
+    let serializable = SerializablePatch {
+        nodes: s_nodes,
+        cables: s_cables,
+    };
+    
+    serde_json::to_string_pretty(&serializable)
+        .map_err(|e| format!("Failed to serialize patch: {}", e))
+}
+
 pub struct Patch {
     pub nodes: Vec<Node>,
     pub cables: Vec<Cable>,
-    next_node_id: u32,
 }
 
 impl Patch {
     #[frb(sync)]
-    pub fn new() -> Self {
-        Self {
-            nodes: Vec::new(),
-            cables: Vec::new(),
-            next_node_id: 1,
-        }
+    pub fn from(nodes: Vec<Node>, cables: Vec<Cable>) -> Self {
+        Self { nodes, cables }
     }
 
-    #[frb(sync)]
-    pub fn add_node(&mut self, module: Module, position: (f64, f64)) -> Result<u32, String> {
-        let node_id = self.next_node_id;
-        self.next_node_id += 1;
-        
-        match Node::from(node_id, module, position) {
-            Some(node) => {
-                self.nodes.push(node);
-                Ok(node_id)
-            },
-            None => Err("Failed to create node".to_string())
-        }
+    pub async fn save(&self, path: String) -> Result<String, String> {
+        todo!()
     }
 
-    #[frb(sync)]
-    pub fn remove_node(&mut self, node_id: u32) {
-        self.nodes.retain(|n| n.id != node_id);
-
-        // Also remove any connectors connected to this node
-        self.cables.retain(|c| c.source.node.id != node_id && c.destination.node.id != node_id);
+    pub async fn load(path: String) -> Result<(), String> {
+        todo!()
     }
+}
 
-    #[frb(sync)]
-    pub fn add_cable(&mut self, cable: Cable) {
-        self.cables.push(cable);
-    }
-
-    #[frb(sync)]
-    pub fn remove_cable(&mut self, cable: Cable) {
-        self.cables.retain(|c| !(
-            c.source.node.id == cable.source.node.id && 
-            c.destination.node.id == cable.destination.node.id
-        ));
-    }
-
-    #[frb(sync)]
-    pub fn get_nodes(&self) -> Vec<Node> {
-        self.nodes.clone()
-    }
-
-    #[frb(sync)]
-    pub fn get_cables(&self) -> Vec<Cable> {
-        self.cables.clone()
-    }
-
-    #[frb(sync)]
-    pub fn update_node_position(&mut self, node_id: u32, position: (f64, f64)) {
-        if let Some(node) = self.nodes.iter_mut().find(|n| n.id == node_id) {
-            node.position = position;
-        }
-    }
-
-    pub async fn load(&mut self, json_str: &str) -> Result<(), String> {
-        let serializable: SerializablePatch = serde_json::from_str(json_str)
-            .map_err(|e| format!("Failed to parse JSON: {}", e))?;
-        
-        // Clear existing data
-        self.nodes.clear();
-        self.cables.clear();
-        
-        // Find the maximum node ID to set next_node_id correctly
-        let max_id = serializable.nodes.iter().map(|n| n.id).max().unwrap_or(0);
-        self.next_node_id = max_id + 1;
-        
-        // Recreate nodes
-        for s_node in serializable.nodes {
-            if let Some(node) = Node::from(s_node.id, s_node.module, s_node.position) {
-                self.nodes.push(node);
-            } else {
-                return Err(format!("Failed to recreate node with id {}", s_node.id));
-            }
-        }
-        
-        // Recreate cables
-        for s_cable in serializable.cables {
-            // Find source node and endpoint
-            let source_node = self.nodes.iter()
-                .find(|n| n.id == s_cable.source.node_id)
-                .ok_or_else(|| format!("Source node {} not found", s_cable.source.node_id))?;
-            
-            let source_endpoint = source_node.get_outputs().into_iter()
-                .chain(source_node.get_inputs().into_iter())
-                .find(|e| e.get_type() == s_cable.source.endpoint_type && 
-                         e.annotation == s_cable.source.endpoint_annotation)
-                .ok_or_else(|| format!("Source endpoint not found"))?;
-            
-            // Find destination node and endpoint  
-            let dest_node = self.nodes.iter()
-                .find(|n| n.id == s_cable.destination.node_id)
-                .ok_or_else(|| format!("Destination node {} not found", s_cable.destination.node_id))?;
-            
-            let dest_endpoint = dest_node.get_inputs().into_iter()
-                .chain(dest_node.get_outputs().into_iter())
-                .find(|e| e.get_type() == s_cable.destination.endpoint_type && 
-                         e.annotation == s_cable.destination.endpoint_annotation)
-                .ok_or_else(|| format!("Destination endpoint not found"))?;
-            
-            // Create cable
-            let cable = Cable {
-                source: super::cable::Connection {
-                    node: source_node.clone(),
-                    endpoint: source_endpoint,
-                },
-                destination: super::cable::Connection {
-                    node: dest_node.clone(),
-                    endpoint: dest_endpoint,
-                },
-            };
-            
-            self.cables.push(cable);
-        }
-        
-        Ok(())
-    }
-
-    pub async fn save(&self) -> Result<String, String> {
-        // Convert nodes to serializable format
-        let s_nodes: Vec<SerializableNode> = self.nodes.iter()
-            .map(|node| SerializableNode {
-                id: node.id,
-                module: node.module.clone(),
-                position: node.position,
-            })
-            .collect();
-        
-        // Convert cables to serializable format
-        let s_cables: Vec<SerializableCable> = self.cables.iter()
-            .map(|cable| SerializableCable {
-                source: SerializableConnection {
-                    node_id: cable.source.node.id,
-                    endpoint_type: cable.source.endpoint.get_type(),
-                    endpoint_annotation: cable.source.endpoint.annotation.clone(),
-                },
-                destination: SerializableConnection {
-                    node_id: cable.destination.node.id,
-                    endpoint_type: cable.destination.endpoint.get_type(),
-                    endpoint_annotation: cable.destination.endpoint.annotation.clone(),
-                },
-            })
-            .collect();
-        
-        let serializable = SerializablePatch {
-            nodes: s_nodes,
-            cables: s_cables,
-        };
-        
-        serde_json::to_string_pretty(&serializable)
-            .map_err(|e| format!("Failed to serialize patch: {}", e))
-    }
-
-    #[frb(sync)]
-    pub fn get_node_ids(&self) -> Vec<u32> {
-        self.nodes.iter().map(|n| n.id).collect()
-    }
-
-    #[frb(sync)]
-    pub fn get_node_inputs(&self, node_id: u32) -> Vec<NodeEndpoint> {
-        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
-            node.get_inputs()
-        } else {
-            Vec::new()
-        }
-    }
-
-    #[frb(sync)]
-    pub fn get_node_outputs(&self, node_id: u32) -> Vec<NodeEndpoint> {
-        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
-            node.get_outputs()
-        } else {
-            Vec::new()
-        }
-    }
-
-    #[frb(sync)]
-    pub fn get_node_module(&self, node_id: u32) -> Option<Module> {
-        self.nodes.iter().find(|n| n.id == node_id).map(|n| n.module.clone())
-    }
-
-    #[frb(sync)]
-    pub fn get_node_position(&self, node_id: u32) -> Option<(f64, f64)> {
-        self.nodes.iter().find(|n| n.id == node_id).map(|n| n.position)
-    }
-
-    #[frb(sync)]
-    pub fn remove_node_by_id(&mut self, node_id: u32) {
-        self.remove_node(node_id);
-    }
-
-    #[frb(sync)]
-    pub fn add_cable_by_ids(&mut self, src_node_id: u32, src_endpoint_id: u32, dst_node_id: u32, dst_endpoint_id: u32) -> bool {
-        // Find source node and endpoint
-        let source_node = match self.nodes.iter().find(|n| n.id == src_node_id) {
-            Some(node) => node.clone(),
-            None => return false,
-        };
-        
-        let source_endpoints = source_node.get_outputs();
-        let source_endpoint = match source_endpoints.get(src_endpoint_id as usize) {
-            Some(endpoint) => endpoint.clone(),
-            None => return false,
-        };
-
-        // Find destination node and endpoint  
-        let dest_node = match self.nodes.iter().find(|n| n.id == dst_node_id) {
-            Some(node) => node.clone(),
-            None => return false,
-        };
-        
-        let dest_endpoints = dest_node.get_inputs();
-        let dest_endpoint = match dest_endpoints.get(dst_endpoint_id as usize) {
-            Some(endpoint) => endpoint.clone(),
-            None => return false,
-        };
-
-        // Create cable
-        let cable = Cable {
-            source: super::cable::Connection {
-                node: source_node,
-                endpoint: source_endpoint,
-            },
-            destination: super::cable::Connection {
-                node: dest_node,
-                endpoint: dest_endpoint,
-            },
-        };
-        
-        self.cables.push(cable);
-        true
-    }
-
-    #[frb(sync)]
-    pub fn get_node_input(&self, node_id: u32, endpoint_id: u32) -> Option<NodeEndpoint> {
-        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
-            let inputs = node.get_inputs();
-            inputs.get(endpoint_id as usize).cloned()
-        } else {
-            None
-        }
-    }
-
-    #[frb(sync)]
-    pub fn get_node_output(&self, node_id: u32, endpoint_id: u32) -> Option<NodeEndpoint> {
-        if let Some(node) = self.nodes.iter().find(|n| n.id == node_id) {
-            let outputs = node.get_outputs();
-            outputs.get(endpoint_id as usize).cloned()
-        } else {
-            None
-        }
-    }
-
+/// Update the playing patch using the audio manager
+/// Note: This function requires an AudioManager instance to be passed to it
+/// The actual integration will be handled at the Flutter level
+#[frb]
+pub async fn play_patch(nodes: Vec<Node>, cables: Vec<Cable>) -> Result<(), String> {
+    use crate::other::action::Actions;
+    
+    println!("Playing patch with {} nodes and {} cables", nodes.len(), cables.len());
+    
+    // Create actions from nodes and cables
+    let _actions = Actions::from_nodes_and_cables(nodes.to_vec(), cables.to_vec());
+    
+    // The actual audio manager integration will be done from Flutter
+    // by calling AudioManager.set_patch_data(nodes, cables)
+    println!("Patch actions created successfully");
+    
+    Ok(())
 }

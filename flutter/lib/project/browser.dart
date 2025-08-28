@@ -141,7 +141,7 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     final mainDir = Directory(projectsDirectory!).parent;
     final tempMainDirectory = old_settings.MainDirectory(mainDir);
     
-    var project = await Project.load(info, tempMainDirectory);
+    var project = await Project.load(info, tempMainDirectory, widget.audioManager);
 
     if (project != null) {
       // URL encode the names to handle special characters and spaces

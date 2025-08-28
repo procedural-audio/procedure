@@ -25,16 +25,22 @@ abstract class Node implements RustOpaqueInterface {
 
   set position((double, double) position);
 
-  static Node? from(
-          {required int id,
-          required Module module,
-          required (double, double) position}) =>
+  static Node? fromModule(
+          {required Module module, required (double, double) position}) =>
       RustLib.instance.api
-          .crateApiNodeNodeFrom(id: id, module: module, position: position);
+          .crateApiNodeNodeFromModule(module: module, position: position);
+
+  NodeEndpoint? getEndpointByAnnotation({required String annotation});
+
+  NodeEndpoint? getInputByAnnotation({required String annotation});
 
   List<NodeEndpoint> getInputs();
 
+  NodeEndpoint? getOutputByAnnotation({required String annotation});
+
   List<NodeEndpoint> getOutputs();
+
+  bool hasEndpoint({required NodeEndpoint endpoint});
 
   void setPosition({required (double, double) position});
 }

@@ -4,7 +4,6 @@ use crate::api::cable::*;
 use crate::api::endpoint::*;
 use crate::api::node::*;
 
-use crate::api::patch::Patch;
 use crate::other::action::*;
 use flutter_rust_bridge::*;
 
@@ -14,13 +13,13 @@ lazy_static::lazy_static! {
 }
 
 #[frb(sync)]
-pub fn set_patch(graph: Patch) {
+pub fn set_patch_data(nodes: Vec<Node>, cables: Vec<Cable>) {
     println!(
         "Updating patch ({} nodes, {} cables)",
-        graph.nodes.len(),
-        graph.cables.len()
+        nodes.len(),
+        cables.len()
     );
-    *ACTIONS.write().unwrap() = Some(Actions::from(graph));
+    *ACTIONS.write().unwrap() = Some(Actions::from_nodes_and_cables(nodes, cables));
 }
 
 #[frb(sync)]

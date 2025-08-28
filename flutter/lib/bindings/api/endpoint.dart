@@ -14,11 +14,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 abstract class NodeEndpoint implements RustOpaqueInterface {
   String get annotation;
 
-  (double, double) get position;
-
   set annotation(String annotation);
-
-  set position((double, double) position);
 
   bool feedbackValue();
 

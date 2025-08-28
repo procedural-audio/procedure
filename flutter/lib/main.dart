@@ -117,7 +117,7 @@ Future<Project?> _loadProject(String projectName, String presetName) async {
     final mainDir = Directory(projectsDir).parent;
     final tempMainDirectory = old_settings.MainDirectory(mainDir);
     
-    final project = await Project.load(projectInfo, tempMainDirectory);
+    final project = await Project.load(projectInfo, tempMainDirectory, _audioManager);
     return project;
   } catch (e) {
     print('Error loading project $projectName: $e');

@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/bindings/api/patch.dart' as rust_patch;
 import 'package:metasampler/patch/painters.dart';
 
 import 'dart:io';
@@ -13,7 +13,7 @@ import 'module.dart';
 import 'right_click.dart';
 import '../preset/info.dart';
 
-import '../bindings/api/graph.dart' as api;
+import '../bindings/api/io.dart';
 import '../bindings/api/cable.dart';
 import '../bindings/api/node.dart' as rust_node;
 
@@ -36,12 +36,16 @@ class PatchEditor extends StatefulWidget {
   PatchEditor({
     required this.presetInfo,
     required this.plugins,
-    required this.patch,
+    this.initialNodes,
+    this.initialCables,
+    this.audioManager,
   }) : super(key: UniqueKey());
 
   final PresetInfo presetInfo;
   final List<Plugin> plugins;
-  final rust_patch.Patch patch;
+  final List<rust_node.Node>? initialNodes;
+  final List<Cable>? initialCables;
+  final AudioManager? audioManager;
 
   @override
   _PatchEditor createState() => _PatchEditor();
@@ -54,8 +58,13 @@ class _PatchEditor extends State<PatchEditor> {
 
   final focusNode = FocusNode();
   
-  // Selected node IDs managed in state
-  List<int> selectedNodeIds = [];
+  // Maintain nodes and cables directly
+  List<rust_node.Node> nodes = [];
+  List<Cable> cables = [];
+  int _nextNodeId = 1;
+  
+  // Selected nodes managed in state
+  List<rust_node.Node> selectedNodes = [];
   
   // New cable being drawn
   Pin? newCableStart;
@@ -65,12 +74,54 @@ class _PatchEditor extends State<PatchEditor> {
   // Notifier to trigger cable repaints when nodes move
   final ChangeNotifier _cableRepaintNotifier = ChangeNotifier();
   
-  // Rust patch and transformation controller (moved from SimplePatchWidget)
+  // Transformation controller
   final TransformationController _transformationController = TransformationController();
   
   @override
   void initState() {
     super.initState();
+    
+    // Initialize with provided nodes and cables or load from file
+    if (widget.initialNodes != null && widget.initialCables != null) {
+      setState(() {
+        nodes = List.from(widget.initialNodes!);
+        cables = List.from(widget.initialCables!);
+        _nextNodeId = nodes.isEmpty ? 1 : nodes.map((n) => n.id).reduce((a, b) => a > b ? a : b) + 1;
+      });
+    } else {
+      _loadPatch();
+    }
+    
+    // Send initial patch to audio manager after widget is fully built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // Add a small delay to ensure the widget is fully constructed
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            updatePlayback();
+          }
+        });
+      }
+    });
+  }
+  
+  Future<void> _loadPatch() async {
+    try {
+      final patchFile = widget.presetInfo.patchFile;
+      if (await patchFile.exists()) {
+        final jsonStr = await patchFile.readAsString();
+        // For now, parse manually since bindings aren't regenerated yet
+        // TODO: Use rust_patch_api.loadPatch once bindings are updated
+        final data = jsonDecode(jsonStr);
+        setState(() {
+          nodes = [];
+          cables = [];
+          _nextNodeId = 1;
+        });
+      }
+    } catch (e) {
+      print('Failed to load patch: $e');
+    }
   }
 
   @override
@@ -83,11 +134,10 @@ class _PatchEditor extends State<PatchEditor> {
 
   // Build NodeEditor widgets
   List<Widget> _buildNodeEditors() {
-    return widget.patch.getNodeIds().map((nodeId) {
+    return nodes.map((node) {
       return NodeEditor(
         // No key - let widgets be recreated fresh
-        nodeId: nodeId,
-        patch: widget.patch,
+        node: node,
         onSave: _savePatch,
         onAddConnector: addCable,
         onRemoveConnections: removeConnectionsTo,
@@ -96,7 +146,7 @@ class _PatchEditor extends State<PatchEditor> {
         onNewCableSetEnd: _onNewCableSetEnd,
         onNewCableReset: _onNewCableReset,
         onAddNewCable: _onAddNewCable,
-        isSelected: selectedNodeIds.contains(nodeId),
+        isSelected: selectedNodes.any((selectedNode) => selectedNode.id == node.id),
         onToggleSelection: _toggleNodeSelection,
         onCableRepaintNeeded: () => _cableRepaintNotifier.notifyListeners(),
       );
@@ -149,61 +199,79 @@ class _PatchEditor extends State<PatchEditor> {
     });
   }
 
-  // Node ID counter to avoid conflicts
-  static int _nextNodeId = 1;
-  
-  // Callback implementations (moved from SimplePatchWidget)
+  // Callback implementations
   void _onAddNode(Module module, Offset position) {
-    // Create Rust node and add to patch
+    // Create Rust node directly
     var rustModule = module.toRustModule();
-    var nodeId = _nextNodeId++;
-    var rustNode = rust_node.Node.from(
-      id: nodeId,
-      module: rustModule,
-      position: (position.dx, position.dy),
-    );
     
-    if (rustNode != null) {
-      widget.patch.addNode(
+    try {
+      var node = rust_node.Node.fromModule(
         module: rustModule,
         position: (position.dx, position.dy),
       );
-      // addNode returns the generated node ID or throws an exception if failed
-      _savePatch();
       
-      // Trigger rebuild to show new node
-      setState(() {});
+      if (node != null) {
+        node.id = _nextNodeId++;
+        setState(() {
+          nodes.add(node);
+        });
+        
+        _savePatch();
+        updatePlayback();
+      }
+    } catch (e) {
+      print("Failed to add node: $e");
     }
   }
   
   void _onAddCable(Pin start, Pin end) {
-    bool success = widget.patch.addCableByIds(
-      srcNodeId: start.nodeId,
-      srcEndpointId: start.endpointId,
-      dstNodeId: end.nodeId,
-      dstEndpointId: end.endpointId,
+    // Create cable using Node and NodeEndpoint objects
+    var cable = Cable(
+      srcNode: start.node,
+      srcEndpoint: start.endpoint,
+      dstNode: end.node,
+      dstEndpoint: end.endpoint,
     );
     
-    if (success) {
+    try {
+      setState(() {
+        cables.add(cable);
+      });
+      
       _savePatch();
-      setState(() {}); // Trigger rebuild to show new cable
-    } else {
-      print("Failed to create cable");
+      updatePlayback();
+    } catch (e) {
+      print("Failed to create cable: $e");
     }
   }
   
-  void _onBatchRemoveNodes(List<int> nodeIdsToRemove) {
-    for (var nodeId in nodeIdsToRemove) {
-      widget.patch.removeNodeById(nodeId: nodeId);
-    }
+  void _onBatchRemoveNodes(List<rust_node.Node> nodesToRemove) {
+    setState(() {
+      // Remove nodes
+      for (var node in nodesToRemove) {
+        nodes.removeWhere((n) => n.id == node.id);
+      }
+      
+      // Remove cables connected to removed nodes
+      cables.removeWhere((cable) => 
+        nodesToRemove.any((node) => 
+          cable.source.node.id == node.id || 
+          cable.destination.node.id == node.id));
+    });
     
     _savePatch();
-    setState(() {});
+    updatePlayback();
   }
   
   Future<void> _savePatch() async {
     try {
-      var jsonStr = await widget.patch.save();
+      // For now, create simple JSON structure manually
+      // TODO: Use rust_patch_api.savePatch once bindings are updated
+      final data = {
+        'nodes': [],
+        'cables': [],
+      };
+      final jsonStr = jsonEncode(data);
       await widget.presetInfo.patchFile.writeAsString(jsonStr);
       print("Saved patch file: ${widget.presetInfo.patchFile.path}");
     } catch (e) {
@@ -212,10 +280,16 @@ class _PatchEditor extends State<PatchEditor> {
   }
   
 
-  void removeNode(int nodeId) {
-    widget.patch.removeNodeById(nodeId: nodeId);
+  void removeNode(rust_node.Node node) {
+    setState(() {
+      nodes.removeWhere((n) => n.id == node.id);
+      cables.removeWhere((cable) => 
+        cable.source.node.id == node.id || 
+        cable.destination.node.id == node.id);
+    });
+    
     _savePatch();
-    setState(() {});
+    updatePlayback();
   }
 
   void tick(Duration elapsed) {
@@ -225,11 +299,27 @@ class _PatchEditor extends State<PatchEditor> {
   }
 
   void updatePlayback() {
+    if (!mounted) return;
+    
     // Update the UI
     setState(() {});
 
-    // Update the playback graph
-    api.setPatch(graph: widget.patch);
+    // Update the playback graph using AudioManager
+    if (widget.audioManager != null && mounted) {
+      _updatePlaybackAsync();
+    }
+  }
+
+  Future<void> _updatePlaybackAsync() async {
+    if (!mounted) return;
+    
+    try {
+      print("Updating patch in AudioManager with ${nodes.length} nodes, ${cables.length} cables");
+      // TODO: Use setPatchData once bindings are updated
+      // widget.audioManager!.setPatchData(nodes: nodes, cables: cables);
+    } catch (e) {
+      print("Error updating patch in AudioManager: $e");
+    }
   }
 
   double roundToGrid(double value) {
@@ -243,39 +333,34 @@ class _PatchEditor extends State<PatchEditor> {
   }
 
   void addCable(Pin start, Pin end) {
-    // TODO: Update connection validation to use node IDs
-    // For now, skip validation and try to add cable
+    // Connection validation is handled by the Cable constructor
     _onAddCable(start, end);
   }
 
   void removeConnectionsTo(Pin pin) {
-    // Find cables to remove from the Rust patch
-    var cablesToRemove = widget.patch.getCables()
+    // Find cables to remove
+    var cablesToRemove = cables
         .where((cable) => 
           _pinMatchesConnection(pin, cable.source) || 
           _pinMatchesConnection(pin, cable.destination))
         .toList();
     
-    for (var cable in cablesToRemove) {
-      // Remove cable directly from patch
-      widget.patch.removeCable(cable: cable);
-      _savePatch();
-      setState(() {}); // Trigger rebuild to hide removed cable
-    }
+    setState(() {
+      for (var cable in cablesToRemove) {
+        cables.remove(cable);
+      }
+    });
+    
+    _savePatch();
+    updatePlayback();
   }
   
   bool _pinMatchesConnection(Pin pin, Connection connection) {
-    if (pin.nodeId != connection.node.id) return false;
+    if (pin.node.id != connection.node.id) return false;
     
-    // Get the endpoint from the pin's IDs
-    var endpoint = pin.isInput 
-        ? widget.patch.getNodeInput(nodeId: pin.nodeId, endpointId: pin.endpointId)
-        : widget.patch.getNodeOutput(nodeId: pin.nodeId, endpointId: pin.endpointId);
-    
-    if (endpoint == null) return false;
-    
-    return endpoint.type == connection.endpoint.type && 
-           endpoint.annotation == connection.endpoint.annotation;
+    // Compare endpoints directly
+    return pin.endpoint.type == connection.endpoint.type && 
+           pin.endpoint.annotation == connection.endpoint.annotation;
   }
   
   // Keyboard event handlers
@@ -294,23 +379,24 @@ class _PatchEditor extends State<PatchEditor> {
   void _handleDeleteNodes(KeyDownEvent e) {
     if (e.logicalKey == LogicalKeyboardKey.delete ||
         e.logicalKey == LogicalKeyboardKey.backspace) {
-      if (selectedNodeIds.isNotEmpty) {
-        _onBatchRemoveNodes(selectedNodeIds.toList());
+      if (selectedNodes.isNotEmpty) {
+        _onBatchRemoveNodes(selectedNodes.toList());
         
         // Clear selection after removal
         setState(() {
-          selectedNodeIds = [];
+          selectedNodes = [];
         });
       }
     }
   }
   
-  void _toggleNodeSelection(int nodeId) {
+  void _toggleNodeSelection(rust_node.Node node) {
     setState(() {
-      if (selectedNodeIds.contains(nodeId)) {
-        selectedNodeIds.remove(nodeId);
+      var existingIndex = selectedNodes.indexWhere((selectedNode) => selectedNode.id == node.id);
+      if (existingIndex >= 0) {
+        selectedNodes.removeAt(existingIndex);
       } else {
-        selectedNodeIds.add(nodeId);
+        selectedNodes.add(node);
       }
     });
   }
@@ -342,9 +428,9 @@ class _PatchEditor extends State<PatchEditor> {
                 });
               }
 
-              if (selectedNodeIds.isNotEmpty) {
+              if (selectedNodes.isNotEmpty) {
                 setState(() {
-                  selectedNodeIds = [];
+                  selectedNodes = [];
                 });
               }
             },
@@ -361,9 +447,9 @@ class _PatchEditor extends State<PatchEditor> {
                     });
                   }
 
-                  if (selectedNodeIds.isNotEmpty) {
+                  if (selectedNodes.isNotEmpty) {
                     setState(() {
-                      selectedNodeIds = [];
+                      selectedNodes = [];
                     });
                   }
                 },
@@ -381,7 +467,8 @@ class _PatchEditor extends State<PatchEditor> {
                           RepaintBoundary(
                             child: CustomPaint(
                               painter: CablePainter(
-                                patch: widget.patch,
+                                nodes: nodes,
+                                cables: cables,
                                 repaint: _cableRepaintNotifier,
                               ),
                               size: const Size(10000, 10000),

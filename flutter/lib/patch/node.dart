@@ -9,7 +9,7 @@ import 'package:metasampler/project/theme.dart';
 import 'package:metasampler/style/colors.dart';
 
 import '../bindings/api/endpoint.dart';
-import '../bindings/api/patch.dart' as rust_patch;
+import '../bindings/api/node.dart' as rust_node;
 import '../settings.dart';
 import 'widgets/knob.dart';
 import 'widgets/led.dart';
@@ -112,8 +112,7 @@ abstract class NodeWidget extends StatelessWidget {
 class NodeEditor extends StatefulWidget {
   NodeEditor({
     Key? key,
-    required this.nodeId,
-    required this.patch,
+    required this.node,
     required this.onSave,
     required this.onAddConnector,
     required this.onRemoveConnections,
@@ -127,8 +126,7 @@ class NodeEditor extends StatefulWidget {
     this.onCableRepaintNeeded,
   }) : super(key: key);
 
-  final int nodeId;
-  final rust_patch.Patch patch;
+  final rust_node.Node node;
   final VoidCallback onSave;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
@@ -138,7 +136,7 @@ class NodeEditor extends StatefulWidget {
   final VoidCallback onNewCableReset;
   final VoidCallback onAddNewCable;
   final bool isSelected;
-  final void Function(int) onToggleSelection;
+  final void Function(rust_node.Node) onToggleSelection;
   final VoidCallback? onCableRepaintNeeded;
 
   @override
@@ -146,14 +144,10 @@ class NodeEditor extends StatefulWidget {
 }
 
 class _NodeEditorState extends State<NodeEditor> {
-  bool _isDragging = false;
 
   Widget _buildNodeContainer() {
-    // Get module from patch
-    var module = widget.patch.getNodeModule(nodeId: widget.nodeId);
-    if (module == null) {
-      return Container(); // Node not found
-    }
+    // Get module directly from node
+    var module = widget.node.module;
     
     return Container(
       width: module.size.$1 * GlobalSettings.gridSize - 1.0,
@@ -205,9 +199,8 @@ class _NodeEditorState extends State<NodeEditor> {
     List<Widget> children = [];
 
     // Add input pins and widgets to list
-    var inputs = widget.patch.getNodeInputs(nodeId: widget.nodeId);
-    for (int i = 0; i < inputs.length; i++) {
-      var endpoint = inputs[i];
+    var inputs = widget.node.getInputs();
+    for (var endpoint in inputs) {
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
       // Skip pin if it's an external endpoint
@@ -226,10 +219,8 @@ class _NodeEditorState extends State<NodeEditor> {
 
       children.add(
         Pin(
-          nodeId: widget.nodeId,
-          endpointId: i,
-          isInput: true,
-          patch: widget.patch,
+          node: widget.node,
+          endpoint: endpoint,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -242,9 +233,8 @@ class _NodeEditorState extends State<NodeEditor> {
     }
 
     // Add output pins to list
-    var outputs = widget.patch.getNodeOutputs(nodeId: widget.nodeId);
-    for (int i = 0; i < outputs.length; i++) {
-      var endpoint = outputs[i];
+    var outputs = widget.node.getOutputs();
+    for (var endpoint in outputs) {
       Map<String, dynamic> annotations = jsonDecode(endpoint.annotation);
 
       // Skip pin if it's a string endpoint
@@ -268,10 +258,8 @@ class _NodeEditorState extends State<NodeEditor> {
 
       children.add(
         Pin(
-          nodeId: widget.nodeId,
-          endpointId: i,
-          isInput: false,
-          patch: widget.patch,
+          node: widget.node,
+          endpoint: endpoint,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -288,17 +276,9 @@ class _NodeEditorState extends State<NodeEditor> {
 
   @override
   Widget build(BuildContext context) {
-    // Get current position from patch
-    var position = widget.patch.getNodePosition(nodeId: widget.nodeId);
-    if (position == null) {
-      return Container(); // Node not found
-    }
-    
-    // Get module for size
-    var module = widget.patch.getNodeModule(nodeId: widget.nodeId);
-    if (module == null) {
-      return Container(); // Module not found
-    }
+    // Get current position and module directly from node
+    var position = widget.node.position;
+    var module = widget.node.module;
     
     var nodeSize = Size(
       module.size.$1 * GlobalSettings.gridSize - 1.0,
@@ -318,41 +298,31 @@ class _NodeEditorState extends State<NodeEditor> {
               onTap: () {
                 // Toggle selection
                 setState(() {
-                  widget.onToggleSelection(widget.nodeId);
+                  widget.onToggleSelection(widget.node);
                 });
               },
               onDoubleTap: () {
                 // Prevent double tap from propagating
               },
               onPanStart: (details) {
-                setState(() {
-                  _isDragging = true;
-                });
               },
               onPanUpdate: (details) {
-                var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
-                if (currentPos != null) {
-                  var x = currentPos.$1 + details.delta.dx;
-                  var y = currentPos.$2 + details.delta.dy;
-                  widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
-                  setState(() {});
-                  // Notify parent to repaint cables
-                  widget.onCableRepaintNeeded?.call();
-                }
+                var currentPos = widget.node.position;
+                var x = currentPos.$1 + details.delta.dx;
+                var y = currentPos.$2 + details.delta.dy;
+                widget.node.setPosition(position: (x, y));
+                setState(() {});
+                // Notify parent to repaint cables
+                widget.onCableRepaintNeeded?.call();
               },
               onPanEnd: (details) {
-                var currentPos = widget.patch.getNodePosition(nodeId: widget.nodeId);
-                if (currentPos != null) {
-                  var x = roundToGrid(currentPos.$1);
-                  var y = roundToGrid(currentPos.$2);
-                  
-                  widget.patch.updateNodePosition(nodeId: widget.nodeId, position: (x, y));
-                  widget.onSave();
+                var currentPos = widget.node.position;
+                var x = roundToGrid(currentPos.$1);
+                var y = roundToGrid(currentPos.$2);
+                
+                widget.node.setPosition(position: (x, y));
+                widget.onSave();
 
-                  setState(() {
-                    _isDragging = false;
-                  });
-                }
               },
               child: _buildNodeContainer(),
             ),

@@ -15,7 +15,6 @@ use crate::other::handle::*;
 #[frb(opaque)]
 pub struct NodeEndpoint {
     endpoint: EndpointHandle,
-    pub position: (f64, f64),
     pub annotation: String,
 }
 
@@ -29,7 +28,6 @@ impl NodeEndpoint {
 
         Self {
             endpoint,
-            position: (0.0, 0.0),
             annotation,
         }
     }

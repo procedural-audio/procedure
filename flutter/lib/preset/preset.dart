@@ -5,44 +5,56 @@ import 'package:flutter/material.dart';
 import '../interface/ui.dart';
 import '../patch/patch.dart';
 import '../plugin/plugin.dart';
-import '../bindings/api/patch.dart' as rust_patch;
+import '../bindings/api/node.dart' as rust_node;
+import '../bindings/api/cable.dart';
+import '../bindings/api/io.dart';
 import 'info.dart';
 
 class Preset extends StatelessWidget {
   final PresetInfo info;
-  final rust_patch.Patch rustPatch;
+  final List<rust_node.Node> nodes;
+  final List<Cable> cables;
   final ValueNotifier<UserInterface?> interface;
   final bool uiVisible;
   final List<Plugin> plugins;
+  final AudioManager? audioManager;
 
   Preset({
     required this.info,
-    required this.rustPatch,
+    required this.nodes,
+    required this.cables,
     required this.interface,
     required this.uiVisible,
     required this.plugins,
+    this.audioManager,
   });
 
-  static Preset from(PresetInfo info, List<Plugin> plugins, bool uiVisible) {
-    // Create a new Rust patch for the preset
-    var rustPatch = rust_patch.Patch();
+  static Preset from(PresetInfo info, List<Plugin> plugins, bool uiVisible, AudioManager? audioManager) {
+    // Create empty nodes and cables lists
     return Preset(
       info: info,
-      rustPatch: rustPatch,
+      nodes: [],
+      cables: [],
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
+      audioManager: audioManager,
     );
   }
 
-  static Future<Preset?> load(PresetInfo info, List<Plugin> plugins, bool uiVisible) async {
-    var rustPatch = rust_patch.Patch();
+  static Future<Preset?> load(PresetInfo info, List<Plugin> plugins, bool uiVisible, AudioManager? audioManager) async {
+    List<rust_node.Node> nodes = [];
+    List<Cable> cables = [];
     
     // Try to load existing patch file
     if (await info.patchFile.exists()) {
       try {
         var contents = await info.patchFile.readAsString();
-        await rustPatch.load(jsonStr: contents);
+        // TODO: Use loadPatch once bindings are regenerated
+        // var result = await loadPatch(jsonStr: contents);
+        // nodes = result.$1;
+        // cables = result.$2;
+        print("Loading patch from file (placeholder for now)");
       } catch (e) {
         print("Failed to load patch: $e");
       }
@@ -51,25 +63,28 @@ class Preset extends StatelessWidget {
     var interface = await UserInterface.load(info);
     return Preset(
       info: info,
-      rustPatch: rustPatch,
+      nodes: nodes,
+      cables: cables,
       interface: ValueNotifier(interface),
       uiVisible: uiVisible,
       plugins: plugins,
+      audioManager: audioManager,
     );
   }
 
-  static Preset blank(Directory presetDirectory, List<Plugin> plugins, bool uiVisible) {
+  static Preset blank(Directory presetDirectory, List<Plugin> plugins, bool uiVisible, AudioManager? audioManager) {
     var info = PresetInfo(
       directory: presetDirectory,
       hasInterface: false,
     );
-    var rustPatch = rust_patch.Patch();
     return Preset(
       info: info,
-      rustPatch: rustPatch,
+      nodes: [],
+      cables: [],
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
+      audioManager: audioManager,
     );
   }
 
@@ -80,9 +95,11 @@ class Preset extends StatelessWidget {
     
     await info.save();
     
-    // Save the Rust patch
+    // Save the patch data
     try {
-      var jsonStr = await rustPatch.save();
+      // TODO: Use savePatch once bindings are regenerated
+      // var jsonStr = await savePatch(nodes: nodes, cables: cables);
+      var jsonStr = '{"nodes": [], "cables": []}';
       await info.patchFile.writeAsString(jsonStr);
       print("Saved patch file: ${info.patchFile.path}");
     } catch (e) {
@@ -102,7 +119,9 @@ class Preset extends StatelessWidget {
             return PatchEditor(
               presetInfo: info,
               plugins: plugins,
-              patch: rustPatch,
+              initialNodes: nodes,
+              initialCables: cables,
+              audioManager: audioManager,
             );
           } else {
             return ValueListenableBuilder<UserInterface?>(

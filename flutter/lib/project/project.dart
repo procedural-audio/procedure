@@ -9,7 +9,6 @@ import 'package:metasampler/settings.dart';
 import 'package:metasampler/patch/newTopBar.dart';
 import 'package:metasampler/preset/preset.dart';
 
-import '../bindings/api/graph.dart' as api;
 
 import '../preset/info.dart';
 import 'info.dart';
@@ -38,7 +37,7 @@ class Project extends StatefulWidget {
     return false;
   }
 
-  static Future<Project?> load(ProjectInfo info, MainDirectory mainDirectory) async {
+  static Future<Project?> load(ProjectInfo info, MainDirectory mainDirectory, AudioManager? audioManager) async {
     List<Plugin> plugins = [];
     for (var pluginInfo in info.pluginInfos) {
       var plugin = await Plugin.load(mainDirectory.plugins, pluginInfo);
@@ -68,11 +67,11 @@ class Project extends StatefulWidget {
     // Load the first preset found in the directory, or create a blank one
     Preset preset;
     if (availablePresets.isNotEmpty) {
-      preset = await Preset.load(availablePresets.first, plugins, false) ?? Preset.blank(availablePresets.first.directory, plugins, false);
+      preset = await Preset.load(availablePresets.first, plugins, false, audioManager) ?? Preset.blank(availablePresets.first.directory, plugins, false, audioManager);
     } else {
       // Create a "New Preset" directory if no presets exist
       Directory newPresetDir = Directory(info.presetsDirectory.path + "/New Preset");
-      preset = Preset.blank(newPresetDir, plugins, false);
+      preset = Preset.blank(newPresetDir, plugins, false, audioManager);
       // Save the blank preset immediately so it will be found on next load
       await preset.save();
     }
@@ -83,6 +82,7 @@ class Project extends StatefulWidget {
       preset: preset,
       plugins: plugins,
       presetInfos: availablePresets,
+      audioManager: audioManager,
     );
   }
 
@@ -112,7 +112,7 @@ class _Project extends State<Project> {
     // Save current preset before switching
     await widget.preset.save();
     
-    var newPreset = await Preset.load(info, widget.plugins, uiVisible);
+    var newPreset = await Preset.load(info, widget.plugins, uiVisible, widget.audioManager);
     if (newPreset != null) {
       setState(() {
         widget.preset = newPreset;
@@ -160,7 +160,11 @@ class _Project extends State<Project> {
 
     // Clear patch from audio manager
     if (widget.audioManager != null) {
-      await widget.audioManager!.clearPatch();
+      try {
+        widget.audioManager!.clearPatch();
+      } catch (e) {
+        print("Error clearing patch in onProjectClose: $e");
+      }
     }
     context.go('/projects');
   }
@@ -227,7 +231,14 @@ class _Project extends State<Project> {
         }
         // Save project before going back
         await save();
-        api.clearPatch();
+        // Clear patch from audio manager
+        if (widget.audioManager != null) {
+          try {
+            widget.audioManager!.clearPatch();
+          } catch (e) {
+            print("Error clearing patch: $e");
+          }
+        }
         if (context.mounted) {
           context.go('/projects');
         }

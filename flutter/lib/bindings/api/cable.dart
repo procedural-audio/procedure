@@ -20,6 +20,10 @@ abstract class Cable implements RustOpaqueInterface {
 
   set source(Connection source);
 
+  bool connectsTo({required Node node, required NodeEndpoint endpoint});
+
+  bool matches({required Cable other});
+
   factory Cable(
           {required Node srcNode,
           required NodeEndpoint srcEndpoint,
