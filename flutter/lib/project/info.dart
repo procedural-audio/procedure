@@ -71,6 +71,8 @@ class ProjectInfo {
   static ProjectInfo fromJson(String path, Map<String, dynamic> json) {
     File? image;
 
+    print("Loading background images synchronously");
+
     File file1 = File(path + "/background.jpg");
     if (file1.existsSync()) {
       image = file1;

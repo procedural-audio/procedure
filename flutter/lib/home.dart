@@ -41,7 +41,6 @@ class HomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentRoute = GoRouterState.of(context).uri.path;
-    
     return Row(
       children: [
         // Sidebar
@@ -158,22 +157,5 @@ class HomeWidget extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _getRouteDisplayName(String route) {
-    switch (route) {
-      case '/projects':
-        return 'Projects';
-      case '/modules':
-        return 'Modules';
-      case '/samples':
-        return 'Samples';
-      case '/community':
-        return 'Community';
-      case '/settings':
-        return 'Settings';
-      default:
-        return 'Unknown';
-    }
   }
 }

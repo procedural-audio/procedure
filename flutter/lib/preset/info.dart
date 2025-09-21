@@ -23,6 +23,7 @@ class PresetInfo {
     var directory = Directory(projectDirectory.path + "/New Preset");
     
     // Create initial patch.json
+    print("Creating patch.json syncrhonously");
     File(directory.path + "/patch.json").createSync();
     
     return PresetInfo(

@@ -304,6 +304,7 @@ class _DirectoriesSettingsWidgetState extends State<DirectoriesSettingsWidget> {
       return Icons.help_outline;
     }
     
+    print("Checking directory status synchronously");
     final directory = Directory(path);
     if (directory.existsSync()) {
       return Icons.folder;

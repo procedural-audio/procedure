@@ -28,6 +28,8 @@ extension FileExtention on FileSystemEntity {
   }
 }
 
+const double CANVAS_SIZE = 10000.0;
+
 // Callback types - simplified without undo/redo
 typedef NodeCallback = void Function(Module module, Offset position);
 typedef CableCallback = void Function(Pin start, Pin end);
@@ -415,115 +417,120 @@ class _PatchEditor extends State<PatchEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onSecondaryTapDown: (details) {
-        setState(() {
-          rightClickOffset = details.localPosition;
-          showRightClickMenu = true;
-        });
-      },
-      child: Stack(
-        children: [
-          InteractiveViewer(
-            minScale: 0.2,
-            maxScale: 1.5,
-            panEnabled: true,
-            scaleEnabled: true,
-            clipBehavior: Clip.hardEdge,
-            constrained: false,
-            transformationController: _transformationController,
-            onInteractionUpdate: (details) {
-              if (showRightClickMenu) {
-                setState(() {
-                  showRightClickMenu = false;
-                });
-              }
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(10, 10, 10, 1.0),
+      ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onSecondaryTapDown: (details) {
+          setState(() {
+            rightClickOffset = details.localPosition;
+            showRightClickMenu = true;
+          });
+        },
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              minScale: 0.2,
+              maxScale: 1.5,
+              panEnabled: true,
+              scaleEnabled: true,
+              clipBehavior: Clip.hardEdge,
+              constrained: false,
+              transformationController: _transformationController,
+              onInteractionUpdate: (details) {
+                if (showRightClickMenu) {
+                  setState(() {
+                    showRightClickMenu = false;
+                  });
+                }
 
-              if (selectedNodes.isNotEmpty) {
-                setState(() {
-                  selectedNodes = [];
-                });
-              }
-            },
-            child: Listener(
-              onPointerDown: (e) {
-                // Convert to scene coordinates for node placement in the transformed space
-                moduleAddPosition = _transformationController.toScene(e.localPosition);
+                if (selectedNodes.isNotEmpty) {
+                  setState(() {
+                    selectedNodes = [];
+                  });
+                }
               },
-              child: GestureDetector(
-                onTap: () {
-                  if (showRightClickMenu) {
-                    setState(() {
-                      showRightClickMenu = false;
-                    });
-                  }
-
-                  if (selectedNodes.isNotEmpty) {
-                    setState(() {
-                      selectedNodes = [];
-                    });
-                  }
+              child: Listener(
+                onPointerDown: (e) {
+                  // Convert to scene coordinates for node placement in the transformed space
+                  moduleAddPosition = _transformationController.toScene(e.localPosition);
                 },
-                child: KeyboardListener(
-                  focusNode: focusNode,
-                  autofocus: true,
-                  onKeyEvent: _handleKeyEvent,
-                  child: SizedBox(
-                    width: 10000,
-                    height: 10000,
-                    child: CustomPaint(
-                      painter: GridPainter(),
-                      child: Stack(
-                        children: <Widget>[
-                          RepaintBoundary(
-                            child: CustomPaint(
-                              painter: CablePainter(
-                          nodes: _nodes,
-                          cables: _cables,
-                                repaint: _cableRepaintNotifier,
-                              ),
-                              size: const Size(10000, 10000),
-                            ),
-                          ),
-                          if (newCableStart != null && newCableEnd != null)
+                child: GestureDetector(
+                  onTap: () {
+                    if (showRightClickMenu) {
+                      setState(() {
+                        showRightClickMenu = false;
+                      });
+                    }
+
+                    if (selectedNodes.isNotEmpty) {
+                      setState(() {
+                        selectedNodes = [];
+                      });
+                    }
+                  },
+                  child: KeyboardListener(
+                    focusNode: focusNode,
+                    autofocus: true,
+                    onKeyEvent: _handleKeyEvent,
+                    child: SizedBox(
+                      width: CANVAS_SIZE,
+                      height: CANVAS_SIZE,
+                      child: CustomPaint(
+                        painter: GridPainter(),
+                        child: Stack(
+                          children: <Widget>[
                             RepaintBoundary(
                               child: CustomPaint(
-                                painter: NewCablePainter(
-                                  startPin: newCableStart!,
-                                  endOffset: newCableEnd!,
-                                  transformationController: _transformationController,
+                                painter: CablePainter(
+                            nodes: _nodes,
+                            cables: _cables,
+                                  repaint: _cableRepaintNotifier,
                                 ),
-                                size: const Size(10000, 10000),
+                                size: const Size(CANVAS_SIZE, CANVAS_SIZE),
                               ),
                             ),
-                          // Build NodeEditor widgets from patch nodes
-                          ..._buildNodeEditors(),
-                        ],
+                            if (newCableStart != null && newCableEnd != null)
+                              RepaintBoundary(
+                                child: CustomPaint(
+                                  painter: NewCablePainter(
+                                    startPin: newCableStart!,
+                                    endOffset: newCableEnd!,
+                                    transformationController: _transformationController,
+                                  ),
+                                  size: const Size(CANVAS_SIZE, CANVAS_SIZE),
+                                ),
+                              ),
+                            // Build NodeEditor widgets from patch nodes
+                            ..._buildNodeEditors(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          Visibility(
-            visible: showRightClickMenu,
-            child: Positioned(
-              left: rightClickOffset.dx,
-              top: rightClickOffset.dy,
-              child: RightClickView(
-                plugins: widget.plugins,
-                onAddModule: (info) {
-                  addModule(info, moduleAddPosition);
-                  setState(() {
-                    showRightClickMenu = false;
-                  });
-                },
+            Visibility(
+              visible: showRightClickMenu,
+              child: Positioned(
+                left: rightClickOffset.dx,
+                top: rightClickOffset.dy,
+                child: RightClickView(
+                  plugins: widget.plugins,
+                  onAddModule: (info) {
+                    addModule(info, moduleAddPosition);
+                    setState(() {
+                      showRightClickMenu = false;
+                    });
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

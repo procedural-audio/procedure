@@ -16,7 +16,6 @@ import 'project/browser.dart';
 
 import 'package:procedure/bindings/frb_generated.dart';
 import 'package:procedure/bindings/api/io.dart';
-import 'package:procedure/settings.dart' as old_settings;
 
 late AudioManager _audioManager;
 
@@ -75,42 +74,51 @@ final GoRouter _router = GoRouter(
             ),
           ],
         ),
+        // Minimal loader: '/project/:projectName' redirects to first preset
+        GoRoute(
+          path: '/project/:projectName',
+          builder: (context, state) {
+            final projectName = Uri.decodeComponent(state.pathParameters['projectName']!);
+            return FutureBuilder<Project?>(
+              future: _loadProject(projectName),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return Container(
+                    color: const Color.fromRGBO(10, 10, 10, 1.0),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                } else if (snapshot.connectionState == ConnectionState.done && snapshot.data == null) {
+                  context.go('/projects');
+                } else if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
+                  print("Loaded project $projectName");
+                  return snapshot.data!;
+                }
+
+                return const SizedBox.shrink();
+              },
+            );
+          },
+        ),
         GoRoute(
           path: '/project/:projectName/preset/:presetName',
           builder: (context, state) {
             final projectName = Uri.decodeComponent(state.pathParameters['projectName']!);
             final presetName = Uri.decodeComponent(state.pathParameters['presetName']!);
-            
-            // If no project data, show loading or redirect to projects
             return FutureBuilder<Project?>(
-              future: _loadProject(projectName, presetName),
+              future: _loadProject(projectName),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState != ConnectionState.done) {
                   return Container(
                     color: const Color.fromRGBO(10, 10, 10, 1.0),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   );
-                } else if (snapshot.hasData && snapshot.data != null) {
-                  return Theme(
-                    data: ThemeData(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                    ),
-                    child: Material(
-                      color: const Color.fromRGBO(10, 10, 10, 1.0),
-                      child: snapshot.data!,
-                    ),
-                  );
-                } else {
-                  // Project not found, redirect to projects
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.go('/projects');
-                  });
-
-                  return Container();
+                } else if (snapshot.connectionState == ConnectionState.done && snapshot.data == null) {
+                  context.go('/projects');
+                } else if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
+                  return snapshot.data!;
                 }
+
+                return const SizedBox.shrink();
               },
             );
           },
@@ -120,28 +128,47 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-Future<Project?> _loadProject(String projectName, String presetName) async {
+Future<Project?> _loadProject(String projectName) async {
   try {
-    // Get projects directory
-    final projectsDir = await old_settings.SettingsService.getProjectsDirectory();
+    final projectsDir = await SettingsService.getProjectsDirectory();
     if (projectsDir == null) return null;
-    
-    // Find project directory
+
     final projectDirectory = Directory('$projectsDir/$projectName');
     if (!await projectDirectory.exists()) return null;
-    
-    // Load project info
+
     final projectInfo = await ProjectInfo.load(projectDirectory);
     if (projectInfo == null) return null;
-    
-    // Load project with main directory
+
     final mainDir = Directory(projectsDir).parent;
-    final tempMainDirectory = old_settings.MainDirectory(mainDir);
-    
+    final tempMainDirectory = MainDirectory(mainDir);
+
     final project = await Project.load(projectInfo, tempMainDirectory, _audioManager);
     return project;
   } catch (e) {
     print('Error loading project $projectName: $e');
+    return null;
+  }
+}
+
+Future<Project?> _loadPreset(String projectName, String presetName) async {
+  return await _loadProject(projectName);
+}
+
+Future<String?> _firstPresetName(String projectName) async {
+  try {
+    final projectsDir = await SettingsService.getProjectsDirectory();
+    if (projectsDir == null) return null;
+    final presetsDir = Directory('$projectsDir/$projectName/presets');
+    if (!await presetsDir.exists()) return null;
+    final entries = await presetsDir.list().toList();
+    final dirs = entries.whereType<Directory>().toList()
+      ..sort((a, b) => a.path.toLowerCase().compareTo(b.path.toLowerCase()));
+    if (dirs.isEmpty) return null;
+    final name = dirs.first.uri.pathSegments.isNotEmpty
+        ? dirs.first.uri.pathSegments.last
+        : dirs.first.path.split(Platform.pathSeparator).last;
+    return name.isEmpty ? null : name;
+  } catch (_) {
     return null;
   }
 }
@@ -159,7 +186,6 @@ class NoBounceScrollBehavior extends MaterialScrollBehavior {
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
     final platform = Theme.of(context).platform;
-    // Enable bounce on mobile (iOS/Android), clamp on desktop
     if (platform == TargetPlatform.iOS || platform == TargetPlatform.android) {
       return const BouncingScrollPhysics();
     }
@@ -228,29 +254,6 @@ class CommunityPage extends StatelessWidget {
       child: Center(
         child: Text('Community Page - Coming Soon'),
       ),
-    );
-  }
-}
-
-// Custom page for no transitions
-class NoTransitionPage<T> extends Page<T> {
-  const NoTransitionPage({
-    required this.child,
-    super.key,
-    super.name,
-    super.arguments,
-    super.restorationId,
-  });
-
-  final Widget child;
-
-  @override
-  Route<T> createRoute(BuildContext context) {
-    return PageRouteBuilder<T>(
-      settings: this,
-      pageBuilder: (context, animation, _) => child,
-      transitionDuration: Duration.zero,
-      reverseTransitionDuration: Duration.zero,
     );
   }
 }

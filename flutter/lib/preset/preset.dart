@@ -10,7 +10,6 @@ import '../bindings/api/node.dart' as rust_node;
 import '../bindings/api/cable.dart';
 import '../bindings/api/io.dart';
 import '../bindings/api/patch.dart';
-import '../bindings/api/module.dart' as rust_mod;
 import 'info.dart';
 
 class Preset extends StatelessWidget {
@@ -159,31 +158,11 @@ class Preset extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: Builder(
-        builder: (context) {
-          if (!uiVisible) {
-            return PatchEditor(
-              presetInfo: info,
-              plugins: plugins,
-              patch: patch,
-              audioManager: audioManager,
-            );
-          } else {
-            return ValueListenableBuilder<UserInterface?>(
-              valueListenable: interface,
-              builder: (context, ui, child) {
-                if (ui != null) {
-                  return ui;
-                } else {
-                  return Container();
-                }
-              },
-            );
-          }
-        },
-      ),
+    return PatchEditor(
+      presetInfo: info,
+      plugins: plugins,
+      patch: patch,
+      audioManager: audioManager,
     );
   }
 }

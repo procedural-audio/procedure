@@ -125,22 +125,8 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
 
   void loadProject(ProjectInfo info) async {
     if (projectsDirectory == null) return;
-    
-    // Use the configured projects directory as the root
-    final mainDir = Directory(projectsDirectory!);
-    final mainDirectory = old_settings.MainDirectory(mainDir);
-    
-    var project = await Project.load(info, mainDirectory, widget.audioManager);
-
-    if (project != null) {
-      // URL encode the names to handle special characters and spaces
-      final encodedProjectName = Uri.encodeComponent(info.name);
-      final encodedPresetName = Uri.encodeComponent(project.preset.info.name);
-      
-      context.push('/project/$encodedProjectName/preset/$encodedPresetName', 
-        extra: project, // Pass the project as extra data
-      );
-    }
+    final encodedProjectName = Uri.encodeComponent(info.name);
+    context.push('/project/$encodedProjectName/');
   }
 
   void newProject() async {

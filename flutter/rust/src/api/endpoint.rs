@@ -24,8 +24,6 @@ impl NodeEndpoint {
         let endpoint = EndpointHandle::from_info(engine, &info);
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 
-        println!("Annotation: {}", annotation);
-
         Self {
             endpoint,
             annotation,
