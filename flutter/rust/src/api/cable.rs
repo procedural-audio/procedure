@@ -19,15 +19,15 @@ pub struct Connection {
 
 impl Cable {
     #[frb(sync)]
-    pub fn new(src_node: Node, src_endpoint: NodeEndpoint, dst_node: Node, dst_endpoint: NodeEndpoint) -> Self {
+    pub fn new(src_node: &Node, src_endpoint: &NodeEndpoint, dst_node: &Node, dst_endpoint: &NodeEndpoint) -> Self {
         Self {
             source: Connection {
-                node: src_node,
-                endpoint: src_endpoint,
+                node: src_node.clone(),
+                endpoint: src_endpoint.clone(),
             },
             destination: Connection {
-                node: dst_node,
-                endpoint: dst_endpoint,
+                node: dst_node.clone(),
+                endpoint: dst_endpoint.clone(),
             },
         }
     }

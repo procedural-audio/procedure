@@ -24,6 +24,7 @@ pub enum InputStreamHandle {
     Float64(Endpoint<InputStream<f64>>),
     Int32(Endpoint<InputStream<i32>>),
     Int64(Endpoint<InputStream<i64>>),
+    Float32x2(Endpoint<InputStream<[f32; 2]>>),
     Err(&'static str),
 }
 
@@ -38,17 +39,13 @@ impl InputStreamHandle {
                 Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
                 _ => Self::Err("unsupported endpoint type stream"),
             },
-            /*Type::Array(array) => match array.elem_ty() {
+            Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
-                    2 => Self::StereoFloat32(engine.endpoint(id).unwrap()),
+                    2 => Self::Float32x2(engine.endpoint(id).unwrap()),
                     _ => Self::Err("unsupported endpoint type array stream"),
                 },
-                Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
-                Type::Array(_) => Self::Err("unsupported endpoint type array stream"),
-                Type::Object(_) => Self::Err("unsupported endpoint type array stream"),
-                Type::String => Self::Err("unsupported endpoint type array stream"),
-            },*/
-            Type::Array(array) => Self::Err("unsupported endpoint type array stream"),
+                _ => Self::Err("unsupported endpoint type array stream"),
+            },
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
         }
@@ -60,6 +57,7 @@ impl InputStreamHandle {
             Self::Float64(_) => "float64",
             Self::Int32(_) => "int32",
             Self::Int64(_) => "int64",
+            Self::Float32x2(_) => "float32x2",
             Self::Err(_) => "unknown"
         }
     }
@@ -71,6 +69,7 @@ pub enum OutputStreamHandle {
     Float64(Endpoint<OutputStream<f64>>),
     Int32(Endpoint<OutputStream<i32>>),
     Int64(Endpoint<OutputStream<i64>>),
+    Float32x2(Endpoint<OutputStream<[f32; 2]>>),
     Err(&'static str),
 }
 
@@ -85,17 +84,13 @@ impl OutputStreamHandle {
                 Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
                 _ => Self::Err("unsupported endpoint type stream"),
             },
-            /*Type::Array(array) => match array.elem_ty() {
+            Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
-                    2 => Self::StereoFloat32(engine.endpoint(id).unwrap()),
+                    2 => Self::Float32x2(engine.endpoint(id).unwrap()),
                     _ => Self::Err("unsupported endpoint type array stream"),
                 },
-                Type::Primitive(_) => Self::Err("unsupported endpoint type stream"),
-                Type::Array(_) => Self::Err("unsupported endpoint type array stream"),
-                Type::Object(_) => Self::Err("unsupported endpoint type array stream"),
-                Type::String => Self::Err("unsupported endpoint type array stream"),
-            },*/
-            Type::Array(array) => Self::Err("unsupported endpoint type array stream"),
+                _ => Self::Err("unsupported endpoint type array stream"),
+            },
             Type::String => Self::Err("unsupported endpoint type string stream"),
             Type::Object(_) => Self::Err("unsupported endpoint type object stream"),
         }
@@ -107,6 +102,7 @@ impl OutputStreamHandle {
             Self::Float64(_) => "float64",
             Self::Int32(_) => "int32",
             Self::Int64(_) => "int64",
+            Self::Float32x2(_) => "float32x2",
             Self::Err(_) => "unknown"
         }
     }

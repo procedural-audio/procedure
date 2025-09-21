@@ -4,9 +4,8 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
-import 'cable.dart';
-import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'patch.dart';
 
 // These functions are ignored because they are not marked as `pub`: `new`, `run_juce_message_loop`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AudioMessage`, `PatchAudioCallbackWrapper`, `PatchAudioCallback`
@@ -38,7 +37,7 @@ abstract class AudioManager implements RustOpaqueInterface {
 
   Future<void> setMidiSetup({required FlutterMidiConfiguration config});
 
-  void setPatchData({required List<Node> nodes, required List<Cable> cables});
+  void setPatch({required Patch patch});
 
   Future<void> setSetup({required AudioConfiguration config});
 

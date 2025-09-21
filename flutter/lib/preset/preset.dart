@@ -8,12 +8,12 @@ import '../plugin/plugin.dart';
 import '../bindings/api/node.dart' as rust_node;
 import '../bindings/api/cable.dart';
 import '../bindings/api/io.dart';
+import '../bindings/api/patch.dart';
 import 'info.dart';
 
 class Preset extends StatelessWidget {
   final PresetInfo info;
-  final List<rust_node.Node> nodes;
-  final List<Cable> cables;
+  final Patch patch;
   final ValueNotifier<UserInterface?> interface;
   final bool uiVisible;
   final List<Plugin> plugins;
@@ -21,8 +21,7 @@ class Preset extends StatelessWidget {
 
   Preset({
     required this.info,
-    required this.nodes,
-    required this.cables,
+    required this.patch,
     required this.interface,
     required this.uiVisible,
     required this.plugins,
@@ -33,8 +32,7 @@ class Preset extends StatelessWidget {
     // Create empty nodes and cables lists
     return Preset(
       info: info,
-      nodes: [],
-      cables: [],
+      patch: Patch(),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -63,8 +61,7 @@ class Preset extends StatelessWidget {
     var interface = await UserInterface.load(info);
     return Preset(
       info: info,
-      nodes: nodes,
-      cables: cables,
+      patch: Patch(),
       interface: ValueNotifier(interface),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -79,8 +76,7 @@ class Preset extends StatelessWidget {
     );
     return Preset(
       info: info,
-      nodes: [],
-      cables: [],
+      patch: Patch(),
       interface: ValueNotifier(null),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -101,7 +97,7 @@ class Preset extends StatelessWidget {
       // var jsonStr = await savePatch(nodes: nodes, cables: cables);
       var jsonStr = '{"nodes": [], "cables": []}';
       await info.patchFile.writeAsString(jsonStr);
-      print("Saved patch file: ${info.patchFile.path}");
+      print("Saved patch file in preset to: ${info.patchFile.path}");
     } catch (e) {
       print("Failed to save patch: $e");
     }
@@ -119,8 +115,8 @@ class Preset extends StatelessWidget {
             return PatchEditor(
               presetInfo: info,
               plugins: plugins,
-              initialNodes: nodes,
-              initialCables: cables,
+              initialNodes: const [],
+              initialCables: const [],
               audioManager: audioManager,
             );
           } else {

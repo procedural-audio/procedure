@@ -12,10 +12,12 @@ import 'node.dart';
 import 'module.dart';
 import 'right_click.dart';
 import '../preset/info.dart';
+import '../titleBar.dart';
 
 import '../bindings/api/io.dart';
 import '../bindings/api/cable.dart';
 import '../bindings/api/node.dart' as rust_node;
+import '../bindings/api/patch.dart';
 
 /* LIBRARY */
 
@@ -36,15 +38,15 @@ class PatchEditor extends StatefulWidget {
   PatchEditor({
     required this.presetInfo,
     required this.plugins,
-    this.initialNodes,
-    this.initialCables,
+    required this.initialNodes,
+    required this.initialCables,
     this.audioManager,
   }) : super(key: UniqueKey());
 
   final PresetInfo presetInfo;
   final List<Plugin> plugins;
-  final List<rust_node.Node>? initialNodes;
-  final List<Cable>? initialCables;
+  final List<rust_node.Node> initialNodes;
+  final List<Cable> initialCables;
   final AudioManager? audioManager;
 
   @override
@@ -58,13 +60,13 @@ class _PatchEditor extends State<PatchEditor> {
 
   final focusNode = FocusNode();
   
-  // Maintain nodes and cables directly
-  List<rust_node.Node> nodes = [];
-  List<Cable> cables = [];
   int _nextNodeId = 1;
   
   // Selected nodes managed in state
   List<rust_node.Node> selectedNodes = [];
+  // Node & cable lists are owned locally; we do not store a long-lived Patch
+  late List<rust_node.Node> _nodes;
+  late List<Cable> _cables;
   
   // New cable being drawn
   Pin? newCableStart;
@@ -80,50 +82,11 @@ class _PatchEditor extends State<PatchEditor> {
   @override
   void initState() {
     super.initState();
-    
-    // Initialize with provided nodes and cables or load from file
-    if (widget.initialNodes != null && widget.initialCables != null) {
-      setState(() {
-        nodes = List.from(widget.initialNodes!);
-        cables = List.from(widget.initialCables!);
-        _nextNodeId = nodes.isEmpty ? 1 : nodes.map((n) => n.id).reduce((a, b) => a > b ? a : b) + 1;
-      });
-    } else {
-      _loadPatch();
-    }
-    
-    // Send initial patch to audio manager after widget is fully built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        // Add a small delay to ensure the widget is fully constructed
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (mounted) {
-            updatePlayback();
-          }
-        });
-      }
-    });
+    // Initialize local state from incoming Patch once
+    _nodes = [...widget.initialNodes];
+    _cables = [...widget.initialCables];
   }
   
-  Future<void> _loadPatch() async {
-    try {
-      final patchFile = widget.presetInfo.patchFile;
-      if (await patchFile.exists()) {
-        final jsonStr = await patchFile.readAsString();
-        // For now, parse manually since bindings aren't regenerated yet
-        // TODO: Use rust_patch_api.loadPatch once bindings are updated
-        final data = jsonDecode(jsonStr);
-        setState(() {
-          nodes = [];
-          cables = [];
-          _nextNodeId = 1;
-        });
-      }
-    } catch (e) {
-      print('Failed to load patch: $e');
-    }
-  }
-
   @override
   void dispose() {
     _cableRepaintNotifier.dispose();
@@ -134,11 +97,12 @@ class _PatchEditor extends State<PatchEditor> {
 
   // Build NodeEditor widgets
   List<Widget> _buildNodeEditors() {
-    return nodes.map((node) {
+    return _nodes.map((node) {
       return NodeEditor(
         // No key - let widgets be recreated fresh
         node: node,
         onSave: _savePatch,
+        onPositionChanged: _onNodePositionChanged,
         onAddConnector: addCable,
         onRemoveConnections: removeConnectionsTo,
         onNewCableDrag: _onNewCableDrag,
@@ -152,13 +116,23 @@ class _PatchEditor extends State<PatchEditor> {
       );
     }).toList();
   }
+  void _onNodePositionChanged(rust_node.Node node) {
+    final index = _nodes.indexWhere((n) => n.id == node.id);
+    if (index >= 0) {
+      final updated = [..._nodes];
+      updated[index] = node;
+      setState(() {
+        _nodes = updated;
+      });
+    }
+  }
 
 
   // New cable callback methods
   void _onNewCableDrag(Offset globalOffset) {
     setState(() {
-      // Keep global coordinates for cursor following - don't transform to scene
-      newCableEnd = globalOffset;
+      // Subtract the top app bar height so viewport-local Y is correct for toScene()
+      newCableEnd = Offset(globalOffset.dx, globalOffset.dy - TitleBar.height);
     });
   }
   
@@ -213,7 +187,7 @@ class _PatchEditor extends State<PatchEditor> {
       if (node != null) {
         node.id = _nextNodeId++;
         setState(() {
-          nodes.add(node);
+          _nodes = [..._nodes, node];
         });
         
         _savePatch();
@@ -235,7 +209,7 @@ class _PatchEditor extends State<PatchEditor> {
     
     try {
       setState(() {
-        cables.add(cable);
+        _cables = [..._cables, cable];
       });
       
       _savePatch();
@@ -247,16 +221,18 @@ class _PatchEditor extends State<PatchEditor> {
   
   void _onBatchRemoveNodes(List<rust_node.Node> nodesToRemove) {
     setState(() {
-      // Remove nodes
-      for (var node in nodesToRemove) {
-        nodes.removeWhere((n) => n.id == node.id);
-      }
-      
-      // Remove cables connected to removed nodes
-      cables.removeWhere((cable) => 
-        nodesToRemove.any((node) => 
-          cable.source.node.id == node.id || 
-          cable.destination.node.id == node.id));
+      final remainingNodes = _nodes
+          .where((n) => !nodesToRemove.any((r) => r.id == n.id))
+          .toList();
+
+      final remainingCables = _cables
+          .where((cable) => !nodesToRemove.any((node) =>
+              cable.source.node.id == node.id ||
+              cable.destination.node.id == node.id))
+          .toList();
+
+      _nodes = remainingNodes;
+      _cables = remainingCables;
     });
     
     _savePatch();
@@ -282,10 +258,16 @@ class _PatchEditor extends State<PatchEditor> {
 
   void removeNode(rust_node.Node node) {
     setState(() {
-      nodes.removeWhere((n) => n.id == node.id);
-      cables.removeWhere((cable) => 
-        cable.source.node.id == node.id || 
-        cable.destination.node.id == node.id);
+      final remainingNodes = _nodes
+          .where((n) => n.id != node.id)
+          .toList();
+      final remainingCables = _cables
+          .where((cable) =>
+              cable.source.node.id != node.id &&
+              cable.destination.node.id != node.id)
+          .toList();
+      _nodes = remainingNodes;
+      _cables = remainingCables;
     });
     
     _savePatch();
@@ -299,24 +281,19 @@ class _PatchEditor extends State<PatchEditor> {
   }
 
   void updatePlayback() {
-    if (!mounted) return;
-    
-    // Update the UI
-    setState(() {});
+    print("Updating patch in AudioManager with ${_nodes.length} nodes, ${_cables.length} cables");
 
-    // Update the playback graph using AudioManager
-    if (widget.audioManager != null && mounted) {
-      _updatePlaybackAsync();
-    }
-  }
-
-  Future<void> _updatePlaybackAsync() async {
-    if (!mounted) return;
-    
     try {
-      print("Updating patch in AudioManager with ${nodes.length} nodes, ${cables.length} cables");
-      // TODO: Use setPatchData once bindings are updated
-      // widget.audioManager!.setPatchData(nodes: nodes, cables: cables);
+      final patch = Patch();
+      // Build patch incrementally using borrowed references to avoid disposing Dart handles
+      try { patch.clear(); } catch (_) {}
+      for (final n in _nodes) {
+        patch.addNode(node: n);
+      }
+      for (final c in _cables) {
+        patch.addCable(cable: c);
+      }
+      widget.audioManager!.setPatch(patch: patch);
     } catch (e) {
       print("Error updating patch in AudioManager: $e");
     }
@@ -339,16 +316,13 @@ class _PatchEditor extends State<PatchEditor> {
 
   void removeConnectionsTo(Pin pin) {
     // Find cables to remove
-    var cablesToRemove = cables
-        .where((cable) => 
-          _pinMatchesConnection(pin, cable.source) || 
-          _pinMatchesConnection(pin, cable.destination))
-        .toList();
-    
     setState(() {
-      for (var cable in cablesToRemove) {
-        cables.remove(cable);
-      }
+      final updatedCables = _cables
+          .where((cable) =>
+              !_pinMatchesConnection(pin, cable.source) &&
+              !_pinMatchesConnection(pin, cable.destination))
+          .toList();
+      _cables = updatedCables;
     });
     
     _savePatch();
@@ -467,8 +441,8 @@ class _PatchEditor extends State<PatchEditor> {
                           RepaintBoundary(
                             child: CustomPaint(
                               painter: CablePainter(
-                                nodes: nodes,
-                                cables: cables,
+                          nodes: _nodes,
+                          cables: _cables,
                                 repaint: _cableRepaintNotifier,
                               ),
                               size: const Size(10000, 10000),
@@ -516,5 +490,3 @@ class _PatchEditor extends State<PatchEditor> {
     );
   }
 }
-
-

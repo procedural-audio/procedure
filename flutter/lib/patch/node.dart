@@ -124,6 +124,7 @@ class NodeEditor extends StatefulWidget {
     required this.isSelected,
     required this.onToggleSelection,
     this.onCableRepaintNeeded,
+    required this.onPositionChanged,
   }) : super(key: key);
 
   final rust_node.Node node;
@@ -138,6 +139,7 @@ class NodeEditor extends StatefulWidget {
   final bool isSelected;
   final void Function(rust_node.Node) onToggleSelection;
   final VoidCallback? onCableRepaintNeeded;
+  final void Function(rust_node.Node) onPositionChanged;
 
   @override
   _NodeEditorState createState() => _NodeEditorState();
@@ -301,9 +303,6 @@ class _NodeEditorState extends State<NodeEditor> {
                   widget.onToggleSelection(widget.node);
                 });
               },
-              onDoubleTap: () {
-                // Prevent double tap from propagating
-              },
               onPanStart: (details) {
               },
               onPanUpdate: (details) {
@@ -321,6 +320,7 @@ class _NodeEditorState extends State<NodeEditor> {
                 var y = roundToGrid(currentPos.$2);
                 
                 widget.node.setPosition(position: (x, y));
+                widget.onPositionChanged(widget.node);
                 widget.onSave();
 
               },

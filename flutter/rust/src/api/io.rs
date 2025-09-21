@@ -11,6 +11,7 @@ use std::sync::{mpsc, Arc, RwLock};
 use tokio::sync::oneshot;
 use crate::api::node::Node;
 use crate::api::cable::Cable;
+use crate::api::patch::Patch;
 use crate::other::action::{Actions, ExecuteAction, IO};
 
 #[derive(Clone, Debug)]
@@ -182,111 +183,106 @@ fn run_juce_message_loop(rx: mpsc::Receiver<AudioMessage>) {
         .iter_mut()
         .for_each(|dt| dt.scan_for_devices());
 
-    loop {
-        while let Ok(message) = rx.try_recv() {
-            match message {
-                AudioMessage::GetDeviceTypes(response) => {
-                    let _ = response.send(
-                        manager
-                            .device_types()
-                            .iter()
-                            .map(|dt| dt.name())
-                            .collect()
-                    );
-                }
-                AudioMessage::GetInputDevices(device_type, response) => {
-                    let _ = response.send(
-                        manager
-                            .device_types()
-                            .iter()
-                            .find(| dt | dt.name() == device_type)
-                            .map(|dt| dt.input_devices())
-                            .unwrap_or(Vec::new())
-                    );
-                }
-                AudioMessage::GetOutputDevices(device_type, response) => {
-                    let _ = response.send(
-                        manager
-                            .device_types()
-                            .iter()
-                            .find(| dt | dt.name() == device_type)
-                            .map(|dt| dt.output_devices())
-                            .unwrap_or(Vec::new())
-                    );
-                }
-                AudioMessage::GetSetup(response) => {
-                    let setup = manager.audio_device_setup();
-                    let config = AudioConfiguration {
-                        input_device: setup.input_device_name().to_string(),
-                        output_device: setup.output_device_name().to_string(),
-                        sample_rate: setup.sample_rate(),
-                        buffer_size: setup.buffer_size(),
-                    };
-                    let _ = response.send(config);
-                }
-                AudioMessage::SetSetup(config) => {
-                    let setup = AudioDeviceSetup::default()
-                        .with_buffer_size(config.buffer_size)
-                        .with_sample_rate(config.sample_rate)
-                        .with_input_channels(ChannelCount::Default)
-                        .with_output_channels(ChannelCount::Default)
-                        .with_input_device_name(config.input_device)
-                        .with_output_device_name(config.output_device);
+    while let Ok(message) = rx.recv() {
+        match message {
+            AudioMessage::GetDeviceTypes(response) => {
+                let _ = response.send(
+                    manager
+                        .device_types()
+                        .iter()
+                        .map(|dt| dt.name())
+                        .collect()
+                );
+            }
+            AudioMessage::GetInputDevices(device_type, response) => {
+                let _ = response.send(
+                    manager
+                        .device_types()
+                        .iter()
+                        .find(| dt | dt.name() == device_type)
+                        .map(|dt| dt.input_devices())
+                        .unwrap_or(Vec::new())
+                );
+            }
+            AudioMessage::GetOutputDevices(device_type, response) => {
+                let _ = response.send(
+                    manager
+                        .device_types()
+                        .iter()
+                        .find(| dt | dt.name() == device_type)
+                        .map(|dt| dt.output_devices())
+                        .unwrap_or(Vec::new())
+                );
+            }
+            AudioMessage::GetSetup(response) => {
+                let setup = manager.audio_device_setup();
+                let config = AudioConfiguration {
+                    input_device: setup.input_device_name().to_string(),
+                    output_device: setup.output_device_name().to_string(),
+                    sample_rate: setup.sample_rate(),
+                    buffer_size: setup.buffer_size(),
+                };
+                let _ = response.send(config);
+            }
+            AudioMessage::SetSetup(config) => {
+                let setup = AudioDeviceSetup::default()
+                    .with_buffer_size(config.buffer_size)
+                    .with_sample_rate(config.sample_rate)
+                    .with_input_channels(ChannelCount::Default)
+                    .with_output_channels(ChannelCount::Default)
+                    .with_input_device_name(config.input_device)
+                    .with_output_device_name(config.output_device);
 
-                    manager.set_audio_device_setup(&setup);
-                }
-                AudioMessage::GetDeviceType(response) => {
-                    let _ = response.send(
-                        manager
-                            .current_device_type()
-                            .map(|dt| dt.name())
-                    );
-                }
-                AudioMessage::SetDeviceType(device_type, response) => {
-                    manager.set_current_audio_device_type(&device_type);
-                    let _ = response.send(Ok(()));
-                }
-                
-                // MIDI Message Handling
-                AudioMessage::GetMidiInputDevices(response) => {
-                    let _ = response.send(midi_manager.input_devices());
-                }
-                AudioMessage::GetMidiOutputDevices(response) => {
-                    let _ = response.send(midi_manager.output_devices());
-                }
-                AudioMessage::GetMidiSetup(response) => {
-                    let _ = response.send(midi_config.clone());
-                }
-                AudioMessage::SetMidiSetup(config) => {
-                    midi_config = config;
-                }
-                
-                AudioMessage::SetPatch(actions) => {
-                    if let Ok(callback) = patch_callback.lock() {
-                        println!("Setting actions in audio manager");
-                        *callback.actions.write().unwrap() = Some(actions);
-                    }
-                }
-                AudioMessage::ClearPatch => {
-                    if let Ok(callback) = patch_callback.lock() {
-                        println!("Clearing patch in audio manager");
-                        *callback.actions.write().unwrap() = None;
-                    }
-                }
-                
-                AudioMessage::StopPlayback => {},
-                AudioMessage::Shutdown => {
-                    println!("Shutting down audio thread");
-                    // Remove audio callback before shutting down
-                    if let Some(handle) = callback_handle {
-                        manager.remove_audio_callback(handle);
-                    }
-                    return;
+                manager.set_audio_device_setup(&setup);
+            }
+            AudioMessage::GetDeviceType(response) => {
+                let _ = response.send(
+                    manager
+                        .current_device_type()
+                        .map(|dt| dt.name())
+                );
+            }
+            AudioMessage::SetDeviceType(device_type, response) => {
+                manager.set_current_audio_device_type(&device_type);
+                let _ = response.send(Ok(()));
+            }
+            
+            // MIDI Message Handling
+            AudioMessage::GetMidiInputDevices(response) => {
+                let _ = response.send(midi_manager.input_devices());
+            }
+            AudioMessage::GetMidiOutputDevices(response) => {
+                let _ = response.send(midi_manager.output_devices());
+            }
+            AudioMessage::GetMidiSetup(response) => {
+                let _ = response.send(midi_config.clone());
+            }
+            AudioMessage::SetMidiSetup(config) => {
+                midi_config = config;
+            }
+            AudioMessage::SetPatch(actions) => {
+                if let Ok(callback) = patch_callback.lock() {
+                    println!("Setting actions in audio manager");
+                    *callback.actions.write().unwrap() = Some(actions);
                 }
             }
+            AudioMessage::ClearPatch => {
+                if let Ok(callback) = patch_callback.lock() {
+                    println!("Clearing patch in audio manager");
+                    *callback.actions.write().unwrap() = None;
+                }
+            }
+            
+            AudioMessage::StopPlayback => {},
+            AudioMessage::Shutdown => {
+                println!("Shutting down audio thread");
+                // Remove audio callback before shutting down
+                if let Some(handle) = callback_handle {
+                    manager.remove_audio_callback(handle);
+                }
+                return;
+            }
         }
-
-        std::thread::sleep(std::time::Duration::from_millis(10));
     }
 }
 
@@ -433,8 +429,8 @@ impl AudioManager {
     }
     
     #[frb(sync)]
-    pub fn set_patch_data(&self, nodes: Vec<Node>, cables: Vec<Cable>) -> Result<(), String> {
-        let actions = Actions::from_nodes_and_cables(nodes, cables);
+    pub fn set_patch(&self, patch: &Patch) -> Result<(), String> {
+        let actions = Actions::from_nodes_and_cables(patch.nodes.clone(), patch.cables.clone());
         if self.tx.send(AudioMessage::SetPatch(actions)).is_ok() {
             Ok(())
         } else {

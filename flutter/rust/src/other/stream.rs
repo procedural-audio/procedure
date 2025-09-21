@@ -131,7 +131,7 @@ impl ExecuteAction for ExternalOutputStream<f32> {
             self.voices
                 .try_lock()
                 .unwrap()
-                .read(self.handle, &mut channel[num_frames..]);
+                .read(self.handle, &mut channel[..num_frames]);
         }
     }
 }

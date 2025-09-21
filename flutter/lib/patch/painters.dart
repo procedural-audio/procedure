@@ -67,6 +67,11 @@ class CablePainter extends CustomPainter {
     
     var sourceNodePos = sourceNode.position;
     var destNodePos = destNode.position;
+
+    double snap(double v) {
+      final g = GlobalSettings.gridSize.toDouble();
+      return (v / g).roundToDouble() * g;
+    }
     
     // Get modules to calculate pin offsets
     var sourceModule = sourceNode.module;
@@ -86,13 +91,13 @@ class CablePainter extends CustomPainter {
 
     // Calculate start and end positions using current node positions
     Offset startPos = Offset(
-      sourceOffset.dx + sourceNodePos.$1 + pinRadius,
-      sourceOffset.dy + sourceNodePos.$2 + pinRadius,
+      sourceOffset.dx + snap(sourceNodePos.$1) + pinRadius,
+      sourceOffset.dy + snap(sourceNodePos.$2) + pinRadius,
     );
     
     Offset endPos = Offset(
-      destOffset.dx + destNodePos.$1 + pinRadius,
-      destOffset.dy + destNodePos.$2 + pinRadius,
+      destOffset.dx + snap(destNodePos.$1) + pinRadius,
+      destOffset.dy + snap(destNodePos.$2) + pinRadius,
     );
     
     // Get color for this endpoint type
@@ -187,9 +192,13 @@ class NewCablePainter extends CustomPainter {
   void paint(Canvas canvas, ui.Size size) {
     // Calculate start position from pin (in scene coordinates)
     var nodePosition = startPin.node.position;
+    double snap(double v) {
+      final g = GlobalSettings.gridSize.toDouble();
+      return (v / g).roundToDouble() * g;
+    }
     Offset startPos = Offset(
-      startPin.offset.dx + nodePosition.$1 + 15 / 2,
-      startPin.offset.dy + nodePosition.$2 + 15 / 2,
+      startPin.offset.dx + snap(nodePosition.$1) + 15 / 2,
+      startPin.offset.dy + snap(nodePosition.$2) + 15 / 2,
     );
     
     // Convert global end offset to scene coordinates

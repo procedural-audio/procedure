@@ -8,50 +8,21 @@ import 'cable.dart';
 import 'node.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `SerializableCable`, `SerializableConnection`, `SerializableNode`, `SerializablePatch`
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Patch>>
+abstract class Patch implements RustOpaqueInterface {
+  void addCable({required Cable cable});
 
-/// Load a patch from JSON string and return nodes and cables
-Future<(List<Node>, List<Cable>)> loadPatch({required String jsonStr}) =>
-    RustLib.instance.api.crateApiPatchLoadPatch(jsonStr: jsonStr);
+  void addNode({required Node node});
 
-/// Save nodes and cables to JSON string
-Future<String> savePatch(
-        {required List<Node> nodes, required List<Cable> cables}) =>
-    RustLib.instance.api.crateApiPatchSavePatch(nodes: nodes, cables: cables);
+  List<Cable> get cables;
 
-/// Update the playing patch using the audio manager
-/// Note: This function requires an AudioManager instance to be passed to it
-/// The actual integration will be handled at the Flutter level
-Future<void> playPatch(
-        {required List<Node> nodes, required List<Cable> cables}) =>
-    RustLib.instance.api.crateApiPatchPlayPatch(nodes: nodes, cables: cables);
+  List<Node> get nodes;
 
-class Patch {
-  final List<Node> nodes;
-  final List<Cable> cables;
+  set cables(List<Cable> cables);
 
-  const Patch({
-    required this.nodes,
-    required this.cables,
-  });
+  set nodes(List<Node> nodes);
 
-  static Patch from({required List<Node> nodes, required List<Cable> cables}) =>
-      RustLib.instance.api.crateApiPatchPatchFrom(nodes: nodes, cables: cables);
+  void clear();
 
-  static Future<void> load({required String path}) =>
-      RustLib.instance.api.crateApiPatchPatchLoad(path: path);
-
-  Future<String> save({required String path}) =>
-      RustLib.instance.api.crateApiPatchPatchSave(that: this, path: path);
-
-  @override
-  int get hashCode => nodes.hashCode ^ cables.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Patch &&
-          runtimeType == other.runtimeType &&
-          nodes == other.nodes &&
-          cables == other.cables;
+  factory Patch() => RustLib.instance.api.crateApiPatchPatchNew();
 }

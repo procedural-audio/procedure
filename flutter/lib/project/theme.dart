@@ -21,7 +21,7 @@ class ProjectTheme {
 
   static Color getColor(String type) {
     if (!typeColors.containsKey(type)) {
-      print("Unknown type color $type");
+      // print("Unknown type color $type");
     }
 
     return typeColors[type] ?? Colors.grey;

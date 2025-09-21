@@ -157,7 +157,7 @@ impl Actions {
         }
     }
 
-    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, nodes: &[Node], cables: &[Cable]) {
+    fn process_input_endpoint(&mut self, node: &Node, handle: &InputHandle, _nodes: &[Node], cables: &[Cable]) {
         let mut filled = false;
 
         for cable in cables {
@@ -193,7 +193,7 @@ impl Actions {
     fn process_input_external(&mut self, node: &Node, handle: &InputHandle, channel: usize) {
         match handle {
             InputHandle::Stream(_) => println!(" - External input streams are not supported"),
-            InputHandle::Event( InputEventHandle { handle, types }) => {
+            InputHandle::Event( InputEventHandle { handle, types: _ }) => {
                 self.push(
                     ExternalInputEvent {
                         voices: node.clone_performer(),
@@ -207,10 +207,35 @@ impl Actions {
 
     fn process_output_external(&mut self, node: &Node, handle: &OutputHandle, channel: usize) {
         match handle {
-            OutputHandle::Stream { handle, feedback } => {
-                println!(" - Unsupported external output stream");
+            OutputHandle::Stream { handle, feedback: _ } => {
+                match handle {
+                    OutputStreamHandle::Float32(h) => {
+                        self.push(
+                            ExternalOutputStream::<f32> {
+                                voices: node.clone_performer(),
+                                handle: h.clone(),
+                                buffer: vec![0.0; 1024],
+                                channel,
+                            }
+                        );
+                    }
+                    OutputStreamHandle::Float32x2(h) => {
+                        self.push(
+                            ExternalOutputStream::<[f32; 2]> {
+                                voices: node.clone_performer(),
+                                handle: h.clone(),
+                                buffer: vec![[0.0, 0.0]; 1024],
+                                channel,
+                            }
+                        );
+                    }
+                    OutputStreamHandle::Float64(_) => println!(" - Unsupported external output stream f64"),
+                    OutputStreamHandle::Int32(_) => println!(" - Unsupported external output stream i32"),
+                    OutputStreamHandle::Int64(_) => println!(" - Unsupported external output stream i64"),
+                    OutputStreamHandle::Err(e) => println!(" - Unsupported external output stream type {}", e),
+                }
             }
-            OutputHandle::Event { handle, feedback } => {
+            OutputHandle::Event { handle, feedback: _ } => {
                 self.push(
                     ExternalOutputEvent {
                         voices: node.clone_performer(),
@@ -224,10 +249,10 @@ impl Actions {
 
     fn process_input_widget(&mut self, node: &Node, handle: &InputHandle, queue: &Arc<ArrayQueue<Value>>) {
         match handle {
-            InputHandle::Stream(handle) => {
+            InputHandle::Stream(_) => {
                 println!(" - Unsupported widget input stream");
             },
-            InputHandle::Event(InputEventHandle { handle, types }) => {
+            InputHandle::Event(InputEventHandle { handle, types: _ }) => {
                 self.push(
                     ReceiveEvents {
                         voices: node.clone_performer(),
@@ -315,6 +340,10 @@ impl Actions {
                         let buffer = vec![0; 1024];
                         self.push(ClearStream { voices, handle, buffer });
                     }
+                    InputStreamHandle::Float32x2(handle) => {
+                        let buffer = vec![[0.0, 0.0]; 1024];
+                        self.push( ClearStream { voices, handle, buffer });
+                    }
                     InputStreamHandle::Err(_) => ()
                 }
             },
@@ -379,6 +408,8 @@ impl Actions {
             (OutputStreamHandle::Int32(src), InputStreamHandle::Int32(dst)) => self
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
             (OutputStreamHandle::Int64(src), InputStreamHandle::Int64(dst)) => self
+                .copy_stream(src_voices, src, feedback, dst_voices, dst),
+            (OutputStreamHandle::Float32x2(src), InputStreamHandle::Float32x2(dst)) => self
                 .copy_stream(src_voices, src, feedback, dst_voices, dst),
             _ => return Err("Endpoints streams types are not compatible")
         }

@@ -43,6 +43,7 @@ class TitleBar extends StatefulWidget {
   final Color dividerColor;
 
   static TitleBarNavigatorObserver get navigatorObserver => TitleBarNavigatorObserver.instance;
+  static const double height = 28;
 
   @override
   State<TitleBar> createState() => _TitleBarState();
@@ -280,7 +281,7 @@ class _TitleBarState extends State<TitleBar> with TickerProviderStateMixin {
         children: [
           // Title bar with controls
           Container(
-            height: 28,
+            height: TitleBar.height,
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(

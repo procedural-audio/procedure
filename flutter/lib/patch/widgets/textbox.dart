@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import '../../bindings/api/endpoint.dart';
 import '../node.dart';
-import '../../utils.dart';
 import '../../project/theme.dart';
 
 class TextboxWidget extends NodeWidget {
@@ -17,11 +16,8 @@ class TextboxWidget extends NodeWidget {
     required this.label,
     required this.color,
     required this.initialValue,
-    super.key,
-  }) : super(node, endpoint) {
-    controller.text = initialValue;
-    writeValue(initialValue);
-  }
+      Key? key,
+  }) : super(node, endpoint, key: key);
 
   final double left;
   final double top;
@@ -30,8 +26,6 @@ class TextboxWidget extends NodeWidget {
   final String label;
   final Color color;
   final String initialValue;
-
-  TextEditingController controller = TextEditingController();
 
   @override
   Map<String, dynamic> getState() {
@@ -72,7 +66,7 @@ class TextboxWidget extends NodeWidget {
       label: map['label'].toString(),
       color: colorFromString(map['color'].toString()) ?? Colors.grey,
       initialValue: map['default'].toString(),
-      key: UniqueKey(),
+      key: ValueKey('textbox-${node.node.id}-${endpoint.annotation}'),
     );
   }
 
@@ -89,9 +83,9 @@ class TextboxWidget extends NodeWidget {
             color: Color.fromRGBO(10, 10, 10, 1.0),
             borderRadius: BorderRadius.circular(5),
           ),
-          child: TextField(
+          child: TextFormField(
             maxLines: 1,
-            controller: controller,
+            initialValue: initialValue,
             textAlign: TextAlign.center,
             onChanged: (s) {
               writeValue(s);
