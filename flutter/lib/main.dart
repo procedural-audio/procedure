@@ -155,6 +155,18 @@ Future<void> main(List<String> args) async {
   runApp(App());
 }
 
+class NoBounceScrollBehavior extends MaterialScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    final platform = Theme.of(context).platform;
+    // Enable bounce on mobile (iOS/Android), clamp on desktop
+    if (platform == TargetPlatform.iOS || platform == TargetPlatform.android) {
+      return const BouncingScrollPhysics();
+    }
+    return const ClampingScrollPhysics();
+  }
+}
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -162,6 +174,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: _router,
+      scrollBehavior: NoBounceScrollBehavior(),
       title: 'Procedure',
       theme: ThemeData(
         splashColor: Colors.transparent,
