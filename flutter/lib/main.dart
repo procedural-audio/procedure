@@ -27,31 +27,51 @@ final GoRouter _router = GoRouter(
     ShellRoute(
       builder: (context, state, child) => Window(child: child),
       routes: [
-        ShellRoute(
-          builder: (context, state, child) => HomeWidget(
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) => HomeWidget(
             audioManager: _audioManager,
-            child: child,
+            child: navigationShell,
           ),
-          routes: [
-            GoRoute(
-              path: '/projects',
-              builder: (context, state) => ProjectsBrowser(audioManager: _audioManager),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/projects',
+                  builder: (context, state) => ProjectsBrowser(audioManager: _audioManager),
+                ),
+              ],
             ),
-            GoRoute(
-              path: '/modules',
-              builder: (context, state) => ModulesPage(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/modules',
+                  builder: (context, state) => ModulesPage(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: '/samples',
-              builder: (context, state) => SamplesPage(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/samples',
+                  builder: (context, state) => SamplesPage(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: '/community',
-              builder: (context, state) => CommunityPage(),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/community',
+                  builder: (context, state) => CommunityPage(),
+                ),
+              ],
             ),
-            GoRoute(
-              path: '/settings',
-              builder: (context, state) => SettingsWidget(audioManager: _audioManager),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/settings',
+                  builder: (context, state) => SettingsWidget(audioManager: _audioManager),
+                ),
+              ],
             ),
           ],
         ),
@@ -88,6 +108,7 @@ final GoRouter _router = GoRouter(
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     context.go('/projects');
                   });
+
                   return Container();
                 }
               },

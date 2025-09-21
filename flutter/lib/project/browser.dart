@@ -49,9 +49,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     super.initState();
     
     _loadDirectories();
-    
-    // Listen for changes in projects directory
-    old_settings.SettingsService.projectsDirectoryNotifier.addListener(_onProjectsDirectoryChanged);
 
     for (var plugin in plugins) {
       plugin.directory.watch(recursive: true).listen((event) {
@@ -62,7 +59,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   
   @override
   void dispose() {
-    old_settings.SettingsService.projectsDirectoryNotifier.removeListener(_onProjectsDirectoryChanged);
     super.dispose();
   }
 
@@ -84,16 +80,6 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
     }
   }
   
-  void _onProjectsDirectoryChanged() {
-    if (mounted) {
-      // Clear existing projects and reload
-      setState(() {
-        projectsInfos.clear();
-      });
-      _loadDirectories();
-    }
-  }
-
   Future<void> loadPluginInfos() async {
     if (pluginsDirectory == null) return;
     
@@ -116,10 +102,13 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   }
 
   Future<void> scanProjects() async {
+    print("Scanning projects");
     if (projectsDirectory == null) return;
     
     var dir = Directory(projectsDirectory!);
     if (await dir.exists()) {
+      projectsInfos.clear();
+
       var files = await dir.list();
 
       await for (var file in files) {
@@ -137,11 +126,11 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
   void loadProject(ProjectInfo info) async {
     if (projectsDirectory == null) return;
     
-    // Create a temporary MainDirectory for backward compatibility
-    final mainDir = Directory(projectsDirectory!).parent;
-    final tempMainDirectory = old_settings.MainDirectory(mainDir);
+    // Use the configured projects directory as the root
+    final mainDir = Directory(projectsDirectory!);
+    final mainDirectory = old_settings.MainDirectory(mainDir);
     
-    var project = await Project.load(info, tempMainDirectory, widget.audioManager);
+    var project = await Project.load(info, mainDirectory, widget.audioManager);
 
     if (project != null) {
       // URL encode the names to handle special characters and spaces
@@ -168,10 +157,15 @@ class _ProjectsBrowser extends State<ProjectsBrowser> {
       i++;
     }
 
-    // Create a temporary MainDirectory for backward compatibility
-    final mainDir = Directory(projectsDirectory!).parent;
-    final tempMainDirectory = old_settings.MainDirectory(mainDir);
-    var newInfo = ProjectInfo.blank(tempMainDirectory);
+    // Create the new project directly in the configured projects directory
+    var newInfo = ProjectInfo(
+      directory: Directory(newPath),
+      description: ValueNotifier("Description for a new project"),
+      image: null,
+      date: ValueNotifier(DateTime.fromMillisecondsSinceEpoch(0)),
+      tags: [],
+      pluginInfos: [],
+    );
 
     await newInfo.save();
 
