@@ -1,14 +1,22 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:metasampler/bindings/api/module.dart';
 import 'package:metasampler/settings.dart';
 import 'package:metasampler/utils.dart';
 
 import 'dart:io';
 
-import '../patch/module.dart';
 import '../patch/patch.dart';
 import 'info.dart';
+
+List<String> pathToCategory(Directory pluginsDirectory, FileSystemEntity moduleFile) {
+  // Use the sub path as a module categories
+  return moduleFile.parent.path
+      .replaceFirst(pluginsDirectory.path, "")
+      .split("/")
+    ..remove("");
+}
 
 class Plugin extends ChangeNotifier {
   PluginInfo info;
@@ -38,10 +46,8 @@ class Plugin extends ChangeNotifier {
           await for (final file in files) {
             if (file is File) {
               var category = pathToCategory(directory, file);
-              var module = await Module.load(file, category);
-              if (module != null) {
-                modules.add(module);
-              }
+              var module = await Module.load(path: file.path, category: category);
+              modules.add(module);
             }
           }
 

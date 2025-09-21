@@ -77,7 +77,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 1538357645;
+  int get rustContentHash => -372351363;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -272,6 +272,9 @@ abstract class RustLibApi extends BaseApi {
       required NodeEndpoint dstEndpoint});
 
   Module crateApiModuleModuleFrom({required String source});
+
+  Future<Module> crateApiModuleModuleLoad(
+      {required String path, required List<String> category});
 
   void crateApiGraphSetPatchData(
       {required List<Node> nodes, required List<Cable> cables});
@@ -2164,6 +2167,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<Module> crateApiModuleModuleLoad(
+      {required String path, required List<String> category}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(path, serializer);
+        sse_encode_list_String(category, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 70, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_module,
+        decodeErrorData: sse_decode_String,
+      ),
+      constMeta: kCrateApiModuleModuleLoadConstMeta,
+      argValues: [path, category],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiModuleModuleLoadConstMeta => const TaskConstMeta(
+        debugName: "module_load",
+        argNames: ["path", "category"],
+      );
+
+  @override
   void crateApiGraphSetPatchData(
       {required List<Node> nodes, required List<Cable> cables}) {
     return handler.executeSync(SyncTask(
@@ -2173,7 +2202,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             nodes, serializer);
         sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCable(
             cables, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 70)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 71)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -2486,12 +2515,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int dco_decode_box_autoadd_i_32(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
-  }
-
-  @protected
   PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_i_64(raw);
@@ -2598,16 +2621,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Module dco_decode_module(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return Module(
       source: dco_decode_String(arr[0]),
-      title: dco_decode_opt_String(arr[1]),
-      titleColor: dco_decode_opt_String(arr[2]),
-      icon: dco_decode_opt_String(arr[3]),
-      iconSize: dco_decode_opt_box_autoadd_i_32(arr[4]),
-      iconColor: dco_decode_opt_String(arr[5]),
-      size: dco_decode_record_u_32_u_32(arr[6]),
+      name: dco_decode_opt_String(arr[1]),
+      category: dco_decode_list_String(arr[2]),
+      title: dco_decode_opt_String(arr[3]),
+      color: dco_decode_opt_String(arr[4]),
+      menuIcon: dco_decode_opt_String(arr[5]),
+      moduleIcon: dco_decode_opt_String(arr[6]),
+      size: dco_decode_record_u_32_u_32(arr[7]),
     );
   }
 
@@ -2649,12 +2673,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   double? dco_decode_opt_box_autoadd_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_f_64(raw);
-  }
-
-  @protected
-  int? dco_decode_opt_box_autoadd_i_32(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_box_autoadd_i_32(raw);
   }
 
   @protected
@@ -2993,12 +3011,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_box_autoadd_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return (sse_decode_i_32(deserializer));
-  }
-
-  @protected
   PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_i_64(deserializer));
@@ -3132,19 +3144,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Module sse_decode_module(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_source = sse_decode_String(deserializer);
+    var var_name = sse_decode_opt_String(deserializer);
+    var var_category = sse_decode_list_String(deserializer);
     var var_title = sse_decode_opt_String(deserializer);
-    var var_titleColor = sse_decode_opt_String(deserializer);
-    var var_icon = sse_decode_opt_String(deserializer);
-    var var_iconSize = sse_decode_opt_box_autoadd_i_32(deserializer);
-    var var_iconColor = sse_decode_opt_String(deserializer);
+    var var_color = sse_decode_opt_String(deserializer);
+    var var_menuIcon = sse_decode_opt_String(deserializer);
+    var var_moduleIcon = sse_decode_opt_String(deserializer);
     var var_size = sse_decode_record_u_32_u_32(deserializer);
     return Module(
         source: var_source,
+        name: var_name,
+        category: var_category,
         title: var_title,
-        titleColor: var_titleColor,
-        icon: var_icon,
-        iconSize: var_iconSize,
-        iconColor: var_iconColor,
+        color: var_color,
+        menuIcon: var_menuIcon,
+        moduleIcon: var_moduleIcon,
         size: var_size);
   }
 
@@ -3204,17 +3218,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_f_64(deserializer));
-    } else {
-      return null;
-    }
-  }
-
-  @protected
-  int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    if (sse_decode_bool(deserializer)) {
-      return (sse_decode_box_autoadd_i_32(deserializer));
     } else {
       return null;
     }
@@ -3551,12 +3554,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self, serializer);
-  }
-
-  @protected
   void sse_encode_box_autoadd_i_64(
       PlatformInt64 self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -3669,11 +3666,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_module(Module self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.source, serializer);
+    sse_encode_opt_String(self.name, serializer);
+    sse_encode_list_String(self.category, serializer);
     sse_encode_opt_String(self.title, serializer);
-    sse_encode_opt_String(self.titleColor, serializer);
-    sse_encode_opt_String(self.icon, serializer);
-    sse_encode_opt_box_autoadd_i_32(self.iconSize, serializer);
-    sse_encode_opt_String(self.iconColor, serializer);
+    sse_encode_opt_String(self.color, serializer);
+    sse_encode_opt_String(self.menuIcon, serializer);
+    sse_encode_opt_String(self.moduleIcon, serializer);
     sse_encode_record_u_32_u_32(self.size, serializer);
   }
 
@@ -3730,16 +3728,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_f_64(self, serializer);
-    }
-  }
-
-  @protected
-  void sse_encode_opt_box_autoadd_i_32(int? self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    sse_encode_bool(self != null, serializer);
-    if (self != null) {
-      sse_encode_box_autoadd_i_32(self, serializer);
     }
   }
 

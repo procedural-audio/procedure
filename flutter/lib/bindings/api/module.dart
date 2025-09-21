@@ -11,34 +11,42 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 class Module {
   final String source;
+  final String? name;
+  final List<String> category;
   final String? title;
-  final String? titleColor;
-  final String? icon;
-  final int? iconSize;
-  final String? iconColor;
+  final String? color;
+  final String? menuIcon;
+  final String? moduleIcon;
   final (int, int) size;
 
   const Module({
     required this.source,
+    this.name,
+    required this.category,
     this.title,
-    this.titleColor,
-    this.icon,
-    this.iconSize,
-    this.iconColor,
+    this.color,
+    this.menuIcon,
+    this.moduleIcon,
     required this.size,
   });
 
   static Module from({required String source}) =>
       RustLib.instance.api.crateApiModuleModuleFrom(source: source);
 
+  static Future<Module> load(
+          {required String path, required List<String> category}) =>
+      RustLib.instance.api
+          .crateApiModuleModuleLoad(path: path, category: category);
+
   @override
   int get hashCode =>
       source.hashCode ^
+      name.hashCode ^
+      category.hashCode ^
       title.hashCode ^
-      titleColor.hashCode ^
-      icon.hashCode ^
-      iconSize.hashCode ^
-      iconColor.hashCode ^
+      color.hashCode ^
+      menuIcon.hashCode ^
+      moduleIcon.hashCode ^
       size.hashCode;
 
   @override
@@ -47,10 +55,11 @@ class Module {
       other is Module &&
           runtimeType == other.runtimeType &&
           source == other.source &&
+          name == other.name &&
+          category == other.category &&
           title == other.title &&
-          titleColor == other.titleColor &&
-          icon == other.icon &&
-          iconSize == other.iconSize &&
-          iconColor == other.iconColor &&
+          color == other.color &&
+          menuIcon == other.menuIcon &&
+          moduleIcon == other.moduleIcon &&
           size == other.size;
 }

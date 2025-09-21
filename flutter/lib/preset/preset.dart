@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
@@ -9,6 +10,7 @@ import '../bindings/api/node.dart' as rust_node;
 import '../bindings/api/cable.dart';
 import '../bindings/api/io.dart';
 import '../bindings/api/patch.dart';
+import '../bindings/api/module.dart' as rust_mod;
 import 'info.dart';
 
 class Preset extends StatelessWidget {
@@ -18,6 +20,7 @@ class Preset extends StatelessWidget {
   final bool uiVisible;
   final List<Plugin> plugins;
   final AudioManager? audioManager;
+  // Deprecated: editor now receives an initialized Patch directly
 
   Preset({
     required this.info,
@@ -48,11 +51,52 @@ class Preset extends StatelessWidget {
     if (await info.patchFile.exists()) {
       try {
         var contents = await info.patchFile.readAsString();
-        // TODO: Use loadPatch once bindings are regenerated
-        // var result = await loadPatch(jsonStr: contents);
-        // nodes = result.$1;
-        // cables = result.$2;
-        print("Loading patch from file (placeholder for now)");
+        final json = (contents.isNotEmpty) ? (jsonDecode(contents) as Map<String, dynamic>) : {};
+        final List<dynamic> nodesJson = (json['nodes'] as List?) ?? [];
+        final List<dynamic> cablesJson = (json['cables'] as List?) ?? [];
+
+        // Rebuild nodes from module source
+        for (final n in nodesJson) {
+          final id = (n['id'] as num?)?.toInt() ?? 0;
+          final posList = (n['position'] as List?) ?? [0.0, 0.0];
+          final px = (posList[0] as num).toDouble();
+          final py = (posList[1] as num).toDouble();
+          final src = (n['moduleSource'] as String?) ?? '';
+          if (src.isEmpty) continue;
+
+          final rustModule = rust_mod.Module.from(source: src);
+          final node = rust_node.Node.fromModule(module: rustModule, position: (px, py));
+          if (node != null) {
+            node.id = id;
+            nodes.add(node);
+          }
+        }
+
+        // Node lookup map
+        final Map<int, rust_node.Node> idToNode = { for (final n in nodes) n.id: n };
+
+        // Rebuild cables by endpoint annotation
+        for (final c in cablesJson) {
+          final srcId = (c['srcNodeId'] as num?)?.toInt();
+          final dstId = (c['dstNodeId'] as num?)?.toInt();
+          final srcAnn = c['srcAnnotation'] as String?;
+          final dstAnn = c['dstAnnotation'] as String?;
+          if (srcId == null || dstId == null || srcAnn == null || dstAnn == null) continue;
+          final srcNode = idToNode[srcId];
+          final dstNode = idToNode[dstId];
+          if (srcNode == null || dstNode == null) continue;
+
+          final srcEp = srcNode.getOutputByAnnotation(annotation: srcAnn);
+          final dstEp = dstNode.getInputByAnnotation(annotation: dstAnn);
+          if (srcEp == null || dstEp == null) continue;
+
+          try {
+            final cable = Cable(srcNode: srcNode, srcEndpoint: srcEp, dstNode: dstNode, dstEndpoint: dstEp);
+            cables.add(cable);
+          } catch (_) {
+            // skip invalid
+          }
+        }
       } catch (e) {
         print("Failed to load patch: $e");
       }
@@ -61,7 +105,12 @@ class Preset extends StatelessWidget {
     var interface = await UserInterface.load(info);
     return Preset(
       info: info,
-      patch: Patch(),
+      patch: (() {
+        final p = Patch();
+        p.nodes = nodes;
+        p.cables = cables;
+        return p;
+      })(),
       interface: ValueNotifier(interface),
       uiVisible: uiVisible,
       plugins: plugins,
@@ -115,8 +164,7 @@ class Preset extends StatelessWidget {
             return PatchEditor(
               presetInfo: info,
               plugins: plugins,
-              initialNodes: const [],
-              initialCables: const [],
+              patch: patch,
               audioManager: audioManager,
             );
           } else {

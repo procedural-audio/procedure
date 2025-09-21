@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1538357645;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -372351363;
 
 // Section: executor
 
@@ -3502,6 +3502,44 @@ fn wire__crate__api__module__module_from_impl(
         },
     )
 }
+fn wire__crate__api__module__module_load_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "module_load",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_path = <String>::sse_decode(&mut deserializer);
+            let api_category = <Vec<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::module::Module::load(api_path, api_category).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__graph__set_patch_data_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -3822,19 +3860,21 @@ impl SseDecode for crate::api::module::Module {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_source = <String>::sse_decode(deserializer);
+        let mut var_name = <Option<String>>::sse_decode(deserializer);
+        let mut var_category = <Vec<String>>::sse_decode(deserializer);
         let mut var_title = <Option<String>>::sse_decode(deserializer);
-        let mut var_titleColor = <Option<String>>::sse_decode(deserializer);
-        let mut var_icon = <Option<String>>::sse_decode(deserializer);
-        let mut var_iconSize = <Option<i32>>::sse_decode(deserializer);
-        let mut var_iconColor = <Option<String>>::sse_decode(deserializer);
+        let mut var_color = <Option<String>>::sse_decode(deserializer);
+        let mut var_menuIcon = <Option<String>>::sse_decode(deserializer);
+        let mut var_moduleIcon = <Option<String>>::sse_decode(deserializer);
         let mut var_size = <(u32, u32)>::sse_decode(deserializer);
         return crate::api::module::Module {
             source: var_source,
+            name: var_name,
+            category: var_category,
             title: var_title,
-            title_color: var_titleColor,
-            icon: var_icon,
-            icon_size: var_iconSize,
-            icon_color: var_iconColor,
+            color: var_color,
+            menu_icon: var_menuIcon,
+            module_icon: var_moduleIcon,
             size: var_size,
         };
     }
@@ -3889,17 +3929,6 @@ impl SseDecode for Option<f64> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<f64>::sse_decode(deserializer));
-        } else {
-            return None;
-        }
-    }
-}
-
-impl SseDecode for Option<i32> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        if (<bool>::sse_decode(deserializer)) {
-            return Some(<i32>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -4044,6 +4073,7 @@ fn pde_ffi_dispatcher_primary_impl(
             data_len,
         ),
         67 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__module__module_load_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4188,7 +4218,7 @@ fn pde_ffi_dispatcher_sync_impl(
         66 => wire__crate__api__greet_impl(ptr, rust_vec_len, data_len),
         68 => wire__crate__api__graph__is_connection_supported_impl(ptr, rust_vec_len, data_len),
         69 => wire__crate__api__module__module_from_impl(ptr, rust_vec_len, data_len),
-        70 => wire__crate__api__graph__set_patch_data_impl(ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__graph__set_patch_data_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4360,11 +4390,12 @@ impl flutter_rust_bridge::IntoDart for crate::api::module::Module {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.source.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.category.into_into_dart().into_dart(),
             self.title.into_into_dart().into_dart(),
-            self.title_color.into_into_dart().into_dart(),
-            self.icon.into_into_dart().into_dart(),
-            self.icon_size.into_into_dart().into_dart(),
-            self.icon_color.into_into_dart().into_dart(),
+            self.color.into_into_dart().into_dart(),
+            self.menu_icon.into_into_dart().into_dart(),
+            self.module_icon.into_into_dart().into_dart(),
             self.size.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -4616,11 +4647,12 @@ impl SseEncode for crate::api::module::Module {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.source, serializer);
+        <Option<String>>::sse_encode(self.name, serializer);
+        <Vec<String>>::sse_encode(self.category, serializer);
         <Option<String>>::sse_encode(self.title, serializer);
-        <Option<String>>::sse_encode(self.title_color, serializer);
-        <Option<String>>::sse_encode(self.icon, serializer);
-        <Option<i32>>::sse_encode(self.icon_size, serializer);
-        <Option<String>>::sse_encode(self.icon_color, serializer);
+        <Option<String>>::sse_encode(self.color, serializer);
+        <Option<String>>::sse_encode(self.menu_icon, serializer);
+        <Option<String>>::sse_encode(self.module_icon, serializer);
         <(u32, u32)>::sse_encode(self.size, serializer);
     }
 }
@@ -4671,16 +4703,6 @@ impl SseEncode for Option<f64> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <f64>::sse_encode(value, serializer);
-        }
-    }
-}
-
-impl SseEncode for Option<i32> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <bool>::sse_encode(self.is_some(), serializer);
-        if let Some(value) = self {
-            <i32>::sse_encode(value, serializer);
         }
     }
 }

@@ -174,21 +174,21 @@ class _NodeEditorState extends State<NodeEditor> {
               child: Text(
                 module.title ?? "",
                 style: TextStyle(
-                  color: colorFromString(module.titleColor ?? "") ?? Colors.grey,
+                  color: colorFromString(module.color ?? "") ?? Colors.grey,
                   fontSize: 16,
                 ),
               ),
             ),
           ),
           Visibility(
-            visible: module.icon != null,
+            visible: module.moduleIcon != null,
             child: Align(
               alignment: Alignment.center,
               child: SvgPicture.string(
-                module.icon ?? "",
-                width: (module.iconSize ?? 24).toDouble(),
-                height: (module.iconSize ?? 24).toDouble(),
-                color: colorFromString(module.iconColor ?? "") ?? Colors.grey,
+                module.moduleIcon ?? "",
+                width: 24,
+                height: 24,
+                color: colorFromString(module.color ?? "") ?? Colors.grey,
               ),
             ),
           ),

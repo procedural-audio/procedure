@@ -1,11 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:metasampler/bindings/api/module.dart';
+import 'package:metasampler/project/theme.dart';
 
-import '../plugin/config.dart';
 import '../views/settings.dart';
 import '../plugin/plugin.dart';
-import 'module.dart';
 
 const int INDENT_SIZE = 10;
 
@@ -36,7 +36,7 @@ void add_module_to_category(
 
         // Sort elements of the added category
         category.elements.sort(
-          (a, b) => a.module.name.compareTo(b.module.name),
+          (a, b) => (a.module.name ?? '').compareTo(b.module.name ?? ''),
         );
 
         return;
@@ -110,7 +110,7 @@ class _RightClickView extends State<RightClickView> {
     for (var plugin in widget.plugins) {
       for (var module in plugin.modules) {
         bool matchesSearch =
-            module.name.toLowerCase().contains(lowerSearchText);
+            (module.name ?? '').toLowerCase().contains(lowerSearchText);
 
         for (var category in module.category) {
           if (category.toLowerCase().contains(lowerSearchText)) {
@@ -378,7 +378,7 @@ class _RightClickElementState extends State<RightClickElement> {
 
   @override
   Widget build(BuildContext context) {
-    String name = widget.module.name;
+    String name = widget.module.name ?? '';
 
     return MouseRegion(
       onEnter: (event) {
@@ -404,19 +404,28 @@ class _RightClickElementState extends State<RightClickElement> {
             alignment: Alignment.centerLeft,
             child: Row(
               children: [
-                Container(
-                  width: 15,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: widget.module.color ??
-                        widget.module.titleColor ??
-                        widget.module.iconColor ??
-                        Colors.grey,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(5.0),
+                if ((widget.module.menuIcon ?? '').isNotEmpty)
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: SvgPicture.string(
+                      widget.module.menuIcon!,
+                      width: 16,
+                      height: 16,
+                      color: colorFromString(widget.module.color ?? "grey"),
+                    ),
+                  )
+                else
+                  Container(
+                    width: 15,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: colorFromString(widget.module.color ?? "grey"),
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(5.0),
+                      ),
                     ),
                   ),
-                ),
                 Container(
                   width: 6,
                 ),

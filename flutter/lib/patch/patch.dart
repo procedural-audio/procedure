@@ -6,10 +6,10 @@ import 'package:metasampler/patch/painters.dart';
 import 'dart:io';
 import 'dart:async';
 
+import '../bindings/api/module.dart';
 import 'pin.dart';
 import '../plugin/plugin.dart';
 import 'node.dart';
-import 'module.dart';
 import 'right_click.dart';
 import '../preset/info.dart';
 import '../titleBar.dart';
@@ -38,15 +38,13 @@ class PatchEditor extends StatefulWidget {
   PatchEditor({
     required this.presetInfo,
     required this.plugins,
-    required this.initialNodes,
-    required this.initialCables,
+    required this.patch,
     this.audioManager,
   }) : super(key: UniqueKey());
 
   final PresetInfo presetInfo;
   final List<Plugin> plugins;
-  final List<rust_node.Node> initialNodes;
-  final List<Cable> initialCables;
+  final Patch patch;
   final AudioManager? audioManager;
 
   @override
@@ -83,8 +81,14 @@ class _PatchEditor extends State<PatchEditor> {
   void initState() {
     super.initState();
     // Initialize local state from incoming Patch once
-    _nodes = [...widget.initialNodes];
-    _cables = [...widget.initialCables];
+    _nodes = [...widget.patch.nodes];
+    _cables = [...widget.patch.cables];
+    // Initialize next node id to one greater than the current maximum
+    int maxId = 0;
+    for (final n in _nodes) {
+      if (n.id > maxId) maxId = n.id;
+    }
+    _nextNodeId = (maxId + 1);
   }
   
   @override
@@ -176,11 +180,9 @@ class _PatchEditor extends State<PatchEditor> {
   // Callback implementations
   void _onAddNode(Module module, Offset position) {
     // Create Rust node directly
-    var rustModule = module.toRustModule();
-    
     try {
       var node = rust_node.Node.fromModule(
-        module: rustModule,
+        module: module,
         position: (position.dx, position.dy),
       );
       
@@ -241,11 +243,18 @@ class _PatchEditor extends State<PatchEditor> {
   
   Future<void> _savePatch() async {
     try {
-      // For now, create simple JSON structure manually
-      // TODO: Use rust_patch_api.savePatch once bindings are updated
       final data = {
-        'nodes': [],
-        'cables': [],
+        'nodes': _nodes.map((n) => {
+          'id': n.id,
+          'position': [n.position.$1, n.position.$2],
+          'moduleSource': n.module.source,
+        }).toList(),
+        'cables': _cables.map((c) => {
+          'srcNodeId': c.source.node.id,
+          'srcAnnotation': c.source.endpoint.annotation,
+          'dstNodeId': c.destination.node.id,
+          'dstAnnotation': c.destination.endpoint.annotation,
+        }).toList(),
       };
       final jsonStr = jsonEncode(data);
       await widget.presetInfo.patchFile.writeAsString(jsonStr);
