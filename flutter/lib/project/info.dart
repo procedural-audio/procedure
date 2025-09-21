@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/patch/patch.dart';
+import 'package:procedure/patch/patch.dart';
 
 import '../plugin/info.dart';
 import '../settings.dart';

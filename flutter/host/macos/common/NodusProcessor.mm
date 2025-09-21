@@ -20,7 +20,7 @@ NodusProcessor::NodusProcessor()
 {
     puts("Created processor");
 
-    auto handle = dlopen("../Frameworks/rust_lib_metasampler.framework/rust_lib_metasampler", RTLD_LAZY);
+    auto handle = dlopen("../Frameworks/rlm.framework/rlm", RTLD_LAZY);
 
     if (!handle) {
         printf("Failed to open library: %s\n", dlerror());

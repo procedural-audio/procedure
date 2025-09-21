@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:metasampler/style/colors.dart';
-import 'package:metasampler/bindings/api/io.dart';
+import 'package:procedure/style/colors.dart';
+import 'package:procedure/bindings/api/io.dart';
 import 'style/text.dart';
 import 'style/buttons.dart';
 import 'project/browser.dart';

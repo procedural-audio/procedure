@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:metasampler/style/colors.dart';
-import 'package:metasampler/preset/browser.dart';
+import 'package:procedure/style/colors.dart';
+import 'package:procedure/preset/browser.dart';
 import 'dart:io';
 
 class TitleBarNavigatorObserver extends NavigatorObserver {

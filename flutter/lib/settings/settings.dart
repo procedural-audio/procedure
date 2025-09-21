@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/io.dart';
+import 'package:procedure/bindings/api/io.dart';
 import '../style/colors.dart';
 import '../style/text.dart';
 import 'audio.dart';

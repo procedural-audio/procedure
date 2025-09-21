@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/style/colors.dart';
+import 'package:procedure/style/colors.dart';
 import 'titleBar.dart';
 
 class Window extends StatelessWidget {

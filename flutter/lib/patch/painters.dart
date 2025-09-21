@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/node.dart' as rust_node;
+import 'package:procedure/bindings/api/node.dart' as rust_node;
 import 'dart:ui' as ui;
 import 'dart:math';
 import 'dart:convert';

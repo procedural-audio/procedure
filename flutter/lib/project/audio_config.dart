@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/io.dart';
+import 'package:procedure/bindings/api/io.dart';
 
 class AudioConfigDialog extends StatefulWidget {
   AudioConfigDialog({

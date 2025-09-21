@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/patch/painters.dart';
+import 'package:procedure/patch/painters.dart';
 
 import 'dart:io';
 import 'dart:async';

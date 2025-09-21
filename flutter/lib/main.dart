@@ -3,20 +3,20 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:metasampler/home.dart';
-import 'package:metasampler/settings.dart';
-import 'package:metasampler/settings/settings.dart';
-import 'package:metasampler/style/colors.dart';
-import 'package:metasampler/window.dart';
+import 'package:procedure/home.dart';
+import 'package:procedure/settings.dart';
+import 'package:procedure/settings/settings.dart';
+import 'package:procedure/style/colors.dart';
+import 'package:procedure/window.dart';
 
 import 'project/project.dart';
 import 'project/info.dart';
 import 'titleBar.dart';
 import 'project/browser.dart';
 
-import 'package:metasampler/bindings/frb_generated.dart';
-import 'package:metasampler/bindings/api/io.dart';
-import 'package:metasampler/settings.dart' as old_settings;
+import 'package:procedure/bindings/frb_generated.dart';
+import 'package:procedure/bindings/api/io.dart';
+import 'package:procedure/settings.dart' as old_settings;
 
 late AudioManager _audioManager;
 

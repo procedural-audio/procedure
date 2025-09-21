@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:metasampler/bindings/api/io.dart';
-import 'package:metasampler/plugin/plugin.dart';
-import 'package:metasampler/settings.dart';
-import 'package:metasampler/patch/newTopBar.dart';
-import 'package:metasampler/preset/preset.dart';
+import 'package:procedure/bindings/api/io.dart';
+import 'package:procedure/plugin/plugin.dart';
+import 'package:procedure/settings.dart';
+import 'package:procedure/patch/newTopBar.dart';
+import 'package:procedure/preset/preset.dart';
 
 
 import '../preset/info.dart';

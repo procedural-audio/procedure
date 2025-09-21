@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:metasampler/bindings/api/module.dart';
-import 'package:metasampler/project/theme.dart';
+import 'package:procedure/bindings/api/module.dart';
+import 'package:procedure/project/theme.dart';
 
 import '../views/settings.dart';
 import '../plugin/plugin.dart';

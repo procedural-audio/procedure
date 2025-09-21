@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/node.dart' as rust_node;
-import 'package:metasampler/bindings/api/endpoint.dart';
+import 'package:procedure/bindings/api/node.dart' as rust_node;
+import 'package:procedure/bindings/api/endpoint.dart';
 
 import 'dart:convert';
 
@@ -125,19 +125,60 @@ class _PinState extends State<Pin> {
               bool is_selected = false; // Simplified for now
               var kind = endpoint.kind;
               var type = endpoint.type;
-              return Container(
-                width: pinRadius * 2,
-                height: pinRadius * 2,
-                child: CustomPaint(
-                  painter: PinPainter(
-                    color: ProjectTheme.getColor(type),
-                    shape: ProjectTheme.getShape(kind),
-                    selected: is_selected,
-                    hovering: hovering,
-                    dragging: dragging,
-                    connected: connected,
+
+              Map<String, dynamic> ann = {};
+              try { ann = jsonDecode(endpoint.annotation); } catch (_) {}
+              final String epName = (ann['name'] is String) ? ann['name'] as String : '';
+              final String tooltipText = epName.isNotEmpty ? '$type - $epName' : type;
+
+              final bool isInput = endpoint.isInput;
+              final double dx = isInput ? -(140.0) : (pinRadius * 2 + 8);
+              final Alignment align = isInput ? Alignment.centerRight : Alignment.centerLeft;
+
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SizedBox(
+                    width: pinRadius * 2,
+                    height: pinRadius * 2,
+                    child: CustomPaint(
+                      painter: PinPainter(
+                        color: ProjectTheme.getColor(type),
+                        shape: ProjectTheme.getShape(kind),
+                        selected: is_selected,
+                        hovering: hovering,
+                        dragging: dragging,
+                        connected: connected,
+                      ),
+                    ),
                   ),
-                ),
+                  if (hovering)
+                    Positioned(
+                      left: dx,
+                      top: -6,
+                      child: Align(
+                        alignment: align,
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 180),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(30, 30, 30, 0.95),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color.fromRGBO(60, 60, 60, 1.0), width: 1),
+                          ),
+                          child: Text(
+                            tooltipText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),

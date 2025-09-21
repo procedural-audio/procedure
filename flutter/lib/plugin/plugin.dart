@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:metasampler/bindings/api/module.dart';
-import 'package:metasampler/settings.dart';
-import 'package:metasampler/utils.dart';
+import 'package:procedure/bindings/api/module.dart';
+import 'package:procedure/settings.dart';
+import 'package:procedure/utils.dart';
 
 import 'dart:io';
 

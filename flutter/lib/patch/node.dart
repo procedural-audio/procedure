@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:metasampler/patch/pin.dart';
-import 'package:metasampler/patch/widgets/fader.dart';
-import 'package:metasampler/patch/widgets/textbox.dart';
-import 'package:metasampler/project/theme.dart';
-import 'package:metasampler/style/colors.dart';
+import 'package:procedure/patch/pin.dart';
+import 'package:procedure/patch/widgets/fader.dart';
+import 'package:procedure/patch/widgets/textbox.dart';
+import 'package:procedure/project/theme.dart';
+import 'package:procedure/style/colors.dart';
 
 import '../bindings/api/endpoint.dart';
 import '../bindings/api/node.dart' as rust_node;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:metasampler/preset/preset.dart';
+import 'package:procedure/preset/preset.dart';
 
 import '../project/info.dart';
 import '../project/project.dart';
