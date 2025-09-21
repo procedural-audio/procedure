@@ -55,21 +55,10 @@ class Preset extends StatelessWidget {
         final List<dynamic> nodesJson = (json['nodes'] as List?) ?? [];
         final List<dynamic> cablesJson = (json['cables'] as List?) ?? [];
 
-        // Rebuild nodes from module source
+        // Rebuild nodes using Rust-side JSON constructor
         for (final n in nodesJson) {
-          final id = (n['id'] as num?)?.toInt() ?? 0;
-          final posList = (n['position'] as List?) ?? [0.0, 0.0];
-          final px = (posList[0] as num).toDouble();
-          final py = (posList[1] as num).toDouble();
-          final src = (n['moduleSource'] as String?) ?? '';
-          if (src.isEmpty) continue;
-
-          final rustModule = rust_mod.Module.from(source: src);
-          final node = rust_node.Node.fromModule(module: rustModule, position: (px, py));
-          if (node != null) {
-            node.id = id;
-            nodes.add(node);
-          }
+          final node = rust_node.Node.fromJson(json: jsonEncode(n));
+          if (node != null) nodes.add(node);
         }
 
         // Node lookup map
@@ -142,9 +131,23 @@ class Preset extends StatelessWidget {
     
     // Save the patch data
     try {
-      // TODO: Use savePatch once bindings are regenerated
-      // var jsonStr = await savePatch(nodes: nodes, cables: cables);
-      var jsonStr = '{"nodes": [], "cables": []}';
+      final nodesJson = patch.nodes
+          .map((n) => jsonDecode(n.toJson()) as Map<String, dynamic>)
+          .toList();
+
+      final cablesJson = patch.cables
+          .map((c) => {
+                'srcNodeId': c.source.node.id,
+                'srcAnnotation': c.source.endpoint.annotation,
+                'dstNodeId': c.destination.node.id,
+                'dstAnnotation': c.destination.endpoint.annotation,
+              })
+          .toList();
+
+      final jsonStr = jsonEncode({
+        'nodes': nodesJson,
+        'cables': cablesJson,
+      });
       await info.patchFile.writeAsString(jsonStr);
       print("Saved patch file in preset to: ${info.patchFile.path}");
     } catch (e) {

@@ -17,6 +17,7 @@ import '../titleBar.dart';
 import '../bindings/api/io.dart';
 import '../bindings/api/cable.dart';
 import '../bindings/api/node.dart' as rust_node;
+import '../bindings/api/endpoint.dart';
 import '../bindings/api/patch.dart';
 
 /* LIBRARY */
@@ -106,6 +107,7 @@ class _PatchEditor extends State<PatchEditor> {
         // No key - let widgets be recreated fresh
         node: node,
         onSave: _savePatch,
+        isEndpointConnected: _isEndpointConnected,
         onPositionChanged: _onNodePositionChanged,
         onAddConnector: addCable,
         onRemoveConnections: removeConnectionsTo,
@@ -119,6 +121,29 @@ class _PatchEditor extends State<PatchEditor> {
         onCableRepaintNeeded: () => _cableRepaintNotifier.notifyListeners(),
       );
     }).toList();
+  }
+
+  bool _isEndpointConnected(rust_node.Node node, NodeEndpoint endpoint) {
+    for (final cable in _cables) {
+      if (endpoint.isInput) {
+        final dst = cable.destination;
+        if (dst.node.id == node.id &&
+            dst.endpoint.isInput == true &&
+            dst.endpoint.type == endpoint.type &&
+            dst.endpoint.annotation == endpoint.annotation) {
+          return true;
+        }
+      } else {
+        final src = cable.source;
+        if (src.node.id == node.id &&
+            src.endpoint.isInput == false &&
+            src.endpoint.type == endpoint.type &&
+            src.endpoint.annotation == endpoint.annotation) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
   void _onNodePositionChanged(rust_node.Node node) {
     final index = _nodes.indexWhere((n) => n.id == node.id);
@@ -243,20 +268,23 @@ class _PatchEditor extends State<PatchEditor> {
   
   Future<void> _savePatch() async {
     try {
-      final data = {
-        'nodes': _nodes.map((n) => {
-          'id': n.id,
-          'position': [n.position.$1, n.position.$2],
-          'moduleSource': n.module.source,
-        }).toList(),
-        'cables': _cables.map((c) => {
-          'srcNodeId': c.source.node.id,
-          'srcAnnotation': c.source.endpoint.annotation,
-          'dstNodeId': c.destination.node.id,
-          'dstAnnotation': c.destination.endpoint.annotation,
-        }).toList(),
-      };
-      final jsonStr = jsonEncode(data);
+      final nodesJson = _nodes
+          .map((n) => jsonDecode(n.toJson()) as Map<String, dynamic>)
+          .toList();
+
+      final cablesJson = _cables
+          .map((c) => {
+                'srcNodeId': c.source.node.id,
+                'srcAnnotation': c.source.endpoint.annotation,
+                'dstNodeId': c.destination.node.id,
+                'dstAnnotation': c.destination.endpoint.annotation,
+              })
+          .toList();
+
+      final jsonStr = jsonEncode({
+        'nodes': nodesJson,
+        'cables': cablesJson,
+      });
       await widget.presetInfo.patchFile.writeAsString(jsonStr);
       print("Saved patch file: ${widget.presetInfo.patchFile.path}");
     } catch (e) {
@@ -342,7 +370,8 @@ class _PatchEditor extends State<PatchEditor> {
     if (pin.node.id != connection.node.id) return false;
     
     // Compare endpoints directly
-    return pin.endpoint.type == connection.endpoint.type && 
+    return pin.endpoint.isInput == connection.endpoint.isInput &&
+           pin.endpoint.type == connection.endpoint.type && 
            pin.endpoint.annotation == connection.endpoint.annotation;
   }
   

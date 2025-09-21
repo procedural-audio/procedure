@@ -1,5 +1,6 @@
 use flutter_rust_bridge::frb;
 use serde::{Serialize, Deserialize};
+use serde_json;
 use std::fs;
 use std::path::{Path, PathBuf};
 use cmajor::{endpoint::EndpointInfo, engine::{Engine, Error, Linked, Loaded}, Cmajor};
@@ -126,5 +127,15 @@ impl Module {
 
         module.parse_annotations(Some(base_dir));
         Ok(module)
+    }
+
+    #[frb(sync)]
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    #[frb(sync)]
+    pub fn from_json(json: String) -> Option<Self> {
+        serde_json::from_str::<Self>(&json).ok()
     }
 }

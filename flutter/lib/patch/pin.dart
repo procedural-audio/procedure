@@ -14,6 +14,7 @@ class Pin extends StatefulWidget {
   Pin({
     required this.node,
     required this.endpoint,
+    required this.isConnected,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.onNewCableDrag,
@@ -41,6 +42,7 @@ class Pin extends StatefulWidget {
 
   final rust_node.Node node;
   final NodeEndpoint endpoint;
+  final bool Function(rust_node.Node, NodeEndpoint) isConnected;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -61,9 +63,7 @@ class _PinState extends State<Pin> {
 
   // This will be passed from parent widget that manages the cables list
   bool _isPinConnected() {
-    // For now, return false. The parent PatchEditor will need to pass this information
-    // or we'll need to access the cables list differently
-    return false;
+    return widget.isConnected(widget.node, widget.endpoint);
   }
 
   @override

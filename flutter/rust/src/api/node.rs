@@ -4,15 +4,20 @@ use super::module::*;
 use std::sync::{Arc, Mutex};
 
 use flutter_rust_bridge::*;
+use serde::{Serialize, Deserialize};
+use serde_json;
 
 #[frb(opaque)]
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Node {
     pub id: u32,
     pub module: Module,
     pub position: (f64, f64),
+    #[serde(skip)]
     inputs: Vec<NodeEndpoint>,
+    #[serde(skip)]
     outputs: Vec<NodeEndpoint>,
+    #[serde(skip)]
     performer: Arc<Mutex<cmajor::performer::Performer>>,
 }
 
@@ -94,6 +99,31 @@ impl Node {
             outputs,
             performer,
         })
+    }
+
+    #[frb(sync)]
+    pub fn to_json(&self) -> String {
+        // Only id, module, position will be serialized due to #[serde(skip)]
+        serde_json::to_string(self).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    #[frb(sync)]
+    pub fn from_json(json: String) -> Option<Self> {
+        #[derive(Deserialize)]
+        struct NodeSerde {
+            id: u32,
+            module: Module,
+            position: (f64, f64),
+        }
+
+        let parsed: NodeSerde = match serde_json::from_str(&json) {
+            Ok(p) => p,
+            Err(_) => return None,
+        };
+
+        let mut node = Self::from_module(parsed.module, parsed.position)?;
+        node.id = parsed.id;
+        Some(node)
     }
 
     #[frb(sync)]

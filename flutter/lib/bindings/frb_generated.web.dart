@@ -265,6 +265,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
+  Module? dco_decode_opt_box_autoadd_module(dynamic raw);
+
+  @protected
   (double, double) dco_decode_record_f_64_f_64(dynamic raw);
 
   @protected
@@ -502,6 +505,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
+
+  @protected
+  Module? sse_decode_opt_box_autoadd_module(SseDeserializer deserializer);
 
   @protected
   (double, double) sse_decode_record_f_64_f_64(SseDeserializer deserializer);
@@ -744,6 +750,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_i_64(
       PlatformInt64? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_module(
+      Module? self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_f_64_f_64(

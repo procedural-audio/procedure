@@ -25,6 +25,9 @@ abstract class Node implements RustOpaqueInterface {
 
   set position((double, double) position);
 
+  static Node? fromJson({required String json}) =>
+      RustLib.instance.api.crateApiNodeNodeFromJson(json: json);
+
   static Node? fromModule(
           {required Module module, required (double, double) position}) =>
       RustLib.instance.api
@@ -43,4 +46,6 @@ abstract class Node implements RustOpaqueInterface {
   bool hasEndpoint({required NodeEndpoint endpoint});
 
   void setPosition({required (double, double) position});
+
+  String toJson();
 }

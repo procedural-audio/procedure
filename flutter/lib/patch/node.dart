@@ -114,6 +114,7 @@ class NodeEditor extends StatefulWidget {
     Key? key,
     required this.node,
     required this.onSave,
+    required this.isEndpointConnected,
     required this.onAddConnector,
     required this.onRemoveConnections,
     required this.onNewCableDrag,
@@ -129,6 +130,7 @@ class NodeEditor extends StatefulWidget {
 
   final rust_node.Node node;
   final VoidCallback onSave;
+  final bool Function(rust_node.Node, NodeEndpoint) isEndpointConnected;
   final void Function(Pin, Pin) onAddConnector;
   final void Function(Pin) onRemoveConnections;
   final void Function(Offset) onNewCableDrag;
@@ -223,6 +225,7 @@ class _NodeEditorState extends State<NodeEditor> {
         Pin(
           node: widget.node,
           endpoint: endpoint,
+          isConnected: widget.isEndpointConnected,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -262,6 +265,7 @@ class _NodeEditorState extends State<NodeEditor> {
         Pin(
           node: widget.node,
           endpoint: endpoint,
+          isConnected: widget.isEndpointConnected,
           onAddConnector: widget.onAddConnector,
           onRemoveConnections: widget.onRemoveConnections,
           onNewCableDrag: widget.onNewCableDrag,
@@ -275,6 +279,8 @@ class _NodeEditorState extends State<NodeEditor> {
 
     return children;
   }
+
+  
 
   @override
   Widget build(BuildContext context) {

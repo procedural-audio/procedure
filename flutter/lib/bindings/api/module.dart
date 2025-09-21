@@ -33,10 +33,17 @@ class Module {
   static Module from({required String source}) =>
       RustLib.instance.api.crateApiModuleModuleFrom(source: source);
 
+  static Module? fromJson({required String json}) =>
+      RustLib.instance.api.crateApiModuleModuleFromJson(json: json);
+
   static Future<Module> load(
           {required String path, required List<String> category}) =>
       RustLib.instance.api
           .crateApiModuleModuleLoad(path: path, category: category);
+
+  String toJson() => RustLib.instance.api.crateApiModuleModuleToJson(
+        that: this,
+      );
 
   @override
   int get hashCode =>
