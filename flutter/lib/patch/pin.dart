@@ -76,14 +76,12 @@ class _PinState extends State<Pin> {
       top: widget.offset.dy,
         child: MouseRegion(
           onEnter: (e) {
-            print("Pin enter");
             widget.onNewCableSetEnd(widget);
             setState(() {
               hovering = true;
             });
           },
           onExit: (e) {
-            print("Pin exit");
             widget.onNewCableSetEnd(null);
             setState(() {
               hovering = false;

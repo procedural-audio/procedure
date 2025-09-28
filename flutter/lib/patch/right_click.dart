@@ -1,13 +1,122 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:procedure/bindings/api/module.dart';
 import 'package:procedure/project/theme.dart';
 
+import 'package:cloud_functions/cloud_functions.dart';
+
 import '../views/settings.dart';
 import '../plugin/plugin.dart';
 
 const int INDENT_SIZE = 10;
+
+Future<String> generateModule(String searchText) async {
+  print("Generate module: $searchText");
+
+  try {
+    // Call the Firebase function with authentication and rate limiting
+    final callable = FirebaseFunctions.instance.httpsCallable('menuSuggestion');
+    final result = await callable.call({'task': searchText});
+    
+    // Extract the result from the response - the function returns { result: string }
+    final data = result.data as Map<String, dynamic>;
+    final resultMap = data['result'];
+    final codeString = resultMap['result'].toString();
+    
+    print("Generated module: $codeString");
+    return codeString;
+    
+  } catch (e) {
+    print("Error calling Firebase function: $e");
+    
+    // Handle specific error types with more detailed messages
+    if (e.toString().contains('unauthenticated')) {
+      print("User must be logged in to generate modules");
+      return "Please log in to generate modules";
+    } else if (e.toString().contains('resource-exhausted')) {
+      print("Rate limit exceeded");
+      return "Rate limit exceeded. Please try again later";
+    } else if (e.toString().contains('internal')) {
+      print("Internal server error - this might be a permissions issue");
+      return "Server error: The AI service is not properly configured. Please contact support.";
+    } else if (e.toString().contains('permission') || e.toString().contains('PERMISSION_DENIED')) {
+      print("Permission denied error");
+      return "Permission error: The AI service needs to be configured. Please contact support.";
+    } else if (e.toString().contains('INVALID_ARGUMENT')) {
+      print("Invalid argument error");
+      return "Invalid request: Please try a different search term.";
+    } else if (e.toString().contains('timeout')) {
+      print("Request timeout");
+      return "Request timed out. Please try again.";
+    } else {
+      print("Unknown error occurred: $e");
+      return "Error generating module: ${e.toString().split(']').last.trim()}";
+    }
+  }
+}
+
+class NoResultsWidget extends StatelessWidget {
+  final VoidCallback? onGenerate;
+  final String searchText;
+
+  const NoResultsWidget({super.key, this.onGenerate, required this.searchText});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(
+            Icons.add_circle_outline,
+            color: Colors.grey.shade600,
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "No modules found",
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Try a different search or generate a new module",
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onGenerate ?? () {
+              generateModule(searchText);
+            },
+            icon: const Icon(Icons.auto_fix_high, size: 16),
+            label: const Text("Generate"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: MyTheme.grey40,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 8,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 void add_module_to_category(
   Module module,
@@ -246,9 +355,11 @@ class _RightClickView extends State<RightClickView> {
               ),
               child: SingleChildScrollView(
                 controller: ScrollController(),
-                child: Column(
-                  children: categories,
-                ),
+                child: categories.isEmpty
+                    ? NoResultsWidget(searchText: searchText)
+                    : Column(
+                        children: categories,
+                      ),
               ),
             ),
           ],

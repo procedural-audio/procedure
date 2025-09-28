@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:procedure/auth_gate.dart';
 import 'package:procedure/home.dart';
 import 'package:procedure/settings.dart';
 import 'package:procedure/settings/settings.dart';
@@ -16,6 +18,9 @@ import 'project/browser.dart';
 
 import 'package:procedure/bindings/frb_generated.dart';
 import 'package:procedure/bindings/api/io.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 late AudioManager _audioManager;
 
@@ -32,6 +37,14 @@ final GoRouter _router = GoRouter(
             child: navigationShell,
           ),
           branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/login',
+                  builder: (context, state) => AuthGate(clientId: clientId),
+                ),
+              ],
+            ),
             StatefulShellBranch(
               routes: [
                 GoRoute(
@@ -173,11 +186,22 @@ Future<String?> _firstPresetName(String projectName) async {
   }
 }
 
+const clientId = 'YOUR_CLIENT_ID';
+
 Future<void> main(List<String> args) async {
   await RustLib.init();
 
   WidgetsFlutterBinding.ensureInitialized();
   _audioManager = AudioManager();
+
+  await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+
+  // Ideal time to initialize
+  // await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  // await FirebaseAuth.instance.signInWithProvider(GoogleAuthProvider());
 
   runApp(App());
 }

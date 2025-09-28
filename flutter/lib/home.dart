@@ -140,6 +140,7 @@ class HomeWidget extends StatelessWidget {
                     label: 'Account',
                     isSelected: false,
                     onTap: () {
+                        context.go('/login');
                       // Handle account tap
                     },
                   ),
