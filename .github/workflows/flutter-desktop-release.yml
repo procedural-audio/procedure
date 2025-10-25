@@ -107,7 +107,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libasound2-dev libjack-jackd2-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev libasound2-dev libjack-jackd2-dev
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
