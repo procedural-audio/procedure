@@ -11,7 +11,7 @@
 
 // #import "GeneratedPluginRegistrant.swift"
 #include "FlutterPluginRegistrarMacOS.h"
-// #include "flutter_juce-Swift.h"
+// #include "procedure-Swift.h"
 
 class NodusEditor  : public juce::AudioProcessorEditor
 {

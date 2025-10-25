@@ -37,7 +37,7 @@ jobs:
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
-          hdiutil create -volname "procedure" -srcfolder flutter_juce.app -ov -format UDZO ../../../../procedure-macos.dmg
+          hdiutil create -volname "procedure" -srcfolder procedure.app -ov -format UDZO ../../../../procedure-macos.dmg
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
