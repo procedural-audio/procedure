@@ -1,6 +1,6 @@
 app-id: com.proceduralaudio.Procedure
 runtime: org.freedesktop.Platform
-runtime-version: "23.08"
+runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
 command: procedure
 finish-args:
@@ -22,4 +22,4 @@ modules:
         path: ../flutter/build/linux/x64/release/bundle
         dest: bundle
       - type: file
-        path: flatpak/procedure.desktop
+        path: procedure.desktop
