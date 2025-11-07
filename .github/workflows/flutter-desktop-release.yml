@@ -229,11 +229,14 @@ jobs:
         run: |
           cd build/linux/x64/release/
           zip -r ../../../procedure-linux-x64.zip bundle
+      - name: Archive Linux bundle for Flatpak
+        run: |
+          tar -C build/linux/x64/release -czf build/procedure-linux-bundle.tar.gz bundle
       - name: Upload Linux bundle artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-desktop-bundle
-          path: flutter/build/linux/x64/release/bundle
+          path: flutter/build/procedure-linux-bundle.tar.gz
       - name: Build Snapcraft package
         id: snapcraft
         uses: snapcore/action-build@v1
@@ -286,7 +289,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-desktop-bundle
-          path: flutter/build/linux/x64/release
+          path: artifacts
+      - name: Extract Linux bundle
+        run: |
+          mkdir -p flutter/build/linux/x64/release
+          tar -xzf artifacts/procedure-linux-bundle.tar.gz -C flutter/build/linux/x64/release
       - name: Build Flatpak bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
