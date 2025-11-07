@@ -7,8 +7,23 @@ on:
       - 'v*'
 
 jobs:
+  # Ensure the GitHub Release for this tag exists so downstream jobs can attach artifacts
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure release exists for tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ github.ref_name }}" >/dev/null 2>&1; then
+            echo "Release ${{ github.ref_name }} already exists"
+          else
+            gh release create "${{ github.ref_name }}" --generate-notes
+          fi
+
   # Job to build the macOS application
   build-macos:
+    needs: prepare-release
     runs-on: macos-latest # Use the latest available macOS runner
     defaults:
       run:
@@ -48,6 +63,7 @@ jobs:
 
   # Job to build the Windows application
   build-windows-x64:
+    needs: prepare-release
     runs-on: windows-latest
     defaults:
       run:
@@ -87,6 +103,7 @@ jobs:
 
   # Job to build the Linux x64 application
   build-linux-x64:
+    needs: prepare-release
     runs-on: ubuntu-latest
     defaults:
       run:
