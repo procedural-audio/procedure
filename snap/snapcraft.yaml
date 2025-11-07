@@ -23,7 +23,8 @@ parts:
     source: ../flutter/build/linux/x64/release/bundle
     organize:
       "*": opt/procedure/
-    stage:
-      - "."
-    prime:
-      - "."
+  desktop-assets:
+    plugin: dump
+    source: gui
+    organize:
+      procedure.desktop: snap/gui/procedure.desktop
