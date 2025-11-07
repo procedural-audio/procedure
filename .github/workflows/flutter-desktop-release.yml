@@ -195,9 +195,6 @@ jobs:
               sudo ln -sf "${pc_dir}/webkit2gtk-4.1.pc" "${pc_dir}/webkit2gtk-4.0.pc"
             fi
           fi
-      - name: Install Snapcraft
-        run: sudo snap install snapcraft --classic
-
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -212,8 +209,19 @@ jobs:
           cd build/linux/x64/release/
           zip -r ../../../procedure-linux-x64.zip bundle
       - name: Build Snapcraft package
+        id: snapcraft
+        uses: snapcore/action-build@v1
+        with:
+          path: snap
+          snapcraft-args: "--destructive-mode"
+      - name: Copy Snap artifact
         run: |
-          snapcraft --project-dir ../snap --destructive-mode --output build/procedure-linux-amd64.snap
+          SNAP_PATH="${{ steps.snapcraft.outputs.snap }}"
+          if [ -z "$SNAP_PATH" ] || [ ! -f "$SNAP_PATH" ]; then
+            echo "snapcore/action-build did not output a snap artifact."
+            exit 1
+          fi
+          cp "$SNAP_PATH" build/procedure-linux-amd64.snap
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
