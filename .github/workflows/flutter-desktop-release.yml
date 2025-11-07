@@ -236,13 +236,14 @@ jobs:
           path: snap
           snapcraft-args: "--destructive-mode"
       - name: Copy Snap artifact
+        working-directory: .
         run: |
           SNAP_PATH="${{ steps.snapcraft.outputs.snap }}"
           if [ -z "$SNAP_PATH" ] || [ ! -f "$SNAP_PATH" ]; then
-            echo "snapcore/action-build did not output a snap artifact."
+            echo "snapcore/action-build did not output a snap artifact at $SNAP_PATH."
             exit 1
           fi
-          cp "$SNAP_PATH" build/procedure-linux-amd64.snap
+          cp "$SNAP_PATH" flutter/build/procedure-linux-amd64.snap
       - name: Build Flatpak bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
