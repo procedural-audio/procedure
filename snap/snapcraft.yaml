@@ -23,3 +23,7 @@ parts:
     source: ../flutter/build/linux/x64/release/bundle
     organize:
       "*": opt/procedure/
+    stage:
+      - "."
+    prime:
+      - "."

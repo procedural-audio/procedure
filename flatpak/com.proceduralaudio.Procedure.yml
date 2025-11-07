@@ -1,0 +1,25 @@
+app-id: com.proceduralaudio.Procedure
+runtime: org.freedesktop.Platform
+runtime-version: "23.08"
+sdk: org.freedesktop.Sdk
+command: procedure
+finish-args:
+  - --share=network
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+modules:
+  - name: procedure
+    buildsystem: simple
+    build-commands:
+      - install -d /app/opt/procedure
+      - cp -a bundle/. /app/opt/procedure/
+      - install -Dm755 /app/opt/procedure/procedure /app/bin/procedure
+      - install -Dm644 procedure.desktop /app/share/applications/com.proceduralaudio.Procedure.desktop
+    sources:
+      - type: dir
+        path: ../flutter/build/linux/x64/release/bundle
+        dest: bundle
+      - type: file
+        path: flatpak/procedure.desktop

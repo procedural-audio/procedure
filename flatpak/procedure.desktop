@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Procedure
+Comment=Design procedural audio systems
+Exec=procedure
+Icon=com.proceduralaudio.Procedure
+Terminal=false
+Categories=AudioVideo;Audio;
