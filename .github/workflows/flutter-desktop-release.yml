@@ -42,6 +42,10 @@ jobs:
     defaults:
       run:
         working-directory: flutter
+    env:
+      MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+      MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
 
     steps:
       # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -55,10 +59,7 @@ jobs:
           cache: true
 
       - name: Install signing certificate
-        if: ${{ secrets.MACOS_CERT_P12 != '' && secrets.MACOS_CERT_PASSWORD != '' }}
-        env:
-          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
-          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        if: ${{ env.MACOS_CERT_P12 != '' && env.MACOS_CERT_PASSWORD != '' }}
         run: |
           CERT_PATH="$RUNNER_TEMP/macos_signing_cert.p12"
           KEYCHAIN_PATH="$RUNNER_TEMP/build-signing.keychain-db"
@@ -80,9 +81,7 @@ jobs:
         run: flutter build macos --release
 
       - name: Codesign Procedure.app
-        if: ${{ secrets.MACOS_SIGNING_IDENTITY != '' }}
-        env:
-          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        if: ${{ env.MACOS_SIGNING_IDENTITY != '' }}
         run: |
           APP_PATH="build/macos/Build/Products/Release/procedure.app"
           if [ ! -d "$APP_PATH" ]; then
@@ -99,9 +98,7 @@ jobs:
           hdiutil create -volname "procedure" -srcfolder procedure.app -ov -format UDZO ../../../../procedure-macos.dmg
 
       - name: Codesign disk image
-        if: ${{ secrets.MACOS_SIGNING_IDENTITY != '' }}
-        env:
-          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        if: ${{ env.MACOS_SIGNING_IDENTITY != '' }}
         run: |
           DMG_PATH="build/procedure-macos.dmg"
           if [ ! -f "$DMG_PATH" ]; then
