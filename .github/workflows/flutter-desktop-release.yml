@@ -46,6 +46,9 @@ jobs:
       MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
       MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
       MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      NOTARIZATION_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+      NOTARIZATION_KEY_ISSUER: ${{ secrets.ASC_API_KEY_ISSUER }}
+      NOTARIZATION_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
 
     steps:
       # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -106,6 +109,24 @@ jobs:
             exit 1
           fi
           codesign --force --sign "$MACOS_SIGNING_IDENTITY" "$DMG_PATH"
+
+      - name: Notarize disk image
+        if: ${{ env.NOTARIZATION_KEY_ID != '' && env.NOTARIZATION_KEY_ISSUER != '' && env.NOTARIZATION_KEY_P8 != '' }}
+        run: |
+          DMG_PATH="../build/procedure-macos.dmg"
+          API_KEY_FILE="$RUNNER_TEMP/AuthKey_${{ env.NOTARIZATION_KEY_ID }}.p8"
+          echo "$NOTARIZATION_KEY_P8" > "$API_KEY_FILE"
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$API_KEY_FILE" \
+            --key-id "${{ env.NOTARIZATION_KEY_ID }}" \
+            --issuer "${{ env.NOTARIZATION_KEY_ISSUER }}" \
+            --wait
+
+      - name: Staple notarization ticket
+        if: ${{ env.NOTARIZATION_KEY_ID != '' && env.NOTARIZATION_KEY_ISSUER != '' && env.NOTARIZATION_KEY_P8 != '' }}
+        run: |
+          DMG_PATH="build/procedure-macos.dmg"
+          xcrun stapler staple "$DMG_PATH"
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
