@@ -54,6 +54,23 @@ jobs:
           flutter-version-file: flutter/pubspec.yaml
           cache: true
 
+      - name: Install signing certificate
+        if: ${{ secrets.MACOS_CERT_P12 != '' && secrets.MACOS_CERT_PASSWORD != '' }}
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/macos_signing_cert.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/build-signing.keychain-db"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          echo "CODESIGN_KEYCHAIN=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -62,11 +79,36 @@ jobs:
       - name: Build macOS release
         run: flutter build macos --release
 
+      - name: Codesign Procedure.app
+        if: ${{ secrets.MACOS_SIGNING_IDENTITY != '' }}
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          APP_PATH="build/macos/Build/Products/Release/procedure.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Expected app bundle at $APP_PATH was not found."
+            exit 1
+          fi
+          codesign --force --deep --options runtime --sign "$MACOS_SIGNING_IDENTITY" "$APP_PATH"
+          codesign --verify --deep --strict "$APP_PATH"
+
       # Package the release build
       - name: Package macOS release
         run: |
           cd build/macos/Build/Products/Release
           hdiutil create -volname "procedure" -srcfolder procedure.app -ov -format UDZO ../../../../procedure-macos.dmg
+
+      - name: Codesign disk image
+        if: ${{ secrets.MACOS_SIGNING_IDENTITY != '' }}
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          DMG_PATH="build/procedure-macos.dmg"
+          if [ ! -f "$DMG_PATH" ]; then
+            echo "Expected DMG at $DMG_PATH was not found."
+            exit 1
+          fi
+          codesign --force --sign "$MACOS_SIGNING_IDENTITY" "$DMG_PATH"
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
@@ -156,6 +198,8 @@ jobs:
               sudo ln -sf "${pc_dir}/webkit2gtk-4.1.pc" "${pc_dir}/webkit2gtk-4.0.pc"
             fi
           fi
+      - name: Install Snapcraft
+        run: sudo snap install snapcraft --classic
 
       # Gets the Flutter dependencies
       - name: Get Flutter dependencies
@@ -170,6 +214,9 @@ jobs:
         run: |
           cd build/linux/x64/release/
           zip -r ../../../procedure-linux-x64.zip bundle
+      - name: Build Snapcraft package
+        run: |
+          snapcraft --project-dir ../snap --destructive-mode --output build/procedure-linux-amd64.snap
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
@@ -180,6 +227,16 @@ jobs:
       - name: Upload to static latest release
         run: |
           gh release upload "${{ env.LATEST_RELEASE_TAG }}" build/procedure-linux-x64.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Snapcraft package to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} build/procedure-linux-amd64.snap --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Snapcraft package to static latest release
+        run: |
+          gh release upload "${{ env.LATEST_RELEASE_TAG }}" build/procedure-linux-amd64.snap --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
