@@ -20,6 +20,6 @@ apps:
 parts:
   procedure:
     plugin: dump
-    source: ../flutter/build/flutter/linux/x64/release/bundle
+    source: ../flutter/build/linux/x64/release/bundle
     organize:
       "*": opt/procedure/
