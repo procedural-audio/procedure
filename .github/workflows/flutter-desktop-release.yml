@@ -115,7 +115,7 @@ jobs:
         run: |
           DMG_PATH="build/procedure-macos.dmg"
           API_KEY_FILE="$RUNNER_TEMP/AuthKey_${{ env.NOTARIZATION_KEY_ID }}.p8"
-          echo "$NOTARIZATION_KEY_P8" > "$API_KEY_FILE"
+          printf '%s' "$NOTARIZATION_KEY_P8" > "$API_KEY_FILE"
           xcrun notarytool submit "$DMG_PATH" \
             --key "$API_KEY_FILE" \
             --key-id "${{ env.NOTARIZATION_KEY_ID }}" \
