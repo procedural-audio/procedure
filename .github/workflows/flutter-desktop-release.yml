@@ -243,6 +243,12 @@ jobs:
             exit 1
           fi
           cp "$SNAP_PATH" build/procedure-linux-amd64.snap
+      - name: Build Flatpak bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/com.proceduralaudio.Procedure.yml
+          bundle: flutter/build/procedure-linux-flatpak.flatpak
+          cache-key: flatpak-builder-${{ github.sha }}
 
       # Upload to GitHub release
       - name: Upload to GitHub Release
@@ -263,6 +269,16 @@ jobs:
       - name: Upload Snapcraft package to static latest release
         run: |
           gh release upload "${{ env.LATEST_RELEASE_TAG }}" build/procedure-linux-amd64.snap --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Flatpak bundle to GitHub Release
+        run: |
+          gh release upload ${{ github.ref_name }} build/procedure-linux-flatpak.flatpak --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Flatpak bundle to static latest release
+        run: |
+          gh release upload "${{ env.LATEST_RELEASE_TAG }}" build/procedure-linux-flatpak.flatpak --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
