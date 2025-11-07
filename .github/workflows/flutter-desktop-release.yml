@@ -233,7 +233,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-desktop-bundle
-          path: build/linux/x64/release/bundle
+          path: flutter/build/linux/x64/release/bundle
       - name: Build Snapcraft package
         id: snapcraft
         uses: snapcore/action-build@v1
