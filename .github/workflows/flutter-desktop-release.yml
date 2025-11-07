@@ -208,7 +208,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libasound2-dev libjack-jackd2-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libasound2-dev libjack-jackd2-dev flatpak flatpak-builder
           sudo apt-get install -y libwebkit2gtk-4.0-dev || sudo apt-get install -y libwebkit2gtk-4.1-dev
           if ! pkg-config --exists webkit2gtk-4.0; then
             if pkg-config --exists webkit2gtk-4.1; then
@@ -244,6 +244,9 @@ jobs:
             exit 1
           fi
           cp "$SNAP_PATH" flutter/build/procedure-linux-amd64.snap
+      - name: Configure Flatpak remote
+        run: |
+          flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       - name: Build Flatpak bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
