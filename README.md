@@ -30,14 +30,34 @@
   <a href="#other">Other</a>
 </p>
 
-![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif)
+![screenshot](config/screenshot.png)
 
-## Features
+## Pre-Release Todo
 
-* Node editing
-* Module generation
+* Home
+  * Setting user interface
+  * Projects browser
+  * Audio/Plugins/Accounts buttons
+* Patch Editor
+  * Preset browser
+  * Node selection
+  * Node adding and deleting
+  * Pins
+  * Infinite scroll
+* Fix dependencies and licensing
+* Building
+  * CI/CD for all platforms
+  * Manually test on all platforms
 * Project exporting
-* And so on and so forth
+* LLM module generation
+  * Subscription for LLM integration
+
+### State Management
+
+- List of nodes and connectors
+- Form patch by adding node/connector one at a time
+- Serialization
+  - On click save
 
 ## Download
 
