@@ -1,3 +1,4 @@
+<i>this project is in pre-release and is only partially working; check here for updates</i>
 <h1 align="center">
   <br>
   <a href="https://procedural.audio"><img src="https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.png" alt="Procedure" width="120"></a>
