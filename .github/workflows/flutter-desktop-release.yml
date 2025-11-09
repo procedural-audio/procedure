@@ -314,6 +314,7 @@ jobs:
     needs: build-flatpak
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Download Flatpak artifact
         uses: actions/download-artifact@v4
         with:
