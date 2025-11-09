@@ -35,12 +35,6 @@
 
 ## Pre-Release Todo
 
-* Repository
-  * Fix dependencies
-  * Clean up unused files
-  * Reorganize directories
-  * Add license
-  * Squash history and make public
 * Home
   * Setting user interface
   * Projects browser
