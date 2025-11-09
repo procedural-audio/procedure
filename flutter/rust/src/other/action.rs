@@ -11,21 +11,15 @@ use cmajor::*;
 
 use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
-use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
-use performer::InputStream;
 use performer::InputValue;
 use performer::OutputEvent;
-use performer::OutputStream;
 use performer::OutputValue;
 
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use value::Value;
 use value::ValueRef;
 
-use crate::api::graph::*;
-use crate::other::voices::*;
 use crate::other::handle::*;
 
 use super::stream::*;
@@ -193,7 +187,7 @@ impl Actions {
     fn process_input_external(&mut self, node: &Node, handle: &InputHandle, channel: usize) {
         match handle {
             InputHandle::Stream(_) => println!(" - External input streams are not supported"),
-            InputHandle::Event( InputEventHandle { handle, types: _ }) => {
+            InputHandle::Event(InputEventHandle { handle, .. }) => {
                 self.push(
                     ExternalInputEvent {
                         voices: node.clone_performer(),
@@ -209,29 +203,23 @@ impl Actions {
         match handle {
             OutputHandle::Stream { handle, feedback: _ } => {
                 match handle {
-                    OutputStreamHandle::Float32(h) => {
-                        self.push(
-                            ExternalOutputStream::<f32> {
-                                voices: node.clone_performer(),
-                                handle: h.clone(),
-                                buffer: vec![0.0; 1024],
-                                channel,
-                            }
-                        );
+                    OutputStreamHandle::Float32 { endpoint, .. } => {
+                        self.push(ExternalOutputStream::float32(
+                            node.clone_performer(),
+                            *endpoint,
+                            channel,
+                        ));
                     }
-                    OutputStreamHandle::Float32x2(h) => {
-                        self.push(
-                            ExternalOutputStream::<[f32; 2]> {
-                                voices: node.clone_performer(),
-                                handle: h.clone(),
-                                buffer: vec![[0.0, 0.0]; 1024],
-                                channel,
-                            }
-                        );
+                    OutputStreamHandle::Float32x2 { endpoint, .. } => {
+                        self.push(ExternalOutputStream::float32x2(
+                            node.clone_performer(),
+                            *endpoint,
+                            channel,
+                        ));
                     }
-                    OutputStreamHandle::Float64(_) => println!(" - Unsupported external output stream f64"),
-                    OutputStreamHandle::Int32(_) => println!(" - Unsupported external output stream i32"),
-                    OutputStreamHandle::Int64(_) => println!(" - Unsupported external output stream i64"),
+                    OutputStreamHandle::Float64 { .. } => println!(" - Unsupported external output stream f64"),
+                    OutputStreamHandle::Int32 { .. } => println!(" - Unsupported external output stream i32"),
+                    OutputStreamHandle::Int64 { .. } => println!(" - Unsupported external output stream i64"),
                     OutputStreamHandle::Err(e) => println!(" - Unsupported external output stream type {}", e),
                 }
             }
@@ -252,7 +240,7 @@ impl Actions {
             InputHandle::Stream(_) => {
                 println!(" - Unsupported widget input stream");
             },
-            InputHandle::Event(InputEventHandle { handle, types: _ }) => {
+            InputHandle::Event(InputEventHandle { handle, .. }) => {
                 self.push(
                     ReceiveEvents {
                         voices: node.clone_performer(),
@@ -264,20 +252,20 @@ impl Actions {
             InputHandle::Value(handle) => {
                 println!(" - Receive values from widget");
                 match handle {
-                    InputValueHandle::Float32(handle) => {
-                        self.process_input_widget_value(node, handle, queue);
+                    InputValueHandle::Float32 { endpoint, .. } => {
+                        self.process_input_widget_value(node, endpoint, queue);
                     }
-                    InputValueHandle::Float64(handle) => {
-                        self.process_input_widget_value(node, handle, queue);
+                    InputValueHandle::Float64 { endpoint, .. } => {
+                        self.process_input_widget_value(node, endpoint, queue);
                     }
-                    InputValueHandle::Int32(handle) => {
-                        self.process_input_widget_value(node, handle, queue);
+                    InputValueHandle::Int32 { endpoint, .. } => {
+                        self.process_input_widget_value(node, endpoint, queue);
                     }
-                    InputValueHandle::Int64(handle) => {
-                        self.process_input_widget_value(node, handle, queue);
+                    InputValueHandle::Int64 { endpoint, .. } => {
+                        self.process_input_widget_value(node, endpoint, queue);
                     }
-                    InputValueHandle::Bool(handle) => {
-                        self.process_input_widget_value(node, handle, queue);
+                    InputValueHandle::Bool { endpoint, .. } => {
+                        self.process_input_widget_value(node, endpoint, queue);
                     }
                     InputValueHandle::Object { .. } => todo!(),
                     InputValueHandle::Err(_) => println!(" - Unsupported widget input value"),
@@ -286,9 +274,14 @@ impl Actions {
         }
     }
 
-    fn process_input_widget_value<T>(&mut self, node: &Node, handle: &Endpoint<InputValue<T>>, queue: &Arc<ArrayQueue<Value>>)
-        where
-            T: Copy + SetInputValue + Send + Sync + 'static + for<'a> TryFrom<ValueRef<'a>> {
+    fn process_input_widget_value<T>(
+        &mut self,
+        node: &Node,
+        handle: &Endpoint<InputValue<T>>,
+        queue: &Arc<ArrayQueue<Value>>,
+    ) where
+        T: ValueSample + for<'a> TryFrom<ValueRef<'a>>,
+    {
 
         self.push(
             ReceiveValue {
@@ -324,45 +317,55 @@ impl Actions {
         match handle {
             InputHandle::Stream(handle) => {
                 match handle {
-                    InputStreamHandle::Float32(handle) => {
-                        let buffer = vec![0.0; 1024];
-                        self.push( ClearStream { voices, handle, buffer });
+                    InputStreamHandle::Float32 { endpoint, .. } => {
+                        self.push(ClearStream::float32(Arc::clone(&voices), endpoint));
                     }
-                    InputStreamHandle::Float64(handle) => {
-                        let buffer = vec![0.0; 1024];
-                        self.push( ClearStream { voices, handle, buffer });
+                    InputStreamHandle::Float64 { endpoint, .. } => {
+                        self.push(ClearStream::float64(Arc::clone(&voices), endpoint));
                     }
-                    InputStreamHandle::Int32(handle) => {
-                        let buffer = vec![0; 1024];
-                        self.push( ClearStream { voices, handle, buffer });
+                    InputStreamHandle::Int32 { endpoint, .. } => {
+                        self.push(ClearStream::int32(Arc::clone(&voices), endpoint));
                     }
-                    InputStreamHandle::Int64(handle) => {
-                        let buffer = vec![0; 1024];
-                        self.push(ClearStream { voices, handle, buffer });
+                    InputStreamHandle::Int64 { endpoint, .. } => {
+                        self.push(ClearStream::int64(Arc::clone(&voices), endpoint));
                     }
-                    InputStreamHandle::Float32x2(handle) => {
-                        let buffer = vec![[0.0, 0.0]; 1024];
-                        self.push( ClearStream { voices, handle, buffer });
+                    InputStreamHandle::Float32x2 { endpoint, .. } => {
+                        self.push(ClearStream::float32x2(Arc::clone(&voices), endpoint));
                     }
-                    InputStreamHandle::Err(_) => ()
+                    InputStreamHandle::Err(_) => (),
                 }
-            },
+            }
             InputHandle::Value(handle) => {
                 match handle {
-                    InputValueHandle::Float32(handle) => {
-                        self.push( ClearValue { voices, handle });
+                    InputValueHandle::Float32 { endpoint, .. } => {
+                        self.push(ClearValue {
+                            voices: Arc::clone(&voices),
+                            handle: endpoint.clone(),
+                        });
                     }
-                    InputValueHandle::Float64(handle) => {
-                        self.push( ClearValue { voices, handle });
+                    InputValueHandle::Float64 { endpoint, .. } => {
+                        self.push(ClearValue {
+                            voices: Arc::clone(&voices),
+                            handle: endpoint.clone(),
+                        });
                     }
-                    InputValueHandle::Int32(handle) => {
-                        self.push( ClearValue { voices, handle });
+                    InputValueHandle::Int32 { endpoint, .. } => {
+                        self.push(ClearValue {
+                            voices: Arc::clone(&voices),
+                            handle: endpoint.clone(),
+                        });
                     }
-                    InputValueHandle::Int64(handle) => {
-                        self.push( ClearValue { voices, handle });
+                    InputValueHandle::Int64 { endpoint, .. } => {
+                        self.push(ClearValue {
+                            voices: Arc::clone(&voices),
+                            handle: endpoint.clone(),
+                        });
                     }
-                    InputValueHandle::Bool(handle) => {
-                        self.push( ClearValue { voices, handle });
+                    InputValueHandle::Bool { endpoint, .. } => {
+                        self.push(ClearValue {
+                            voices: Arc::clone(&voices),
+                            handle: endpoint.clone(),
+                        });
                     }
                     InputValueHandle::Object { .. } => todo!(),
                     InputValueHandle::Err(_) => (),
@@ -401,17 +404,57 @@ impl Actions {
         dst_handle: InputStreamHandle) -> Result<(), &'static str> {
         
         match (src_handle, dst_handle) {
-            (OutputStreamHandle::Float32(src), InputStreamHandle::Float32(dst)) => self
-                .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::Float64(src), InputStreamHandle::Float64(dst)) => self
-                .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::Int32(src), InputStreamHandle::Int32(dst)) => self
-                .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::Int64(src), InputStreamHandle::Int64(dst)) => self
-                .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            (OutputStreamHandle::Float32x2(src), InputStreamHandle::Float32x2(dst)) => self
-                .copy_stream(src_voices, src, feedback, dst_voices, dst),
-            _ => return Err("Endpoints streams types are not compatible")
+            (
+                OutputStreamHandle::Float32 { endpoint: src, .. },
+                InputStreamHandle::Float32 { endpoint: dst, .. },
+            ) => self.push(CopyStream::float32(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&dst_voices),
+                dst,
+                Arc::clone(&feedback),
+            )),
+            (
+                OutputStreamHandle::Float64 { endpoint: src, .. },
+                InputStreamHandle::Float64 { endpoint: dst, .. },
+            ) => self.push(CopyStream::float64(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&dst_voices),
+                dst,
+                Arc::clone(&feedback),
+            )),
+            (
+                OutputStreamHandle::Int32 { endpoint: src, .. },
+                InputStreamHandle::Int32 { endpoint: dst, .. },
+            ) => self.push(CopyStream::int32(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&dst_voices),
+                dst,
+                Arc::clone(&feedback),
+            )),
+            (
+                OutputStreamHandle::Int64 { endpoint: src, .. },
+                InputStreamHandle::Int64 { endpoint: dst, .. },
+            ) => self.push(CopyStream::int64(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&dst_voices),
+                dst,
+                Arc::clone(&feedback),
+            )),
+            (
+                OutputStreamHandle::Float32x2 { endpoint: src, .. },
+                InputStreamHandle::Float32x2 { endpoint: dst, .. },
+            ) => self.push(CopyStream::float32x2(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&dst_voices),
+                dst,
+                Arc::clone(&feedback),
+            )),
+            _ => return Err("Endpoints streams types are not compatible"),
         }
 
         Ok(())
@@ -442,43 +485,60 @@ impl Actions {
         println!(" - Connect values");
 
         match (src_handle, dst_handle) {
-            (OutputValueHandle::Float32(src), InputValueHandle::Float32(dst)) => self
-                .copy_value(src_voices, src, feedback, dst_voices, dst),
-            (OutputValueHandle::Float64(src), InputValueHandle::Float64(dst)) => self
-                .copy_value(src_voices, src, feedback, dst_voices, dst),
-            (OutputValueHandle::Int32(src), InputValueHandle::Int32(dst)) => self
-                .copy_value(src_voices, src, feedback, dst_voices, dst),
-            (OutputValueHandle::Int64(src), InputValueHandle::Int64(dst)) => self
-                .copy_value(src_voices, src, feedback, dst_voices, dst),
-            (OutputValueHandle::Bool(src), InputValueHandle::Bool(dst)) => self
-                .copy_value(src_voices, src, feedback, dst_voices, dst),
+            (
+                OutputValueHandle::Float32 { endpoint: src, .. },
+                InputValueHandle::Float32 { endpoint: dst, .. },
+            ) => self.copy_value(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&feedback),
+                Arc::clone(&dst_voices),
+                dst,
+            ),
+            (
+                OutputValueHandle::Float64 { endpoint: src, .. },
+                InputValueHandle::Float64 { endpoint: dst, .. },
+            ) => self.copy_value(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&feedback),
+                Arc::clone(&dst_voices),
+                dst,
+            ),
+            (
+                OutputValueHandle::Int32 { endpoint: src, .. },
+                InputValueHandle::Int32 { endpoint: dst, .. },
+            ) => self.copy_value(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&feedback),
+                Arc::clone(&dst_voices),
+                dst,
+            ),
+            (
+                OutputValueHandle::Int64 { endpoint: src, .. },
+                InputValueHandle::Int64 { endpoint: dst, .. },
+            ) => self.copy_value(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&feedback),
+                Arc::clone(&dst_voices),
+                dst,
+            ),
+            (
+                OutputValueHandle::Bool { endpoint: src, .. },
+                InputValueHandle::Bool { endpoint: dst, .. },
+            ) => self.copy_value(
+                Arc::clone(&src_voices),
+                src,
+                Arc::clone(&feedback),
+                Arc::clone(&dst_voices),
+                dst,
+            ),
             _ => return Err("Endpoints value types are not compatible"),
         }
 
         Ok(())
-    }
-
-    fn copy_stream<T>(
-        &mut self,
-        src_voices: Arc<Mutex<Performer>>,
-        src_handle: Endpoint<OutputStream<T>>,
-        feedback: Arc<AtomicCell<f32>>,
-        dst_voices: Arc<Mutex<Performer>>,
-        dst_handle: Endpoint<InputStream<T>>)
-        where
-            T: StreamType + Default + Send + Sync + 'static {
-
-        let buffer = vec![T::default(); 1024];
-        self.push(
-            CopyStream {
-                src_voices,
-                src_handle,
-                dst_voices,
-                dst_handle,
-                buffer,
-                feedback
-            }
-        );
     }
 
     fn copy_event(
@@ -508,7 +568,7 @@ impl Actions {
         dst_voices: Arc<Mutex<Performer>>,
         dst_handle: Endpoint<InputValue<T>>)
         where
-            T: Copy + Default + Send + Sync + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T> + 'static {
+            T: ValueSample {
 
         self.push(
             CopyValue {

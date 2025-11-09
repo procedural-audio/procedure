@@ -1,8 +1,0 @@
-/target
-/Cargo.lock
-.idea
-.DS_Store
-*.dylib
-/cmaj
-.env
-cmake-build-*

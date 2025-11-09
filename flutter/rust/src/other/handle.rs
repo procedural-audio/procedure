@@ -1,8 +1,4 @@
-use std::{
-    f32::consts::E,
-    primitive,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
 use cmajor::value::Value;
 use cmajor::{
@@ -11,37 +7,74 @@ use cmajor::{
     performer::{
         Endpoint, InputEvent, InputStream, InputValue, OutputEvent, OutputStream, OutputValue,
     },
-    value::types::{Array, Object, Primitive, Type},
+    value::types::{Object, Primitive, Type},
 };
 use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
+use serde_json;
 
 use crate::api::endpoint::{EndpointKind};
 
-#[derive(Clone, PartialEq)]
+fn object_type_name(object: &Object) -> String {
+    serde_json::to_value(object)
+        .ok()
+        .and_then(|value| value.get("class").and_then(|c| c.as_str().map(|s| s.to_string())))
+        .unwrap_or_else(|| "object".to_string())
+}
+
+#[derive(Clone)]
 pub enum InputStreamHandle {
-    Float32(Endpoint<InputStream<f32>>),
-    Float64(Endpoint<InputStream<f64>>),
-    Int32(Endpoint<InputStream<i32>>),
-    Int64(Endpoint<InputStream<i64>>),
-    Float32x2(Endpoint<InputStream<[f32; 2]>>),
+    Float32 {
+        id: String,
+        endpoint: Endpoint<InputStream<f32>>,
+    },
+    Float64 {
+        id: String,
+        endpoint: Endpoint<InputStream<f64>>,
+    },
+    Int32 {
+        id: String,
+        endpoint: Endpoint<InputStream<i32>>,
+    },
+    Int64 {
+        id: String,
+        endpoint: Endpoint<InputStream<i64>>,
+    },
+    Float32x2 {
+        id: String,
+        endpoint: Endpoint<InputStream<[f32; 2]>>,
+    },
     Err(&'static str),
 }
 
 impl InputStreamHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Self {
-        let id = endpoint.id();
         match endpoint.ty() {
             Type::Primitive(p) => match p {
-                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
+                Primitive::Float32 => Self::Float32 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Float64 => Self::Float64 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Int32 => Self::Int32 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Int64 => Self::Int64 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
                 _ => Self::Err("unsupported endpoint type stream"),
             },
             Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
-                    2 => Self::Float32x2(engine.endpoint(id).unwrap()),
+                    2 => Self::Float32x2 {
+                        id: endpoint.id().as_ref().to_string(),
+                        endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                    },
                     _ => Self::Err("unsupported endpoint type array stream"),
                 },
                 _ => Self::Err("unsupported endpoint type array stream"),
@@ -51,42 +84,92 @@ impl InputStreamHandle {
         }
     }
 
+    fn id(&self) -> Option<&str> {
+        match self {
+            Self::Float32 { id, .. }
+            | Self::Float64 { id, .. }
+            | Self::Int32 { id, .. }
+            | Self::Int64 { id, .. }
+            | Self::Float32x2 { id, .. } => Some(id),
+            Self::Err(_) => None,
+        }
+    }
+
     pub fn get_type(&self) -> &str {
         match self {
-            Self::Float32(_) => "float32",
-            Self::Float64(_) => "float64",
-            Self::Int32(_) => "int32",
-            Self::Int64(_) => "int64",
-            Self::Float32x2(_) => "float32x2",
-            Self::Err(_) => "unknown"
+            Self::Float32 { .. } => "float32",
+            Self::Float64 { .. } => "float64",
+            Self::Int32 { .. } => "int32",
+            Self::Int64 { .. } => "int64",
+            Self::Float32x2 { .. } => "float32x2",
+            Self::Err(_) => "unknown",
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl PartialEq for InputStreamHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.id(), other.id()) {
+            (Some(a), Some(b)) => a == b,
+            (None, None) => matches!((self, other), (Self::Err(a), Self::Err(b)) if a == b),
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum OutputStreamHandle {
-    Float32(Endpoint<OutputStream<f32>>),
-    Float64(Endpoint<OutputStream<f64>>),
-    Int32(Endpoint<OutputStream<i32>>),
-    Int64(Endpoint<OutputStream<i64>>),
-    Float32x2(Endpoint<OutputStream<[f32; 2]>>),
+    Float32 {
+        id: String,
+        endpoint: Endpoint<OutputStream<f32>>,
+    },
+    Float64 {
+        id: String,
+        endpoint: Endpoint<OutputStream<f64>>,
+    },
+    Int32 {
+        id: String,
+        endpoint: Endpoint<OutputStream<i32>>,
+    },
+    Int64 {
+        id: String,
+        endpoint: Endpoint<OutputStream<i64>>,
+    },
+    Float32x2 {
+        id: String,
+        endpoint: Endpoint<OutputStream<[f32; 2]>>,
+    },
     Err(&'static str),
 }
 
 impl OutputStreamHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &StreamEndpoint) -> Self {
-        let id = endpoint.id();
         match endpoint.ty() {
             Type::Primitive(p) => match p {
-                Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-                Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-                Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-                Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
+                Primitive::Float32 => Self::Float32 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Float64 => Self::Float64 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Int32 => Self::Int32 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
+                Primitive::Int64 => Self::Int64 {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                },
                 _ => Self::Err("unsupported endpoint type stream"),
             },
             Type::Array(array) => match array.elem_ty() {
                 Type::Primitive(Primitive::Float32) => match array.len() {
-                    2 => Self::Float32x2(engine.endpoint(id).unwrap()),
+                    2 => Self::Float32x2 {
+                        id: endpoint.id().as_ref().to_string(),
+                        endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                    },
                     _ => Self::Err("unsupported endpoint type array stream"),
                 },
                 _ => Self::Err("unsupported endpoint type array stream"),
@@ -96,27 +179,64 @@ impl OutputStreamHandle {
         }
     }
 
+    fn id(&self) -> Option<&str> {
+        match self {
+            Self::Float32 { id, .. }
+            | Self::Float64 { id, .. }
+            | Self::Int32 { id, .. }
+            | Self::Int64 { id, .. }
+            | Self::Float32x2 { id, .. } => Some(id),
+            Self::Err(_) => None,
+        }
+    }
+
     pub fn get_type(&self) -> &str {
         match self {
-            Self::Float32(_) => "float32",
-            Self::Float64(_) => "float64",
-            Self::Int32(_) => "int32",
-            Self::Int64(_) => "int64",
-            Self::Float32x2(_) => "float32x2",
-            Self::Err(_) => "unknown"
+            Self::Float32 { .. } => "float32",
+            Self::Float64 { .. } => "float64",
+            Self::Int32 { .. } => "int32",
+            Self::Int64 { .. } => "int64",
+            Self::Float32x2 { .. } => "float32x2",
+            Self::Err(_) => "unknown",
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl PartialEq for OutputStreamHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.id(), other.id()) {
+            (Some(a), Some(b)) => a == b,
+            (None, None) => matches!((self, other), (Self::Err(a), Self::Err(b)) if a == b),
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum InputValueHandle {
-    Float32(Endpoint<InputValue<f32>>),
-    Float64(Endpoint<InputValue<f64>>),
-    Int32(Endpoint<InputValue<i32>>),
-    Int64(Endpoint<InputValue<i64>>),
-    Bool(Endpoint<InputValue<bool>>),
+    Float32 {
+        id: String,
+        endpoint: Endpoint<InputValue<f32>>,
+    },
+    Float64 {
+        id: String,
+        endpoint: Endpoint<InputValue<f64>>,
+    },
+    Int32 {
+        id: String,
+        endpoint: Endpoint<InputValue<i32>>,
+    },
+    Int64 {
+        id: String,
+        endpoint: Endpoint<InputValue<i64>>,
+    },
+    Bool {
+        id: String,
+        endpoint: Endpoint<InputValue<bool>>,
+    },
     Object {
-        handle: Endpoint<OutputValue<Object>>,
+        id: String,
+        handle: Endpoint<InputValue<Object>>,
         object: Box<Object>,
     },
     Err(&'static str),
@@ -124,9 +244,6 @@ pub enum InputValueHandle {
 
 impl InputValueHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Self {
-        // Get the endpoint id
-        let id = endpoint.id();
-
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
@@ -134,7 +251,8 @@ impl InputValueHandle {
             Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
             Type::Object(object) => {
                 return Self::Object {
-                    handle: engine.endpoint(id).unwrap(),
+                    id: endpoint.id().as_ref().to_string(),
+                    handle: engine.endpoint(endpoint.id()).unwrap(),
                     object: object.clone(),
                 };
             }
@@ -142,37 +260,93 @@ impl InputValueHandle {
 
         // Match on the specific primitive variant
         match primitive {
-            Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-            Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-            Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-            Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
-            Primitive::Bool => Self::Bool(engine.endpoint(id).unwrap()),
-            Primitive::Void => return Self::Err("unsupported endpoint type void value"),
+            Primitive::Float32 => Self::Float32 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Float64 => Self::Float64 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Int32 => Self::Int32 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Int64 => Self::Int64 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Bool => Self::Bool {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Void => Self::Err("unsupported endpoint type void value"),
         }
     }
 
-    pub fn get_type(&self) -> &str {
+    fn id(&self) -> Option<&str> {
         match self {
-            Self::Float32(_) => "float32",
-            Self::Float64(_) => "float64",
-            Self::Int32(_) => "int32",
-            Self::Int64(_) => "int64",
-            Self::Bool(_) => "bool",
-            Self::Object { object, .. } => object.class(),
-            Self::Err(_) => "unknown"
+            Self::Float32 { id, .. }
+            | Self::Float64 { id, .. }
+            | Self::Int32 { id, .. }
+            | Self::Int64 { id, .. }
+            | Self::Bool { id, .. }
+            | Self::Object { id, .. } => Some(id),
+            Self::Err(_) => None,
+        }
+    }
+
+    pub fn get_type(&self) -> String {
+        match self {
+            Self::Float32 { .. } => "float32".to_string(),
+            Self::Float64 { .. } => "float64".to_string(),
+            Self::Int32 { .. } => "int32".to_string(),
+            Self::Int64 { .. } => "int64".to_string(),
+            Self::Bool { .. } => "bool".to_string(),
+            Self::Object { object, .. } => object_type_name(object),
+            Self::Err(_) => "unknown".to_string(),
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl PartialEq for InputValueHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.id(), other.id()) {
+            (Some(a), Some(b)) => a == b,
+            (None, None) => matches!((self, other), (Self::Err(a), Self::Err(b)) if a == b),
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum OutputValueHandle {
-    Float32(Endpoint<OutputValue<f32>>),
-    Float64(Endpoint<OutputValue<f64>>),
-    Int32(Endpoint<OutputValue<i32>>),
-    Int64(Endpoint<OutputValue<i64>>),
-    Bool(Endpoint<OutputValue<bool>>),
-    String(Endpoint<OutputValue<String>>),
+    Float32 {
+        id: String,
+        endpoint: Endpoint<OutputValue<f32>>,
+    },
+    Float64 {
+        id: String,
+        endpoint: Endpoint<OutputValue<f64>>,
+    },
+    Int32 {
+        id: String,
+        endpoint: Endpoint<OutputValue<i32>>,
+    },
+    Int64 {
+        id: String,
+        endpoint: Endpoint<OutputValue<i64>>,
+    },
+    Bool {
+        id: String,
+        endpoint: Endpoint<OutputValue<bool>>,
+    },
+    String {
+        id: String,
+        endpoint: Endpoint<OutputValue<String>>,
+    },
     Object {
+        id: String,
         handle: Endpoint<OutputValue<Object>>,
         object: Box<Object>,
     },
@@ -181,21 +355,20 @@ pub enum OutputValueHandle {
 
 impl OutputValueHandle {
     fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &ValueEndpoint) -> Self {
-        // Get the endpoint id
-        let id = endpoint.id();
-
         // Ensure it's a primitive otherwise error
         let primitive = match endpoint.ty() {
             Type::Primitive(p) => p,
             Type::Array(_) => return Self::Err("unsupported endpoint type array value"),
             Type::String => {
-                return Self::String(
-                    engine.endpoint(id).unwrap()
-                );
+                return Self::String {
+                    id: endpoint.id().as_ref().to_string(),
+                    endpoint: engine.endpoint(endpoint.id()).unwrap(),
+                };
             }
             Type::Object(object) => {
                 return Self::Object {
-                    handle: engine.endpoint(id).unwrap(),
+                    id: endpoint.id().as_ref().to_string(),
+                    handle: engine.endpoint(endpoint.id()).unwrap(),
                     object: object.clone(),
                 };
             }
@@ -203,49 +376,89 @@ impl OutputValueHandle {
 
         // Match on the specific primitive variant
         match primitive {
-            Primitive::Float32 => Self::Float32(engine.endpoint(id).unwrap()),
-            Primitive::Float64 => Self::Float64(engine.endpoint(id).unwrap()),
-            Primitive::Int32 => Self::Int32(engine.endpoint(id).unwrap()),
-            Primitive::Int64 => Self::Int64(engine.endpoint(id).unwrap()),
-            Primitive::Bool => Self::Bool(engine.endpoint(id).unwrap()),
-            Primitive::Void => return Self::Err("unsupported endpoint type void value"),
+            Primitive::Float32 => Self::Float32 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Float64 => Self::Float64 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Int32 => Self::Int32 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Int64 => Self::Int64 {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Bool => Self::Bool {
+                id: endpoint.id().as_ref().to_string(),
+                endpoint: engine.endpoint(endpoint.id()).unwrap(),
+            },
+            Primitive::Void => Self::Err("unsupported endpoint type void value"),
         }
     }
 
-    pub fn get_type(&self) -> &str {
+    fn id(&self) -> Option<&str> {
         match self {
-            Self::Float32(_) => "float32",
-            Self::Float64(_) => "float64",
-            Self::Int32(_) => "int32",
-            Self::Int64(_) => "int64",
-            Self::Bool(_) => "bool",
-            Self::String(_) => "string",
-            Self::Object { object, .. } => object.class(),
-            Self::Err(_) => "unknown"
+            Self::Float32 { id, .. }
+            | Self::Float64 { id, .. }
+            | Self::Int32 { id, .. }
+            | Self::Int64 { id, .. }
+            | Self::Bool { id, .. }
+            | Self::String { id, .. }
+            | Self::Object { id, .. } => Some(id),
+            Self::Err(_) => None,
+        }
+    }
+
+    pub fn get_type(&self) -> String {
+        match self {
+            Self::Float32 { .. } => "float32".to_string(),
+            Self::Float64 { .. } => "float64".to_string(),
+            Self::Int32 { .. } => "int32".to_string(),
+            Self::Int64 { .. } => "int64".to_string(),
+            Self::Bool { .. } => "bool".to_string(),
+            Self::String { .. } => "string".to_string(),
+            Self::Object { object, .. } => object_type_name(object),
+            Self::Err(_) => "unknown".to_string(),
         }
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl PartialEq for OutputValueHandle {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.id(), other.id()) {
+            (Some(a), Some(b)) => a == b,
+            (None, None) => matches!((self, other), (Self::Err(a), Self::Err(b)) if a == b),
+            _ => false,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct InputEventHandle {
+    pub id: String,
     pub handle: Endpoint<InputEvent>,
     pub types: Vec<Type>,
 }
 
 impl InputEventHandle {
-    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Result<Self, &'static str> {
-        // Get the endpoint id
-        let id = endpoint.id();
-
-        match engine.endpoint(id) {
+    fn from_endpoint(
+        engine: &mut Engine<Loaded>,
+        endpoint: &EventEndpoint,
+    ) -> Result<Self, &'static str> {
+        match engine.endpoint(endpoint.id()) {
             Ok(handle) => {
                 let types = endpoint.types().to_vec();
                 Ok(Self {
+                    id: endpoint.id().as_ref().to_string(),
                     handle,
                     types,
                 })
             }
-            Err(_) => Err("unsupported endpoint type")
+            Err(_) => Err("unsupported endpoint type"),
         }
     }
 
@@ -253,37 +466,43 @@ impl InputEventHandle {
         self
             .types
             .iter()
-            .map(|t| t
-                .as_object()
-                .map_or(
-                    "unknown".to_string(),
-                    | b: &Object | b.class().to_string()
-                ))
+            .map(|t| {
+                t.as_object()
+                    .map_or("unknown".to_string(), object_type_name)
+            })
             .collect::<Vec<String>>()
             .join(",")
     }
 }
 
-#[derive(Clone, PartialEq)]
+impl PartialEq for InputEventHandle {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+#[derive(Clone)]
 pub struct OutputEventHandle {
+    pub id: String,
     pub handle: Endpoint<OutputEvent>,
     pub types: Vec<Type>,
 }
 
 impl OutputEventHandle {
-    fn from_endpoint(engine: &mut Engine<Loaded>, endpoint: &EventEndpoint) -> Result<Self, &'static str> {
-        // Get the endpoint id
-        let id = endpoint.id();
-
-        match engine.endpoint(id) {
+    fn from_endpoint(
+        engine: &mut Engine<Loaded>,
+        endpoint: &EventEndpoint,
+    ) -> Result<Self, &'static str> {
+        match engine.endpoint(endpoint.id()) {
             Ok(handle) => {
                 let types = endpoint.types().to_vec();
                 Ok(Self {
+                    id: endpoint.id().as_ref().to_string(),
                     handle,
                     types,
                 })
             }
-            Err(_) => Err("unsupported endpoint type")
+            Err(_) => Err("unsupported endpoint type"),
         }
     }
 
@@ -301,11 +520,17 @@ impl OutputEventHandle {
                     Primitive::Void => "void".to_string(),
                 },
                 Type::String => "string".to_string(),
-                Type::Object(object) => object.class().to_string(),
-                Type::Array(a) => "array".to_string(),
+                Type::Object(object) => object_type_name(object),
+                Type::Array(_) => "array".to_string(),
             })
             .collect::<Vec<String>>()
             .join(",")
+    }
+}
+
+impl PartialEq for OutputEventHandle {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
     }
 }
 
@@ -345,7 +570,7 @@ impl InputHandle {
     pub fn get_type(&self) -> String {
         match self {
             Self::Stream(handle) => handle.get_type().to_string(),
-            Self::Value(handle) => handle.get_type().to_string(),
+            Self::Value(handle) => handle.get_type(),
             Self::Event(handle) => handle.get_type(),
         }
     }
@@ -403,7 +628,7 @@ impl OutputHandle {
     pub fn get_type(&self) -> String {
         match self {
             Self::Stream { handle, ..} => handle.get_type().to_string(),
-            Self::Value{ handle, ..} => handle.get_type().to_string(),
+            Self::Value{ handle, ..} => handle.get_type(),
             Self::Event{ handle, .. } => handle.get_type(),
         }
     }
@@ -614,7 +839,7 @@ impl EndpointHandle {
     pub fn get_type(&self) -> String {
         match self {
             EndpointHandle::Input(handle) => handle.get_type(),
-            EndpointHandle::Output(handle) => handle.get_type().to_string(),
+            EndpointHandle::Output(handle) => handle.get_type(),
         }
     }
 }

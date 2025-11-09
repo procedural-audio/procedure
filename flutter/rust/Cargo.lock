@@ -181,7 +181,9 @@ checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
 
 [[package]]
 name = "cmajor"
-version = "0.6.0"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78387504e9d1287feb0c10f7ada5c377dd19d6be5b57a4d6b876975edad6eae9"
 dependencies = [
  "bytes",
  "dotenvy",

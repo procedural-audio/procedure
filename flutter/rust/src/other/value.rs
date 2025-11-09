@@ -9,17 +9,47 @@ use crossbeam_queue::ArrayQueue;
 use performer::Endpoint;
 use performer::InputValue;
 use performer::OutputValue;
-
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use value::Value;
 use value::ValueRef;
-
-use crate::other::voices::*;
 
 use super::action::ExecuteAction;
 use super::action::IO;
 
-pub struct CopyValue<T: Default> {
+pub trait ValueSample:
+    Copy + Default + PartialEq + Send + Sync + 'static
+{
+    fn read_output(performer: &mut Performer, endpoint: Endpoint<OutputValue<Self>>) -> Self;
+    fn write_input(performer: &mut Performer, endpoint: Endpoint<InputValue<Self>>, value: Self);
+}
+
+macro_rules! impl_value_sample {
+    ($ty:ty) => {
+        impl ValueSample for $ty {
+            fn read_output(
+                performer: &mut Performer,
+                endpoint: Endpoint<OutputValue<Self>>,
+            ) -> Self {
+                performer.get(endpoint)
+            }
+
+            fn write_input(
+                performer: &mut Performer,
+                endpoint: Endpoint<InputValue<Self>>,
+                value: Self,
+            ) {
+                performer.set(endpoint, value);
+            }
+        }
+    };
+}
+
+impl_value_sample!(f32);
+impl_value_sample!(f64);
+impl_value_sample!(i32);
+impl_value_sample!(i64);
+impl_value_sample!(bool);
+
+pub struct CopyValue<T: ValueSample> {
     pub src_voices: Arc<Mutex<Performer>>,
     pub src_handle: Endpoint<OutputValue<T>>,
     pub dst_voices: Arc<Mutex<Performer>>,
@@ -28,10 +58,7 @@ pub struct CopyValue<T: Default> {
     pub feedback: Arc<AtomicCell<bool>>,
 }
 
-impl<T> ExecuteAction for CopyValue<T>
-where
-    T: Copy + Default + PartialEq + SetInputValue + for<'a> GetOutputValue<Output<'a> = T>,
-{
+impl<T: ValueSample> ExecuteAction for CopyValue<T> {
     fn execute(&mut self, io: &mut IO) {
         let mut src = self.src_voices
             .try_lock()
@@ -40,7 +67,7 @@ where
             .try_lock()
             .unwrap();
         
-        let value = src.get(self.src_handle);
+        let value = T::read_output(&mut src, self.src_handle);
 
         if self.previous != value {
             self.feedback.store(true);
@@ -48,21 +75,20 @@ where
             self.feedback.store(false);
         }
         
-        dst.set(self.dst_handle, value);
+        T::write_input(&mut dst, self.dst_handle, value);
+        self.previous = value;
     }
 }
 
-pub struct ClearValue<T> {
+pub struct ClearValue<T: ValueSample> {
     pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputValue<T>>,
 }
 
-impl<T: Copy + Default + SetInputValue> ExecuteAction for ClearValue<T> {
+impl<T: ValueSample> ExecuteAction for ClearValue<T> {
     fn execute(&mut self, io: &mut IO) {
-        self.voices
-            .try_lock()
-            .unwrap()
-            .set(self.handle, T::default());
+        let mut performer = self.voices.try_lock().unwrap();
+        T::write_input(&mut performer, self.handle, T::default());
     }
 }
 
@@ -101,16 +127,16 @@ impl ExecuteAction for SendValue {
     }
 }
 
-pub struct ReceiveValue<T> {
+pub struct ReceiveValue<T: ValueSample> {
     pub voices: Arc<Mutex<Performer>>,
     pub handle: Endpoint<InputValue<T>>,
     pub queue: Arc<ArrayQueue<Value>>
 }
 
 impl<T> ExecuteAction for ReceiveValue<T>
-    where
-        T: Copy + SetInputValue + for <'a> TryFrom<ValueRef<'a>> {
-
+where
+    T: ValueSample + for<'a> TryFrom<ValueRef<'a>>,
+{
     fn execute(&mut self, io: &mut IO) {
         let mut voices = self.voices
             .try_lock()
@@ -118,7 +144,7 @@ impl<T> ExecuteAction for ReceiveValue<T>
 
         while let Some(value) = self.queue.pop() {
             if let Ok(v) = value.as_ref().try_into() {
-                voices.set(self.handle, v);
+                T::write_input(&mut voices, self.handle, v);
             }
         }
     }

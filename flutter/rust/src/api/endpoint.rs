@@ -20,7 +20,7 @@ pub struct NodeEndpoint {
 
 impl NodeEndpoint {
     #[frb(ignore)]
-    pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, node_id: u32) -> Self {
+pub fn from(engine: &mut Engine<Loaded>, info: EndpointInfo, _node_id: u32) -> Self {
         let endpoint = EndpointHandle::from_info(engine, &info);
         let annotation = serde_json::ser::to_string(info.annotation()).unwrap();
 

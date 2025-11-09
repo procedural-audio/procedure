@@ -36,10 +36,13 @@ impl Node {
         )
         .unwrap();
 
-        let mut program = cmajor.create_program();
-        if let Err(e) = program.parse(&module.source) {
-            println!("{}", e);
-        }
+        let program = match cmajor.parse(&module.source) {
+            Ok(program) => program,
+            Err(e) => {
+                println!("{}", e);
+                return None;
+            }
+        };
 
         let mut engine = match cmajor
             .create_default_engine()

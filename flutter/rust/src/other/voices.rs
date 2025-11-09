@@ -1,12 +1,3 @@
-use std::fmt::Pointer;
-
-use cmajor::performer::*;
-use cmajor::*;
-use endpoints::stream::StreamType;
-use value::{Value, ValueRef};
-
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
-
 /*pub enum Voices {
     Mono(Performer),
     Poly(Vec<Performer>),

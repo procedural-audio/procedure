@@ -1,162 +1,426 @@
-use core::num;
-use std::collections::HashMap;
-use std::iter::Sum;
-use std::ops::Add;
-use std::ops::Mul;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use crate::api::endpoint::NodeEndpoint;
-use crate::api::node::*;
-
-use cmajor::performer::Performer;
-use cmajor::value::Value;
-use cmajor::*;
-
+use cmajor::performer::{Endpoint, InputStream, OutputStream, Performer};
 use crossbeam::atomic::AtomicCell;
-use num_traits::Float;
-use num_traits::FromPrimitive;
-use performer::endpoints::stream::StreamType;
-use performer::Endpoint;
-use performer::InputEvent;
-use performer::InputStream;
-use performer::InputValue;
-use performer::OutputEvent;
-use performer::OutputStream;
-use performer::OutputValue;
 
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
+use super::action::{ExecuteAction, IO};
 
-use crate::api::graph::*;
-use crate::other::handle::*;
-use crate::other::voices::*;
+const STREAM_BUFFER_SIZE: usize = 1024;
 
-use super::action::*;
+enum StreamCopyVariant {
+    Float32 {
+        src: Endpoint<OutputStream<f32>>,
+        dst: Endpoint<InputStream<f32>>,
+        buffer: Vec<f32>,
+    },
+    Float64 {
+        src: Endpoint<OutputStream<f64>>,
+        dst: Endpoint<InputStream<f64>>,
+        buffer: Vec<f64>,
+    },
+    Int32 {
+        src: Endpoint<OutputStream<i32>>,
+        dst: Endpoint<InputStream<i32>>,
+        buffer: Vec<i32>,
+    },
+    Int64 {
+        src: Endpoint<OutputStream<i64>>,
+        dst: Endpoint<InputStream<i64>>,
+        buffer: Vec<i64>,
+    },
+    Float32x2 {
+        src: Endpoint<OutputStream<[f32; 2]>>,
+        dst: Endpoint<InputStream<[f32; 2]>>,
+        buffer: Vec<[f32; 2]>,
+    },
+}
 
-pub struct CopyStream<T: StreamType> {
+impl StreamCopyVariant {
+    fn float32(src: Endpoint<OutputStream<f32>>, dst: Endpoint<InputStream<f32>>) -> Self {
+        Self::Float32 {
+            src,
+            dst,
+            buffer: vec![0.0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn float64(src: Endpoint<OutputStream<f64>>, dst: Endpoint<InputStream<f64>>) -> Self {
+        Self::Float64 {
+            src,
+            dst,
+            buffer: vec![0.0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn int32(src: Endpoint<OutputStream<i32>>, dst: Endpoint<InputStream<i32>>) -> Self {
+        Self::Int32 {
+            src,
+            dst,
+            buffer: vec![0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn int64(src: Endpoint<OutputStream<i64>>, dst: Endpoint<InputStream<i64>>) -> Self {
+        Self::Int64 {
+            src,
+            dst,
+            buffer: vec![0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn float32x2(
+        src: Endpoint<OutputStream<[f32; 2]>>,
+        dst: Endpoint<InputStream<[f32; 2]>>,
+    ) -> Self {
+        Self::Float32x2 {
+            src,
+            dst,
+            buffer: vec![[0.0, 0.0]; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn copy(&mut self, src: &Performer, dst: &Performer, frames: usize) {
+        match self {
+            StreamCopyVariant::Float32 { src: s, dst: d, buffer } => {
+                let frames = frames.min(buffer.len());
+                src.read(*s, &mut buffer[..frames]);
+                dst.write(*d, &buffer[..frames]);
+            }
+            StreamCopyVariant::Float64 { src: s, dst: d, buffer } => {
+                let frames = frames.min(buffer.len());
+                src.read(*s, &mut buffer[..frames]);
+                dst.write(*d, &buffer[..frames]);
+            }
+            StreamCopyVariant::Int32 { src: s, dst: d, buffer } => {
+                let frames = frames.min(buffer.len());
+                src.read(*s, &mut buffer[..frames]);
+                dst.write(*d, &buffer[..frames]);
+            }
+            StreamCopyVariant::Int64 { src: s, dst: d, buffer } => {
+                let frames = frames.min(buffer.len());
+                src.read(*s, &mut buffer[..frames]);
+                dst.write(*d, &buffer[..frames]);
+            }
+            StreamCopyVariant::Float32x2 { src: s, dst: d, buffer } => {
+                let frames = frames.min(buffer.len());
+                src.read(*s, &mut buffer[..frames]);
+                dst.write(*d, &buffer[..frames]);
+            }
+        }
+    }
+}
+
+pub struct CopyStream {
     pub src_voices: Arc<Mutex<Performer>>,
-    pub src_handle: Endpoint<OutputStream<T>>,
     pub dst_voices: Arc<Mutex<Performer>>,
-    pub dst_handle: Endpoint<InputStream<T>>,
-    pub buffer: Vec<T>,
+    variant: StreamCopyVariant,
     pub feedback: Arc<AtomicCell<f32>>,
 }
 
-/*fn rms<T: Mul<Output = T> + Sum>(buffer: &[T]) -> T
-where
-    T: StreamType,
-{
-    buffer.iter().map(|x| *x * *x).sum::<T>() / T::from_usize(buffer.len())
-}*/
-
-fn rms<T>(values: &[T]) -> T
-where
-    T: Float + FromPrimitive + Sum,
-{
-    if values.is_empty() {
-        return T::zero();
-    }
-
-    let sum_of_squares: T = values.iter().map(|&x| x * x).sum();
-    let mean_square = sum_of_squares / T::from_usize(values.len()).unwrap();
-    mean_square.sqrt()
-}
-
-impl<T: StreamType> ExecuteAction for CopyStream<T> {
-    fn execute(&mut self, io: &mut IO) {
-        let num_frames = io.get_num_frames();
-        let src = self.src_voices.try_lock().unwrap();
-        let mut dst = self.dst_voices.try_lock().unwrap();
-
-        src.read(self.src_handle, &mut self.buffer[..num_frames]);
-        dst.write(self.dst_handle, &self.buffer[..num_frames]);
-
-        // let rms = rms(&self.buffer[..num_frames]);
-        // self.feedback.store(Value::Float32(rms.to_f32().unwrap()));
-    }
-}
-
-/*pub struct ConvertCopyStream<A: StreamType, B: StreamType> {
-    pub src_voices: Arc<Mutex<Performer>>,
-    pub src_handle: Endpoint<OutputStream<A>>,
-    pub src_buffer: Vec<A>,
-    pub dst_voices: Arc<Mutex<Performer>>,
-    pub dst_handle: Endpoint<InputStream<B>>,
-    pub dst_buffer: Vec<B>,
-}
-
-impl<B: StreamType, A: StreamType + ConvertTo<B>> ExecuteAction for ConvertCopyStream<A, B> {
-    fn execute(&mut self, io: &mut IO) {
-        let num_frames = io.get_num_frames();
-        let src = self.src_voices.try_lock().unwrap();
-        let mut dst = self.dst_voices.try_lock().unwrap();
-
-        src.convert_copy_streams_to(
-            self.src_handle,
-            &mut self.src_buffer[..num_frames],
-            &mut dst,
-            self.dst_handle,
-            &mut self.dst_buffer[..num_frames],
-        );
-    }
-}*/
-
-pub struct ClearStream<T: StreamType + Default> {
-    pub voices: Arc<Mutex<Performer>>,
-    pub handle: Endpoint<InputStream<T>>,
-    pub buffer: Vec<T>,
-}
-
-impl<T: StreamType + Default> ExecuteAction for ClearStream<T> {
-    fn execute(&mut self, io: &mut IO) {
-        let num_frames = io.get_num_frames();
-        self.voices
-            .try_lock()
-            .unwrap()
-            .write(self.handle, &self.buffer.as_slice()[..num_frames]);
-    }
-}
-
-pub struct ExternalOutputStream<T: StreamType> {
-    pub voices: Arc<Mutex<Performer>>,
-    pub handle: Endpoint<OutputStream<T>>,
-    pub buffer: Vec<T>,
-    pub channel: usize,
-}
-
-impl ExecuteAction for ExternalOutputStream<f32> {
-    fn execute(&mut self, io: &mut IO) {
-        let num_frames = io.get_num_frames();
-        if let Some(channel) = io.audio.get_mut(self.channel) {
-            self.voices
-                .try_lock()
-                .unwrap()
-                .read(self.handle, &mut channel[..num_frames]);
+impl CopyStream {
+    pub fn new(
+        src_voices: Arc<Mutex<Performer>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        variant: StreamCopyVariant,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self {
+            src_voices,
+            dst_voices,
+            variant,
+            feedback,
         }
     }
+
+    pub fn float32(
+        src_voices: Arc<Mutex<Performer>>,
+        src: Endpoint<OutputStream<f32>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        dst: Endpoint<InputStream<f32>>,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self::new(src_voices, dst_voices, StreamCopyVariant::float32(src, dst), feedback)
+    }
+
+    pub fn float64(
+        src_voices: Arc<Mutex<Performer>>,
+        src: Endpoint<OutputStream<f64>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        dst: Endpoint<InputStream<f64>>,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self::new(src_voices, dst_voices, StreamCopyVariant::float64(src, dst), feedback)
+    }
+
+    pub fn int32(
+        src_voices: Arc<Mutex<Performer>>,
+        src: Endpoint<OutputStream<i32>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        dst: Endpoint<InputStream<i32>>,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self::new(src_voices, dst_voices, StreamCopyVariant::int32(src, dst), feedback)
+    }
+
+    pub fn int64(
+        src_voices: Arc<Mutex<Performer>>,
+        src: Endpoint<OutputStream<i64>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        dst: Endpoint<InputStream<i64>>,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self::new(src_voices, dst_voices, StreamCopyVariant::int64(src, dst), feedback)
+    }
+
+    pub fn float32x2(
+        src_voices: Arc<Mutex<Performer>>,
+        src: Endpoint<OutputStream<[f32; 2]>>,
+        dst_voices: Arc<Mutex<Performer>>,
+        dst: Endpoint<InputStream<[f32; 2]>>,
+        feedback: Arc<AtomicCell<f32>>,
+    ) -> Self {
+        Self::new(
+            src_voices,
+            dst_voices,
+            StreamCopyVariant::float32x2(src, dst),
+            feedback,
+        )
+    }
 }
 
-impl ExecuteAction for ExternalOutputStream<[f32; 2]> {
+impl ExecuteAction for CopyStream {
     fn execute(&mut self, io: &mut IO) {
-        let num_frames = io.get_num_frames();
+        let frames = io.get_num_frames();
+        let src = self.src_voices.try_lock().unwrap();
+        let dst = self.dst_voices.try_lock().unwrap();
+        self.variant.copy(&src, &dst, frames);
+    }
+}
 
-        self
-            .voices
-            .try_lock()
-            .unwrap()
-            .read(self.handle, &mut self.buffer[..num_frames]);
+enum StreamInputVariant {
+    Float32 {
+        handle: Endpoint<InputStream<f32>>,
+        buffer: Vec<f32>,
+    },
+    Float64 {
+        handle: Endpoint<InputStream<f64>>,
+        buffer: Vec<f64>,
+    },
+    Int32 {
+        handle: Endpoint<InputStream<i32>>,
+        buffer: Vec<i32>,
+    },
+    Int64 {
+        handle: Endpoint<InputStream<i64>>,
+        buffer: Vec<i64>,
+    },
+    Float32x2 {
+        handle: Endpoint<InputStream<[f32; 2]>>,
+        buffer: Vec<[f32; 2]>,
+    },
+}
 
-        // Copy the left channel
-        if let Some(left) = io.audio.get_mut(self.channel * 2) {
-            for (l, b) in left.iter_mut().zip(self.buffer.iter()) {
-                *l = b[0];
+impl StreamInputVariant {
+    fn float32(handle: Endpoint<InputStream<f32>>) -> Self {
+        Self::Float32 {
+            handle,
+            buffer: vec![0.0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn float64(handle: Endpoint<InputStream<f64>>) -> Self {
+        Self::Float64 {
+            handle,
+            buffer: vec![0.0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn int32(handle: Endpoint<InputStream<i32>>) -> Self {
+        Self::Int32 {
+            handle,
+            buffer: vec![0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn int64(handle: Endpoint<InputStream<i64>>) -> Self {
+        Self::Int64 {
+            handle,
+            buffer: vec![0; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn float32x2(handle: Endpoint<InputStream<[f32; 2]>>) -> Self {
+        Self::Float32x2 {
+            handle,
+            buffer: vec![[0.0, 0.0]; STREAM_BUFFER_SIZE],
+        }
+    }
+
+    fn clear(&mut self, performer: &Performer, frames: usize) {
+        match self {
+            StreamInputVariant::Float32 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                performer.write(*handle, &buffer[..frames]);
+            }
+            StreamInputVariant::Float64 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                performer.write(*handle, &buffer[..frames]);
+            }
+            StreamInputVariant::Int32 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                performer.write(*handle, &buffer[..frames]);
+            }
+            StreamInputVariant::Int64 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                performer.write(*handle, &buffer[..frames]);
+            }
+            StreamInputVariant::Float32x2 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                performer.write(*handle, &buffer[..frames]);
             }
         }
+    }
+}
 
-        // Copy the right channel
-        if let Some(right) = io.audio.get_mut(self.channel * 2 + 1) {
-            for (r, b) in right.iter_mut().zip(self.buffer.iter()) {
-                *r = b[1];
+pub struct ClearStream {
+    pub voices: Arc<Mutex<Performer>>,
+    variant: StreamInputVariant,
+}
+
+impl ClearStream {
+    pub fn float32(voices: Arc<Mutex<Performer>>, handle: Endpoint<InputStream<f32>>) -> Self {
+        Self {
+            voices,
+            variant: StreamInputVariant::float32(handle),
+        }
+    }
+
+    pub fn float64(voices: Arc<Mutex<Performer>>, handle: Endpoint<InputStream<f64>>) -> Self {
+        Self {
+            voices,
+            variant: StreamInputVariant::float64(handle),
+        }
+    }
+
+    pub fn int32(voices: Arc<Mutex<Performer>>, handle: Endpoint<InputStream<i32>>) -> Self {
+        Self {
+            voices,
+            variant: StreamInputVariant::int32(handle),
+        }
+    }
+
+    pub fn int64(voices: Arc<Mutex<Performer>>, handle: Endpoint<InputStream<i64>>) -> Self {
+        Self {
+            voices,
+            variant: StreamInputVariant::int64(handle),
+        }
+    }
+
+    pub fn float32x2(
+        voices: Arc<Mutex<Performer>>,
+        handle: Endpoint<InputStream<[f32; 2]>>,
+    ) -> Self {
+        Self {
+            voices,
+            variant: StreamInputVariant::float32x2(handle),
+        }
+    }
+}
+
+impl ExecuteAction for ClearStream {
+    fn execute(&mut self, io: &mut IO) {
+        let frames = io.get_num_frames();
+        let performer = self.voices.try_lock().unwrap();
+        self.variant.clear(&performer, frames);
+    }
+}
+
+enum ExternalStreamVariant {
+    Float32 {
+        handle: Endpoint<OutputStream<f32>>,
+    },
+    Float32x2 {
+        handle: Endpoint<OutputStream<[f32; 2]>>,
+        buffer: Vec<[f32; 2]>,
+    },
+}
+
+impl ExternalStreamVariant {
+    fn float32(handle: Endpoint<OutputStream<f32>>) -> Self {
+        Self::Float32 { handle }
+    }
+
+    fn float32x2(handle: Endpoint<OutputStream<[f32; 2]>>) -> Self {
+        Self::Float32x2 {
+            handle,
+            buffer: vec![[0.0, 0.0]; STREAM_BUFFER_SIZE],
+        }
+    }
+}
+
+pub struct ExternalOutputStream {
+    pub voices: Arc<Mutex<Performer>>,
+    pub channel: usize,
+    variant: ExternalStreamVariant,
+}
+
+impl ExternalOutputStream {
+    pub fn float32(
+        voices: Arc<Mutex<Performer>>,
+        handle: Endpoint<OutputStream<f32>>,
+        channel: usize,
+    ) -> Self {
+        Self {
+            voices,
+            channel,
+            variant: ExternalStreamVariant::float32(handle),
+        }
+    }
+
+    pub fn float32x2(
+        voices: Arc<Mutex<Performer>>,
+        handle: Endpoint<OutputStream<[f32; 2]>>,
+        channel: usize,
+    ) -> Self {
+        Self {
+            voices,
+            channel,
+            variant: ExternalStreamVariant::float32x2(handle),
+        }
+    }
+}
+
+impl ExecuteAction for ExternalOutputStream {
+    fn execute(&mut self, io: &mut IO) {
+        let frames = io.get_num_frames();
+        match &mut self.variant {
+            ExternalStreamVariant::Float32 { handle } => {
+                if let Some(channel) = io.audio.get_mut(self.channel) {
+                    let frames = frames.min(channel.len());
+                    self.voices
+                        .try_lock()
+                        .unwrap()
+                        .read(*handle, &mut channel[..frames]);
+                }
+            }
+            ExternalStreamVariant::Float32x2 { handle, buffer } => {
+                let frames = frames.min(buffer.len());
+                {
+                    let voices = self.voices.try_lock().unwrap();
+                    voices.read(*handle, &mut buffer[..frames]);
+                }
+
+                if let Some(left) = io.audio.get_mut(self.channel * 2) {
+                    for (l, sample) in left.iter_mut().zip(buffer.iter()) {
+                        *l = sample[0];
+                    }
+                }
+
+                if let Some(right) = io.audio.get_mut(self.channel * 2 + 1) {
+                    for (r, sample) in right.iter_mut().zip(buffer.iter()) {
+                        *r = sample[1];
+                    }
+                }
             }
         }
     }

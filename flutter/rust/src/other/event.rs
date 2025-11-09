@@ -1,32 +1,16 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::api::endpoint::NodeEndpoint;
-use crate::api::node::*;
-
 use cmajor::performer::Performer;
-use cmajor::value::ObjectValueRef;
 use cmajor::*;
 
 use crossbeam::atomic::AtomicCell;
 use crossbeam_queue::ArrayQueue;
-use performer::endpoints::stream::StreamType;
 use performer::Endpoint;
 use performer::InputEvent;
-use performer::InputStream;
-use performer::InputValue;
 use performer::OutputEvent;
-use performer::OutputStream;
-use performer::OutputValue;
-
-use cmajor::performer::endpoints::value::{GetOutputValue, SetInputValue};
 use value::Value;
 use value::ValueRef;
-
-use crate::api::graph::*;
-use crate::other::handle::*;
-use crate::other::voices::*;
 
 use super::action::ExecuteAction;
 use super::action::IO;
