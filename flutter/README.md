@@ -1,4 +1,4 @@
-# flutter_juce
+# procedure
 
 A new Flutter project.
 
