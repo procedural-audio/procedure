@@ -298,8 +298,12 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: flatpak/com.proceduralaudio.Procedure.yml
-          bundle: flutter/build/procedure-linux-flatpak.flatpak
+          bundle: procedure-linux-flatpak.flatpak
           cache-key: flatpak-builder-${{ github.sha }}
+      - name: Move Flatpak bundle into build directory
+        run: |
+          mkdir -p flutter/build
+          mv procedure-linux-flatpak.flatpak flutter/build/procedure-linux-flatpak.flatpak
       - name: Upload Flatpak bundle artifact
         uses: actions/upload-artifact@v4
         with:
