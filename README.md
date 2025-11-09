@@ -35,6 +35,8 @@
 
 ## Pre-Release Todo
 
+* Pre-release
+  * Fix cross-platform shared object loading 
 * Home
   * Setting user interface
   * Projects browser
