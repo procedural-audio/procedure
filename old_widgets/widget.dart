@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
-import 'package:metasampler/old_widgets/browser.dart';
-import 'package:metasampler/old_widgets/dynamicLine.dart';
-import 'package:metasampler/old_widgets/iconButton.dart';
-import 'package:metasampler/old_widgets/labelSlider.dart';
-import 'package:metasampler/old_widgets/painter2.dart';
-import 'package:metasampler/old_widgets/plotter.dart';
-import 'package:metasampler/old_widgets/sampleViewer.dart';
+import 'package:procedure_ui/old_widgets/browser.dart';
+import 'package:procedure_ui/old_widgets/dynamicLine.dart';
+import 'package:procedure_ui/old_widgets/iconButton.dart';
+import 'package:procedure_ui/old_widgets/labelSlider.dart';
+import 'package:procedure_ui/old_widgets/painter2.dart';
+import 'package:procedure_ui/old_widgets/plotter.dart';
+import 'package:procedure_ui/old_widgets/sampleViewer.dart';
 
 import 'dart:ui' as ui;
 import 'dart:async';

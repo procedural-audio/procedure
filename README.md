@@ -34,6 +34,12 @@
 
 ## Pre-Release Todo
 
+* Repository
+  * Fix dependencies
+  * Clean up unused files
+  * Reorganize directories
+  * Add license
+  * Squash history and make public
 * Home
   * Setting user interface
   * Projects browser
@@ -44,10 +50,10 @@
   * Node adding and deleting
   * Pins
   * Infinite scroll
-* Fix dependencies and licensing
 * Building
   * CI/CD for all platforms
   * Manually test on all platforms
+  * Add automated tests
 * Project exporting
 * LLM module generation
   * Subscription for LLM integration

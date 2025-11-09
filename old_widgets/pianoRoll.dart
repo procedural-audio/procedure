@@ -5,7 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:metasampler/common.dart';
+import 'package:procedure_ui/common.dart';
 
 import 'widget.dart';
 

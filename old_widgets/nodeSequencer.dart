@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ffi/ffi.dart';
-import 'package:metasampler/views/settings.dart';
+import 'package:procedure_ui/views/settings.dart';
 
 import 'dart:io';
 import 'dart:ui' as ui;
